@@ -9,6 +9,9 @@
 
 void CrossFaction::DoForgetPlayersInBG(Battleground* pBattleGround, Player* player)
 {
+    if (player->isPossessed()) // mind control issues
+        return;
+
     for (Battleground::BattlegroundPlayerMap::const_iterator itr = pBattleGround->GetPlayers().begin(); itr != pBattleGround->GetPlayers().end(); ++itr)
     {
         sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s - Reset Cache", player->GetName().c_str());
@@ -164,6 +167,9 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
 
     if (player)
     {
+        if (player->isPossessed()) // mind control issues
+            return;
+
         bool disable = true;
 
         // Check disables
@@ -182,9 +188,6 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
                 {
                     if (player->GetTeamId(true) != player->GetBgTeamId())
                     {
-                        if (player->IsControlledByPlayer())
-                            return;
-
                         sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s switched faction!", player->GetName().c_str());
 
                         SetMorph(player, true); // setup the new display ID for the player, and the new race
