@@ -15,14 +15,30 @@
 
 enum FakeMorphs
 {
-    FAKE_F_TAUREN   = 20584,
+    // horde
+    FAKE_M_BELF     = 20578,
+    FAKE_F_BELF     = 20579,
     FAKE_M_TAUREN   = 20585,
+    FAKE_F_TAUREN   = 20584,
+    FAKE_M_ORC      = 21267,
+    FAKE_F_ORC      = 20316,
+    FAKE_M_UNDEAD   = 20582,
+    FAKE_F_UNDEAD   = 20582,
+    FAKE_M_TROLL    = 20321,
+    FAKE_F_TROLL    = 20321,
+
+    // alliance
+
     FAKE_M_NELF     = 20318,
+    FAKE_F_NELF     = 20318,
+    FAKE_M_DRAENEI  = 20323,
     FAKE_F_DRAENEI  = 20323,
     FAKE_M_HUMAN    = 19723,
     FAKE_F_HUMAN    = 19724,
-    FAKE_M_BELF     = 20578,
-    FAKE_F_BELF     = 20579
+    FAKE_M_DWARF    = 20317,
+    FAKE_F_DWARF    = 20317,
+    FAKE_M_GNOME    = 20580,
+    FAKE_F_GNOME    = 20581,
 };
 
 class CrossFaction

@@ -33,57 +33,61 @@ void CrossFaction::DoForgetPlayersInBG(Battleground* pBattleGround, Player* play
 /// pre-save a fake race and morph for a player in case his faction is switched in BG.
 void CrossFaction::SetFakeRaceAndMorph(Player* player)
 {
-    if (player->getClass() == CLASS_DRUID)
+    if (player->getClass() == CLASS_DRUID) // separate case druid because of the morph
     {
         if (player->GetTeamId(true) == TEAM_ALLIANCE) // ALLT
         {
             m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_TAUREN : FAKE_F_TAUREN;
             m_FakeRace[player->GetGUID()] = RACE_TAUREN;
-
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s is a tauren !", player->GetName().c_str());
         }
         else // HORDE
         {
-            m_FakeMorph[player->GetGUID()] = FAKE_M_NELF;
+            m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_NELF : FAKE_F_NELF;
             m_FakeRace[player->GetGUID()] = RACE_NIGHTELF;
-
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s is a nightelf !", player->GetName().c_str());
         }         
     }
     else
     {
-        if (player->GetTeamId(true) == TEAM_HORDE) // HORDE standard
+        /*
+        Human	Orc
+        Dwarf	Undead
+        Night Elf	Tauren
+        Gnome	Troll
+        Draenei	Blood Elf
+        */
+        switch (player->getRace(true))
         {
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s is a human !", player->GetName().c_str());
-
-            if (player->getGender() == GENDER_MALE)
-            {
-                m_FakeMorph[player->GetGUID()] = FAKE_M_HUMAN; // human male
-                m_FakeRace[player->GetGUID()] = RACE_HUMAN;
-            }
-
-            else
-            {
-                m_FakeRace[player->GetGUID()] = RACE_HUMAN;
-                m_FakeMorph[player->GetGUID()] = FAKE_F_HUMAN; //human female
-            }
-
-        }
-        else // ally standard
-        {
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s is a bloodelf now!", player->GetName().c_str());
-
-            if (player->getGender() == GENDER_MALE)
-            {
-                m_FakeMorph[player->GetGUID()] = FAKE_M_BELF; // be male
+            case RACE_BLOODELF:
+                m_FakeRace[player->GetGUID()] = RACE_DRAENEI;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_DRAENEI : FAKE_F_DRAENEI;
+            case RACE_DRAENEI:
                 m_FakeRace[player->GetGUID()] = RACE_BLOODELF;
-            }
-
-            else
-            {
-                m_FakeRace[player->GetGUID()] = RACE_BLOODELF;
-                m_FakeMorph[player->GetGUID()] = FAKE_F_BELF; //be female
-            }
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_BELF : FAKE_F_BELF;
+            case RACE_DWARF:
+                m_FakeRace[player->GetGUID()] = RACE_UNDEAD_PLAYER;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_UNDEAD : FAKE_F_UNDEAD;
+            case RACE_GNOME:
+                m_FakeRace[player->GetGUID()] = RACE_TROLL;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_TROLL : FAKE_F_TROLL;
+            case RACE_HUMAN:
+                m_FakeRace[player->GetGUID()] = RACE_ORC;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_ORC : FAKE_F_ORC;
+            case RACE_NIGHTELF:
+                m_FakeRace[player->GetGUID()] = RACE_TAUREN;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_TAUREN : FAKE_F_TAUREN;
+            case RACE_ORC:
+                m_FakeRace[player->GetGUID()] = RACE_HUMAN;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_HUMAN : FAKE_F_HUMAN;
+            case RACE_TAUREN:
+                m_FakeRace[player->GetGUID()] = RACE_NIGHTELF;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_NELF : FAKE_F_NELF;
+            case RACE_TROLL:
+                m_FakeRace[player->GetGUID()] = RACE_GNOME;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_GNOME : FAKE_F_GNOME;
+            case RACE_UNDEAD_PLAYER:
+                m_FakeRace[player->GetGUID()] = RACE_DWARF;
+                m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_DWARF : FAKE_F_DWARF;
+                break;
         }
     }
 }
