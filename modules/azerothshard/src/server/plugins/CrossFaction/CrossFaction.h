@@ -23,7 +23,7 @@ enum FakeMorphs
     FAKE_M_ORC      = 21267,
     FAKE_F_ORC      = 20316,
     FAKE_M_UNDEAD   = 20582,
-    FAKE_F_UNDEAD   = 20582,
+    FAKE_F_UNDEAD   = 20583,
     FAKE_M_TROLL    = 20321,
     FAKE_F_TROLL    = 20321,
 
