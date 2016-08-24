@@ -35,15 +35,15 @@
 
      azth_commandscript() : CommandScript("azth_commandscript") {}
 
-     ChatCommand* GetCommands() const {
-         static ChatCommand lookupAzthCommands[] = {
-             { "maxskill", SEC_PLAYER, true, &handleAzthMaxSkill, ""},
-             { "xp", SEC_PLAYER, false, &handleAzthXP, ""},
+     std::vector<ChatCommand> GetCommands() const override {
+         static std::vector<ChatCommand> lookupAzthCommands = {
+             { "maxskill", SEC_PLAYER, true , &handleAzthMaxSkill, ""},
+             { "xp"      , SEC_PLAYER, false, &handleAzthXP, ""},
          };
 
-         static ChatCommand commandTable[] = {
-             { "azth", SEC_PLAYER, true, NULL, "", lookupAzthCommands},
-             { "qc", SEC_PLAYER, true, &HandleQuestCompleterCommand, ""},
+         static std::vector<ChatCommand> commandTable = {
+             { "azth"    , SEC_PLAYER, true, nullptr, "", lookupAzthCommands},
+             { "qc"      , SEC_PLAYER, true, &HandleQuestCompleterCommand, ""},
          };
          return commandTable;
      }
