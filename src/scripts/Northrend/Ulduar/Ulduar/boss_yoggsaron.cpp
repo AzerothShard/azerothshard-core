@@ -1,5 +1,5 @@
 /*
-REWRITTEN FROM SCRATCH BY XINEF, IT OWNS NOW!
+ * Originally written by Xinef - Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-AGPL
 */
 
 #include "ScriptMgr.h"
@@ -484,7 +484,7 @@ public:
                 if (!summon || summon->GetEntry() != NPC_OMINOUS_CLOUD || me->GetDistance(summon) < 20)
                     continue;
 
-                if ((!cloud || urand(0,1) && !summon->HasAura(SPELL_SUMMON_GUARDIAN_OF_YS)))
+                if ((!cloud || (urand(0,1) && !summon->HasAura(SPELL_SUMMON_GUARDIAN_OF_YS))))
                     cloud = summon;
             }
 

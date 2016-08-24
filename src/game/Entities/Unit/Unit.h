@@ -1,19 +1,7 @@
 /*
- * Copyright (C) 
- * Copyright (C) 
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016+     AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-GPL2
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  */
 
 #ifndef __UNIT_H
@@ -2380,7 +2368,13 @@ class Unit : public WorldObject
         // pussywizard:
         // MMaps
         std::map<uint64, MMapTargetData> m_targetsNotAcceptable;
-        bool isTargetNotAcceptableByMMaps(uint64 guid, uint32 currTime, const Position* t = NULL) const { std::map<uint64, MMapTargetData>::const_iterator itr = m_targetsNotAcceptable.find(guid); if (itr != m_targetsNotAcceptable.end() && (itr->second._endTime >= currTime || t && !itr->second.PosChanged(*this, *t))) return true; return false; }
+        bool isTargetNotAcceptableByMMaps(uint64 guid, uint32 currTime, const Position* t = NULL) const {
+            std::map<uint64, MMapTargetData>::const_iterator itr = m_targetsNotAcceptable.find(guid);
+            if ((itr != m_targetsNotAcceptable.end() && (itr->second._endTime >= currTime)) ||
+                (t && !itr->second.PosChanged(*this, *t)))
+                return true; 
+            return false;
+            }
         uint32 m_mmapNotAcceptableStartTime;
         // Safe mover
         std::set<SafeUnitPointer*> SafeUnitPointerSet;

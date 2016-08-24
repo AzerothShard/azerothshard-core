@@ -1,5 +1,5 @@
 /*
-REWRITTEN FROM SCRATCH BY PUSSYWIZARD, IT OWNS NOW!
+ * Originally written by Pussywizard - Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-AGPL
 */
 
 #include "ObjectMgr.h"
@@ -982,7 +982,8 @@ class spell_putricide_unstable_experiment : public SpellScriptLoader
                 std::list<Creature*> creList;
                 GetCreatureListWithEntryInGrid(creList, GetCaster(), NPC_ABOMINATION_WING_MAD_SCIENTIST_STALKER, 200.0f);
                 for (std::list<Creature*>::iterator itr = creList.begin(); itr != creList.end(); ++itr)
-                    if ((*itr)->GetPositionX() > 4350.0f && stage == 0 || (*itr)->GetPositionX() < 4350.0f && stage == 1)
+                    if (((*itr)->GetPositionX() > 4350.0f && stage == 0) ||
+                        ((*itr)->GetPositionX() < 4350.0f && stage == 1))
                     {
                         target = (*itr);
                         break;

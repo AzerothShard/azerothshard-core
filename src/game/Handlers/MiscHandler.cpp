@@ -1,19 +1,7 @@
 /*
- * Copyright (C) 
- * Copyright (C) 
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016+     AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-GPL2
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  */
 
 #include "Common.h"
@@ -410,7 +398,7 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket & /*recv_data*/)
     if (uint64 lguid = GetPlayer()->GetLootGUID())
         DoLootRelease(lguid);
 
-    bool instantLogout = (uint32(GetSecurity()) >= sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT) || GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) && !GetPlayer()->IsInCombat()) || GetPlayer()->IsInFlight();
+    bool instantLogout = (GetSecurity() >= sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT) || (GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) && !GetPlayer()->IsInCombat())) || GetPlayer()->IsInFlight();
 
     /// TODO: Possibly add RBAC permission to log out in combat
     bool canLogoutInCombat = GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
@@ -1532,7 +1520,17 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket & recv_data)
                         return;
                     }
 
-                    if (!groupGuy->IsAlive() || groupGuy->IsInCombat() || groupGuy->GetVictim() || groupGuy->m_mover != groupGuy || groupGuy->IsNonMeleeSpellCast(true) || !groupGuy->GetMotionMaster()->empty() && groupGuy->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE || !groupGuy->movespline->Finalized() || !groupGuy->GetMap()->ToInstanceMap() || !groupGuy->GetMap()->ToInstanceMap()->GetInstanceScript() || groupGuy->GetMap()->ToInstanceMap()->GetInstanceScript()->IsEncounterInProgress() || !groupGuy->Satisfy(sObjectMgr->GetAccessRequirement(groupGuy->GetMap()->GetId(), Difficulty(mode)), groupGuy->GetMap()->GetId(), false))
+                    if (!groupGuy->IsAlive() ||
+                        groupGuy->IsInCombat() ||
+                        groupGuy->GetVictim() ||
+                        groupGuy->m_mover != groupGuy ||
+                        groupGuy->IsNonMeleeSpellCast(true) ||
+                        (!groupGuy->GetMotionMaster()->empty() && groupGuy->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE) ||
+                        !groupGuy->movespline->Finalized() ||
+                        !groupGuy->GetMap()->ToInstanceMap() ||
+                        !groupGuy->GetMap()->ToInstanceMap()->GetInstanceScript() ||
+                        groupGuy->GetMap()->ToInstanceMap()->GetInstanceScript()->IsEncounterInProgress() ||
+                        !groupGuy->Satisfy(sObjectMgr->GetAccessRequirement(groupGuy->GetMap()->GetId(), Difficulty(mode)), groupGuy->GetMap()->GetId(), false))
                     {
                         _player->SendRaidDifficulty(group != NULL);
                         return;
@@ -1556,7 +1554,17 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket & recv_data)
                     if (Player* p = itr->GetSource())
                         if (p->GetGroup() != group)
                         {
-                            if (!p->IsInWorld() || !p->IsAlive() || p->IsInCombat() || p->GetVictim() || p->m_mover != p || p->IsNonMeleeSpellCast(true) || !p->GetMotionMaster()->empty() && p->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE || !p->movespline->Finalized() || !p->GetMap()->ToInstanceMap() || !p->GetMap()->ToInstanceMap()->GetInstanceScript() || p->GetMap()->ToInstanceMap()->GetInstanceScript()->IsEncounterInProgress())
+                            if (!p->IsInWorld() ||
+                                !p->IsAlive() ||
+                                p->IsInCombat() ||
+                                p->GetVictim() ||
+                                p->m_mover != p ||
+                                p->IsNonMeleeSpellCast(true) ||
+                                (!p->GetMotionMaster()->empty() && p->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE) ||
+                                !p->movespline->Finalized() ||
+                                !p->GetMap()->ToInstanceMap() ||
+                                !p->GetMap()->ToInstanceMap()->GetInstanceScript() ||
+                                p->GetMap()->ToInstanceMap()->GetInstanceScript()->IsEncounterInProgress())
                             {
                                 _player->SendRaidDifficulty(group != NULL);
                                 return;

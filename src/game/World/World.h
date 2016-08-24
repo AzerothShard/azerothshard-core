@@ -1,19 +1,7 @@
 /*
- * Copyright (C) 
- * Copyright (C) 
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016+     AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-GPL2
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  */
 
 /// \addtogroup world The World
@@ -179,6 +167,10 @@ enum WorldFloatConfigs
     CONFIG_CREATURE_FAMILY_FLEE_ASSISTANCE_RADIUS,
     CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS,
     CONFIG_CHANCE_OF_GM_SURVEY,
+    CONFIG_ARENA_WIN_RATING_MODIFIER_1,
+    CONFIG_ARENA_WIN_RATING_MODIFIER_2,
+    CONFIG_ARENA_LOSE_RATING_MODIFIER,
+    CONFIG_ARENA_MATCHMAKER_RATING_MODIFIER,
     CONFIG_PLAYER_MAXIMUM_INDIVIDUAL_XP_RATE, //[AZTH]
     FLOAT_CONFIG_VALUE_COUNT
 };

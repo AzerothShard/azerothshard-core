@@ -1,18 +1,7 @@
 /*
- * Copyright (C) 
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016+     AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-GPL2
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  */
 
 /* ScriptData
@@ -36,28 +25,27 @@ class go_commandscript : public CommandScript
 public:
     go_commandscript() : CommandScript("go_commandscript") { }
 
-    ChatCommand* GetCommands() const
+    std::vector<ChatCommand> GetCommands() const override
     {
-        static ChatCommand goCommandTable[] =
+        static std::vector<ChatCommand> goCommandTable =
         {
-            { "creature",       SEC_GAMEMASTER,      false, &HandleGoCreatureCommand,          "", NULL },
-            { "graveyard",      SEC_GAMEMASTER,      false, &HandleGoGraveyardCommand,         "", NULL },
-            { "grid",           SEC_GAMEMASTER,      false, &HandleGoGridCommand,              "", NULL },
-            { "object",         SEC_GAMEMASTER,      false, &HandleGoObjectCommand,            "", NULL },
-            { "taxinode",       SEC_GAMEMASTER,      false, &HandleGoTaxinodeCommand,          "", NULL },
-            { "trigger",        SEC_GAMEMASTER,      false, &HandleGoTriggerCommand,           "", NULL },
-            { "zonexy",         SEC_GAMEMASTER,      false, &HandleGoZoneXYCommand,            "", NULL },
-            { "xyz",            SEC_GAMEMASTER,      false, &HandleGoXYZCommand,               "", NULL },
-            { "ticket",         SEC_GAMEMASTER,      false, &HandleGoTicketCommand,            "", NULL },
-            { "guildhouse",     SEC_GAMEMASTER,      false, &HandleGuildhouseCommand,          "", NULL }, //[AZTH]
-            { "",               SEC_GAMEMASTER,      false, &HandleGoXYZCommand,               "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "creature",       SEC_MODERATOR,      false, &HandleGoCreatureCommand,          "" },
+            { "graveyard",      SEC_MODERATOR,      false, &HandleGoGraveyardCommand,         "" },
+            { "grid",           SEC_MODERATOR,      false, &HandleGoGridCommand,              "" },
+            { "object",         SEC_MODERATOR,      false, &HandleGoObjectCommand,            "" },
+            { "taxinode",       SEC_MODERATOR,      false, &HandleGoTaxinodeCommand,          "" },
+            { "trigger",        SEC_MODERATOR,      false, &HandleGoTriggerCommand,           "" },
+            { "zonexy",         SEC_MODERATOR,      false, &HandleGoZoneXYCommand,            "" },
+            { "xyz",            SEC_MODERATOR,      false, &HandleGoXYZCommand,               "" },
+            { "ticket",         SEC_GAMEMASTER,     false, &HandleGoTicketCommand,            "" },
+            //[AZTH]
+            { "guildhouse",     SEC_GAMEMASTER,     false, &HandleGuildhouseCommand,          "" },  
+            { "",               SEC_MODERATOR,      false, &HandleGoXYZCommand,               "" }
         };
 
-        static ChatCommand commandTable[] =
+        static std::vector<ChatCommand> commandTable =
         {
-            { "go",             SEC_GAMEMASTER,      false, NULL,                     "", goCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "go",             SEC_MODERATOR,      false, nullptr,                     "", goCommandTable }
         };
         return commandTable;
     }
@@ -92,7 +80,7 @@ public:
         {
             // Get the "creature_template.entry"
             // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
-            char* tail = strtok(NULL, "");
+            char* tail = strtok(nullptr, "");
             if (!tail)
                 return false;
             char* id = handler->extractKeyFromLink(tail, "Hcreature_entry");
@@ -223,8 +211,8 @@ public:
         Player* player = handler->GetSession()->GetPlayer();
 
         char* gridX = strtok((char*)args, " ");
-        char* gridY = strtok(NULL, " ");
-        char* id = strtok(NULL, " ");
+        char* gridY = strtok(nullptr, " ");
+        char* id = strtok(nullptr, " ");
 
         if (!gridX || !gridY)
             return false;
@@ -415,8 +403,8 @@ public:
         Player* player = handler->GetSession()->GetPlayer();
 
         char* zoneX = strtok((char*)args, " ");
-        char* zoneY = strtok(NULL, " ");
-        char* tail = strtok(NULL, "");
+        char* zoneY = strtok(nullptr, " ");
+        char* tail = strtok(nullptr, "");
 
         char* id = handler->extractKeyFromLink(tail, "Harea");       // string or [name] Shift-click form |color|Harea:area_id|h[name]|h|r
 
@@ -487,10 +475,10 @@ public:
         Player* player = handler->GetSession()->GetPlayer();
 
         char* goX = strtok((char*)args, " ");
-        char* goY = strtok(NULL, " ");
-        char* goZ = strtok(NULL, " ");
-        char* id = strtok(NULL, " ");
-        char* port = strtok(NULL, " ");
+        char* goY = strtok(nullptr, " ");
+        char* goZ = strtok(nullptr, " ");
+        char* id = strtok(nullptr, " ");
+        char* port = strtok(nullptr, " ");
 
         if (!goX || !goY)
             return false;

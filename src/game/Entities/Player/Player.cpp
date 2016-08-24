@@ -1,19 +1,7 @@
 /*
- * Copyright (C) 
- * Copyright (C) 
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016+     AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-GPL2
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  */
 
 #include "Player.h"
@@ -4209,8 +4197,8 @@ void Player::removeSpell(uint32 spellId, uint8 removeSpecMask, bool onlyTemporar
                 continue;
 
             // pussywizard: don't understand why whole skill is removed when just single spell from it is removed
-            if (_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL && pSkill->categoryId != SKILL_CATEGORY_CLASS || // pussywizard: don't unlearn class skills
-                (pSkill->id == SKILL_LOCKPICKING || pSkill->id == SKILL_RUNEFORGING) && _spell_idx->second->max_value == 0)
+            if ((_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL && pSkill->categoryId != SKILL_CATEGORY_CLASS) || // pussywizard: don't unlearn class skills
+                ((pSkill->id == SKILL_LOCKPICKING || pSkill->id == SKILL_RUNEFORGING) && _spell_idx->second->max_value == 0))
             {
                 // not reset skills for professions and racial abilities
                 if ((pSkill->categoryId == SKILL_CATEGORY_SECONDARY || pSkill->categoryId == SKILL_CATEGORY_PROFESSION) && (IsProfessionSkill(pSkill->id) || _spell_idx->second->racemask != 0))
@@ -17566,7 +17554,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
 
     // pussywizard: group changed difficulty when player was offline, teleport to the enterance of new difficulty
-    if (mapEntry && (mapEntry->IsNonRaidDungeon() && dungeonDiff != GetDungeonDifficulty() || mapEntry->IsRaid() && raidDiff != GetRaidDifficulty()))
+    if (mapEntry && ((mapEntry->IsNonRaidDungeon() && dungeonDiff != GetDungeonDifficulty()) ||
+                     (mapEntry->IsRaid() && raidDiff != GetRaidDifficulty())))
     {
         bool fixed = false;
         if (uint32 destInstId = sInstanceSaveMgr->PlayerGetDestinationInstanceId(this, mapId, GetDifficulty(mapEntry->IsRaid())))
@@ -22916,7 +22905,9 @@ void Player::ApplyEquipCooldown(Item* pItem)
 
         // xinef: dont apply equip cooldown if spell on item has insignificant cooldown
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
-        if (spellData.SpellCooldown <= 3000 && spellData.SpellCategoryCooldown <= 3000 && (!spellInfo || spellInfo->RecoveryTime <= 3000 && spellInfo->CategoryRecoveryTime <= 3000))
+        if (spellData.SpellCooldown <= 3000 &&
+            spellData.SpellCategoryCooldown <= 3000 &&
+            (!spellInfo || (spellInfo->RecoveryTime <= 3000 && spellInfo->CategoryRecoveryTime <= 3000)))
             continue;
 
         // Don't replace longer cooldowns by equip cooldown if we have any.
@@ -26447,7 +26438,10 @@ uint8 Player::GetMostPointsTalentTree() const
 bool Player::IsHealerTalentSpec() const
 { 
     uint8 tree = GetMostPointsTalentTree();
-    return (getClass() == CLASS_DRUID && tree == 2 || getClass() == CLASS_PALADIN && tree == 0 || getClass() == CLASS_PRIEST && tree <= 1 || getClass() == CLASS_SHAMAN && tree == 2);
+    return ((getClass() == CLASS_DRUID && tree == 2) ||
+            (getClass() == CLASS_PALADIN && tree == 0) ||
+            (getClass() == CLASS_PRIEST && tree <= 1) ||
+            (getClass() == CLASS_SHAMAN && tree == 2));
 }
 
 void Player::ResetTimeSync()

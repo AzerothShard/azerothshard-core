@@ -1,18 +1,7 @@
 /*
- * Copyright (C) 
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016+     AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-GPL2
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  */
 
 /* ScriptData
@@ -40,38 +29,35 @@ class gobject_commandscript : public CommandScript
 public:
     gobject_commandscript() : CommandScript("gobject_commandscript") { }
 
-    ChatCommand* GetCommands() const
+    std::vector<ChatCommand> GetCommands() const override
     {
-        static ChatCommand gobjectAddCommandTable[] =
+        static std::vector<ChatCommand> gobjectAddCommandTable =
         {
-            { "temp",           SEC_GAMEMASTER,     false, &HandleGameObjectAddTempCommand,   "", NULL },
-            { "",               SEC_GAMEMASTER,     false, &HandleGameObjectAddCommand,       "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "temp",           SEC_GAMEMASTER,        false, &HandleGameObjectAddTempCommand,   "" },
+            { "",               SEC_ADMINISTRATOR,     false, &HandleGameObjectAddCommand,       "" }
         };
-        static ChatCommand gobjectSetCommandTable[] =
+        static std::vector<ChatCommand> gobjectSetCommandTable =
         {
-            { "phase",          SEC_GAMEMASTER,     false, &HandleGameObjectSetPhaseCommand,  "", NULL },
-            { "state",          SEC_GAMEMASTER,     false, &HandleGameObjectSetStateCommand,  "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "phase",          SEC_ADMINISTRATOR,     false, &HandleGameObjectSetPhaseCommand,  "" },
+            { "state",          SEC_ADMINISTRATOR,     false, &HandleGameObjectSetStateCommand,  "" }
         };
-        static ChatCommand gobjectCommandTable[] =
+        static std::vector<ChatCommand> gobjectCommandTable =
         {
-            { "activate",       SEC_GAMEMASTER,     false, &HandleGameObjectActivateCommand,  "", NULL },
-            { "delete",         SEC_GAMEMASTER,     false, &HandleGameObjectDeleteCommand,    "", NULL },
-            { "info",           SEC_GAMEMASTER,     false, &HandleGameObjectInfoCommand,      "", NULL },
-            { "move",           SEC_GAMEMASTER,     false, &HandleGameObjectMoveCommand,      "", NULL },
-            { "near",           SEC_GAMEMASTER,     false, &HandleGameObjectNearCommand,      "", NULL },
-            { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", NULL },
-            { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", NULL },
-            { "add",            SEC_GAMEMASTER,     false, NULL,            "", gobjectAddCommandTable },
-            { "set",            SEC_GAMEMASTER,     false, NULL,            "", gobjectSetCommandTable },
-            { "guildadd",       SEC_GAMEMASTER,		false, &HandleGameObjectAddGuildCommand,   "", NULL }, //[AZTH]
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "activate",       SEC_ADMINISTRATOR,     false, &HandleGameObjectActivateCommand,  "" },
+            { "delete",         SEC_ADMINISTRATOR,     false, &HandleGameObjectDeleteCommand,    "" },
+            { "info",           SEC_MODERATOR,         false, &HandleGameObjectInfoCommand,      "" },
+            { "move",           SEC_ADMINISTRATOR,     false, &HandleGameObjectMoveCommand,      "" },
+            { "near",           SEC_MODERATOR,         false, &HandleGameObjectNearCommand,      "" },
+            { "target",         SEC_MODERATOR,         false, &HandleGameObjectTargetCommand,    "" },
+            { "turn",           SEC_ADMINISTRATOR,     false, &HandleGameObjectTurnCommand,      "" },
+            { "add",            SEC_ADMINISTRATOR,     false, nullptr,                           "", gobjectAddCommandTable },
+            { "set",            SEC_ADMINISTRATOR,     false, nullptr,                           "", gobjectSetCommandTable },
+            //[AZTH]
+            { "guildadd",       SEC_GAMEMASTER,		   false, &HandleGameObjectAddGuildCommand,  "" },
         };
-        static ChatCommand commandTable[] =
+        static std::vector<ChatCommand> commandTable =
         {
-            { "gobject",        SEC_GAMEMASTER,     false, NULL,                "", gobjectCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "gobject",        SEC_MODERATOR,     false, nullptr,                               "", gobjectCommandTable }
         };
         return commandTable;
     }
@@ -89,7 +75,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObject* object = NULL;
+        GameObject* object = nullptr;
 
         // by DB guid
         if (GameObjectData const* goData = sObjectMgr->GetGOData(guidLow))
@@ -126,7 +112,7 @@ public:
         if (!objectId)
             return false;
 
-        char* spawntimeSecs = strtok(NULL, " ");
+        char* spawntimeSecs = strtok(nullptr, " ");
 
         const GameObjectTemplate* objectInfo = sObjectMgr->GetGameObjectTemplate(objectId);
 
@@ -201,7 +187,7 @@ public:
 
         Player* player = handler->GetSession()->GetPlayer();
 
-        char* spawntime = strtok(NULL, " ");
+        char* spawntime = strtok(nullptr, " ");
         uint32 spawntm = 300;
 
         if (spawntime)
@@ -253,7 +239,7 @@ public:
         else
         {
             std::ostringstream eventFilter;
-            eventFilter << " AND (eventEntry IS NULL ";
+            eventFilter << " AND (eventEntry IS nullptr ";
             bool initString = true;
 
             for (GameEventMgr::ActiveEvents::const_iterator itr = activeEventsList.begin(); itr != activeEventsList.end(); ++itr)
@@ -327,7 +313,7 @@ public:
 
         if (target)
         {
-            int32 curRespawnDelay = int32(target->GetRespawnTimeEx() - time(NULL));
+            int32 curRespawnDelay = int32(target->GetRespawnTimeEx() - time(nullptr));
             if (curRespawnDelay < 0)
                 curRespawnDelay = 0;
 
@@ -351,7 +337,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObject* object = NULL;
+        GameObject* object = nullptr;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -399,7 +385,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObject* object = NULL;
+        GameObject* object = nullptr;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -412,17 +398,17 @@ public:
             return false;
         }
 
-        char* orientation = strtok(NULL, " ");
+        char* orientation = strtok(nullptr, " ");
         float oz = 0.f, oy = 0.f, ox = 0.f;
 
         if (orientation)
         {
             oz = float(atof(orientation));
-            orientation = strtok(NULL, " ");
+            orientation = strtok(nullptr, " ");
             if (orientation)
             {
                 oy = float(atof(orientation));
-                orientation = strtok(NULL, " ");
+                orientation = strtok(nullptr, " ");
                 if (orientation)
                     ox = float(atof(orientation));
             }
@@ -457,7 +443,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObject* object = NULL;
+        GameObject* object = nullptr;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -470,9 +456,9 @@ public:
             return false;
         }
 
-        char* toX = strtok(NULL, " ");
-        char* toY = strtok(NULL, " ");
-        char* toZ = strtok(NULL, " ");
+        char* toX = strtok(nullptr, " ");
+        char* toY = strtok(nullptr, " ");
+        char* toZ = strtok(nullptr, " ");
 
         if (!toX)
         {
@@ -522,7 +508,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObject* object = NULL;
+        GameObject* object = nullptr;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -535,7 +521,7 @@ public:
             return false;
         }
 
-        char* phase = strtok (NULL, " ");
+        char* phase = strtok (nullptr, " ");
         uint32 phaseMask = phase ? atoi(phase) : 0;
         if (phaseMask == 0)
         {
@@ -602,7 +588,7 @@ public:
         uint32 displayId = 0;
         std::string name;
         uint32 lootId = 0;
-        GameObject* gameObject = NULL;
+        GameObject* gameObject = nullptr;
 
         if (!*args)
         {
@@ -659,7 +645,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObject* object = NULL;
+        GameObject* object = nullptr;
 
         if (guidLow > 0)
         {
@@ -677,7 +663,7 @@ public:
             return false;
         }
 
-        char* type = strtok(NULL, " ");
+        char* type = strtok(nullptr, " ");
         if (!type)
             return false;
 
@@ -691,7 +677,7 @@ public:
             return true;
         }
 
-        char* state = strtok(NULL, " ");
+        char* state = strtok(nullptr, " ");
         if (!state)
             return false;
 

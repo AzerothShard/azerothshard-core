@@ -1,19 +1,7 @@
 /*
- * Copyright (C) 
- * Copyright (C) 
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016+     AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license: http://github.com/azerothcore/azerothcore-wotlk/LICENSE-GPL2
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  */
 
 #include "Unit.h"
@@ -3379,13 +3367,16 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
     else if (c->GetMapId() == 631) // Icecrown Citadel
     {
         // if static transport doesn't match - return false
-        if (c->GetTransport() != this->GetTransport() && (c->GetTransport() && c->GetTransport()->IsStaticTransport() || this->GetTransport() && this->GetTransport()->IsStaticTransport()))
+        if (c->GetTransport() != this->GetTransport() &&
+            ((c->GetTransport() && c->GetTransport()->IsStaticTransport()) ||
+            (this->GetTransport() && this->GetTransport()->IsStaticTransport())))
             return false;
 
         // special handling for ICC (map 631), for non-flying pets in Gunship Battle, for trash npcs this is done via CanAIAttack
         if (IS_PLAYER_GUID(c->GetOwnerGUID()) && !c->CanFly()) 
         {
-            if (c->GetTransport() && !this->GetTransport() || !c->GetTransport() && this->GetTransport())
+            if ((c->GetTransport() && !this->GetTransport()) ||
+                (!c->GetTransport() && this->GetTransport()))
                 return false;
             if (this->GetTransport())
             {
@@ -3670,7 +3661,7 @@ void Unit::HandleSafeUnitPointersOnDelete(Unit* thisUnit)
 bool Unit::IsInWater(bool allowAbove) const
 { 
     const_cast<Unit*>(this)->UpdateEnvironmentIfNeeded(1);
-    return m_last_isinwater_status || allowAbove && m_last_islittleabovewater_status;
+    return m_last_isinwater_status || (allowAbove && m_last_islittleabovewater_status);
 }
 
 bool Unit::IsUnderWater() const
@@ -10415,7 +10406,8 @@ float Unit::SpellPctDamageModsDone(Unit* victim, SpellInfo const* spellProto, Da
                 // Merciless Combat
                 if ((*i)->GetSpellInfo()->SpellIconID == 2656)
                 {
-                    if( spellProto && spellProto->SpellFamilyFlags[0] & 0x2 || spellProto->SpellFamilyFlags[1] & 0x2 )
+                    if (spellProto && 
+                        ((spellProto->SpellFamilyFlags[0] & 0x2) || (spellProto->SpellFamilyFlags[1] & 0x2)))
                         if (!victim->HealthAbovePct(35))
                             AddPct(DoneTotalMod, (*i)->GetAmount());
                 }
