@@ -21507,19 +21507,15 @@ void Player::InitDisplayIds()
         return;
     }
 
-    bool isMorphed = GetNativeDisplayId() != GetDisplayId(); //[AZTH] Force morph in battleground
-
     uint8 gender = getGender();
     switch (gender)
     {
         case GENDER_FEMALE:
-            if (!isMorphed) //[AZTH]
-                SetDisplayId(info->displayId_f); 
+            SetDisplayId(info->displayId_f); 
             SetNativeDisplayId(info->displayId_f);
             break;
         case GENDER_MALE:
-            if (!isMorphed) //[AZTH]
-                SetDisplayId(info->displayId_m);
+            SetDisplayId(info->displayId_m);
             SetNativeDisplayId(info->displayId_m);
             break;
         default:
