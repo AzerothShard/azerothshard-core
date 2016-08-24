@@ -1127,28 +1127,28 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         // Factions depending on team, like cities and some more stuff
         switch (GetTeamId(true))
         {
-            case TEAM_ALLIANCE:
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(72), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(47), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(69), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(930), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(730), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(978), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(54), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(946), 42999);
-                break;
-            case TEAM_HORDE:
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(76), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(68), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(81), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(911), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(729), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(941), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(530), 42999);
-                GetReputationMgr().SetReputation(sFactionStore.LookupEntry(947), 42999);
-                break;
-            default:
-                break;
+        case TEAM_ALLIANCE:
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(72), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(47), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(69), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(930), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(730), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(978), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(54), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(946), 42999);
+            break;
+        case TEAM_HORDE:
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(76), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(68), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(81), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(911), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(729), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(941), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(530), 42999);
+            GetReputationMgr().SetReputation(sFactionStore.LookupEntry(947), 42999);
+            break;
+        default:
+            break;
         }
     }
 
@@ -7310,7 +7310,7 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
             ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_CLASS, victim->getClass());
-            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, victim->getRace(true));
+            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, victim->getRace());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA, GetAreaId());
             UpdateKnownTitles(); // [AZTH]
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL, 1, 0, victim);

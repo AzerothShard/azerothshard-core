@@ -9,7 +9,7 @@
 
 void CrossFaction::DoForgetPlayersInBG(Battleground* pBattleGround, Player* player)
 {
-    if (player->isPossessed()) // mind control issues
+    if (player->isPossessedByPlayer()) // mind control issues
         return;
 
     for (Battleground::BattlegroundPlayerMap::const_iterator itr = pBattleGround->GetPlayers().begin(); itr != pBattleGround->GetPlayers().end(); ++itr)
@@ -45,23 +45,20 @@ void CrossFaction::SetFakeRaceAndMorph(Player* player)
         {
             m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_TAUREN : FAKE_F_TAUREN;
             m_FakeRace[player->GetGUID()] = RACE_TAUREN;
+
+            sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s is a tauren !", player->GetName().c_str());
         }
         else // HORDE
         {
-            m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_NELF : FAKE_F_NELF;
+            m_FakeMorph[player->GetGUID()] = FAKE_M_NELF;
             m_FakeRace[player->GetGUID()] = RACE_NIGHTELF;
+
+            sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s is a nightelf !", player->GetName().c_str());
         }         
     }
     else
     {
-        /*
-        Human	Orc
-        Dwarf	Undead
-        Night Elf	Tauren
-        Gnome	Troll
-        Draenei	Blood Elf
-        */
-        switch (player->getRace(true))
+        switch(player->getRace(true))
         {
             case RACE_BLOODELF:
                 m_FakeRace[player->GetGUID()] = RACE_DRAENEI;
@@ -132,26 +129,20 @@ void CrossFaction::SetMorph(Player* player, bool value)
 {
     if (player)
     {
-        if (!player->InBattleground())
-            return;
-
-        if (player->InArena())
-            return;
-
         if (value)
         {
             if (GetFakeRace(player->GetGUID()) == 0 || GetFakeMorph(player->GetGUID()) == 0)
                 SetFakeRaceAndMorph(player);
 
             player->setRace(GetFakeRace(player->GetGUID()));
-            player->SetDisplayId(GetFakeMorph(player->GetGUID()));
-            player->SetNativeDisplayId(GetFakeMorph(player->GetGUID()));
+            // player->SetDisplayId(GetFakeMorph(player->GetGUID()));
+            // player->SetNativeDisplayId(GetFakeMorph(player->GetGUID()));
         }
         else
         {
             player->setRace(player->getRace(true));
-            player->SetDisplayId(player->GetNativeDisplayId());
-            player->InitDisplayIds();
+            // player->SetDisplayId(player->GetNativeDisplayId());
+            // player->InitDisplayIds();
         }
     }
 }
@@ -173,7 +164,7 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
 
     if (player)
     {
-        if (player->isPossessed()) // mind control issues
+        if (player->isPossessedByPlayer()) // mind control issues
             return;
 
         bool disable = true;
@@ -192,24 +183,7 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
             {
                 if (Battleground * bg = player->GetBattleground())
                 {
-                    if (bg->isArena())
-                        return;
-
-                    // update morph only on specific cases. morphAction false resets it, true activates it
-                    bool morphAction = false;
-
-                    switch (bg->GetStatus())
-                    {
-                        case  STATUS_WAIT_QUEUE:
-                              STATUS_WAIT_JOIN:
-                              STATUS_IN_PROGRESS:
-                            morphAction = true;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (player->GetTeamId(true) != player->GetBgTeamId() && morphAction)
+                    if (player->GetTeamId(true) != player->GetBgTeamId())
                     {
                         sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s switched faction!", player->GetName().c_str());
 
@@ -219,12 +193,13 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
                         DoForgetPlayersInBG(bg, player); // force to resend race information for this player
                         sLog->outDebug(LOG_FILTER_CROSSFACTION, "Crossfaction: Battleground team id set for player %s", player->GetName().c_str());
                     }
-
-                    if (!morphAction)
-                        SetMorph(player, false); // always reset the morph, if it's in bg and bg is finished, it will be reset.
                 }
                 return;
             }
+
+            SetMorph(player, false); // reset morph if not in bg
+
+            sLog->outDebug(LOG_FILTER_CROSSFACTION, "reset morph for player", player->GetGUIDLow());
 
             // standard group
             uint64 leaderGuid = group ? group->GetLeaderGUID() : player->GetGUID();
@@ -258,6 +233,9 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
         player->setTeamId(player->GetTeamId(true));
         ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(player->getRace(true));
         player->setFaction(rEntry ? rEntry->FactionID : 0);
+        SetMorph(player, false); // reset morph if not in bg
+
+        sLog->outDebug(LOG_FILTER_CROSSFACTION, "reset morph done for player %u", player->GetGUIDLow());
 
         sLog->outDebug(LOG_FILTER_CROSSFACTION, "Crossfaction: reset done for player %s", player->GetName().c_str());
     }
@@ -484,9 +462,6 @@ public:
     {
         if (player && bg)
         {
-            if (bg->isArena())
-                return;
-
             sLog->outDebug(LOG_FILTER_CROSSFACTION, "adding player %u to bg", player->GetGUID());
 
             sCrossFaction->SetFakeRaceAndMorph(player); // set (re-set) fake race information
@@ -500,9 +475,6 @@ public:
     {
         if (player && bg)
         {
-            if (bg->isArena())
-                return;
-
             sLog->outDebug(LOG_FILTER_CROSSFACTION, "removing player %u from bg", player->GetGUID());
             sCrossFaction->UpdatePlayerTeam(player->GetGroup(), player->GetGUID(), true);
             sCrossFaction->SetMorph(player, false); // force reset any morph, then forget players in BG.

@@ -109,8 +109,8 @@ bool TELE::IsAllowedToTeleport(Player * const player) const
       case FLAG_TEAM:
         switch (m_data0)
         {
-          case TELEPORT_TEAM_HORDE:      return player->GetTeamId(true) == TEAM_HORDE;
-          case TELEPORT_TEAM_ALLIANCE:   return player->GetTeamId(true) == TEAM_ALLIANCE;
+          case TELEPORT_TEAM_HORDE:      return player->GetTeamId() == TEAM_HORDE;
+          case TELEPORT_TEAM_ALLIANCE:   return player->GetTeamId() == TEAM_ALLIANCE;
           case TELEPORT_TEAM_ALL:        return true;
         }
 
