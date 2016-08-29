@@ -2143,6 +2143,8 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string const& name) const
     // Get data from global storage
     if (uint32 guidLow = sWorld->GetGlobalPlayerGUID(name))
         return MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
+
+    // No player found
     return 0;
 }
 
