@@ -41,4 +41,4 @@ SET @GUID := 901000;
 -- dummy npc dalaran
 REPLACE INTO creature (guid, id , map, spawnMask, phaseMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, npcflag, unit_flags, dynamicflags) VALUES (@GUID+0, 31146, 571, 1, 1, 0, 0, 5838.72, 693.416, 609.158, 4.1539, 300, 0, 0, 24009944, 0, 0, 0, 0, 0);
 -- dummy npc dalaran
-REPLACE INTO creature (guid, id , map, spawnMask, phaseMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, npcflag, unit_flags, dynamicflags) VALUES (@GUID+1, 31146, 571, 1, 1, 0, 0, 5791.83, 656.546, 609.159, 5.31815, 300, 0, 0, 24009944, 0, 0, 0, 0, 0)
+REPLACE INTO creature (guid, id , map, spawnMask, phaseMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, npcflag, unit_flags, dynamicflags) VALUES (@GUID+1, 31146, 571, 1, 1, 0, 0, 5791.83, 656.546, 609.159, 5.31815, 300, 0, 0, 24009944, 0, 0, 0, 0, 0);
