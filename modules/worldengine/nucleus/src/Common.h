@@ -151,8 +151,11 @@ enum AccountTypes
     //[AZTH] custom roles
     SEC_PLAYER         = 0,
     SEC_GAMEMASTER     = 1,
+    SEC_MODERATOR      = 1,
+    SEC_T1_SUPPORTER   = 1,
     SEC_ENTERTAINER    = 2,
-    SEC_MODERATOR      = 3,
+    SEC_STORY_TELLER   = 2,
+    SEC_T2_PROTECTOR   = 3,
     SEC_ADMINISTRATOR  = 4,
     SEC_CONSOLE        = 4                                  // must be always last in list, accounts must have less security level always also
 };
