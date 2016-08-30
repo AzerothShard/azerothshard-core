@@ -20,7 +20,7 @@ extern LoginDatabaseWorkerPool LoginDatabase;
 
 Log::Log() :
     raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
-    dberLogfile(NULL), sqlLogFile(NULL), sqlDevLogFile(NULL), miscLogFile(NULL),
+    dberLogfile(NULL), sqlLogFile(NULL), sqlDevLogFile(NULL), miscLogFile(NULL), azthSqlLogFile(NULL) /*[AZTH]*/,
     m_gmlog_per_account(false), m_enableLogDB(false), m_colored(false)
 {
     Initialize();
@@ -59,6 +59,11 @@ Log::~Log()
     if (miscLogFile != NULL)
         fclose(miscLogFile);
     miscLogFile = NULL;
+
+    //[AZTH]
+    if (azthSqlLogFile != NULL)
+        fclose(azthSqlLogFile);
+    azthSqlLogFile = NULL;
 }
 
 void Log::SetLogLevel(char *Level)
@@ -140,6 +145,8 @@ void Log::Initialize()
     sqlLogFile = openLogFile("SQLDriverLogFile", NULL, "a");
     sqlDevLogFile = openLogFile("SQLDeveloperLogFile", NULL, "a");
     miscLogFile = fopen((m_logsDir+"Misc.log").c_str(), "a");
+    //[AZTH]
+    azthSqlLogFile = fopen((m_logsDir+"AzthSql.log").c_str(), "a");
 
     // Main log file settings
     m_logLevel     = sConfigMgr->GetIntDefault("LogLevel", LOGL_NORMAL);
@@ -972,6 +979,34 @@ void Log::outMisc(const char * str, ...)
         vfprintf(miscLogFile, str, ap);
         fprintf(miscLogFile, "\n" );
         fflush(miscLogFile);
+        va_end(ap);
+    }
+}
+
+//[AZTH]
+void Log::outAzthSql(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    /*if (m_enableLogDB)
+    {
+        va_list ap2;
+        va_start(ap2, str);
+        char nnew_str[MAX_QUERY_LEN];
+        vsnprintf(nnew_str, MAX_QUERY_LEN, str, ap2);
+        outDB(LOG_TYPE_PERF, nnew_str);
+        va_end(ap2);
+    }*/
+
+    if (azthSqlLogFile)
+    {
+        outTimestamp(azthSqlLogFile);
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(azthSqlLogFile, str, ap);
+        fprintf(azthSqlLogFile, "\n" );
+        fflush(azthSqlLogFile);
         va_end(ap);
     }
 }

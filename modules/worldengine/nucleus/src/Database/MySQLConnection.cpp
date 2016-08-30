@@ -23,6 +23,8 @@
 #include "DatabaseWorker.h"
 #include "Timer.h"
 #include "Log.h"
+//[AZTH]
+#include "DatabaseEnv.h"
 
 MySQLConnection::MySQLConnection(MySQLConnectionInfo& connInfo) :
 m_reconnecting(false),
@@ -168,6 +170,13 @@ bool MySQLConnection::Execute(const char* sql)
         else if (sLog->GetSQLDriverQueryLogging())
         {
             sLog->outSQLDriver("[%u ms] SQL: %s", getMSTimeDiff(_s, getMSTime()), sql);
+
+            // [AZTH] Yehonal: we can log sql made on world ( gm commands mostly ) to "fix the world and save the changes"
+            if (m_connectionInfo.database != LoginDatabase.GetDatabaseName() // this check is needed to avoid crash on authserver
+                    && m_connectionInfo.database == WorldDatabase.GetDatabaseName()) {
+                sLog->outAzthSql("[%u ms] SQL: %s", getMSTimeDiff(_s, getMSTime()), sql);
+            }
+            // [/AZTH]
         }
     }
 
@@ -221,6 +230,13 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
 
         if (sLog->GetSQLDriverQueryLogging())
             sLog->outSQLDriver("[%u ms] SQL(p): %s", getMSTimeDiff(_s, getMSTime()), m_mStmt->getQueryString(m_queries[index].first).c_str());
+
+        // [AZTH] Yehonal: we can log sql made on world ( gm commands mostly ) to "fix the world and save the changes"
+        if (m_connectionInfo.database != LoginDatabase.GetDatabaseName() // this check is needed to avoid crash on authserver
+                && m_connectionInfo.database == WorldDatabase.GetDatabaseName()) {
+            sLog->outAzthSql("[%u ms] SQL(p): %s", getMSTimeDiff(_s, getMSTime()), m_mStmt->getQueryString(m_queries[index].first).c_str());
+        }
+        // [/AZTH]
 
         m_mStmt->ClearParameters();
         return true;

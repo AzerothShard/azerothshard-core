@@ -45,6 +45,7 @@ void StopDB();
 bool stopEvent = false;                                     // Setting it to true stops the server
 
 LoginDatabaseWorkerPool LoginDatabase;                      // Accessor to the authserver database
+WorldDatabaseWorkerPool WorldDatabase; //[AZTH] needed for azthSqlLog 
 
 /// Handle authserver's termination signals
 class AuthServerSignalHandler : public Trinity::SignalHandler
