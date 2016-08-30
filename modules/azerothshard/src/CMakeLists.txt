@@ -1,5 +1,5 @@
 MACRO(AZTH_LOAD_SRC dir)
-    CU_SUBDIRLIST(sub_DIRS  "${CMAKE_AZTH_SRC_DIR}/server/${dir}" TRUE TRUE)
+    CU_SUBDIRLIST(sub_DIRS  "${CMAKE_AZTH_SRC_DIR}/${dir}" TRUE TRUE)
     FOREACH(subdir ${sub_DIRS})
         get_filename_component(azth_dir_name ${subdir} DIRECTORY)
 
