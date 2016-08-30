@@ -20,7 +20,6 @@ Channel.SilentlyGMJoin = 1
 
 ChatLevelReq.Channel = 10
 ChatLevelReq.Whisper = 10
-ChatLevelReq.Say = 10
 
 Rate.Drop.Item.Poor             = 9
 Rate.Drop.Item.Normal           = 5
