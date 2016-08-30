@@ -1,7 +1,7 @@
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "Language.h"
-#include "server/game/CustomRates.h"
+#include "game/CustomRates.h"
 #include "Player.h"
 
  // [TODO] fix and re-enable
