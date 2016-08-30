@@ -2,7 +2,8 @@
 
 function checkStatus() {
     # wipe do : destroy old screens + ls
-    if screen -wipe $1 | grep -q "No Sockets found"
+    screen -wipe
+    if screen -ls $1 | grep -q "No Sockets found"
     then 
     return 0
     else 
