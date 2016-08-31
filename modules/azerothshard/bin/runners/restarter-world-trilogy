@@ -1,8 +1,0 @@
-#!/bin/bash
-
-source ./run-engine
-
-source ./conf/world-trilogy
-
-restarter
-

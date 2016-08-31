@@ -48,3 +48,11 @@ DB_WORLD_UPDATE_PATHS+=(
 # specify compilation type
 CTYPE=Debug
 
+function azth_custom_after_build() {
+  cp -rvf "$AZTHSD_PATH_ROOT/bin/runners/"* "$INSTALL_PATH/bin/"
+}
+
+
+registerHooks "ON_AFTER_BUILD" azth_custom_after_build
+
+
