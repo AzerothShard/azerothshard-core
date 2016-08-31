@@ -1,7 +1,0 @@
-#!/bin/bash
-
-source "../includes/conf-test"
-
-source "../includes/include.sh"
-
-build
