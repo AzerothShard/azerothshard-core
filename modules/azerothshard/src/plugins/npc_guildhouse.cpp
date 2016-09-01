@@ -39,6 +39,7 @@
 #include "World.h"
 #include "Guild.h"
 #include "Teleport.h"
+#include "AccountMgr.h"
 
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
@@ -618,7 +619,7 @@ class guild_guard : public CreatureScript
         uint32 guardguild = GHobj.GetGuildByGuardID(_Creature);
 		/////////////DEBUG////////////////
 		char msg[500];
-		if (player->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+		if (AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()))
 		{
 			_Creature->MonsterWhisper("Ciao gm!", player);
 			if (guardguild)
@@ -636,7 +637,7 @@ class guild_guard : public CreatureScript
 		
 		/////////////////////////////////
         uint32 guild = player->GetGuildId();
-        if (guardguild && (guild == guardguild || player->GetSession()->GetSecurity() >= SEC_GAMEMASTER))
+        if (guardguild && (guild == guardguild || AccountMgr::IsGMAccount(player->GetSession()->GetSecurity())))
         {
             if (_Creature->GetAI())
             {
@@ -752,7 +753,7 @@ class guild_guard : public CreatureScript
                         if (!plr->IsAlive() || plr->GetTransport() || !plr->CanFreeMove())
                             continue;
 
-                        if (plr->GetSession() && plr->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+                        if (plr->GetSession() && AccountMgr::IsGMAccount(plr->GetSession()->GetSecurity()))
 						{
                             continue;
 						}

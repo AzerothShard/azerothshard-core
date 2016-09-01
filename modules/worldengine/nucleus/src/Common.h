@@ -150,13 +150,15 @@ enum AccountTypes
 {
     //[AZTH] custom roles
     SEC_PLAYER         = 0,
-    SEC_GAMEMASTER     = 1,
+    // [AZTH] moderator are gamemasters too
     SEC_MODERATOR      = 1,
-    SEC_T1_SUPPORTER   = 1,
-    SEC_ENTERTAINER    = 2,
-    SEC_STORY_TELLER   = 2,
-    SEC_T2_PROTECTOR   = 3,
-    SEC_ADMINISTRATOR  = 4,
+    SEC_T1_SUPPORTER   = 1, // [AZTH]
+    SEC_GAMEMASTER     = 1,
+    SEC_ENTERTAINER    = 2, // [AZTH]
+    SEC_STORY_TELLER   = 2, // [AZTH]
+    SEC_T2_PROTECTOR   = 3, // [AZTH]
+    SEC_ADMINISTRATOR  = 3,
+    SEC_SERVER_OP      = 4,
     SEC_CONSOLE        = 4                                  // must be always last in list, accounts must have less security level always also
 };
 
