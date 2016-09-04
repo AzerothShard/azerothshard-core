@@ -158,7 +158,9 @@ void CrossFaction::ResetCacheWorker()
 
 /// Crossfaction team update functionalities
 /// Update player team and update the map of the leaders
-void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = false */)
+//  reset: used to force the reset to original player tem
+//  cache reset: used to avoid the battleground player cache reset (set to false to avoid, used to avoid spam of resets)
+void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = false */, bool cacheReset /* = true */)
 {
     Player* player = ObjectAccessor::FindPlayer(guid);
 
@@ -190,7 +192,8 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
                         SetMorph(player, true); // setup the new display ID for the player, and the new race
                         player->setTeamId(player->GetBgTeamId());
                         player->setFaction(player->GetTeamId() == TEAM_ALLIANCE ? 1 : 2);
-                        DoForgetPlayersInBG(bg, player); // force to resend race information for this player
+                        if(cacheReset)
+                            DoForgetPlayersInBG(bg, player); // force to resend race information for this player
                         sLog->outDebug(LOG_FILTER_CROSSFACTION, "Crossfaction: Battleground team id set for player %s", player->GetName().c_str());
                     }
                 }
@@ -261,7 +264,7 @@ void CrossFaction::UpdateAllGroups()
 
                 std::list<Group::MemberSlot> memberSlots = group->GetMemberSlots();
                 for (std::list<Group::MemberSlot>::iterator membersIterator = memberSlots.begin(); membersIterator != memberSlots.end(); membersIterator++)
-                    sCrossFaction->UpdatePlayerTeam(group, (*membersIterator).guid);     
+                    sCrossFaction->UpdatePlayerTeam(group, (*membersIterator).guid, false, false);     
             }
 }
 
@@ -505,9 +508,7 @@ public:
         m_crossfactionDiff += diff;
         if (m_crossfactionDiff > m_crossfactionUpdateInterval)
         {
-            sCrossFaction->ResetCacheWorker(); // reset cache for players in bg based on our flag
             sCrossFaction->UpdateAllGroups(); // run full group update
-            
             m_crossfactionDiff = 0;
         }
     }

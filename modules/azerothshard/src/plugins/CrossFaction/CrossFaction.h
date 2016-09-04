@@ -54,7 +54,7 @@ class CrossFaction
 
         // Team Update
         void LoadConfig(bool reload);
-        void UpdatePlayerTeam(Group* group, uint64 guid, bool reset = false);
+        void UpdatePlayerTeam(Group* group, uint64 guid, bool reset = false, bool cacheReset = true);
         void UpdateGroupLeaderMap(uint64 leaderGuid, bool remove = false);
         void UpdateAllGroups();
 
