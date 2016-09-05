@@ -1361,7 +1361,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, Map* allowedMap)
                     continue;
 
                 player = ObjectAccessor::FindPlayer(itr->first);
-                if (!player || (allowedMap != NULL && player->FindMap() != allowedMap))
+                if (!player || allowedMap != NULL && player->FindMap() != allowedMap)
                 {
                     --roll->totalNeed;
                     continue;
@@ -1425,7 +1425,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, Map* allowedMap)
                     continue;
 
                 player = ObjectAccessor::FindPlayer(itr->first);
-                if (!player || (allowedMap != NULL && player->FindMap() != allowedMap))
+                if (!player || allowedMap != NULL && player->FindMap() != allowedMap)
                 {
                     --roll->totalGreed;
                     continue;
