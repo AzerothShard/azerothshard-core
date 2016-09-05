@@ -10,7 +10,7 @@ export SERVERPID="world.pid"
 export LOGS_PATH="../../logs";
 export WITH_CONSOLE=1
 
-export SCREEN_NAME="worldserver-dev"
+#export SCREEN_NAME="worldserver-dev"
 
 export LOG_PREFIX_NAME="worldserver-dev"
 
