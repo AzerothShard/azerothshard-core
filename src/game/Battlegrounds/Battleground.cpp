@@ -1195,11 +1195,6 @@ void Battleground::AddPlayer(Player* player)
 
     UpdatePlayersCountByTeam(teamId, false);                  // +1 player
 
-    //[AZTH] the player has joined premade - he went into the player count of BG, need to remove it from the pre-count
-    if (HasPlayerJoinPremade(guid))
-        DecreasePremadeCount(teamId);
-    //[/AZTH]
-
     WorldPacket data;
     sBattlegroundMgr->BuildPlayerJoinedBattlegroundPacket(&data, player);
     SendPacketToTeam(teamId, &data, player, false);
@@ -1996,13 +1991,4 @@ void Battleground::RewardXPAtKill(Player* killer, Player* victim)
 uint8 Battleground::GetUniqueBracketId() const
 {
     return GetMinLevel() / 10;
-}
-
-bool Battleground::HasPlayerJoinPremade(uint64 guid)
-{
-    for (UNORDERED_MAP<uint64, bool>::iterator itr = m_hasPlayerJoinedPremade.begin(); itr != m_hasPlayerJoinedPremade.end(); itr++)
-        if (itr->first == guid)
-            return itr->second;
-
-    return false;
 }

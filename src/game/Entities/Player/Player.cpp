@@ -23188,6 +23188,7 @@ void Player::SetBattlegroundId(uint32 id, BattlegroundTypeId bgTypeId, uint32 qu
         if (Battleground* bg = sBattlegroundMgr->GetBattleground(id))
             bg->IncreaseInvitedCount(teamId);
 
+
     m_bgData.bgInstanceID = id;
     m_bgData.bgTypeID = bgTypeId;
     m_bgData.bgQueueSlot = queueSlot;

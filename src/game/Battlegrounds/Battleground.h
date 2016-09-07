@@ -403,14 +403,6 @@ class Battleground
         void IncreaseInvitedCount(TeamId teamId)    { ++m_BgInvitedPlayers[teamId]; }
         uint32 GetInvitedCount(TeamId teamId) const { return m_BgInvitedPlayers[teamId]; }
 
-        //[AZTH] CrossFaction Battleground
-        void SetPlayerJoinPremade(uint64 guid, bool premade) { m_hasPlayerJoinedPremade[guid] = premade; }
-        bool HasPlayerJoinPremade(uint64 guid);
-        void DecreasePremadeCount(TeamId teamId) { if(m_premadeAssigned[teamId] > 0) --m_premadeAssigned[teamId]; }
-        void IncreasePremadeCount(TeamId teamId) { ++m_premadeAssigned[teamId]; }
-        uint32 GetPremadeCount(TeamId teamId) { return m_premadeAssigned[teamId]; }
-        //[/AZTH]
-
         bool HasFreeSlots() const;
         uint32 GetFreeSlotsForTeam(TeamId teamId) const;
         uint32 GetMaxFreeSlots() const;
