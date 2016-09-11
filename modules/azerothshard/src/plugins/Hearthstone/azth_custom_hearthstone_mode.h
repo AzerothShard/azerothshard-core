@@ -25,6 +25,12 @@ struct HearthstoneAchievement
     uint32 type;
 };
 
+struct HearthstoneQuest
+{
+    uint32 id;
+    uint32 flag;
+};
+
 enum bitmasksHs
 {
     BITMASK_PVE = 1,
@@ -34,39 +40,41 @@ enum bitmasksHs
 
 enum miscHs
 {
-    PVE_QUEST_NUMBER        = 1,
-    MAX_PVE_QUEST_NUMBER    = 3,
-    AZTH_REPUTATION_ID      = 948,
-    PVE_LOWER_RANGE         = 100000,
-    PVE_UPPER_RANGE         = 100080,
-    PVE_RANGE               = PVE_UPPER_RANGE - PVE_LOWER_RANGE
+    PVE_QUEST_NUMBER = 1,
+    MAX_PVE_QUEST_NUMBER = 3,
+    AZTH_REPUTATION_ID = 948,
+    PVE_LOWER_RANGE = 100000,
+    PVE_UPPER_RANGE = 100080,
+    PVE_RANGE = PVE_UPPER_RANGE - PVE_LOWER_RANGE
 };
 
 enum otherMiscHs
 {
-    QUALITY_TO_FILL_PERCENTAGE  = 1,
-    ONLY_COMMON                 = 2,
-    NOT_COMMON                  = 1,
-    EVERYTHING                  = 2,
-    TIME_TO_RECEIVE_MAIL        = 0,
-    SUPPORTED_CRITERIA_NUMBER   = 15
+    QUALITY_TO_FILL_PERCENTAGE = 1,
+    ONLY_COMMON = 2,
+    NOT_COMMON = 1,
+    EVERYTHING = 2,
+    TIME_TO_RECEIVE_MAIL = 0,
+    SUPPORTED_CRITERIA_NUMBER = 15
 };
 
 class HearthstoneMode
 {
-    public:
-        void AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue);
-        void sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria);
-        int returnData0(AchievementCriteriaEntry const* criteria);
-        int returnData1(AchievementCriteriaEntry const* criteria);
-        std::vector<HearthstoneAchievement> hsAchievementTable;
-        void getItems();
-        int getQuality();
-        std::vector<int> items[8]; // <---- THIS
-        bool isInArray(int val);
+public:
+    void AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue);
+    void sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria);
+    int returnData0(AchievementCriteriaEntry const* criteria);
+    int returnData1(AchievementCriteriaEntry const* criteria);
+    std::vector<HearthstoneAchievement> hsAchievementTable;
+    std::vector<HearthstoneQuest> hsPveQuests;
+    std::vector<HearthstoneQuest> hsPvpQuests;
+    void getItems();
+    int getQuality();
+    std::vector<int> items[8];
+    bool isInArray(int val);
+    void loadCriteria();
+    void loadQuests();
 
-    private:
-        float CHANCES[8] = { 10.f, 30.f, 20.f, 15.f, 5.f, 1.f, 0.5f, 1.f };
 };
 
 #define sHearthstoneMode ACE_Singleton<HearthstoneMode, ACE_Null_Mutex>::instance()
