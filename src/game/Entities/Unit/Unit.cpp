@@ -16997,6 +16997,9 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     CombatStop();
     DeleteThreatList();
 
+    if (GetTypeId() == TYPEID_PLAYER)
+        sScriptMgr->OnPlayerBeingCharmed(ToPlayer(), charmer, _oldFactionId, charmer->getFaction());
+
     return true;
 }
 
