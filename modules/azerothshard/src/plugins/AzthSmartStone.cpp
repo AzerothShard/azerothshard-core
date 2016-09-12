@@ -157,7 +157,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 exte
                     continue;
 
                 // I comandi che il player già ha li skippiamo
-                uint32 leftInStock = 1;
+                uint32 leftInStock = 0xFFFFFFFF;
 
                 std::vector<int> playerCommands = session->GetPlayer()->azthPlayer->getSmartStoneCommands();
                 int n = playerCommands.size();

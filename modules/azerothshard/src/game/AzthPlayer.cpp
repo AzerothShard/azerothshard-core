@@ -124,6 +124,8 @@ void AzthPlayer::addSmartStoneCommand(int command, bool query)
         CharacterDatabase.PExecute
             ("REPLACE INTO `character_smartstone_commands` (playerGuid, command) VALUES (%u, %u);", player->GetGUID(), command);
     }
+    player->SendPlaySpellVisual(179); // 53 SpellCastDirected
+    player->SendPlaySpellImpact(player->GetGUID(), 362); // 113 EmoteSalute
 }
 
 void AzthPlayer::removeSmartStoneCommand(int command, bool query)
@@ -199,6 +201,20 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
     {
         player->SendBuyError(BUY_ERR_CANT_FIND_ITEM, NULL, item, 0);
         return false;
+    }
+
+    std::vector<int> playerCommands = getSmartStoneCommands();
+    int n = playerCommands.size();
+
+    for (int i = 0; i < n; i++)
+    {
+        if (sSmartStone->ssCommandsItemRelation.find(item) != sSmartStone->ssCommandsItemRelation.end())
+            if (sSmartStone->ssCommandsItemRelation[item] == playerCommands[i])
+            {
+                player->SendBuyError(BUY_ERR_ITEM_ALREADY_SOLD, NULL, item, 0);
+                return false;
+            }
+
     }
 
     // check current item amount if it limited
