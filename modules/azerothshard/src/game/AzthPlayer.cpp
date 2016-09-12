@@ -274,13 +274,39 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
         // reputation discount
         /*
         price = uint32(floor(price * player->GetReputationPriceDiscount(creature)));
-
+        */
         if (!player->HasEnoughMoney(price))
         {
-            player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, creature, item, 0);
+            player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, NULL, item, 0);
             return false;
-        }*/
+        }
     }
+    
+    player->ModifyMoney(-price);
+
+    if (crItem->ExtendedCost)                            // case for new honor system
+    {
+        ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(crItem->ExtendedCost);
+        if (iece->reqhonorpoints)
+            player->ModifyHonorPoints(-int32(iece->reqhonorpoints * count));
+
+        if (iece->reqarenapoints)
+            player->ModifyArenaPoints(-int32(iece->reqarenapoints * count));
+
+        for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
+        {
+            if (iece->reqitem[i])
+                player->DestroyItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count), true);
+        }
+    }
+
+    WorldPacket data(SMSG_BUY_ITEM, (8 + 4 + 4 + 4));
+    data << uint64(1);
+    data << uint32(vendorslot + 1);                   // numbered from 1 at client
+    data << int32(0);
+    data << uint32(1);
+    player->GetSession()->SendPacket(&data);
+
     /*
     if ((bag == NULL_BAG && slot == NULL_SLOT) || player->IsInventoryPos(bag, slot))
     {
@@ -306,13 +332,11 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
     if (sSmartStone->ssCommandsItemRelation.find(item) != sSmartStone->ssCommandsItemRelation.end())
     {
         player->azthPlayer->addSmartStoneCommand(sSmartStone->ssCommandsItemRelation[item], true);
-        std::string a = "Hai sbloccato il comando SmartStone: " + sSmartStone->ssCommands[item] + "!";
-        const char *b = a.c_str();
-        ChatHandler(player->GetSession()).SendSysMessage(b);
+        ChatHandler(player->GetSession()).SendSysMessage("Hai sbloccato una nuova app per la tua SmartStone!");
     }
 
     // return crItem->maxcount != 0;
-    return false;
+    return true;
 }
 
 AzthPlayer::~AzthPlayer() {}
