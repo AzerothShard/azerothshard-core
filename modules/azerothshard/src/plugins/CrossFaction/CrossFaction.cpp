@@ -154,7 +154,7 @@ void CrossFaction::ResetCacheWorker()
 
 /// Crossfaction team update functionalities
 /// Update player team and update the map of the leaders
-//  reset: used to force the reset to original player tem
+//  reset: used to force the reset to original player team
 //  cache reset: used to avoid the battleground player cache reset (set to false to avoid, used to avoid spam of resets)
 void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = false */, bool cacheReset /* = true */)
 {
@@ -163,6 +163,9 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
     if (player)
     {
         if (player->isPossessedByPlayer()) // mind control issues
+            return;
+
+        if (player->IsGameMaster()) // disable crossfaction system for player with GM flag enabled
             return;
 
         bool disable = true;
