@@ -45,15 +45,11 @@ void CrossFaction::SetFakeRaceAndMorph(Player* player)
         {
             m_FakeMorph[player->GetGUID()] = player->getGender() == GENDER_MALE ? FAKE_M_TAUREN : FAKE_F_TAUREN;
             m_FakeRace[player->GetGUID()] = RACE_TAUREN;
-
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s is a tauren !", player->GetName().c_str());
         }
         else // HORDE
         {
             m_FakeMorph[player->GetGUID()] = FAKE_M_NELF;
             m_FakeRace[player->GetGUID()] = RACE_NIGHTELF;
-
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "player %s is a nightelf !", player->GetName().c_str());
         }         
     }
     else
