@@ -35,11 +35,15 @@ uint8 AzthPlayer::getGroupLevel()  {
         if (map->IsDungeon()) {
             // caso party instance
             InstanceSave* is = sInstanceSaveMgr->PlayerGetInstanceSave(GUID_LOPART(player->GetGUID()), map->GetId(), player->GetDifficulty((map->IsRaid())));
-            groupLevel = is->azthInstMgr->levelMax;
-        } else {
-            // caso party esterno
-            groupLevel = group->azthGroupMgr->levelMaxGroup;
+
+            if (is != NULL) {
+                groupLevel = is->azthInstMgr->levelMax;
+                return groupLevel;
+            }
         }
+
+        // outworld party or limit case for dungeon
+        groupLevel = group->azthGroupMgr->levelMaxGroup;
     }
 
     return groupLevel;
