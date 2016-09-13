@@ -533,4 +533,4 @@ UPDATE command SET security=4 WHERE name='bf timer';
 UPDATE command SET security=4 WHERE name='lfg player';
 UPDATE command SET security=4 WHERE name='lfg group';
 UPDATE command SET security=4 WHERE name='lfg';
-UPDATE command SET security=5 WHERE name='debug anim'
+UPDATE command SET security=5 WHERE name='debug anim';
