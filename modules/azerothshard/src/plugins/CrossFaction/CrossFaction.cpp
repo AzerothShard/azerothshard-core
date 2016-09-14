@@ -162,6 +162,9 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
 
     if (player)
     {
+        if (player->IsGameMaster())
+            return;
+
         if (player->isPossessedByPlayer()) // mind control issues
             return;
 
