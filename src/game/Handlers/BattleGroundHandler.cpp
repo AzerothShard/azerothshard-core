@@ -424,56 +424,20 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
                 TeamId teamId = ginfo.teamId;
 
                 // [AZTH] Random Battleground Randomizer - by Yehonal & Mik1893
-                if (!ginfo.PreassignedCrossFaction && bgQueueTypeId == BATTLEGROUND_QUEUE_RB && bg->isBattleground() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_RANDOM_CROSSFACTION))
+                if (bgQueueTypeId == BATTLEGROUND_QUEUE_RB && bg->isBattleground() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_RANDOM_CROSSFACTION))
                 {
                     uint32 allyCount = bg->GetPlayersCountByTeam(TEAM_ALLIANCE);
                     uint32 hordeCount = bg->GetPlayersCountByTeam(TEAM_HORDE);
 
-
-                    int size = ginfo.Players.size(); // size will determine handling
-
-                    // First check for premade groups
-                    if (size > 1 && size < 4) // it's a premade group 2/3 players then i do something different
+                    if (allyCount == hordeCount)
                     {
-                        ginfo.PreassignedCrossFaction = true; // with this flag any player joining after this on same group will get same team.
-
-                        if (allyCount == hordeCount)
-                        {
-                            if (roll_chance_i(50))
-                            {
-                                ginfo.teamId = TEAM_ALLIANCE;
-                                teamId = TEAM_ALLIANCE;
-                            }
-                            else
-                            {
-                                ginfo.teamId = TEAM_HORDE;
-                                teamId = TEAM_ALLIANCE;
-                            }
-                        }
-                        else if (allyCount < hordeCount)
-                        {
-                            ginfo.teamId = TEAM_ALLIANCE;
-                            teamId = TEAM_ALLIANCE;
-                        }
-                        else
-                        {
-                            ginfo.teamId = TEAM_HORDE;
-                            teamId = TEAM_HORDE;
-                        }
+                        if (roll_chance_i(50))
+                            teamId = _player->GetTeamId(true) == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
                     }
-                    // Then run the standard for single players
+                    else if (allyCount < hordeCount)
+                        teamId = TEAM_ALLIANCE;
                     else
-                    {
-                        if (allyCount == hordeCount)
-                        {
-                            if (roll_chance_i(50))
-                                teamId = _player->GetTeamId(true) == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
-                        }
-                        else if (allyCount < hordeCount)
-                            teamId = TEAM_ALLIANCE;
-                        else
-                            teamId = TEAM_HORDE;
-                    }
+                        teamId = TEAM_HORDE;
                 }
 
                 _player->setTeamId(teamId);
