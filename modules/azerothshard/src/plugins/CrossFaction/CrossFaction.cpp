@@ -459,6 +459,9 @@ public:
 
     void OnUpdateFaction(Player* player) override
     {
+        if (player->IsControlledByPlayer())
+            return;
+
         sCrossFaction->SetFakeRaceAndMorph(player); // set fake race information
         sCrossFaction->UpdatePlayerTeam(player->GetGroup(), player->GetGUID());
     }
