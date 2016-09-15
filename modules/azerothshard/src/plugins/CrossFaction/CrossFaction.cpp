@@ -496,20 +496,6 @@ public:
         // force faction reset on logout to prevent issues with DB save
         sCrossFaction->UpdatePlayerTeam(player->GetGroup(), player->GetGUID(),true);
     }
-
-    // used for logging of mindcontrol in BG to identify issues
-    void OnBeingCharmed(Player* player, Unit* charmer, uint32 oldFactionId, uint32 newFactionId) override
-    {
-        if (player && player->GetBattleground())
-        {
-            if (charmer)
-                if (Player* pCharmer = charmer->ToPlayer())
-                {
-                    sLog->outError("Crossfaction: player %s is being mindControlled in BG by player %s", player->GetName().c_str(), pCharmer->GetName().c_str());
-                    sLog->outError("Crossfaction: player %s had faction %u, switched to faction %u", oldFactionId, newFactionId);
-                }
-        }
-    }
 };
 
 class CrossFactionWorld : public WorldScript
