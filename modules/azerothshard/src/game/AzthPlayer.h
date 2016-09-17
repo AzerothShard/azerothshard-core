@@ -5,9 +5,11 @@
 #include "Define.h"
 #include "Player.h"
 #include "CrossFaction.h"
+#include "AzthSmartStone.h"
 
 class CrossFaction;
 class Player;
+class SmartStone;
 
 class AzthPlayer {
  public:
@@ -47,10 +49,10 @@ class AzthPlayer {
     uint8 getGroupLevel();
 
     void ForceKilledMonsterCredit(uint32 entry, uint64 guid);
-
-    std::vector<int> getSmartStoneCommands();
-    void addSmartStoneCommand(int command, bool query);
-    void removeSmartStoneCommand(int command, bool query);
+    
+    std::vector<SmartStoneCommand> getSmartStoneCommands();
+    void addSmartStoneCommand(SmartStoneCommand command, bool query);
+    void removeSmartStoneCommand(SmartStoneCommand command, bool query);
     bool BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
 
  private:
@@ -59,7 +61,7 @@ class AzthPlayer {
 
      float playerQuestRate, maxQuestRate;
 
-     std::vector<int> smartStoneCommands;
+     std::vector<SmartStoneCommand> smartStoneCommands;
  };
 
 #endif /* AZTHPLAYER_H */

@@ -5,8 +5,6 @@ CREATE TABLE sw_characters.`character_smartstone_commands`
 
 ALTER TABLE sw_characters.`character_smartstone_commands`
   ADD CONSTRAINT `character_smartstone_commands` UNIQUE(playerGuid, command);
-  
-INSERT INTO  sw_characters.`character_smartstone_commands` VALUES (2,2);
 
 UPDATE sw_world.`item_template` SET `Flags` = 64, `ScriptName` = 'azth_smart_stone', stackable = 1, `spellid_1` = 36177, maxcount = 5 WHERE (entry = 32547);
 
@@ -14,15 +12,19 @@ DROP TABLE IF EXISTS `sw_extra`.`smartstone_commands`;
 CREATE TABLE `sw_extra`.`smartstone_commands`(  
   `id` INT(10) NOT NULL COMMENT 'command id',
   `text` TEXT NOT NULL COMMENT 'text that will be shown to the player',
-  `item` INT(10) COMMENT 'item that will provide this command',
+  `item` INT(10) UNIQUE COMMENT 'item that will provide this command',
+  `icon` INT(10) COMMENT 'icon id for the command',
+  `parent_menu` INT(10) COMMENT 'menu that will contain the command',
+  `type` INT(10) DEFAULT 1 COMMENT 'type of command',
+  `action` INT(10) COMMENT 'based on type',
   `comment` TEXT COMMENT 'description of the command',
   PRIMARY KEY (`id`)
 );
 
 INSERT INTO `sw_extra`.`smartstone_commands` VALUES
-(1, "Teletrasportami al Mercato Nero", 987890, "Teletrasporto al Mercato Nero"),
-(2, "Demorph", 0, "Demorpha il player"),
-(3, "Mucca Morph", 987891, "Morpha il player in mucca");
+(1, "Teletrasportami al Mercato Nero", 987890, 2, 1, 1, 0, "Teletrasporto al Mercato Nero"),
+(2, "Demorph", 0, 0, 1, 1, 0, "Demorpha il player"),
+(3, "Mucca Morph", 987891, 0, 1, 1, 0, "Morpha il player in mucca");
 
 DELETE FROM sw_world.item_template WHERE entry IN (987890, 987891);
 INSERT INTO sw_world.item_template (entry, class, subclass, NAME, displayid, quality, description, scriptname, flags, stackable, `spellid_1`, buyprice) VALUES

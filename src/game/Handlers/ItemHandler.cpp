@@ -696,7 +696,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket & recvData)
     else
         return; // cheating
 
-    if (sSmartStone->ssCommandsItemRelation.find(item) != sSmartStone->ssCommandsItemRelation.end())
+    if (!sSmartStone->isNullCommand(sSmartStone->getCommandByItem(item)))
     {
         GetPlayer()->azthPlayer->BuySmartStoneCommand(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
     }

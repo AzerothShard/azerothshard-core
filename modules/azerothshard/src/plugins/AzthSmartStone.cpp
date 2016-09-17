@@ -9,17 +9,19 @@ public:
     {
         player->PlayerTalkClass->ClearMenus();
 
-        std::vector<int> playerCommands = player->azthPlayer->getSmartStoneCommands();
+        std::vector<SmartStoneCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
         int n = playerCommands.size();
+
+        sLog->outError("Smartstone: n: %u", n);
 
         for (int i = 0; i < n; i++)
         {
-            int command = playerCommands[i];
-            std::string text = "Comando senza testo";
-            if (sSmartStone->ssCommands.find(command) != sSmartStone->ssCommands.end())
-                text = sSmartStone->ssCommands[command];
-            
-            player->ADD_GOSSIP_ITEM(2, text, GOSSIP_SENDER_MAIN, command);
+            SmartStoneCommand command = playerCommands[i];
+            sLog->outError("Smartstone: commandid: %u", command.id);
+            /*if (!sSmartStone->isNullCommand(command))
+            {*/
+            player->ADD_GOSSIP_ITEM(command.icon, command.text, GOSSIP_SENDER_MAIN, command.id);
+            //}    
         }
 
         player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_03:30|t Azeroth Store", GOSSIP_SENDER_MAIN, 2000);
@@ -65,20 +67,22 @@ void SmartStone::loadCommands()
     uint32 count = 0;
     //sHearthstoneMode->hsAchievementTable.clear();
 
-    QueryResult ssCommandsResult = ExtraDatabase.PQuery("SELECT id, text, item FROM smartstone_commands");
+    QueryResult ssCommandsResult = ExtraDatabase.PQuery("SELECT id, text, item, icon, parent_menu, type, action FROM smartstone_commands");
 
     if (ssCommandsResult)
     {
         do
         {
-            SmartStoneCommands command = {};
+            SmartStoneCommand command = {};
             command.id = (*ssCommandsResult)[0].GetUInt32();
             command.text = (*ssCommandsResult)[1].GetString();
             command.item = (*ssCommandsResult)[2].GetUInt32();
+            command.icon = (*ssCommandsResult)[3].GetUInt32();
+            command.parent_menu = (*ssCommandsResult)[4].GetUInt32();
+            command.type = (*ssCommandsResult)[5].GetUInt32();
+            command.action = (*ssCommandsResult)[6].GetUInt32();
 
-            // sSmartStone->ssCommands.push_back(command);
-            ssCommands[command.id] = command.text;
-            ssCommandsItemRelation[command.item] = command.id;
+            ssCommands2.push_back(command);
 
             count++;
 
@@ -87,6 +91,34 @@ void SmartStone::loadCommands()
 
     sLog->outError("Smartstone: loaded %u commands", count);
 }
+
+SmartStoneCommand SmartStone::getCommandById(uint32 id)
+{
+    int n = ssCommands2.size();
+    for (int i = 0; i < n; i++)
+    {
+        if (ssCommands2[i].id = id)
+            return ssCommands2[i];
+    }
+    return nullCommand;
+};
+
+SmartStoneCommand SmartStone::getCommandByItem(uint32 item)
+{
+    int n = ssCommands2.size();
+    for (int i = 0; i < n; i++)
+    {
+        if (ssCommands2[i].item = item)
+            return ssCommands2[i];
+    }
+    return nullCommand;
+};
+
+bool SmartStone::isNullCommand(SmartStoneCommand command)
+{
+    return (command.id == NULL && command.text == "" && command.item == NULL && command.icon == NULL 
+        && command.parent_menu == NULL && command.type == NULL && command.action == NULL);
+};
 
 class azth_smartstone_world : public WorldScript
 {
@@ -113,7 +145,7 @@ public:
         {
             do
             {
-                player->azthPlayer->addSmartStoneCommand((*ssCommandsResult)[0].GetUInt32(), false);
+                player->azthPlayer->addSmartStoneCommand((sSmartStone->getCommandById((*ssCommandsResult)[0].GetUInt32())), false);
             } while (ssCommandsResult->NextRow());
         }
     }
@@ -156,19 +188,21 @@ void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 exte
                 if (!session->GetPlayer()->IsGameMaster() && ((itemTemplate->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && session->GetPlayer()->GetTeamId() == TEAM_ALLIANCE) || (itemTemplate->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && session->GetPlayer()->GetTeamId() == TEAM_HORDE)))
                     continue;
 
-                // I comandi che il player già ha li skippiamo
+                
                 uint32 leftInStock = 0xFFFFFFFF;
 
-                std::vector<int> playerCommands = session->GetPlayer()->azthPlayer->getSmartStoneCommands();
+                std::vector<SmartStoneCommand> playerCommands = session->GetPlayer()->azthPlayer->getSmartStoneCommands();
                 int n = playerCommands.size();
-                
+                SmartStoneCommand command = sSmartStone->getCommandByItem(item->item);
 
+                // I comandi che il player già ha li oscuriamo
                 for (int i = 0; i < n; i++)
                 {
-                    if (sSmartStone->ssCommandsItemRelation.find(item->item) != sSmartStone->ssCommandsItemRelation.end())
-                        if (sSmartStone->ssCommandsItemRelation[item->item] == playerCommands[i])
-                            leftInStock = 0;
+                    sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", isNullCommand(command), command.id, playerCommands[i]);
                     
+
+                    if (!isNullCommand(command) && command.id == playerCommands[i].id)
+                        leftInStock = 0;
                 }
                 
                /* if (!session->GetPlayer()->IsGameMaster() && !leftInStock)

@@ -1,10 +1,8 @@
-#include "Player.h"
 #include "Group.h"
 #include "AzthPlayer.h"
 #include "Define.h"
 #include "ObjectAccessor.h"
 #include "World.h"
-#include "AzthSmartStone.h"
 
 AzthPlayer::AzthPlayer(Player *origin) {
     playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
@@ -111,24 +109,22 @@ void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid)
     }
 }
 
-std::vector<int> AzthPlayer::getSmartStoneCommands()
+std::vector<SmartStoneCommand> AzthPlayer::getSmartStoneCommands()
 {
     return smartStoneCommands;
 }
 
-void AzthPlayer::addSmartStoneCommand(int command, bool query)
+void AzthPlayer::addSmartStoneCommand(SmartStoneCommand command, bool query)
 {
     smartStoneCommands.push_back(command);
     if (query)
     {
         CharacterDatabase.PExecute
-            ("REPLACE INTO `character_smartstone_commands` (playerGuid, command) VALUES (%u, %u);", player->GetGUID(), command);
+            ("REPLACE INTO `character_smartstone_commands` (playerGuid, command) VALUES (%u, %u);", player->GetGUID(), command.id);
     }
-    player->SendPlaySpellVisual(179); // 53 SpellCastDirected
-    player->SendPlaySpellImpact(player->GetGUID(), 362); // 113 EmoteSalute
 }
 
-void AzthPlayer::removeSmartStoneCommand(int command, bool query)
+void AzthPlayer::removeSmartStoneCommand(SmartStoneCommand command, bool query)
 {
         smartStoneCommands.erase(std::remove(smartStoneCommands.begin(), smartStoneCommands.end(), command), smartStoneCommands.end());
         if (query)
@@ -195,6 +191,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
         return false;
     }
 
+
     VendorItem const* crItem = vItems->GetItem(vendorslot);
     // store diff item (cheating)
     if (!crItem || crItem->item != item)
@@ -203,17 +200,20 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
         return false;
     }
 
-    std::vector<int> playerCommands = getSmartStoneCommands();
+    std::vector<SmartStoneCommand> playerCommands = getSmartStoneCommands();
     int n = playerCommands.size();
+    SmartStoneCommand command = sSmartStone->getCommandByItem(item);
 
     for (int i = 0; i < n; i++)
     {
-        if (sSmartStone->ssCommandsItemRelation.find(item) != sSmartStone->ssCommandsItemRelation.end())
-            if (sSmartStone->ssCommandsItemRelation[item] == playerCommands[i])
-            {
-                player->SendBuyError(BUY_ERR_ITEM_ALREADY_SOLD, NULL, item, 0);
-                return false;
-            }
+
+        sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", sSmartStone->isNullCommand(command), command.id, playerCommands[i]);
+
+        if (!sSmartStone->isNullCommand(command) && command.id == playerCommands[i].id)
+        {
+            player->SendBuyError(BUY_ERR_ITEM_ALREADY_SOLD, NULL, item, 0);
+            return false;
+        }
 
     }
 
@@ -345,9 +345,11 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
         return false;
     }*/
 
-    if (sSmartStone->ssCommandsItemRelation.find(item) != sSmartStone->ssCommandsItemRelation.end())
+    command = sSmartStone->getCommandByItem(item);
+
+    if (!sSmartStone->isNullCommand(command))
     {
-        player->azthPlayer->addSmartStoneCommand(sSmartStone->ssCommandsItemRelation[item], true);
+        player->azthPlayer->addSmartStoneCommand(command, true);
         ChatHandler(player->GetSession()).SendSysMessage("Hai sbloccato una nuova app per la tua SmartStone!");
     }
 
