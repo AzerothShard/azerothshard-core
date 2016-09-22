@@ -92,6 +92,11 @@ BattleGround.PremadeGroupWaitForMatch = 60000
 
 ChatFlood.MessageDelay = 0
 
+# enable/disable
+ExternalMail = 1
+#minutes
+ExternalMailInterval = 1
+
 #    [AZTH]
 #    Battleground.RandomCrossFaction.Enable
 #        Description: Enable random battleground crossfaction randomizing system
