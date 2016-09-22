@@ -45,6 +45,9 @@ class PlayerMenu;
 class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
+//[AZTH]
+class AzthPlayer;
+//[/AZTH]
 
 typedef std::deque<Mail*> PlayerMails;
 
