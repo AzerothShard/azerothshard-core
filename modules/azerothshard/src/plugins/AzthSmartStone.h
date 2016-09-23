@@ -1,23 +1,10 @@
 #ifndef SMARTSTONE_H
 #define SMARTSTONE_H
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "ScriptedGossip.h"
-#include "Player.h"
-#include "WorldSession.h"
-#include "WorldPacket.h"
-#include "Chat.h"
-#include "Spell.h"
 #include "Define.h"
-#include "GossipDef.h"
-#include "Item.h"
 #include "Common.h"
-#include "Opcodes.h"
-#include "Log.h"
-#include "ObjectMgr.h"
 
-
+class WorldSession;
 
 struct SmartStoneCommand
 {
@@ -29,6 +16,12 @@ struct SmartStoneCommand
     uint32 type;
     uint32 action;
 };
+
+// struct doesn't have equal operator by default
+bool operator==(const SmartStoneCommand& lhs, const SmartStoneCommand& rhs)
+{
+    return lhs.id == rhs.id;
+}
 
 enum MenuType {
     DO_SCRIPTED_ACTION = 1,

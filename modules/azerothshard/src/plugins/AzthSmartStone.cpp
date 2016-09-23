@@ -1,4 +1,19 @@
 #include "AzthSmartStone.h"
+#include "Player.h"
+#include "WorldSession.h"
+#include "WorldPacket.h"
+#include "Chat.h"
+#include "Spell.h"
+#include "Define.h"
+#include "GossipDef.h"
+#include "Item.h"
+#include "Common.h"
+#include "Opcodes.h"
+#include "Log.h"
+#include "ObjectMgr.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
 
 class azth_smart_stone : public ItemScript
 {
@@ -97,7 +112,7 @@ SmartStoneCommand SmartStone::getCommandById(uint32 id)
     int n = ssCommands2.size();
     for (int i = 0; i < n; i++)
     {
-        if (ssCommands2[i].id = id)
+        if (ssCommands2[i].id == id)
             return ssCommands2[i];
     }
     return nullCommand;
@@ -108,7 +123,7 @@ SmartStoneCommand SmartStone::getCommandByItem(uint32 item)
     int n = ssCommands2.size();
     for (int i = 0; i < n; i++)
     {
-        if (ssCommands2[i].item = item)
+        if (ssCommands2[i].item == item)
             return ssCommands2[i];
     }
     return nullCommand;

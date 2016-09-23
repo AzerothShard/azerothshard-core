@@ -1,8 +1,11 @@
-#include "Group.h"
 #include "AzthPlayer.h"
+#include "CrossFaction.h"
+#include "Player.h"
+#include "Group.h"
 #include "Define.h"
 #include "ObjectAccessor.h"
 #include "World.h"
+#include "Chat.h"
 
 AzthPlayer::AzthPlayer(Player *origin) {
     playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
@@ -126,11 +129,13 @@ void AzthPlayer::addSmartStoneCommand(SmartStoneCommand command, bool query)
 
 void AzthPlayer::removeSmartStoneCommand(SmartStoneCommand command, bool query)
 {
+        // we need to specify the equal operator for struct to be able to run it:
         smartStoneCommands.erase(std::remove(smartStoneCommands.begin(), smartStoneCommands.end(), command), smartStoneCommands.end());
+
         if (query)
         {
             CharacterDatabase.PExecute
-                ("DELETE FROM `character_smartstone_commands` WHERE playerGuid = %u AND command = %u;", player->GetGUID(), command);
+                ("DELETE FROM `character_smartstone_commands` WHERE playerGuid = %u AND command = %u;", player->GetGUID(), command.id);
         }
 }
 
@@ -207,7 +212,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
     for (int i = 0; i < n; i++)
     {
 
-        sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", sSmartStone->isNullCommand(command), command.id, playerCommands[i]);
+        sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", sSmartStone->isNullCommand(command), command.id, playerCommands[i].id);
 
         if (!sSmartStone->isNullCommand(command) && command.id == playerCommands[i].id)
         {

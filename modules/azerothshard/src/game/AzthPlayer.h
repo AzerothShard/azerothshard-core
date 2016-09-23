@@ -1,11 +1,12 @@
 #ifndef AZTHPLAYER_H
 #define AZTHPLAYER_H
 
+#include <UnorderedMap.h>
 #include "Config.h"
 #include "Define.h"
-#include "Player.h"
-#include "CrossFaction.h"
 #include "AzthSmartStone.h"
+
+struct SmartStoneCommand;
 
 class CrossFaction;
 class Player;

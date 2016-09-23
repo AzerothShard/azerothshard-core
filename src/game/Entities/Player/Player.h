@@ -6,10 +6,10 @@
 
 #ifndef _PLAYER_H
 #define _PLAYER_H
- //[AZTH]
+//[AZTH]
 #include "ArenaTeam.h"
 #include "AzthPlayer.h"
- //[/AZTH]
+//[/AZTH]
 #include "DBCStores.h"
 #include "GroupReference.h"
 #include "MapReference.h"
