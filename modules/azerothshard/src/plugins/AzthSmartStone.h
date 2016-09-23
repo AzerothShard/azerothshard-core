@@ -8,6 +8,12 @@ class WorldSession;
 
 struct SmartStoneCommand
 {
+    // struct doesn't have equal operator by default
+    bool operator==(const SmartStoneCommand& rhs)
+    {
+        return id == rhs.id;
+    }
+
     uint32 id;
     std::string text;
     uint32 item;
@@ -16,12 +22,6 @@ struct SmartStoneCommand
     uint32 type;
     uint32 action;
 };
-
-// struct doesn't have equal operator by default
-bool operator==(const SmartStoneCommand& lhs, const SmartStoneCommand& rhs)
-{
-    return lhs.id == rhs.id;
-}
 
 enum MenuType {
     DO_SCRIPTED_ACTION = 1,
