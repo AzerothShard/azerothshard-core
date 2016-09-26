@@ -212,7 +212,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
     for (int i = 0; i < n; i++)
     {
 
-        sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", sSmartStone->isNullCommand(command), command.id, playerCommands[i].id);
+        //sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", sSmartStone->isNullCommand(command), command.id, playerCommands[i].id);
 
         if (!sSmartStone->isNullCommand(command) && command.id == playerCommands[i].id)
         {

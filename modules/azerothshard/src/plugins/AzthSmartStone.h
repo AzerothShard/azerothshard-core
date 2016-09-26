@@ -35,13 +35,6 @@ public:
 
     int SMARTSTONE_VENDOR_ENTRY = 170000;
 
-    //std::map<uint32, std::string> ssCommands;
-
-    // need improvements
-    //std::map<uint32, uint32> ssCommandsIconRelation;
-
-    //std::map<uint32, uint32> ssCommandsItemRelation;
-
     const SmartStoneCommand nullCommand = SmartStoneCommand{ NULL, "", NULL, NULL, NULL, NULL, NULL };
 
     std::vector<SmartStoneCommand> ssCommands2;

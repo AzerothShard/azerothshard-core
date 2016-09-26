@@ -15,6 +15,8 @@
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
 
+uint32 parent = 1;
+
 class azth_smart_stone : public ItemScript
 {
 public:
@@ -24,28 +26,26 @@ public:
     {
         player->PlayerTalkClass->ClearMenus();
 
+        player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_-50:0|t a", GOSSIP_SENDER_MAIN, 99999);
+
         std::vector<SmartStoneCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
         int n = playerCommands.size();
-
-        sLog->outError("Smartstone: n: %u", n);
 
         for (int i = 0; i < n; i++)
         {
             SmartStoneCommand command = playerCommands[i];
-            sLog->outError("Smartstone: commandid: %u", command.id);
-            /*if (!sSmartStone->isNullCommand(command))
-            {*/
-            player->ADD_GOSSIP_ITEM(command.icon, command.text, GOSSIP_SENDER_MAIN, command.id);
-            //}    
+            if (!command.id == 0 && command.parent_menu == parent)
+                player->ADD_GOSSIP_ITEM(command.icon, command.text, GOSSIP_SENDER_MAIN, command.id);
         }
-
-        player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_03:30|t Azeroth Store", GOSSIP_SENDER_MAIN, 2000);
-
 
         // acquista app
 
+        if (parent == 1)
+            player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_03:30|t Azeroth Store", GOSSIP_SENDER_MAIN, 2000);
+
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
 
+        parent = 1;
         return true;
     }
 
@@ -53,26 +53,66 @@ public:
     {
         player->PlayerTalkClass->ClearMenus();
 
-        switch (action)
+        SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
+
+        // scripted action
+        if (selectedCommand.type == DO_SCRIPTED_ACTION || action == 2000) // azeroth store
         {
-        case 2000: // store
-            sSmartStone->SmartStoneSendListInventory(player->GetSession(), 100000);
-            break;
-        case 1:
-            if (!player->IsInCombat())
-                player->TeleportTo(1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
-            break;
-        case 2:
-            player->DeMorph();
-            break;
-        case 3:
-            player->SetDisplayId(1060);
-            break;
-        default:
-            sLog->outError("Smartstone: unhandled command! ID: %u, player GUID: %u", action, player->GetGUID());
-            break;
+            switch (action)
+            {
+            case 2000: // store
+                sSmartStone->SmartStoneSendListInventory(player->GetSession(), 100000);
+                break;
+            case 1:
+                if (!player->IsInCombat())
+                    player->TeleportTo(1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
+                break;
+            case 2:
+                player->DeMorph();
+                break;
+            case 3:
+                player->SetDisplayId(1060);
+                break;
+            case 99999:
+                break;
+            default:
+                sLog->outError("Smartstone: unhandled command! ID: %u, player GUID: %u", action, player->GetGUID());
+                break;
+            }
+            player->CLOSE_GOSSIP_MENU();
+           // return;
         }
-        player->CLOSE_GOSSIP_MENU();
+
+        // open child
+        if (selectedCommand.type == OPEN_CHILD)
+        {
+            parent = selectedCommand.action;
+            player->CLOSE_GOSSIP_MENU();
+            OnUse(player, item, SpellCastTargets());
+            /*
+            player->PlayerTalkClass->ClearMenus();
+
+            std::vector<SmartStoneCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
+            int n = playerCommands.size();
+           
+
+            for (int i = 0; i < n; i++)
+            {
+                SmartStoneCommand command = playerCommands[i];
+                if (!command.id == 0 && command.parent_menu == selectedCommand.action)
+                {
+                    player->ADD_GOSSIP_ITEM(command.icon, command.text, GOSSIP_SENDER_MAIN, command.id);
+                }
+            }
+
+            if (selectedCommand.action == 1)
+                player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_03:30|t Azeroth Store", GOSSIP_SENDER_MAIN, 2000);
+
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
+            */
+            
+           // return;
+        }
     }
 };
 
@@ -213,7 +253,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 exte
                 // I comandi che il player già ha li oscuriamo
                 for (int i = 0; i < n; i++)
                 {
-                    sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", isNullCommand(command), command.id, playerCommands[i]);
+                    //sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", isNullCommand(command), command.id, playerCommands[i]);
                     
 
                     if (!isNullCommand(command) && command.id == playerCommands[i].id)
