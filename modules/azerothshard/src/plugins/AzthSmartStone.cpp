@@ -253,7 +253,11 @@ void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 exte
                 // I comandi che il player già ha li oscuriamo
                 for (int i = 0; i < n; i++)
                 {
+<<<<<<< HEAD
                     //sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", isNullCommand(command), command.id, playerCommands[i]);
+=======
+                    sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", isNullCommand(command), command.id, playerCommands[i].id);
+>>>>>>> 6620fca2dd7f9ac66e8ecd2479e0675839d6ea29
                     
 
                     if (!isNullCommand(command) && command.id == playerCommands[i].id)
