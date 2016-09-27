@@ -52,6 +52,6 @@ echo "Sorting process..."
 
 for f in $OUTPUT_DIR*
 do
-	sort -o $f $f
+	LC_ALL=C sort -d -o $f $f
 done
 
