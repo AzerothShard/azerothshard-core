@@ -8,6 +8,8 @@ DATABASES+=(
 # CUSTOM
 #
 
+AZTHSD_PATH_WORLD_DB_DIFF=$AZTHSD_PATH_ROOT"/data/sql/db-world-diff/"
+
 DB_CHARACTERS_CUSTOM_PATHS+=(
 	$AZTHSD_PATH_ROOT"/data/sql/db-characters/"
 )
@@ -18,6 +20,7 @@ DB_AUTH_CUSTOM_PATHS+=(
 
 DB_WORLD_CUSTOM_PATHS+=(
 	$AZTHSD_PATH_ROOT"/data/sql/db-world/"
+	$AZTHSD_PATH_WORLD_DB_DIFF
 )
 
 #
