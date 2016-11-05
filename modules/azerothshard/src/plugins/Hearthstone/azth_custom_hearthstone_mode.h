@@ -60,9 +60,9 @@ class HearthstoneMode
         int returnData0(AchievementCriteriaEntry const* criteria);
         int returnData1(AchievementCriteriaEntry const* criteria);
         std::vector<HearthstoneAchievement> hsAchievementTable;
-        void getItems();
+        //void getItems();
         int getQuality();
-        std::vector<int> items[8]; // <---- THIS
+        std::vector<int> items[8];
         bool isInArray(int val);
 
     private:
