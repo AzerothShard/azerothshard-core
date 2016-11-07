@@ -1,13 +1,16 @@
 #ifndef AZTHPLAYER_H
 #define AZTHPLAYER_H
 
+#include <UnorderedMap.h>
 #include "Config.h"
 #include "Define.h"
-#include "Player.h"
-#include "CrossFaction.h"
+#include "AzthSmartStone.h"
+
+struct SmartStoneCommand;
 
 class CrossFaction;
 class Player;
+class SmartStone;
 
 class AzthPlayer {
  public:
@@ -47,12 +50,19 @@ class AzthPlayer {
     uint8 getGroupLevel();
 
     void ForceKilledMonsterCredit(uint32 entry, uint64 guid);
+    
+    std::vector<SmartStoneCommand> getSmartStoneCommands();
+    void addSmartStoneCommand(SmartStoneCommand command, bool query);
+    void removeSmartStoneCommand(SmartStoneCommand command, bool query);
+    bool BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
 
  private:
      Player *player;
      uint32 arena1v1Info[7]; // ARENA_TEAM_END
 
      float playerQuestRate, maxQuestRate;
+
+     std::vector<SmartStoneCommand> smartStoneCommands;
  };
 
 #endif /* AZTHPLAYER_H */

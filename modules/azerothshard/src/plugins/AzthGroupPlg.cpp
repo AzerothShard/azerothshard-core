@@ -8,6 +8,7 @@ This plugin can be used for common group customizations
 #include "Player.h"
 #include "Map.h"
 #include "WorldSession.h"
+#include "Group.h"
 
 class AzthGroupPlg : public GroupScript {
 public:

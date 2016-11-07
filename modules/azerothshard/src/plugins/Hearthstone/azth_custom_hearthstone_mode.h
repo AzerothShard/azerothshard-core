@@ -25,6 +25,12 @@ struct HearthstoneAchievement
     uint32 type;
 };
 
+struct HearthstoneQuest
+{
+    uint32 id;
+    uint32 flag;
+};
+
 enum bitmasksHs
 {
     BITMASK_PVE = 1,
@@ -34,12 +40,12 @@ enum bitmasksHs
 
 enum miscHs
 {
-    PVE_QUEST_NUMBER        = 1,
-    MAX_PVE_QUEST_NUMBER    = 3,
-    AZTH_REPUTATION_ID      = 948,
-    PVE_LOWER_RANGE         = 100000,
-    PVE_UPPER_RANGE         = 100080,
-    PVE_RANGE               = PVE_UPPER_RANGE - PVE_LOWER_RANGE
+    PVE_QUEST_NUMBER = 1,
+    MAX_PVE_QUEST_NUMBER = 3,
+    AZTH_REPUTATION_ID = 948,
+    PVE_LOWER_RANGE = 100000,
+    PVE_UPPER_RANGE = 100080,
+    PVE_RANGE = PVE_UPPER_RANGE - PVE_LOWER_RANGE
 };
 
 enum otherMiscHs

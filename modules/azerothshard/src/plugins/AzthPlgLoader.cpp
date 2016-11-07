@@ -20,6 +20,7 @@ void AddSC_npc_transmogrifier();
 void AddSC_hearthstone();
 void AddSC_azth_group_plg();
 void AddSC_AzthWorldScript();
+void AddSC_azth_smart_stone();
 
 
 void AddAzthScripts()
@@ -38,6 +39,7 @@ void AddAzthScripts()
     AddSC_hearthstone();
     AddSC_azth_group_plg();
     AddSC_AzthWorldScript();
+    AddSC_azth_smart_stone();
 }
 
 
