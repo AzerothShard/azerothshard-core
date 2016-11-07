@@ -447,6 +447,7 @@ public:
 		time_t t = time(NULL);
 		tm *lt = localtime(&t);
 		int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + lt->tm_sec + player->GetGUID() + player->GetItemCount(item->GetEntry(), true, 0);
+        int loopCheck = 0;
 
 		while (i <= EVERYTHING)
 		{
@@ -454,9 +455,16 @@ public:
 			int quality = 0;
 			quality = sHearthstoneMode->getQuality();
 			uint32 id = 0;
-			id = rand() % sHearthstoneMode->items[quality].size();
-			if (Item* item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0))
-			{
+            Item* item;
+            do
+            {
+                id = rand() % sHearthstoneMode->items[quality].size();
+                item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                loopCheck++;
+            } while (!sHearthstoneMode->PlayerCanUseItem(item->GetTemplate(), player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+
+            if (item)
+            {
 				item->SaveToDB(trans);
 				draft->AddItem(item);
 			}
@@ -465,6 +473,7 @@ public:
 			seed = seed + i;
 		}
 		i = 1;
+        loopCheck = 0;
 		while (i <= ONLY_COMMON)
 		{
 			//srand(seed + 3);
@@ -473,11 +482,17 @@ public:
 			{
 				quality = 0;
 			}
-			uint32 id;
-			id = rand() % sHearthstoneMode->items[quality].size();
 
-			if (Item* item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0))
-			{
+            uint32 id = 0;
+            Item* item;
+            do
+            {
+                id = rand() % sHearthstoneMode->items[quality].size();
+                item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                loopCheck++;
+            } while (!sHearthstoneMode->PlayerCanUseItem(item->GetTemplate(), player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+            if (item)
+            {
 				item->SaveToDB(trans);
 				draft->AddItem(item);
 			}
@@ -486,6 +501,7 @@ public:
 			seed = seed + i;
 		}
 		i = 1;
+        loopCheck = 0;
 		while (i <= NOT_COMMON)
 		{
 			//srand(seed + 4);
@@ -495,9 +511,15 @@ public:
 			{
 				quality = sHearthstoneMode->getQuality();
 			}
-			uint32 id;
-			id = rand() % sHearthstoneMode->items[quality].size();
-			if (Item* item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0))
+			uint32 id = 0;
+            Item* item;
+            do
+            {
+                id = rand() % sHearthstoneMode->items[quality].size();
+                item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                loopCheck++;
+            } while (!sHearthstoneMode->PlayerCanUseItem(item->GetTemplate(), player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+			if (item)
 			{
 				item->SaveToDB(trans);
 				draft->AddItem(item);
@@ -510,16 +532,83 @@ public:
 		draft->SendMailTo(trans, MailReceiver(player), MailSender(player), MAIL_CHECK_MASK_RETURNED, deliverDelay);
 		CharacterDatabase.CommitTransaction(trans);
 
-		// devi controllare se le quest danno rep pure
-		// player->TextEmote("controlla la tua mail!");
-
-
 		ChatHandler(player->GetSession()).SendSysMessage("Controlla la tua mail!");
 
 		player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
 		return true;
 	}
 };
+
+bool HearthstoneMode::PlayerCanUseItem(ItemTemplate const* proto, Player* player, bool classCheck)
+{
+    if (proto)
+    {
+        if ((proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY) && player->GetTeamId(true) != TEAM_HORDE)
+            return false;
+
+        if ((proto->Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY) && player->GetTeamId(true) != TEAM_ALLIANCE)
+            return false;
+
+        if ((proto->AllowableClass & player->getClassMask()) == 0 || (proto->AllowableRace & player->getRaceMask()) == 0)
+            return false;
+
+        if (proto->RequiredSkill != 0)
+        {
+            if (player->GetSkillValue(proto->RequiredSkill) == 0)
+                return false;
+            else if (player->GetSkillValue(proto->RequiredSkill) < proto->RequiredSkillRank)
+                return false;
+        }
+
+        if (proto->RequiredSpell != 0 && !player->HasSpell(proto->RequiredSpell))
+            return false;
+
+        if (player->getLevel() < proto->RequiredLevel)
+            return false;
+
+        const static uint32 item_weapon_skills[MAX_ITEM_SUBCLASS_WEAPON] =
+        {
+            SKILL_AXES,     SKILL_2H_AXES,  SKILL_BOWS,          SKILL_GUNS,      SKILL_MACES,
+            SKILL_2H_MACES, SKILL_POLEARMS, SKILL_SWORDS,        SKILL_2H_SWORDS, 0,
+            SKILL_STAVES,   0,              0,                   SKILL_FIST_WEAPONS,   0,
+            SKILL_DAGGERS,  SKILL_THROWN,   SKILL_ASSASSINATION, SKILL_CROSSBOWS, SKILL_WANDS,
+            SKILL_FISHING
+        };
+
+        if (classCheck && proto->Class == ITEM_CLASS_WEAPON && player->GetSkillValue(item_weapon_skills[proto->SubClass]) == 0)
+            return false;
+
+        if (classCheck && proto->Class == ITEM_CLASS_ARMOR)
+        {
+            uint32 type = proto->SubClass;
+            uint32 pClass = player->getClass();
+
+            switch (type)
+            {
+            case 1: //cloth
+                if (pClass != CLASS_PRIEST && pClass != CLASS_MAGE && pClass != CLASS_WARLOCK)
+                    return false;
+                break;
+            case 2: //leather
+                if (pClass != CLASS_ROGUE && pClass != CLASS_DRUID)
+                    return false;
+                break;
+            case 3: //mail
+                if (pClass != CLASS_HUNTER && pClass != CLASS_SHAMAN)
+                    return false;
+                break;
+            case 4: //plate
+                if (pClass != CLASS_WARRIOR && pClass != CLASS_PALADIN && pClass != CLASS_DEATH_KNIGHT)
+                    return false;
+                break;
+            default:
+                return true;
+            }
+        }
+        return true;
+    }
+    return false;
+}
 
 
 void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria)
@@ -546,69 +635,62 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
         player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit
 }
 
-class azth_hearthstone_world : public WorldScript
+void HearthstoneMode::loadHearthstone()
 {
-public:
-    azth_hearthstone_world() : WorldScript("azth_hearthstone_world") { }
+    // initialize count and array
+    uint32 count = 0;
+    sHearthstoneMode->hsAchievementTable.clear();
 
-    void OnAfterConfigLoad(bool reload) override
+    // run query
+    QueryResult hsAchiResult = ExtraDatabase.PQuery("SELECT data0, data1, creature, type FROM hearthstone_criteria_credits");
+
+    // store result in vector of hs achievement struct
+    if (hsAchiResult)
     {
-        // initialize count and array
-        uint32 count = 0;
-        sHearthstoneMode->hsAchievementTable.clear();
-
-        // run query
-        QueryResult hsAchiResult = ExtraDatabase.PQuery("SELECT data0, data1, creature, type FROM hearthstone_criteria_credits");
-
-        // store result in vector of hs achievement struct
-        if (hsAchiResult)
-        {
-            do
-            {
-                HearthstoneAchievement ha = {};
-                ha.data0 = (*hsAchiResult)[0].GetUInt32();
-                ha.data1 = (*hsAchiResult)[1].GetUInt32();
-                ha.creature = (*hsAchiResult)[2].GetUInt32();
-                ha.type = (*hsAchiResult)[3].GetUInt32();
-
-                sHearthstoneMode->hsAchievementTable.push_back(ha); // push the newly created element in the list
-                count++;
-            } while (hsAchiResult->NextRow());
-        }
-
-        // show log of loaded achievements at startup
-        sLog->outError("Hearthstone Mode: loaded %u achievement definitions", count);
-
-
-        int itemCount = 0;
-
-        sHearthstoneMode->items[0].clear();
-        sHearthstoneMode->items[1].clear();
-        sHearthstoneMode->items[2].clear();
-        sHearthstoneMode->items[3].clear();
-        sHearthstoneMode->items[4].clear();
-        sHearthstoneMode->items[5].clear();
-        sHearthstoneMode->items[6].clear();
-        sHearthstoneMode->items[7].clear();
-        QueryResult result = WorldDatabase.Query("SELECT entry, quality FROM item_template WHERE entry >= 100017 LIMIT 0, 200000");
         do
         {
-            Field* fields = result->Fetch();
-            uint32 entry = fields[0].GetUInt32();
-            uint32 quality = fields[1].GetUInt32();
+            HearthstoneAchievement ha = {};
+            ha.data0 = (*hsAchiResult)[0].GetUInt32();
+            ha.data1 = (*hsAchiResult)[1].GetUInt32();
+            ha.creature = (*hsAchiResult)[2].GetUInt32();
+            ha.type = (*hsAchiResult)[3].GetUInt32();
 
-            sHearthstoneMode->items[quality].push_back(entry);
-            itemCount++;
-        } while (result->NextRow());
-
-        sLog->outError("Hearthstone Mode: loaded %u transmog items", itemCount);
+            sHearthstoneMode->hsAchievementTable.push_back(ha); // push the newly created element in the list
+            count++;
+        } while (hsAchiResult->NextRow());
     }
-};
+
+    // show log of loaded achievements at startup
+    sLog->outError("Hearthstone Mode: loaded %u achievement definitions", count);
+
+    int itemCount = 0;
+
+    sHearthstoneMode->items[0].clear();
+    sHearthstoneMode->items[1].clear();
+    sHearthstoneMode->items[2].clear();
+    sHearthstoneMode->items[3].clear();
+    sHearthstoneMode->items[4].clear();
+    sHearthstoneMode->items[5].clear();
+    sHearthstoneMode->items[6].clear();
+    sHearthstoneMode->items[7].clear();
+    QueryResult result = ExtraDatabase.Query("SELECT entry FROM transmog_items WHERE entry >= 100017 LIMIT 0, 200000");
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 entry = fields[0].GetUInt32();
+        uint32 quality = sObjectMgr->GetItemTemplate(entry)->Quality; //= fields[1].GetUInt32();
+
+        sHearthstoneMode->items[quality].push_back(entry);
+        itemCount++;
+    } while (result->NextRow());
+
+    sLog->outError("Hearthstone Mode: loaded %u transmog items", itemCount);
+}
 
 void AddSC_hearthstone()
 {
 	new npc_han_al();
 	new npc_azth_vendor();
 	new item_azth_hearthstone_loot_sack();
-    new azth_hearthstone_world();
+    //new azth_hearthstone_world();
 }

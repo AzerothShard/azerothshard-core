@@ -49,7 +49,8 @@ enum otherMiscHs
     NOT_COMMON                  = 1,
     EVERYTHING                  = 2,
     TIME_TO_RECEIVE_MAIL        = 0,
-    SUPPORTED_CRITERIA_NUMBER   = 15
+    SUPPORTED_CRITERIA_NUMBER   = 15,
+    MAX_RETRY_GET_ITEM          = 30
 };
 
 class HearthstoneMode
@@ -64,6 +65,8 @@ class HearthstoneMode
         int getQuality();
         std::vector<int> items[8];
         bool isInArray(int val);
+        bool PlayerCanUseItem(ItemTemplate const* proto, Player* player, bool classCheck);
+        void loadHearthstone();
 
     private:
         float CHANCES[8] = { 10.f, 30.f, 20.f, 15.f, 5.f, 1.f, 0.5f, 1.f };

@@ -78,6 +78,7 @@
 #include "AnticheatMgr.h" //[AZTH]
 #include "GuildHouse.h" //[AZTH]
 #include "Teleport.h" //[AZTH]
+#include "azth_custom_hearthstone_mode.h" //[AZTH]
 
 ACE_Atomic_Op<ACE_Thread_Mutex, bool> World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1770,6 +1771,7 @@ void World::SetInitialWorldSettings()
 
     GHobj.LoadGuildHouseSystem();     // [AZTH] Load Guildhouses
     LoadNpcTele();                    // Teleport
+    sHearthstoneMode->loadHearthstone(); // [AZTH] Load Hearthstone Mode
 
     sLog->outString("Initializing SpellInfo precomputed data..."); // must be called after loading items, professions, spells and pretty much anything
     sObjectMgr->InitializeSpellInfoPrecomputedData();
