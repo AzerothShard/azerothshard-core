@@ -664,7 +664,6 @@ void HearthstoneMode::loadHearthstone()
     sLog->outError("Hearthstone Mode: loaded %u achievement definitions", count);
 
     int itemCount = 0;
-
     sHearthstoneMode->items[0].clear();
     sHearthstoneMode->items[1].clear();
     sHearthstoneMode->items[2].clear();

@@ -201,7 +201,7 @@ public:
                 return 0.5 * IN_MILLISECONDS;
             case 13:
                 mograine->AI()->Talk(2);
-                mograine->DespawnOrUnsummon(2 * IN_MILLISECONDS);
+                mograine->DespawnOrUnsummon(3 * IN_MILLISECONDS);
                 mograine->Kill(me, me, true);
                 return 0;
             default:
@@ -385,7 +385,7 @@ public:
                     if (player->HasAura(AURA_ASHBRINGER) && !SayAshbringer)
                     {
                         me->setFaction(FACTION_FRIENDLY_TO_ALL);
-                        me->SetFlag(UNIT_FIELD_FLAGS, 1);
+                        me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         me->SetSheath(SHEATH_STATE_UNARMED);
                         me->CastSpell(me, 57767, true);
                         me->SetDisplayId(16179);
