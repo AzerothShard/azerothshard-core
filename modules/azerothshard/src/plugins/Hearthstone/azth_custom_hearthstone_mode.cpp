@@ -258,9 +258,9 @@ int WHISPER_CHANCE = 50;
 
 std::vector<std::string> whispersList =
 {
-"Uccidere --NAME--, non sarà facile... buona fortuna!",
-"Povero --NAME--... la sua fine è segnata!",
-"--NAME--? Sarà un gioco da ragazzi ucciderlo.",
+"Uccidere --NAME--, non sarï¿½ facile... buona fortuna!",
+"Povero --NAME--... la sua fine ï¿½ segnata!",
+"--NAME--? Sarï¿½ un gioco da ragazzi ucciderlo.",
 "Buona fortuna!",
 "--NAME-- deve morire!"
 };*/
@@ -640,12 +640,25 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
     for (std::vector<HearthstoneAchievement>::iterator itr = hsAchievementTable.begin(); itr != hsAchievementTable.end(); itr++)
     {
         if ((*itr).type == achievementType) // match the type
-            if (((*itr).data0 == returnData0(criteria)) || ((*itr).data1 == returnData1(criteria))) // match criteria
+            /*if (((*itr).data0 == returnData0(criteria)) && ((*itr).data1 == returnData1(criteria))) // match criteria*/
+			if ((*itr).data0 == returnData0(criteria) && criteria->timerStartEvent == 0)
             {
                 entry = (*itr).creature; // set credit
                 break;
             }
     }
+
+/*	for (int i = 0; i < hsAchievementTable.size(); i++)
+	{
+		if (hsAchievementTable[i].type == achievementType)
+			if 
+	}*/
+
+	sLog->outError("AAAAAAAAAA");
+	sLog->outError("Achi type: %u", achievementType);
+	sLog->outError("data0: %u", returnData0(criteria));
+	sLog->outError("data1: %u", returnData1(criteria));
+	sLog->outError("entry: %u", entry);
 
     if (entry)
         player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit
