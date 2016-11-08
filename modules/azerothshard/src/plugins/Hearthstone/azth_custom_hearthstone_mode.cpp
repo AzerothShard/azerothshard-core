@@ -449,24 +449,28 @@ public:
         int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + lt->tm_sec + player->GetGUID() + player->GetItemCount(item->GetEntry(), true, 0);
         int loopCheck = 0;
 
+        Item* newItem = Item::CreateItem(100017, 1, 0);
+
         while (i <= EVERYTHING)
         {
             //srand(seed);
             int quality = 0;
             quality = sHearthstoneMode->getQuality();
             uint32 id = 0;
-            Item* item;
             do
             {
-                id = rand() % sHearthstoneMode->items[quality].size();
-                item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                if (sHearthstoneMode->items[quality].size() != 0)
+                {
+                    id = rand() % sHearthstoneMode->items[quality].size();
+                    newItem = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                }
                 loopCheck++;
-            } while (!sHearthstoneMode->PlayerCanUseItem(item->GetTemplate(), player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+            } while (!sHearthstoneMode->PlayerCanUseItem(newItem, player, true) && loopCheck < MAX_RETRY_GET_ITEM);
 
-            if (item)
+            if (newItem)
             {
-                item->SaveToDB(trans);
-                draft->AddItem(item);
+                newItem->SaveToDB(trans);
+                draft->AddItem(newItem);
             }
 
             i = i + 1;
@@ -474,6 +478,7 @@ public:
         }
         i = 1;
         loopCheck = 0;
+        newItem = Item::CreateItem(100017, 1, 0);
         while (i <= ONLY_COMMON)
         {
             //srand(seed + 3);
@@ -484,17 +489,19 @@ public:
             }
 
             uint32 id = 0;
-            Item* item;
             do
             {
-                id = rand() % sHearthstoneMode->items[quality].size();
-                item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                if (sHearthstoneMode->items[quality].size() != 0)
+                {
+                    id = rand() % sHearthstoneMode->items[quality].size();
+                    newItem = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                }
                 loopCheck++;
-            } while (!sHearthstoneMode->PlayerCanUseItem(item->GetTemplate(), player, true) && loopCheck < MAX_RETRY_GET_ITEM);
-            if (item)
+            } while (!sHearthstoneMode->PlayerCanUseItem(newItem, player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+            if (newItem)
             {
-                item->SaveToDB(trans);
-                draft->AddItem(item);
+                newItem->SaveToDB(trans);
+                draft->AddItem(newItem);
             }
 
             i = i + 1;
@@ -502,6 +509,7 @@ public:
         }
         i = 1;
         loopCheck = 0;
+        newItem = Item::CreateItem(100017, 1, 0);
         while (i <= NOT_COMMON)
         {
             //srand(seed + 4);
@@ -512,17 +520,19 @@ public:
                 quality = sHearthstoneMode->getQuality();
             }
             uint32 id = 0;
-            Item* item;
             do
             {
-                id = rand() % sHearthstoneMode->items[quality].size();
-                item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                if (sHearthstoneMode->items[quality].size() != 0)
+                {
+                    id = rand() % sHearthstoneMode->items[quality].size();
+                    newItem = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                }
                 loopCheck++;
-            } while (!sHearthstoneMode->PlayerCanUseItem(item->GetTemplate(), player, true) && loopCheck < MAX_RETRY_GET_ITEM);
-            if (item)
+            } while (!sHearthstoneMode->PlayerCanUseItem(newItem, player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+            if (newItem)
             {
-                item->SaveToDB(trans);
-                draft->AddItem(item);
+                newItem->SaveToDB(trans);
+                draft->AddItem(newItem);
             }
 
             i = i + 1;
@@ -539,10 +549,16 @@ public:
     }
 };
 
-bool HearthstoneMode::PlayerCanUseItem(ItemTemplate const* proto, Player* player, bool classCheck)
+bool HearthstoneMode::PlayerCanUseItem(Item const* item, Player* player, bool classCheck)
 {
+    if (!item)
+        return false;
+
+    ItemTemplate const* proto = item->GetTemplate();
+
     if (proto)
     {
+        player->Say(proto->Name1, 0);
         if ((proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY) && player->GetTeamId(true) != TEAM_HORDE)
             return false;
 

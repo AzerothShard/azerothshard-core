@@ -71,7 +71,7 @@ class HearthstoneMode
         int getQuality();
         std::vector<int> items[8];
         bool isInArray(int val);
-        bool PlayerCanUseItem(ItemTemplate const* proto, Player* player, bool classCheck);
+        bool PlayerCanUseItem(Item const* item, Player* player, bool classCheck);
         void loadHearthstone();
 
     private:

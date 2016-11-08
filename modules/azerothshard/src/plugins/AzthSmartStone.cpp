@@ -26,7 +26,7 @@ public:
     {
         player->PlayerTalkClass->ClearMenus();
 
-        player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_-50:0|t a", GOSSIP_SENDER_MAIN, 99999);
+        player->ADD_GOSSIP_ITEM(0, "Benvenuto nella tua SmartStone!", GOSSIP_SENDER_MAIN, 99999);
 
         std::vector<SmartStoneCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
         int n = playerCommands.size();
