@@ -131,6 +131,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, PvPDiffi
     ginfo->ArenaMatchmakerRating     = MatchmakerRating;
     ginfo->OpponentsTeamRating       = 0;
     ginfo->OpponentsMatchmakerRating = 0;
+    ginfo->PreassignedCrossFaction   = false; //[AZTH]
 
     ginfo->Players.clear();
 

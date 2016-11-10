@@ -35,6 +35,8 @@ struct GroupQueueInfo                                       // stores informatio
     // pussywizard: for internal use
     uint8 _bracketId;
     uint8 _groupType;
+
+    bool PreassignedCrossFaction;                           //[AZTH] for preassigned groups
 };
 
 enum BattlegroundQueueGroupTypes
