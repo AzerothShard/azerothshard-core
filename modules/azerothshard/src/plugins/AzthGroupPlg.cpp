@@ -16,9 +16,11 @@ public:
 
     void OnAddMember(Group* group, uint64 guid) override {
         Player* player = ObjectAccessor::FindPlayer(guid);
-        if (group->azthGroupMgr->levelMaxGroup < player->getLevel()) {
-            group->azthGroupMgr->levelMaxGroup = player->getLevel();
-            group->azthGroupMgr->saveToDb();
+        if (player) {
+            if (group->azthGroupMgr->levelMaxGroup < player->getLevel()) {
+                group->azthGroupMgr->levelMaxGroup = player->getLevel();
+                group->azthGroupMgr->saveToDb();
+            }
         }
     }
 };
