@@ -37,11 +37,19 @@ public:
     }
 
     void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override {
-        player->setFactionForRace(player->getRace());
-        
-        Map* map = player->FindMap();
-        uint16 levelPlayer = player->getLevel();
 
+        Map* map = player->FindMap();
+        uint32 mapId = map->GetId();
+
+        if (mapId == 0
+        || mapId == 1
+        || mapId == 530
+        || mapId == 571)
+        {
+            player->setFactionForRace(player->getRace());
+        }
+
+        uint16 levelPlayer = player->getLevel();
 
         if (map->IsDungeon()) {
             InstanceSave* is = sInstanceSaveMgr->PlayerGetInstanceSave(GUID_LOPART(player->GetGUID()), map->GetId(), player->GetDifficulty(map->IsRaid()));
