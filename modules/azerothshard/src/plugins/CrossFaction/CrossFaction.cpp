@@ -440,7 +440,7 @@ public:
     // Called when a player switches to a new zone
     void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override
     {
-        sCrossFaction->UpdatePlayerTeam(player->GetGroup(), player->GetGUID());
+        //sCrossFaction->UpdatePlayerTeam(player->GetGroup(), player->GetGUID());
     }
 
     // Called when a player changes to a new map (after moving to new map)
