@@ -1,4 +1,4 @@
-// Copyright (c) 2016 AzerothCore
+﻿// Copyright (c) 2016 AzerothCore
 // Author: Gargarensis
 // Refactored by: mik1893 
 // This software is provided 'as-is', without any express or implied
@@ -596,6 +596,18 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
     player->Say(std::to_string(returnData0(criteria)), 0);
     player->Say(std::to_string(returnData1(criteria)), 0);
     player->Say(std::to_string(entry), 0);
+
+/*	for (int i = 0; i < hsAchievementTable.size(); i++)
+	{
+		if (hsAchievementTable[i].type == achievementType)
+			if 
+	}*/
+
+	sLog->outError("AAAAAAAAAA");
+	sLog->outError("Achi type: %u", achievementType);
+	sLog->outError("data0: %u", returnData0(criteria));
+	sLog->outError("data1: %u", returnData1(criteria));
+	sLog->outError("entry: %u", entry);
 
     if (entry)
         player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit
