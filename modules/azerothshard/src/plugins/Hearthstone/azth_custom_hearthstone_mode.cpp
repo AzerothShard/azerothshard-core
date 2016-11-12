@@ -115,26 +115,6 @@ bool HearthstoneMode::isInArray(int val)
     return false;
 }
 
-/*void HearthstoneMode::getItems()
-{
-items[0].clear();
-items[1].clear();
-items[2].clear();
-items[3].clear();
-items[4].clear();
-items[5].clear();
-items[6].clear();
-items[7].clear();
-QueryResult result = WorldDatabase.Query("SELECT entry, quality FROM item_template WHERE entry >= 100017 LIMIT 0, 200000");
-do
-{
-Field* fields = result->Fetch();
-uint32 entry = fields[0].GetUInt32();
-uint32 quality = fields[1].GetUInt32();
-
-items[quality].push_back(entry);
-} while (result->NextRow());
-}*/
 
 int HearthstoneMode::getQuality()
 {
@@ -253,17 +233,6 @@ int HearthstoneMode::returnData1(AchievementCriteriaEntry const* criteria)
     }
     return value;
 }
-/*
-int WHISPER_CHANCE = 50;
-
-std::vector<std::string> whispersList =
-{
-"Uccidere --NAME--, non sarà facile... buona fortuna!",
-"Povero --NAME--... la sua fine è segnata!",
-"--NAME--? Sarà un gioco da ragazzi ucciderlo.",
-"Buona fortuna!",
-"--NAME-- deve morire!"
-};*/
 
 /// ---------------- START OF SCRIPTS ------------------------- ///
 
@@ -276,29 +245,7 @@ class npc_han_al : public CreatureScript
 {
 public:
     npc_han_al() : CreatureScript("npc_han_al") { }
-    /*
-    void whisperPlayer(std::string creatureName, Player * player, Creature * creature)
-    {
-    double random = rand_chance();
-    if (random <= WHISPER_CHANCE)
-    {
-    int index = rand() % whispersList.size() - 1;
-    std::string whisperText = whispersList[index];
-    replaceAll(whisperText, "--NAME--", creatureName);
-    creature->Whisper(whisperText, LANG_UNIVERSAL, player, false);
-    }
-    }
 
-    void replaceAll(std::string& str, const std::string& from, const std::string& to) {
-    if (from.empty())
-    return;
-    size_t start_pos = 0;
-    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-    start_pos += to.length();
-    }
-    }
-    */
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
         time_t t = time(NULL);
@@ -320,8 +267,6 @@ public:
             if (player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false))
             {
                 player->AddQuest(questPve, NULL);
-                //CreatureTemplate const * objective = sObjectMgr->GetCreatureTemplate(questPve->RequiredNpcOrGo[0]);
-                //whisperPlayer(objective->Name, player, creature);
 
                 // simply close gossip or send something else?
                 player->PlayerTalkClass->SendCloseGossip();
@@ -640,12 +585,17 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
     for (std::vector<HearthstoneAchievement>::iterator itr = hsAchievementTable.begin(); itr != hsAchievementTable.end(); itr++)
     {
         if ((*itr).type == achievementType) // match the type
-            if (((*itr).data0 == returnData0(criteria)) || ((*itr).data1 == returnData1(criteria))) // match criteria
+            if ((*itr).data0 == returnData0(criteria) && criteria->timerStartEvent == 0) // match criteria
             {
                 entry = (*itr).creature; // set credit
                 break;
             }
     }
+   
+    player->Say(std::to_string(achievementType), 0);
+    player->Say(std::to_string(returnData0(criteria)), 0);
+    player->Say(std::to_string(returnData1(criteria)), 0);
+    player->Say(std::to_string(entry), 0);
 
     if (entry)
         player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit

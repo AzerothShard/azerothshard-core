@@ -81,7 +81,7 @@ public:
         AzthPlayer::AzthAchiData& it = player->azthPlayer->m_completed_criteria_map[criteria->ID];
         it.level = player->getLevel();
         it.levelParty = player->azthPlayer->getGroupLevel();
-        
+
         // hearthstone mode
         sHearthstoneMode->sendQuestCredit(player, criteria);
     }
