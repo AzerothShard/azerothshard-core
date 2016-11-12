@@ -561,6 +561,7 @@ class Creature : public Unit, public GridObject<Creature>, public MovableMapObje
         bool LoadFromDB(uint32 guid, Map* map) { return LoadCreatureFromDB(guid, map, false, true); }
         bool LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap = true, bool gridLoad = false);
         void SaveToDB();
+        void SaveAlias(uint32 guid, char* const alias);
                                                             // overriden in Pet
         virtual void SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask);
         virtual void DeleteFromDB();                        // overriden in Pet
