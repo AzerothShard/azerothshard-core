@@ -800,6 +800,13 @@ void GameObject::SaveToDB()
     SaveToDB(GetMapId(), data->spawnMask, data->phaseMask);
 }
 
+void GameObject::SaveAlias(uint32 guid, char* const alias)
+{
+    if (alias && guid)
+        WorldDatabase.AsyncPQuery("INSERT INTO `gameobject_alias` (guid, alias) VALUES (%u, '%s');", guid, alias);
+}
+
+
 void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
 { 
     const GameObjectTemplate* goI = GetGOInfo();

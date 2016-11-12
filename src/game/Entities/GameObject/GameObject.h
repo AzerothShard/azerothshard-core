@@ -661,6 +661,8 @@ class GameObject : public WorldObject, public GridObject<GameObject>, public Mov
         // overwrite WorldObject function for proper name localization
         std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const;
 
+        void SaveAlias(uint32 guid, char* const alias);
+
         void SaveToDB();
         void SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask);
         bool LoadFromDB(uint32 guid, Map* map) { return LoadGameObjectFromDB(guid, map, false); }

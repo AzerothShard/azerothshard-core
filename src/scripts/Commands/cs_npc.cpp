@@ -138,6 +138,8 @@ public:
             return false;
 
         char* charID = handler->extractKeyFromLink((char*)args, "Hcreature_entry");
+        char* alias = strtok(nullptr, " ");
+
         if (!charID)
             return false;
 
@@ -175,6 +177,7 @@ public:
                 Creature* creature = trans->CreateNPCPassenger(guid, &data);
 
                 creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode(), chr->GetPhaseMaskForSpawn());
+                creature->SaveAlias(guid, alias);
 
                 sObjectMgr->AddCreatureToGrid(guid, &data);
                 return true;
@@ -190,6 +193,8 @@ public:
         creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
 
         uint32 db_guid = creature->GetDBTableGUIDLow();
+
+        creature->SaveAlias(db_guid, alias);
 
         // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells()
         // current "creature" variable is deleted and created fresh new, otherwise old values might trigger asserts or cause undefined behavior

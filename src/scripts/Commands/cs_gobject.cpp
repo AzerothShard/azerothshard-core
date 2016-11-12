@@ -112,6 +112,7 @@ public:
         if (!objectId)
             return false;
 
+        char* alias = strtok(nullptr, " ");
         char* spawntimeSecs = strtok(nullptr, " ");
 
         const GameObjectTemplate* objectInfo = sObjectMgr->GetGameObjectTemplate(objectId);
@@ -156,6 +157,7 @@ public:
 
         // fill the gameobject data and save to the db
         object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), player->GetPhaseMaskForSpawn());
+
         // delete the old object and do a clean load from DB with a fresh new GameObject instance.
         // this is required to avoid weird behavior and memory leaks
         delete object;
@@ -170,7 +172,7 @@ public:
 
         // TODO: is it really necessary to add both the real and DB table guid here ?
         sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
-
+        object->SaveAlias(guidLow, alias);
         handler->PSendSysMessage(LANG_GAMEOBJECT_ADD, objectId, objectInfo->name.c_str(), guidLow, x, y, z);
         return true;
     }
