@@ -459,7 +459,7 @@ class npc_guild_master : public CreatureScript
 
             GHobj.ChangeGuildHouse(player->GetGuildId(),0);
 
-            uint32 sellPrice = (price * GOLD * 75) / 100;
+            uint32 sellPrice = ( (price * GOLD) / 100 ) * 75; // 75% of refunding
             player->ModifyMoney(sellPrice);
             //display message e.g. "here your money etc."
             char msg[200];
