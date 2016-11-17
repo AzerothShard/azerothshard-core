@@ -34,7 +34,7 @@ do
 	fi
 
 	operation=${line%% *}
-	name=${line#* \`azerothcore_clean_world\`.\`}
+	name=${line#* \`$DB_1_NAME\`.\`}
 	name=${name%%\` *}
 	if [ ! -z "$name" ]; then
 		if [[ "${op_list[@]}" =~ "${operation}" && ! -z "$operation" ]]; then
