@@ -1447,14 +1447,17 @@ public:
         // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
         creature->LoadFromDB(db_guid, map);
 
-        WorldDatabase.PQuery("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')",
-            creature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, creature->GetName().c_str());
+        std::string new_str(creature->GetName());
+        WorldDatabase.EscapeString(new_str);
+
+        WorldDatabase.PQuery("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')",
+            creature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, new_str.c_str());
 
         map->AddToMap(creature);
         sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
         if (guildhouseaddid == 2)
         {
-            QueryResult guildResult = WorldDatabase.PQuery("SELECT guildid FROM guildhouses WHERE id = %u", guildhouseid);
+            QueryResult guildResult = ExtraDatabase.PQuery("SELECT guildid FROM `guildhouses` WHERE id = %u", guildhouseid);
             if (guildResult)
             {
                 GHobj.UpdateGuardMap(creature->GetDBTableGUIDLow(), guildResult->Fetch()->GetInt32());

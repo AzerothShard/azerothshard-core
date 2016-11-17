@@ -74,7 +74,7 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         GuildHouseMap::iterator itr = GH_map.find(guild_id);
         if (itr == GH_map.end())
             return true;
-        QueryResult result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
+        QueryResult result = ExtraDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
         RemoveGuildHouseAdd(itr->second.Id);
         GH_map.erase(guild_id);
     }
@@ -83,7 +83,7 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         QueryResult result;
         GuildHouseMap::iterator itr = GH_map.find(guild_id);
         
-        result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map`, `minguildsize`, `price` FROM `guildhouses` WHERE `id` = %u", newid);
+        result = ExtraDatabase.PQuery("SELECT `x`, `y`, `z`, `map`, `minguildsize`, `price` FROM `guildhouses` WHERE `id` = %u", newid);
         if (!result)
             return false; // Id doesn't valid
 
@@ -115,7 +115,7 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         GuildHouse NewGH(guild_id, id, x, y, z, map, minguildsize, price, add);
         GH_map[guild_id] = NewGH;
 
-        result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
+        result = ExtraDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
         AddGuildHouseAdd(newid, add, guild_id);
     }
     return true;
@@ -169,7 +169,7 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
         GH_Add::iterator itr = GH_AddHouse.find(find);
         if (itr == GH_AddHouse.end()) 
             continue;
-        if (!(itr->second.spawned))  // Non despawnare se è già despawnato
+        if (!(itr->second.spawned))  // Do not despawn if it is already despawned
                 continue;
         gh_Item_Vector::iterator itr2 =  itr->second.AddCre.begin();
         for (; itr2 != itr->second.AddCre.end(); itr2++)
@@ -206,7 +206,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
             GH_Add::iterator itr = GH_AddHouse.find(find);
             if (itr == GH_AddHouse.end())
                 continue;
-            if (itr->second.spawned) //Non rispawnare se è già spawnato
+            if (itr->second.spawned) // Do not respawn if it is already spawned
                 continue;
             gh_Item_Vector::iterator itr2 =  itr->second.AddGO.begin();
             for (; itr2 != itr->second.AddGO.end(); itr2++)
@@ -269,7 +269,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
 void GuildHouseObject::LoadGuildHouse()
 {
     GH_map.clear();
-    QueryResult result = WorldDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map`,`minguildsize`,`price` FROM guildhouses ORDER BY guildId ASC");
+    QueryResult result = ExtraDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map`,`minguildsize`,`price` FROM `guildhouses` ORDER BY guildId ASC");
 
     if (!result)
     {
@@ -334,7 +334,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
 
     sLog->outError("Loading GuildHouse npcs - objects...");
 
-    QueryResult result = WorldDatabase.Query("SELECT `guid`,`type`,`id`,`add_type` FROM guildhouses_add ORDER BY Id ASC");
+    QueryResult result = WorldDatabase.Query("SELECT `guid`,`type`,`id`,`add_type` FROM `guildhouses_add` ORDER BY Id ASC");
 
     if (!result)
     {

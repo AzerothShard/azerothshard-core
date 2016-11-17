@@ -44,30 +44,30 @@
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
 
-#define MSG_GOSSIP_MARRIED       "Vai in viaggio di nozze"
-#define MSG_GOSSIP_TELE          "Teletrasportami Alla sede di gilda"
-#define MSG_GOSSIP_BUY           "Crea Sede di gilda"
-#define MSG_GOSSIP_SELL          "Vendi sede di gilda"
-#define MSG_GOSSIP_ADD           "Compra aggiunte per la sede di Gilda"
-#define MSG_GOSSIP_NEXTPAGE      "Successivo -->"
-#define MSG_GOSSIP_CLOSE         "Chiudi"
-#define MSG_INCOMBAT             "Sei in combat!"
-#define MSG_NOGUILDHOUSE         "La tua gilda non possiede una casa!"
-#define MSG_NOFREEGH             "Purtroppo tutte le case sono occupate oppure non hai abbastanza membri per acquistarne una di quelle libere."
-#define MSG_NOADDGH              "Non hai altre GHAdd da comprare"
-#define MSG_ALREADYHAVEGH        "La tua gilda possiede già una sede."
-#define MSG_ALREADYHAVEGHADD     "La tua gilda possiede già questo GHAdd."
-#define MSG_NOTENOUGHMONEY       "Non hai abbastanza soldi per acquistare. Hai bisogno di %u gold."
-#define MSG_NOTENOUGHGUILDMEMBERS "Non hai abbastanza membri in gilda per acquistare la casa. Hai bisogno di %u membri."
-#define MSG_GHOCCUPIED           "Sfortunatamente questa casa è già occupata."
-#define MSG_CONGRATULATIONS      "Congratulazioni! La sede è stata creata."
-#define MSG_SOLD                 "La gilda è stata venduta. ??? ???? %u ??????."
-#define MSG_NOTINGUILD           "Non sei in nessuna gilda."
-#define MSG_CONFIRM_BUY          "Conferma l'acquisto"
-#define MSG_NEGATE_BUY           "Nega l'acquisto"
+#define MSG_GOSSIP_MARRIED          "Vai in viaggio di nozze"
+#define MSG_GOSSIP_TELE             "Teletrasportami Alla sede di gilda"
+#define MSG_GOSSIP_BUY              "Crea Sede di gilda"
+#define MSG_GOSSIP_SELL             "Vendi sede di gilda"
+#define MSG_GOSSIP_ADD              "Compra aggiunte per la sede di Gilda"
+#define MSG_GOSSIP_NEXTPAGE         "Successivo -->"
+#define MSG_GOSSIP_CLOSE            "Chiudi"
+#define MSG_INCOMBAT                "Sei in combat!"
+#define MSG_NOGUILDHOUSE            "La tua gilda non possiede una casa!"
+#define MSG_NOFREEGH                "Purtroppo tutte le case sono occupate oppure non hai abbastanza membri per acquistarne una di quelle libere."
+#define MSG_NOADDGH                 "Non hai altre GHAdd da comprare"
+#define MSG_ALREADYHAVEGH           "La tua gilda possiede gia' una sede."
+#define MSG_ALREADYHAVEGHADD        "La tua gilda possiede gia' questo GHAdd."
+#define MSG_NOTENOUGHMONEY          "Non hai abbastanza soldi per acquistare. Hai bisogno di %u gold."
+#define MSG_NOTENOUGHGUILDMEMBERS   "Non hai abbastanza membri in gilda per acquistare la casa. Hai bisogno di %u membri."
+#define MSG_GHOCCUPIED              "Sfortunatamente questa casa e' gia' occupata."
+#define MSG_CONGRATULATIONS         "Congratulazioni! La sede e'stata creata."
+#define MSG_SOLD                    "La gilda e' stata venduta. ??? ???? %u ??????."
+#define MSG_NOTINGUILD              "Non sei in nessuna gilda."
+#define MSG_CONFIRM_BUY             "Conferma l'acquisto"
+#define MSG_NEGATE_BUY              "Nega l'acquisto"
 
-#define CODE_SELL                "SELL"
-#define MSG_CODEBOX_SELL         "Scrivi \"" CODE_SELL "\" in maiuscolo per vendere la casa, dopo premi accept."
+#define CODE_SELL                   "SELL"
+#define MSG_CODEBOX_SELL            "Scrivi \"" CODE_SELL "\" in maiuscolo per vendere la casa, dopo premi accept."
 
 #define OFFSET_CONFIRM_BUY_ID_TO_ACTION       2000
 #define OFFSET_CONFIRM_BUY_ADD_ID_TO_ACTION   5000
@@ -192,7 +192,7 @@ class npc_guild_master : public CreatureScript
         if (player->IsGameMaster())
             guildsize = 20000;
 
-        result = WorldDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = %u) AND `id` > %u AND `minguildsize` <= %u ORDER BY `id` ASC LIMIT %u",
+        result = ExtraDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = %u) AND `id` > %u AND `minguildsize` <= %u ORDER BY `id` ASC LIMIT %u",
             (player->GetTeamId(true) == TEAM_HORDE)?1:0, showFromId, guildsize, GOSSIP_COUNT_MAX);
 
         if (result)
@@ -624,12 +624,12 @@ class guild_guard : public CreatureScript
 			_Creature->MonsterWhisper("Ciao gm!", player);
 			if (guardguild)
 			{
-				sprintf(msg, "Il mio id di gilda è: %u", guardguild);
+				sprintf(msg, "Il mio id di gilda: %u", guardguild);
 				_Creature->MonsterWhisper(msg, player);
 				if (_Creature->GetEntry() == NPC_GUARD_1)
-					_Creature->MonsterWhisper("Il mio raggio d'azione è 100y", player);
+					_Creature->MonsterWhisper("Il mio raggio d'azione: 100y", player);
 				else
-					_Creature->MonsterWhisper("Il mio raggio d'azione è 50y", player);
+					_Creature->MonsterWhisper("Il mio raggio d'azione: 50y", player);
 			}
 			else
 				_Creature->MonsterWhisper("Sono una Guardia Bugga!", player);
