@@ -6,10 +6,10 @@
 
 #ifndef _PLAYER_H
 #define _PLAYER_H
- //[AZTH]
+//[AZTH]
 #include "ArenaTeam.h"
 #include "AzthPlayer.h"
- //[/AZTH]
+//[/AZTH]
 #include "DBCStores.h"
 #include "GroupReference.h"
 #include "MapReference.h"
@@ -45,6 +45,9 @@ class PlayerMenu;
 class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
+//[AZTH]
+class AzthPlayer;
+//[/AZTH]
 
 typedef std::deque<Mail*> PlayerMails;
 

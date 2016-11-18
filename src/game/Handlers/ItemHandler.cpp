@@ -15,6 +15,7 @@
 #include "UpdateData.h"
 #include "ObjectAccessor.h"
 #include "SpellInfo.h"
+#include "AzthSmartStone.h"
 
 void WorldSession::HandleSplitItemOpcode(WorldPacket & recvData)
 {
@@ -834,7 +835,14 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket & recvData)
     else
         return; // cheating
 
-    GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
+    if (!sSmartStone->isNullCommand(sSmartStone->getCommandByItem(item)))
+    {
+        GetPlayer()->azthPlayer->BuySmartStoneCommand(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
+    }
+    else
+    {
+        GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
+    }
 }
 
 void WorldSession::HandleListInventoryOpcode(WorldPacket & recvData)
