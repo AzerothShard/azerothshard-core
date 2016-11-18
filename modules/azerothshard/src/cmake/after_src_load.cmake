@@ -89,7 +89,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/game/Texts
   ${CMAKE_SOURCE_DIR}/src/game/Tools
   ${CMAKE_SOURCE_DIR}/src/game/Tickets
-  ${CMAKE_SOURCE_DIR}/src/game/Transmogrification
   ${CMAKE_SOURCE_DIR}/src/game/Warden
   ${CMAKE_SOURCE_DIR}/src/game/Warden/Modules
   ${CMAKE_SOURCE_DIR}/src/game/Weather

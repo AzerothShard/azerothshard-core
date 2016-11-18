@@ -165,7 +165,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/game/Spells/Auras
   ${CMAKE_SOURCE_DIR}/src/game/Texts
   ${CMAKE_SOURCE_DIR}/src/game/Tickets
-  ${CMAKE_SOURCE_DIR}/src/game/Transmogrification #[AZTH] Transm
   ${CMAKE_SOURCE_DIR}/src/game/Tools
   ${CMAKE_SOURCE_DIR}/src/game/Warden
   ${CMAKE_SOURCE_DIR}/src/game/Warden/Modules
