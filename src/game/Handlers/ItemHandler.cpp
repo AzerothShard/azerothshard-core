@@ -834,7 +834,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket & recvData)
         --slot;
     else
         return; // cheating
-
+    //[AZTH]
     if (!sSmartStone->isNullCommand(sSmartStone->getCommandByItem(item)))
     {
         GetPlayer()->azthPlayer->BuySmartStoneCommand(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
@@ -843,6 +843,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket & recvData)
     {
         GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
     }
+    //[/AZTH]
 }
 
 void WorldSession::HandleListInventoryOpcode(WorldPacket & recvData)

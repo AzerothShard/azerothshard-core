@@ -50,31 +50,31 @@ enum miscHs
 
 enum otherMiscHs
 {
-    QUALITY_TO_FILL_PERCENTAGE = 1,
-    ONLY_COMMON = 2,
-    NOT_COMMON = 1,
-    EVERYTHING = 2,
-    TIME_TO_RECEIVE_MAIL = 0,
-    SUPPORTED_CRITERIA_NUMBER = 15
+    QUALITY_TO_FILL_PERCENTAGE  = 1,
+    ONLY_COMMON                 = 2,
+    NOT_COMMON                  = 1,
+    EVERYTHING                  = 2,
+    TIME_TO_RECEIVE_MAIL        = 0,
+    SUPPORTED_CRITERIA_NUMBER   = 15,
+    MAX_RETRY_GET_ITEM          = 30
 };
 
 class HearthstoneMode
 {
-public:
-    void AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue);
-    void sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria);
-    int returnData0(AchievementCriteriaEntry const* criteria);
-    int returnData1(AchievementCriteriaEntry const* criteria);
-    std::vector<HearthstoneAchievement> hsAchievementTable;
-    std::vector<HearthstoneQuest> hsPveQuests;
-    std::vector<HearthstoneQuest> hsPvpQuests;
-    void getItems();
-    int getQuality();
-    std::vector<int> items[8];
-    bool isInArray(int val);
-    void loadCriteria();
-    void loadQuests();
+    public:
+        void AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue);
+        void sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria);
+        int returnData0(AchievementCriteriaEntry const* criteria);
+        int returnData1(AchievementCriteriaEntry const* criteria);
+        std::vector<HearthstoneAchievement> hsAchievementTable;
+        int getQuality();
+        std::vector<int> items[8];
+        bool isInArray(int val);
+        bool PlayerCanUseItem(Item const* item, Player* player, bool classCheck);
+        void loadHearthstone();
 
+    private:
+        float CHANCES[8] = { 10.f, 30.f, 20.f, 15.f, 5.f, 1.f, 0.5f, 1.f };
 };
 
 #define sHearthstoneMode ACE_Singleton<HearthstoneMode, ACE_Null_Mutex>::instance()

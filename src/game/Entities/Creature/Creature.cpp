@@ -980,7 +980,7 @@ bool Creature::isTappedBy(Player const* player) const
         return true;
 
     Group const* playerGroup = player->GetGroup();
-    if (!playerGroup || playerGroup != GetLootRecipientGroup()) // if we dont have a group we arent the recipient
+    if (!playerGroup || playerGroup != GetLootRecipientGroup()) // if we dont have a group we arent t::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)he recipient
         return false;                                           // if creature doesnt have group bound it means it was solo killed by someone else
 
     return true;
@@ -999,6 +999,12 @@ void Creature::SaveToDB()
 
     uint32 mapId = GetTransport() && GetTransport()->ToMotionTransport() ? GetTransport()->GetGOInfo()->moTransport.mapID : GetMapId();
     SaveToDB(mapId, data->spawnMask, GetPhaseMask());
+}
+
+void Creature::SaveAlias(uint32 guid, char* const alias)
+{
+    if (alias && guid)
+        WorldDatabase.AsyncPQuery("INSERT INTO `creature_alias` (guid, alias) VALUES (%u, '%s');", guid, alias);
 }
 
 void Creature::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)

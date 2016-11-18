@@ -45,7 +45,7 @@ INSERT INTO creature_template (entry, killcredit1, modelid1, `name`, minlevel, m
 
 
 DELETE FROM quest_template WHERE id >= 110000 AND id <= 110100;
-INSERT INTO `quest_template` (`id`, `Type`, `ZoneOrSort`, `Flags`, `Title`, `Objectives`, `Details`, `CompletedText`, `RequiredNpcOrGo1`, `RequiredNpcOrGoCount1`, ObjectiveText1) VALUES
+INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTitle`, `LogDescription`, `QuestDescription`, `EndText`, `RequiredNpcOrGo1`, `RequiredNpcOrGoCount1`, ObjectiveText1) VALUES
 ('110000','2','3840','12482','Vinci Alterac Valley','Vinci Alterac Valley','Vinci Alterac Valley','Ritorna da Han\'al','110001','1', "Vinci Alterac Valley"),
 ('110001','2','3840','12482','Vinci Warsong Gulch','Vinci Warsong Gulch','Vinci Warsong Gulch','Ritorna da Han\'al','110002','1', "Vinci Warsong Gulch"),
 (110002, '2','3840','12482', 'Vinci Arathi Basin', 'Vinci Arathi Basin', 'Vinci Arathi Basin', 'Ritorna da Han\'al', 110003, 1, 'Vinci Arathi Basin'),
@@ -88,4 +88,4 @@ INSERT INTO `quest_template` (`id`, `Type`, `ZoneOrSort`, `Flags`, `Title`, `Obj
 (110039, '2','3840','12482', 'Win Duel', 'Win Duel', 'Win Duel', 'Ritorna da Han\'al', 110040, 1, 'Win Duel')
 ;
 
-UPDATE quest_template SET `level` = 80, minlevel = 80, maxlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110000 AND id <= 110100;
+UPDATE quest_template SET minlevel = 80, maxlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110000 AND id <= 110100;

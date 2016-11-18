@@ -1,4 +1,4 @@
-// Copyright (c) 2016 AzerothCore
+ï»¿// Copyright (c) 2016 AzerothCore
 // Author: Gargarensis
 // Refactored by: mik1893 
 // This software is provided 'as-is', without any express or implied
@@ -6,8 +6,6 @@
 // arising from the use of this software.
 
 #include "azth_custom_hearthstone_mode.h"
-
-float CHANCES[8] = { 10.f, 30.f, 20.f, 15.f, 5.f, 1.f, 0.5f, 1.f };
 
 void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue)
 {
@@ -108,7 +106,7 @@ void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * se
 
 bool HearthstoneMode::isInArray(int val)
 {
-    int SUPPORTED_CRITERIA[SUPPORTED_CRITERIA_NUMBER] = { 0, 1, 8, 30, 31, 32, 33, 37, 38, 39, 52, 53, 56, 76, 113 };
+    int SUPPORTED_CRITERIA[SUPPORTED_CRITERIA_NUMBER] = { 0,1,8,30,31,32,33,37,38,39,52,53,56,76,113 };
     int i;
     for (i = 0; i < SUPPORTED_CRITERIA_NUMBER; i++) {
         if (SUPPORTED_CRITERIA[i] == val)
@@ -117,26 +115,6 @@ bool HearthstoneMode::isInArray(int val)
     return false;
 }
 
-void HearthstoneMode::getItems()
-{
-    items[0].clear();
-    items[1].clear();
-    items[2].clear();
-    items[3].clear();
-    items[4].clear();
-    items[5].clear();
-    items[6].clear();
-    items[7].clear();
-    QueryResult result = WorldDatabase.Query("SELECT entry, quality FROM item_template WHERE entry >= 100017 LIMIT 0, 200000");
-    do
-    {
-        Field* fields = result->Fetch();
-        uint32 entry = fields[0].GetUInt32();
-        uint32 quality = fields[1].GetUInt32();
-
-        items[quality].push_back(entry);
-    } while (result->NextRow());
-}
 
 int HearthstoneMode::getQuality()
 {
@@ -255,68 +233,28 @@ int HearthstoneMode::returnData1(AchievementCriteriaEntry const* criteria)
     }
     return value;
 }
-/*
-int WHISPER_CHANCE = 50;
-
-std::vector<std::string> whispersList =
-{
-"Uccidere --NAME--, non sarà facile... buona fortuna!",
-"Povero --NAME--... la sua fine è segnata!",
-"--NAME--? Sarà un gioco da ragazzi ucciderlo.",
-"Buona fortuna!",
-"--NAME-- deve morire!"
-};*/
 
 /// ---------------- START OF SCRIPTS ------------------------- ///
 
 #define GOSSIP_ITEM_GIVE_PVE_QUEST      "Vorrei ricevere la mia missione PVE giornaliera."
 #define GOSSIP_ITEM_GIVE_PVP_QUEST      "Vorrei ricevere la mia missione PVP giornaliera."
-#define GOSSIP_ITEM_GIVE_EXTRA_QUEST    "Vorrei una missione extra!"
+#define GOSSIP_ITEM_GIVE_EXTRA_QUEST    "Vorrei una missione extra!" // unused
 #define GOSSIP_ITEM_CHANGE_QUEST		"Vorrei cambiare la mia missione." // unused
 
 class npc_han_al : public CreatureScript
 {
 public:
     npc_han_al() : CreatureScript("npc_han_al") { }
-    /*
-    void whisperPlayer(std::string creatureName, Player * player, Creature * creature)
-    {
-    double random = rand_chance();
-    if (random <= WHISPER_CHANCE)
-    {
-    int index = rand() % whispersList.size() - 1;
-    std::string whisperText = whispersList[index];
-    replaceAll(whisperText, "--NAME--", creatureName);
-    creature->Whisper(whisperText, LANG_UNIVERSAL, player, false);
-    }
-    }
 
-    void replaceAll(std::string& str, const std::string& from, const std::string& to) {
-    if (from.empty())
-    return;
-    size_t start_pos = 0;
-    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-    start_pos += to.length();
-    }
-    }
-    */
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
         time_t t = time(NULL);
         tm *lt = localtime(&t);
         int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
         srand(seed);
-        uint32 idPve = sHearthstoneMode->hsPveQuests.at(rand() % (sHearthstoneMode->hsPveQuests.size() - 1)).id;
-        Quest const * questPve = sObjectMgr->GetQuestTemplate(idPve);
-
-        t = time(NULL);
-        tm *lt2 = localtime(&t);
-        seed = lt2->tm_mday + lt2->tm_mon + 1 + lt2->tm_year + 1900 + player->GetGUID();
-        srand(seed);
-        uint32 idPvp = sHearthstoneMode->hsPvpQuests.at(rand() % (sHearthstoneMode->hsPvpQuests.size() - 1)).id;
-        Quest const * questPvp = sObjectMgr->GetQuestTemplate(idPvp);
-
+        //int id = rand() % PVE_RANGE;
+        int id = PVE_LOWER_RANGE + (rand() % PVE_RANGE);
+        Quest const * questPve = sObjectMgr->GetQuestTemplate(id);
         player->PlayerTalkClass->ClearMenus();
         switch (action)
         {
@@ -329,24 +267,13 @@ public:
             if (player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false))
             {
                 player->AddQuest(questPve, NULL);
-                //CreatureTemplate const * objective = sObjectMgr->GetCreatureTemplate(questPve->RequiredNpcOrGo[0]);
-                //whisperPlayer(objective->Name, player, creature);
 
                 // simply close gossip or send something else?
                 player->PlayerTalkClass->SendCloseGossip();
             }
             break;
         case GOSSIP_ACTION_INFO_DEF + 1:
-            if (!questPvp)
-                return false;
 
-            if (player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false))
-            {
-                player->AddQuest(questPvp, NULL);
-
-                // simply close gossip or send something else?
-                player->PlayerTalkClass->SendCloseGossip();
-            }
             break;
         case GOSSIP_ACTION_INFO_DEF + 2:
 
@@ -360,20 +287,18 @@ public:
         unsigned char bitmask = 0;
         int gossip = 100000;
 
-#pragma region "Pve Quest Check"
         time_t t = time(NULL);
         tm *lt = localtime(&t);
         int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
         srand(seed);
-        int idPve = sHearthstoneMode->hsPveQuests.at(rand() % (sHearthstoneMode->hsPveQuests.size() - 1)).id;
+        //int id = rand() % PVE_RANGE;
+        int idPve = PVE_LOWER_RANGE + (rand() % PVE_RANGE);
         Quest const * questPve = sObjectMgr->GetQuestTemplate(idPve);
-
-
         int PveMaxCheck = 0;
-        int i = 0;
-        while (i <= (sHearthstoneMode->hsPveQuests.size() - 1) && PveMaxCheck <= MAX_PVE_QUEST_NUMBER)
+        int i = PVE_LOWER_RANGE;
+        while (i <= PVE_UPPER_RANGE && PveMaxCheck <= MAX_PVE_QUEST_NUMBER)
         {
-            if (player->GetQuestStatus(sHearthstoneMode->hsPveQuests.at(i).id) != QUEST_STATUS_NONE)
+            if (player->GetQuestStatus(i) != QUEST_STATUS_NONE)
             {
                 PveMaxCheck = PveMaxCheck + 1;
             }
@@ -383,32 +308,6 @@ public:
         {
             bitmask = bitmask | BITMASK_PVE;
         }
-#pragma endregion
-
-#pragma region "Pvp Quest Check"
-        t = time(NULL);
-        tm *lt2 = localtime(&t);
-        seed = lt2->tm_mday + lt2->tm_mon + 1 + lt2->tm_year + 1900 + player->GetGUID();
-        srand(seed);
-        int idPvp = sHearthstoneMode->hsPvpQuests.at(rand() % (sHearthstoneMode->hsPvpQuests.size() - 1)).id;
-        Quest const * questPvp = sObjectMgr->GetQuestTemplate(idPvp);
-
-
-        int PvpMaxCheck = 0;
-        i = 0;
-        while (i <= (sHearthstoneMode->hsPvpQuests.size() - 1) && PvpMaxCheck <= MAX_PVE_QUEST_NUMBER) // NEED PVP MAX?
-        {
-            if (player->GetQuestStatus(sHearthstoneMode->hsPvpQuests.at(i).id) != QUEST_STATUS_NONE)
-            {
-                PvpMaxCheck = PvpMaxCheck + 1;
-            }
-            i = i + 1;
-        }
-        if (player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false) && PvpMaxCheck < MAX_PVE_QUEST_NUMBER)  // NEED PVP MAX?
-        {
-            bitmask = bitmask | BITMASK_PVP;
-        }
-#pragma endregion
 
         if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
         {
@@ -416,7 +315,7 @@ public:
         }
         if ((bitmask & BITMASK_PVP) == BITMASK_PVP)
         {
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVP_QUEST, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            // player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVP_QUEST, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         }
         if ((bitmask & BITMASK_EXTRA) == BITMASK_EXTRA)
         {
@@ -485,7 +384,7 @@ public:
 
     bool OnUse(Player* player, Item* item, SpellCastTargets const& /*target*/)
     {
-        sHearthstoneMode->getItems();
+        //sHearthstoneMode->getItems();
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         int16 deliverDelay = TIME_TO_RECEIVE_MAIL;
         MailDraft* draft = new MailDraft("Sacca Hearthstone", "");
@@ -493,6 +392,9 @@ public:
         time_t t = time(NULL);
         tm *lt = localtime(&t);
         int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + lt->tm_sec + player->GetGUID() + player->GetItemCount(item->GetEntry(), true, 0);
+        int loopCheck = 0;
+
+        Item* newItem = Item::CreateItem(100017, 1, 0);
 
         while (i <= EVERYTHING)
         {
@@ -500,17 +402,28 @@ public:
             int quality = 0;
             quality = sHearthstoneMode->getQuality();
             uint32 id = 0;
-            id = rand() % sHearthstoneMode->items[quality].size();
-            if (Item* item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0))
+            do
             {
-                item->SaveToDB(trans);
-                draft->AddItem(item);
+                if (sHearthstoneMode->items[quality].size() != 0)
+                {
+                    id = rand() % sHearthstoneMode->items[quality].size();
+                    newItem = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                }
+                loopCheck++;
+            } while (!sHearthstoneMode->PlayerCanUseItem(newItem, player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+
+            if (newItem)
+            {
+                newItem->SaveToDB(trans);
+                draft->AddItem(newItem);
             }
 
             i = i + 1;
             seed = seed + i;
         }
         i = 1;
+        loopCheck = 0;
+        newItem = Item::CreateItem(100017, 1, 0);
         while (i <= ONLY_COMMON)
         {
             //srand(seed + 3);
@@ -519,19 +432,29 @@ public:
             {
                 quality = 0;
             }
-            uint32 id;
-            id = rand() % sHearthstoneMode->items[quality].size();
 
-            if (Item* item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0))
+            uint32 id = 0;
+            do
             {
-                item->SaveToDB(trans);
-                draft->AddItem(item);
+                if (sHearthstoneMode->items[quality].size() != 0)
+                {
+                    id = rand() % sHearthstoneMode->items[quality].size();
+                    newItem = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                }
+                loopCheck++;
+            } while (!sHearthstoneMode->PlayerCanUseItem(newItem, player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+            if (newItem)
+            {
+                newItem->SaveToDB(trans);
+                draft->AddItem(newItem);
             }
 
             i = i + 1;
             seed = seed + i;
         }
         i = 1;
+        loopCheck = 0;
+        newItem = Item::CreateItem(100017, 1, 0);
         while (i <= NOT_COMMON)
         {
             //srand(seed + 4);
@@ -541,12 +464,20 @@ public:
             {
                 quality = sHearthstoneMode->getQuality();
             }
-            uint32 id;
-            id = rand() % sHearthstoneMode->items[quality].size();
-            if (Item* item = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0))
+            uint32 id = 0;
+            do
             {
-                item->SaveToDB(trans);
-                draft->AddItem(item);
+                if (sHearthstoneMode->items[quality].size() != 0)
+                {
+                    id = rand() % sHearthstoneMode->items[quality].size();
+                    newItem = Item::CreateItem(sHearthstoneMode->items[quality][id], 1, 0);
+                }
+                loopCheck++;
+            } while (!sHearthstoneMode->PlayerCanUseItem(newItem, player, true) && loopCheck < MAX_RETRY_GET_ITEM);
+            if (newItem)
+            {
+                newItem->SaveToDB(trans);
+                draft->AddItem(newItem);
             }
 
             i = i + 1;
@@ -556,16 +487,90 @@ public:
         draft->SendMailTo(trans, MailReceiver(player), MailSender(player), MAIL_CHECK_MASK_RETURNED, deliverDelay);
         CharacterDatabase.CommitTransaction(trans);
 
-        // devi controllare se le quest danno rep pure
-        // player->TextEmote("controlla la tua mail!");
-
-
         ChatHandler(player->GetSession()).SendSysMessage("Controlla la tua mail!");
 
         player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
         return true;
     }
 };
+
+bool HearthstoneMode::PlayerCanUseItem(Item const* item, Player* player, bool classCheck)
+{
+    if (!item)
+        return false;
+
+    ItemTemplate const* proto = item->GetTemplate();
+
+    if (proto)
+    {
+        player->Say(proto->Name1, 0);
+        if ((proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY) && player->GetTeamId(true) != TEAM_HORDE)
+            return false;
+
+        if ((proto->Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY) && player->GetTeamId(true) != TEAM_ALLIANCE)
+            return false;
+
+        if ((proto->AllowableClass & player->getClassMask()) == 0 || (proto->AllowableRace & player->getRaceMask()) == 0)
+            return false;
+
+        if (proto->RequiredSkill != 0)
+        {
+            if (player->GetSkillValue(proto->RequiredSkill) == 0)
+                return false;
+            else if (player->GetSkillValue(proto->RequiredSkill) < proto->RequiredSkillRank)
+                return false;
+        }
+
+        if (proto->RequiredSpell != 0 && !player->HasSpell(proto->RequiredSpell))
+            return false;
+
+        if (player->getLevel() < proto->RequiredLevel)
+            return false;
+
+        const static uint32 item_weapon_skills[MAX_ITEM_SUBCLASS_WEAPON] =
+        {
+            SKILL_AXES,     SKILL_2H_AXES,  SKILL_BOWS,          SKILL_GUNS,      SKILL_MACES,
+            SKILL_2H_MACES, SKILL_POLEARMS, SKILL_SWORDS,        SKILL_2H_SWORDS, 0,
+            SKILL_STAVES,   0,              0,                   SKILL_FIST_WEAPONS,   0,
+            SKILL_DAGGERS,  SKILL_THROWN,   SKILL_ASSASSINATION, SKILL_CROSSBOWS, SKILL_WANDS,
+            SKILL_FISHING
+        };
+
+        if (classCheck && proto->Class == ITEM_CLASS_WEAPON && player->GetSkillValue(item_weapon_skills[proto->SubClass]) == 0)
+            return false;
+
+        if (classCheck && proto->Class == ITEM_CLASS_ARMOR)
+        {
+            uint32 type = proto->SubClass;
+            uint32 pClass = player->getClass();
+
+            switch (type)
+            {
+            case 1: //cloth
+                if (pClass != CLASS_PRIEST && pClass != CLASS_MAGE && pClass != CLASS_WARLOCK)
+                    return false;
+                break;
+            case 2: //leather
+                if (pClass != CLASS_ROGUE && pClass != CLASS_DRUID)
+                    return false;
+                break;
+            case 3: //mail
+                if (pClass != CLASS_HUNTER && pClass != CLASS_SHAMAN)
+                    return false;
+                break;
+            case 4: //plate
+                if (pClass != CLASS_WARRIOR && pClass != CLASS_PALADIN && pClass != CLASS_DEATH_KNIGHT)
+                    return false;
+                break;
+            default:
+                return true;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 
 void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria)
 {
@@ -580,18 +585,35 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
     for (std::vector<HearthstoneAchievement>::iterator itr = hsAchievementTable.begin(); itr != hsAchievementTable.end(); itr++)
     {
         if ((*itr).type == achievementType) // match the type
-            if (((*itr).data0 == returnData0(criteria)) || ((*itr).data1 == returnData1(criteria))) // match criteria
+            if ((*itr).data0 == returnData0(criteria) && criteria->timerStartEvent == 0) // match criteria
             {
                 entry = (*itr).creature; // set credit
                 break;
             }
     }
+   
+    player->Say(std::to_string(achievementType), 0);
+    player->Say(std::to_string(returnData0(criteria)), 0);
+    player->Say(std::to_string(returnData1(criteria)), 0);
+    player->Say(std::to_string(entry), 0);
+
+/*	for (int i = 0; i < hsAchievementTable.size(); i++)
+	{
+		if (hsAchievementTable[i].type == achievementType)
+			if 
+	}*/
+
+	sLog->outError("AAAAAAAAAA");
+	sLog->outError("Achi type: %u", achievementType);
+	sLog->outError("data0: %u", returnData0(criteria));
+	sLog->outError("data1: %u", returnData1(criteria));
+	sLog->outError("entry: %u", entry);
 
     if (entry)
         player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit
 }
 
-void HearthstoneMode::loadCriteria()
+void HearthstoneMode::loadHearthstone()
 {
     // initialize count and array
     uint32 count = 0;
@@ -618,56 +640,36 @@ void HearthstoneMode::loadCriteria()
 
     // show log of loaded achievements at startup
     sLog->outError("Hearthstone Mode: loaded %u achievement definitions", count);
-}
 
-void HearthstoneMode::loadQuests()
-{
-    // initialize count and array
-    uint32 count = 0;
-    sHearthstoneMode->hsAchievementTable.clear();
+    int itemCount = 0;
 
-    // run query
-    QueryResult hsAchiResult = ExtraDatabase.PQuery("SELECT id, flag FROM hearthstone_quests");
-
-    // store result in vector of hs achievement struct
-    if (hsAchiResult)
+    sHearthstoneMode->items[0].clear();
+    sHearthstoneMode->items[1].clear();
+    sHearthstoneMode->items[2].clear();
+    sHearthstoneMode->items[3].clear();
+    sHearthstoneMode->items[4].clear();
+    sHearthstoneMode->items[5].clear();
+    sHearthstoneMode->items[6].clear();
+    sHearthstoneMode->items[7].clear();
+    QueryResult result = ExtraDatabase.Query("SELECT entry FROM transmog_items WHERE entry >= 100017 LIMIT 0, 200000");
+    do
     {
-        do
-        {
-            HearthstoneQuest hq = {};
-            hq.id = (*hsAchiResult)[0].GetUInt32();
-            hq.flag = (*hsAchiResult)[1].GetUInt32();
-            unsigned char bitmask = hq.flag;
+        Field* fields = result->Fetch();
+        uint32 entry = fields[0].GetUInt32();
+        uint32 quality = sObjectMgr->GetItemTemplate(entry)->Quality; //= fields[1].GetUInt32();
 
-            if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
-                sHearthstoneMode->hsPveQuests.push_back(hq); // push the newly created element in the list
-            if ((bitmask & BITMASK_PVP) == BITMASK_PVP)
-                sHearthstoneMode->hsPvpQuests.push_back(hq); // push the newly created element in the list
+        sHearthstoneMode->items[quality].push_back(entry);
+        itemCount++;
+    } while (result->NextRow());
 
-            count++;
-        } while (hsAchiResult->NextRow());
-    }
-
-    // show log of loaded achievements at startup
-    sLog->outError("Hearthstone Mode: loaded %u quests", count);
+    sLog->outError("Hearthstone Mode: loaded %u transmog items", itemCount);
 }
-
-class azth_hearthstone_world : public WorldScript
-{
-public:
-    azth_hearthstone_world() : WorldScript("azth_hearthstone_world") { }
-
-    void OnAfterConfigLoad(bool reload) override
-    {
-        sHearthstoneMode->loadCriteria();
-        sHearthstoneMode->loadQuests();
-    }
-};
 
 void AddSC_hearthstone()
 {
     new npc_han_al();
     new npc_azth_vendor();
     new item_azth_hearthstone_loot_sack();
-    new azth_hearthstone_world();
+    //new azth_hearthstone_world();
 }
+
