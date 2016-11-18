@@ -784,8 +784,11 @@ public:
 
         map->AddToMap(pGameObj);
 
-        WorldDatabase.PQuery("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')",
-            pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pGameObj->GetName().c_str());
+        std::string new_str(pGameObj->GetName());
+        WorldDatabase.EscapeString(new_str);
+
+        WorldDatabase.PQuery("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')",
+            pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, new_str.c_str());
 
         // TODO: is it really necessary to add both the real and DB table guid here ?
         sObjectMgr->AddGameobjectToGrid(db_lowGUID, sObjectMgr->GetGOData(db_lowGUID));
