@@ -76,3 +76,5 @@ local.properties
 #
 # ==================
 
+#[AZTH]
+!modules/azerothshard
