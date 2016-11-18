@@ -802,8 +802,12 @@ void GameObject::SaveToDB()
 
 void GameObject::SaveAlias(uint32 guid, char* const alias)
 {
-    if (alias && guid)
-        WorldDatabase.AsyncPQuery("INSERT INTO `gameobject_alias` (guid, alias) VALUES (%u, '%s');", guid, alias);
+    if (alias && guid) {
+        std::string new_str(alias);
+        WorldDatabase.EscapeString(new_str);
+
+        WorldDatabase.AsyncPQuery("INSERT INTO `gameobject_alias` (guid, alias) VALUES (%u, '%s');", guid, new_str.c_str());
+    }
 }
 
 
