@@ -7756,19 +7756,6 @@ void Player::DuelComplete(DuelCompleteType type)
 
     sScriptMgr->OnPlayerDuelEnd(duel->opponent, this, type);
 
-    //[AZTH]    
-    if (type != DUEL_INTERRUPTED)
-    {
-        RemoveArenaSpellCooldowns();
-        duel->opponent->RemoveArenaSpellCooldowns();
-    }
-
-    SetHealth(GetMaxHealth());
-    SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
-    duel->opponent->SetHealth(duel->opponent->GetMaxHealth());
-    duel->opponent->SetPower(POWER_MANA, duel->opponent->GetMaxPower(POWER_MANA));
-    //[/AZTH]
-
     switch (type)
     {
         case DUEL_FLED:
