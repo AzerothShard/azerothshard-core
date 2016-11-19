@@ -39,13 +39,13 @@ DB_EXTRA_CONF="MYSQL_USER='root'; \
 # UPDATES
 #
 
-DB_CHARACTERS_UPDATE_PATHS+=(
-	$AZTHSD_PATH_ROOT"/data/sql/updates/char/"
-)
+#DB_CHARACTERS_UPDATE_PATHS+=(
+#	$AZTHSD_PATH_ROOT"/data/sql/updates/char/"
+#)
 
-DB_WORLD_UPDATE_PATHS+=(
-	$AZTHSD_PATH_ROOT"/data/sql/updates/world/"
-)
+#DB_WORLD_UPDATE_PATHS+=(
+#	$AZTHSD_PATH_ROOT"/data/sql/updates/world/"
+#)
 
 # specify compilation type
 CTYPE=Debug
