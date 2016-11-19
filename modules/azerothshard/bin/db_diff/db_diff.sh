@@ -31,9 +31,11 @@ op_list=["INSERT","UPDATE","REPLACE","DELETE"]
 
 echo "Comparing databases..."
 
-mysqldbcompare --server1=$DB_1_USER:$DB_1_PASS@$DB_1_HOST --server2=$DB_2_USER:$DB_2_PASS@$DB_2_HOST --difftype=sql $DB_1_NAME:$DB_2_NAME --run-all-tests > "$DB_DIFF_PATH/full.sql"
+#mysqldbcompare --server1=$DB_1_USER:$DB_1_PASS@$DB_1_HOST --server2=$DB_2_USER:$DB_2_PASS@$DB_2_HOST --difftype=sql $DB_1_NAME:$DB_2_NAME --run-all-tests > "$DB_DIFF_PATH/full.sql"
 
 echo "Splitting files..."
+
+new_tables=()
 
 while IFS='' read -r line || [[ -n "$line" ]]
 do
@@ -41,7 +43,8 @@ do
 	if [[ $first == "#" || $first == "" ]];then
 	   if [[ ${line:0:16} == "#        TABLE: " ]];then
 		   tablename=`trim ${line:15}`
-		   mysqldump -u $DB_1_USER -p$DB_1_PASS --skip-comments --skip-set-charset --extended-insert=FALSE --complete-insert=TRUE --order-by-primary --single-transaction --quick $DB_2_NAME $tablename >> "$OUTPUT_DIR/$tablename.sql"
+		   new_tables+=($tablename)
+		   mysqldump -u $DB_1_USER -p$DB_1_PASS --no-create-info --skip-comments --skip-set-charset --extended-insert=FALSE --complete-insert=TRUE --order-by-primary --single-transaction --quick $DB_2_NAME $tablename | sed -e 's/^\/\*![0-9]\{5\}.*\/;$//g' >> "$OUTPUT_DIR/$tablename.sql"
 	   fi
 	   continue;
 	fi
@@ -59,9 +62,6 @@ do
 	fi
 done < "full.sql"
 
-echo "Removing full.sql..."
-rm "$DB_DIFF_PATH/full.sql"
-
 echo "Sorting process..."
 
 for f in $OUTPUT_DIR*
@@ -69,3 +69,12 @@ do
 	LC_ALL=C sort -d -o $f $f
 done
 
+echo "Create schemas..."
+
+for t in "${new_tables[@]}"
+do
+	mysqldump -u $DB_1_USER -p$DB_1_PASS --no-data --skip-comments --skip-set-charset --order-by-primary --single-transaction --quick $DB_2_NAME $t | sed -e 's/^\/\*![0-9]\{5\}.*\/;$//g' >> "$OUTPUT_DIR/000-$t-schema.sql"
+done
+
+#echo "Removing full.sql..."
+#rm "$DB_DIFF_PATH/full.sql"

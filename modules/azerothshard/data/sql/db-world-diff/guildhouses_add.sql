@@ -1,31 +1,19 @@
 
 
 
-  PRIMARY KEY (`guid`,`type`)
-  `add_type` int(16) unsigned NOT NULL,
-  `comment` varchar(255) NOT NULL DEFAULT '',
-  `guid` int(32) unsigned NOT NULL,
-  `id` int(16) unsigned NOT NULL,
-  `type` int(16) unsigned NOT NULL,
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-/*!40000 ALTER TABLE `guildhouses_add` DISABLE KEYS */;
-/*!40000 ALTER TABLE `guildhouses_add` ENABLE KEYS */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET character_set_client = utf8 */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-CREATE TABLE `guildhouses_add` (
-DROP TABLE IF EXISTS `guildhouses_add`;
+
+
+
+
+
+
+
+
+
+
+
+
+
 INSERT INTO `guildhouses_add` (`guid`, `type`, `id`, `add_type`, `comment`) VALUES (1000443,0,9,2,'Guild Agent');
 INSERT INTO `guildhouses_add` (`guid`, `type`, `id`, `add_type`, `comment`) VALUES (1000576,0,67,1,'Binzik Goldbook');
 INSERT INTO `guildhouses_add` (`guid`, `type`, `id`, `add_type`, `comment`) VALUES (1000577,0,67,1,'Goblin Guildbuilder');

@@ -1,27 +1,19 @@
 
 
 
-  `cat_id` double DEFAULT NULL,
-  `dest_id` double DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40000 ALTER TABLE `custom_npc_tele_association` DISABLE KEYS */;
-/*!40000 ALTER TABLE `custom_npc_tele_association` ENABLE KEYS */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET character_set_client = utf8 */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-CREATE TABLE `custom_npc_tele_association` (
-DROP TABLE IF EXISTS `custom_npc_tele_association`;
+
+
+
+
+
+
+
+
+
+
+
+
+
 INSERT INTO `custom_npc_tele_association` (`cat_id`, `dest_id`) VALUES (1,1);
 INSERT INTO `custom_npc_tele_association` (`cat_id`, `dest_id`) VALUES (1,10);
 INSERT INTO `custom_npc_tele_association` (`cat_id`, `dest_id`) VALUES (1,11);
