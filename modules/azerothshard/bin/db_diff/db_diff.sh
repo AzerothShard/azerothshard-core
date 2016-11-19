@@ -2,6 +2,15 @@ DB_DIFF_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source $DB_DIFF_PATH"/../shared/include.sh"
 
+trim()
+{
+    trimmed=$1
+    trimmed=${trimmed%% }
+    trimmed=${trimmed## }
+
+    echo "$trimmed"
+}
+
 #
 # Load configuration
 #
@@ -30,17 +39,22 @@ while IFS='' read -r line || [[ -n "$line" ]]
 do
 	first=${line:0:1}
 	if [[ $first == "#" || $first == "" ]];then
+	   if [[ ${line:0:16} == "#        TABLE: " ]];then
+		   tablename=`trim ${line:15}`
+		   mysqldump -u $DB_1_USER -p$DB_1_PASS --skip-comments --skip-set-charset --extended-insert=FALSE --complete-insert=TRUE --order-by-primary --single-transaction --quick $DB_2_NAME $tablename >> "$OUTPUT_DIR/$tablename.sql"
+	   fi
 	   continue;
 	fi
 
 	operation=${line%% *}
-	name=${line#* \`azerothcore_clean_world\`.\`}
+	name=${line#* \`$DB_1_NAME\`.\`}
 	name=${name%%\` *}
+	fline=${line/\`$DB_1_NAME\`.}
 	if [ ! -z "$name" ]; then
 		if [[ "${op_list[@]}" =~ "${operation}" && ! -z "$operation" ]]; then
-			echo $line >> $OUTPUT_DIR$name"___"${operation,,}".sql"
-		#else
-			#echo $line >> $OUTPUT_DIR"AAA-base.sql"
+			echo $fline >> $OUTPUT_DIR$name"___"${operation,,}".sql"
+		else
+			echo $line >> $OUTPUT_DIR"000-removed"
 		fi
 	fi
 done < "full.sql"
