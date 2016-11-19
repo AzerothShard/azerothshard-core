@@ -12856,7 +12856,6 @@ void Player::MoveItemFromInventory(uint8 bag, uint8 slot, bool update)
 { 
     if (Item* it = GetItemByPos(bag, slot))
     {
-        sTransmogrification->DeleteFakeFromDB(it->GetGUIDLow()); //[AZTH] Transm
         ItemRemovedQuestCheck(it->GetEntry(), it->GetCount());
         RemoveItem(bag, slot, update);
         UpdateTitansGrip();
@@ -12867,6 +12866,8 @@ void Player::MoveItemFromInventory(uint8 bag, uint8 slot, bool update)
             it->RemoveFromWorld();
             it->DestroyForPlayer(this);
         }
+
+        sScriptMgr->OnAfterPlayerMoveItemFromInventory(this,it,bag,slot,update);
     }
 }
 
