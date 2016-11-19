@@ -1,1 +1,0 @@
-INSERT INTO `azerothcore_clean_world`.`version` (`core_version`, `core_revision`, `db_version`, `cache_id`) VALUES('AzerothCore rev. 39307316e7d2 2016-10-27 23:10:37 +0200 (custom branch) (Unix, Debug)', '39307316e7d2', 'TDB 335.52', '52');

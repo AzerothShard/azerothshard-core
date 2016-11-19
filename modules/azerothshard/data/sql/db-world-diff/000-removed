@@ -1,0 +1,16 @@
+ADD INDEX idx_id (id),
+ADD INDEX idx_map (map),
+ADD PRIMARY KEY(`guid`),
+ADD PRIMARY KEY(`guid`),
+ADD PRIMARY KEY(`id`),
+ALTER TABLE `azth_clean_world`.`creature`
+ALTER TABLE `azth_clean_world`.`gameobject`
+ALTER TABLE `azth_clean_world`.`game_tele`
+AUTO_INCREMENT=1608, COMMENT='Tele Command';
+AUTO_INCREMENT=6814490, COMMENT='Gameobject System';
+AUTO_INCREMENT=9160626, COMMENT='Creature System';
+DROP INDEX idx_id,
+DROP INDEX idx_map,
+DROP PRIMARY KEY,
+DROP PRIMARY KEY,
+DROP PRIMARY KEY,
