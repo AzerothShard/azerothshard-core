@@ -78,7 +78,7 @@ public:
     checkPlayerItem(player, battleground, false);
   }
 
-  //Check if a group join (queue) arena with not compatible items
+  //Check if a player join (queue) arena with not compatible items
   void OnPlayerJoinArena(Player* player, Battleground* battleground)
   {
     checkPlayerItem(player, battleground, false);
@@ -94,7 +94,7 @@ public:
     }
   }
 
-  //Check if a player and equip not compatible item during battleground/arena
+  //Check if a player equip not compatible item during battleground/arena
   void OnEquip(Player* player, Item* item, uint8 bag, uint8 slot, bool update)
   {
     if (player->InBattleground() || player->InArena())
