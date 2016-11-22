@@ -11,6 +11,7 @@ modules/drassil/joiner
 !modules/hw-core
 !modules/acore
 !modules/worldengine
+!modules/BGItemLevel
 
 build*/
 
