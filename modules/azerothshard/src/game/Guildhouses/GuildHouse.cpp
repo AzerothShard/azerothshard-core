@@ -317,7 +317,9 @@ void GuildHouseObject::LoadGuildHouse()
 		else
         {
             sLog->outError("Loading GH for guild %u failed - NOT VALID", guildID);
-			RemoveGuildHouseAdd(id);
+            //  do not despawn objects/npc if a guild house does not have a guild, so both GM and players can see 
+            // a guild house fully if It is not purchased
+			//RemoveGuildHouseAdd(id);
 		}
     } 
     while (result->NextRow());

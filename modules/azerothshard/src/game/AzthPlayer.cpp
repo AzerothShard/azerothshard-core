@@ -306,7 +306,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
         }
     }
     
-    player->ModifyMoney(-price);
+    player->ModifyMoney(-int32(price));
 
     if (crItem->ExtendedCost)                            // case for new honor system
     {
