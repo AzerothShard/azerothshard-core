@@ -193,7 +193,7 @@ public:
   }
 
   //Check if a player is just entered in battleground/arena with not compatible items
-  void OnMapChanged(Player* player)
+  void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea)
   {
     if (player->InBattleground() || player->InArena())
     {
