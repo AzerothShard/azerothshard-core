@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `jukebox_music` (
   `sound_ID` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Dump dei dati della tabella extra.jukebox_music: ~17 rows (circa)
+-- Dump dei dati della tabella extra.jukebox_music: ~30 rows (circa)
 /*!40000 ALTER TABLE `jukebox_music` DISABLE KEYS */;
 INSERT INTO `jukebox_music` (`author`, `title`, `sound_ID`) VALUES
 	('ACDC', 'Highway To Hell', 18022),
@@ -36,7 +36,20 @@ INSERT INTO `jukebox_music` (`author`, `title`, `sound_ID`) VALUES
 	('Kansas', 'Carry on My Wayward Son', 18029),
 	('The Proclaimers', 'I\'m Gonna Be', 18030),
 	('Twenty One Pilots', 'Heathens', 18031),
-	('X-Ambassadors', 'Renegades', 18032);
+	('X-Ambassadors', 'Renegades', 18032),
+	('Metallica', 'Enter Sandman', 18050),
+	('ACDC', 'You Shook Me All Night Long', 18040),
+	('Iron Maiden', 'Fear of The Dark', 18044),
+	('Iron Maiden', 'The Trooper', 18046),
+	('Avenged Sevenfold', 'Afterlife', 18041),
+	('Leo Moracchioli', 'Eye of the Tiger', 18048),
+	('Iron Maiden', 'Run to the Hills', 18045),
+	('Iron Maiden', 'These Color Don\'t Run', 18047),
+	('Sonata Arctica', 'Fullmoon', 18041),
+	('Avenged Sevenfold', 'M.I.A.', 18042),
+	('Dire Straits', 'Sultans of Swing', 18052),
+	('Megadeth', 'Tornado of Souls', 18049),
+	('Green Day', 'Holiday', 18043);
 /*!40000 ALTER TABLE `jukebox_music` ENABLE KEYS */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
