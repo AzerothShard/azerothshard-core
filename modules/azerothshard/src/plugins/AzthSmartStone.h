@@ -21,6 +21,20 @@ struct SmartStoneCommand
     uint32 parent_menu;
     uint32 type;
     uint32 action;
+    int32 charges;
+    uint64 duration;
+};
+
+struct SmartStonePlayerCommand
+{
+    bool operator==(const SmartStonePlayerCommand& rhs)
+    {
+        return id == rhs.id;
+    }
+
+    uint32 id;
+    int32 charges;
+    uint64 duration;
 };
 
 enum MenuType {
@@ -44,6 +58,7 @@ public:
     SmartStoneCommand getCommandById(uint32 id);
     SmartStoneCommand getCommandByItem(uint32 item);
     bool isNullCommand(SmartStoneCommand command);
+    SmartStonePlayerCommand toPlayerCommand(SmartStoneCommand command);
 };
 
 #define sSmartStone ACE_Singleton<SmartStone, ACE_Null_Mutex>::instance()

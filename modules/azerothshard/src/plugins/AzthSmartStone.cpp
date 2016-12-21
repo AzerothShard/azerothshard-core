@@ -28,14 +28,46 @@ public:
 
         player->ADD_GOSSIP_ITEM(0, "Benvenuto nella tua SmartStone!", GOSSIP_SENDER_MAIN, 99999);
 
-        std::vector<SmartStoneCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
+        std::vector<SmartStonePlayerCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
         int n = playerCommands.size();
 
         for (int i = 0; i < n; i++)
         {
-            SmartStoneCommand command = playerCommands[i];
+            SmartStoneCommand command = sSmartStone->getCommandById(playerCommands[i].id);
+
+            // if expired or no charges
+            if ((playerCommands[i].duration <= time(NULL) || playerCommands[i].charges == 0) && playerCommands[i].duration != 0)
+            {
+                player->azthPlayer->removeSmartStoneCommand(playerCommands[i], true);
+                continue;
+            }
+
+            std::string text = command.text;
+
+            sLog->outError("Command duration: %u", playerCommands[i].duration);
+
+            if (playerCommands[i].charges != -1)
+                text = text + " (" + std::to_string(playerCommands[i].charges) + ")";
+
+            if (playerCommands[i].duration != 0)
+            {
+                uint64 timeDiff = playerCommands[i].duration - time(NULL);
+                uint64 seconds = timeDiff % 60;
+                uint64 minutes = floor(timeDiff / 60);
+                uint64 hours = floor(timeDiff / 3600);
+                uint64 days = floor(timeDiff / 3600 / 24);
+                if (days >= 1)
+                {
+                    text = text + " (" + std::to_string(days) + " giorni)";
+                }
+                else
+                {
+                    text = text + " (" + std::to_string(hours) + ":" + std::to_string(minutes) + ":" + std::to_string(seconds) + ")";
+                }
+            }
+
             if (!command.id == 0 && command.parent_menu == parent)
-                player->ADD_GOSSIP_ITEM(command.icon, command.text, GOSSIP_SENDER_MAIN, command.id);
+                player->ADD_GOSSIP_ITEM(command.icon, text, GOSSIP_SENDER_MAIN, command.id);
         }
 
         // acquista app
@@ -58,6 +90,10 @@ public:
         // scripted action
         if (selectedCommand.type == DO_SCRIPTED_ACTION || action == 2000) // azeroth store
         {
+            if (selectedCommand.charges != 0)
+            {
+                player->azthPlayer->decreaseSmartStoneCommandCharges(selectedCommand.id);
+            }
             switch (action)
             {
             case 2000: // store
@@ -122,7 +158,7 @@ void SmartStone::loadCommands()
     uint32 count = 0;
     //sHearthstoneMode->hsAchievementTable.clear();
 
-    QueryResult ssCommandsResult = ExtraDatabase.PQuery("SELECT id, text, item, icon, parent_menu, type, action FROM smartstone_commands");
+    QueryResult ssCommandsResult = ExtraDatabase.PQuery("SELECT id, text, item, icon, parent_menu, type, action, charges, duration FROM smartstone_commands");
 
     if (ssCommandsResult)
     {
@@ -136,6 +172,8 @@ void SmartStone::loadCommands()
             command.parent_menu = (*ssCommandsResult)[4].GetUInt32();
             command.type = (*ssCommandsResult)[5].GetUInt32();
             command.action = (*ssCommandsResult)[6].GetUInt32();
+            command.charges = (*ssCommandsResult)[7].GetInt32();
+            command.duration = (*ssCommandsResult)[8].GetUInt64();
 
             ssCommands2.push_back(command);
 
@@ -149,11 +187,12 @@ void SmartStone::loadCommands()
 
 SmartStoneCommand SmartStone::getCommandById(uint32 id)
 {
-    int n = ssCommands2.size();
+    std::vector<SmartStoneCommand> temp(ssCommands2);
+    int n = temp.size();
     for (int i = 0; i < n; i++)
     {
-        if (ssCommands2[i].id == id)
-            return ssCommands2[i];
+        if (temp[i].id == id)
+            return temp[i];
     }
     return nullCommand;
 };
@@ -175,6 +214,16 @@ bool SmartStone::isNullCommand(SmartStoneCommand command)
         && command.parent_menu == NULL && command.type == NULL && command.action == NULL);
 };
 
+SmartStonePlayerCommand SmartStone::toPlayerCommand(SmartStoneCommand command)
+{
+    SmartStonePlayerCommand result;
+    result.id = command.id;
+    result.charges = command.charges;
+    //result.duration = command.duration * 60 + time(NULL);
+    result.duration = 0;
+    return result;
+};
+
 class azth_smartstone_world : public WorldScript
 {
 public:
@@ -194,13 +243,16 @@ public:
     void OnLogin(Player* player) override
     {
         QueryResult ssCommandsResult = 
-            CharacterDatabase.PQuery("SELECT command FROM character_smartstone_commands WHERE playerGuid = %u ;", player->GetGUID());
+            CharacterDatabase.PQuery("SELECT command, dateExpired, charges FROM character_smartstone_commands WHERE playerGuid = %u ;", player->GetGUID());
 
         if (ssCommandsResult)
         {
             do
             {
-                player->azthPlayer->addSmartStoneCommand((sSmartStone->getCommandById((*ssCommandsResult)[0].GetUInt32())), false);
+                uint32 id = (*ssCommandsResult)[0].GetUInt32();
+                uint64 date = (*ssCommandsResult)[1].GetUInt64();
+                int32 charges = (*ssCommandsResult)[2].GetInt32();
+                player->azthPlayer->addSmartStoneCommand(id, false, date, charges);
             } while (ssCommandsResult->NextRow());
         }
     }
@@ -246,7 +298,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 exte
                 
                 uint32 leftInStock = 0xFFFFFFFF;
 
-                std::vector<SmartStoneCommand> playerCommands = session->GetPlayer()->azthPlayer->getSmartStoneCommands();
+                std::vector<SmartStonePlayerCommand> playerCommands = session->GetPlayer()->azthPlayer->getSmartStoneCommands();
                 int n = playerCommands.size();
                 SmartStoneCommand command = sSmartStone->getCommandByItem(item->item);
 

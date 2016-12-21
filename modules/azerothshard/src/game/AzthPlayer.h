@@ -51,9 +51,11 @@ class AzthPlayer {
 
     void ForceKilledMonsterCredit(uint32 entry, uint64 guid);
     
-    std::vector<SmartStoneCommand> getSmartStoneCommands();
-    void addSmartStoneCommand(SmartStoneCommand command, bool query);
-    void removeSmartStoneCommand(SmartStoneCommand command, bool query);
+    std::vector<SmartStonePlayerCommand> getSmartStoneCommands();
+    void addSmartStoneCommand(SmartStonePlayerCommand command, bool query);
+    void addSmartStoneCommand(uint32 id, bool query, uint64 dateExpired, int32 charges);
+    void removeSmartStoneCommand(SmartStonePlayerCommand command, bool query);
+    void decreaseSmartStoneCommandCharges(uint32 id);
     bool BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
 
  private:
@@ -62,7 +64,7 @@ class AzthPlayer {
 
      float playerQuestRate, maxQuestRate;
 
-     std::vector<SmartStoneCommand> smartStoneCommands;
+     std::vector<SmartStonePlayerCommand> smartStoneCommands;
  };
 
 #endif /* AZTHPLAYER_H */

@@ -115,22 +115,55 @@ void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid)
     }
 }
 
-std::vector<SmartStoneCommand> AzthPlayer::getSmartStoneCommands()
+std::vector<SmartStonePlayerCommand> AzthPlayer::getSmartStoneCommands()
 {
     return smartStoneCommands;
 }
 
-void AzthPlayer::addSmartStoneCommand(SmartStoneCommand command, bool query)
+void AzthPlayer::addSmartStoneCommand(SmartStonePlayerCommand command, bool query)
 {
+    
+    uint64 sec = 0;
+    sLog->outError("duration %u", sSmartStone->getCommandById(command.id).duration);
+    if (sSmartStone->getCommandById(command.id).duration > 0)
+    {
+        sec = time(NULL) + (sSmartStone->getCommandById(command.id).duration * 60);
+    }
+
+    /*int32 charges = command.charges;
+    if (charges > 10000)
+    {
+        charges = -1;
+    }*/
+
+    command.duration = sec;
+
     smartStoneCommands.push_back(command);
+    
     if (query)
     {
         CharacterDatabase.PExecute
-            ("REPLACE INTO `character_smartstone_commands` (playerGuid, command) VALUES (%u, %u);", player->GetGUID(), command.id);
+            ("REPLACE INTO `character_smartstone_commands` (playerGuid, command, dateExpired, charges) VALUES (%u, %u, %u, %i);", 
+                player->GetGUID(), command.id, sec, command.charges);
     }
 }
 
-void AzthPlayer::removeSmartStoneCommand(SmartStoneCommand command, bool query)
+// called only at server startup
+void AzthPlayer::addSmartStoneCommand(uint32 id, bool query, uint64 dateExpired, int32 charges)
+{
+    if (time(NULL) <= dateExpired)
+        return;
+
+    SmartStonePlayerCommand command;
+
+    command.id = id;
+    command.charges = charges;
+    command.duration = dateExpired;
+
+    smartStoneCommands.push_back(command);
+}
+
+void AzthPlayer::removeSmartStoneCommand(SmartStonePlayerCommand command, bool query)
 {
         // we need to specify the equal operator for struct to be able to run it:
         smartStoneCommands.erase(std::remove(smartStoneCommands.begin(), smartStoneCommands.end(), command), smartStoneCommands.end());
@@ -140,6 +173,23 @@ void AzthPlayer::removeSmartStoneCommand(SmartStoneCommand command, bool query)
             CharacterDatabase.PExecute
                 ("DELETE FROM `character_smartstone_commands` WHERE playerGuid = %u AND command = %u;", player->GetGUID(), command.id);
         }
+}
+
+void AzthPlayer::decreaseSmartStoneCommandCharges(uint32 id)
+{
+    for (int i = 0; i < smartStoneCommands.size(); i++)
+    {
+        if (smartStoneCommands[i].id == id)
+        {
+            smartStoneCommands[i].charges = smartStoneCommands[i].charges - 1;
+            if (smartStoneCommands[i].charges == 0)
+                removeSmartStoneCommand(smartStoneCommands[i], true);
+            else
+                CharacterDatabase.PExecute("UPDATE character_smartstone_commands SET charges = %i WHERE playerGuid = %u AND command = %u ;", smartStoneCommands[i].charges, player->GetGUID(), id);
+
+            return;
+        }
+    }
 }
 
 bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot)
@@ -208,7 +258,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
         return false;
     }
 
-    std::vector<SmartStoneCommand> playerCommands = getSmartStoneCommands();
+    std::vector<SmartStonePlayerCommand> playerCommands = getSmartStoneCommands();
     int n = playerCommands.size();
     SmartStoneCommand command = sSmartStone->getCommandByItem(item);
 
@@ -357,7 +407,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint
 
     if (!sSmartStone->isNullCommand(command))
     {
-        player->azthPlayer->addSmartStoneCommand(command, true);
+        player->azthPlayer->addSmartStoneCommand(sSmartStone->toPlayerCommand(command), true);
         ChatHandler(player->GetSession()).SendSysMessage("Hai sbloccato una nuova app per la tua SmartStone!");
     }
 

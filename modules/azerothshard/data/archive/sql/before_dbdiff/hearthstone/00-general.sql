@@ -4,11 +4,11 @@ INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entr
 (100000, 0, 0, 0, 0, 0, 23055, 0, 0, 0, 'Han\'al', 'Master Lorekeeper', NULL, 30000, 83, 83, 0, 2007, 3, 1.1, 1.5, 1.2, 1, 0, 0, 0, 8, 33536, 2048, 0, 0, 0, 0, 0, 0, 7, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'SmartAI', 0, 3, 0, 10, 10, 1, 0, 0, 1, 0, 2, 'npc_han_al', 12341);
 
 DELETE FROM npc_text WHERE ID IN (100000, 100001, 100002, 100003);
-INSERT INTO npc_text (ID, text0_0, text0_1, lang0, Prob0, em0_0) VALUES 
-(100000, "È bello che tu voglia aiutarmi $N, la storia dev'essere scrupolosamente registrata... nulla deve andar perso!", 0, 0,100, 0),
-(100001, "Hai già delle missioni da completare, ritorna quando sarai riuscito a portarle a termine o quando avrai rinunciato...\nNonostante il fallimento potrei avere ancora bisogno di te, $R", 0, 0,100, 0),
-(100002, "Grazie del tuo aiuto, $C, per oggi mi hai aiutato a sufficienza!\nRitorna domani.", 0, 0,100, 0),
-(100003, "Hai già molto lavoro da fare, $N. Non vorrei che ti affaticassi troppo... torna da me quando avrai concluso un po' del tuo lavoro.", 0, 0,100, 0);
+INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
+(100000, "È bello che tu voglia aiutarmi $N, la storia dev'essere scrupolosamente registrata... nulla deve andar perso!", 0, 0, 0),
+(100001, "Hai già delle missioni da completare, ritorna quando sarai riuscito a portarle a termine o quando avrai rinunciato...\nNonostante il fallimento potrei avere ancora bisogno di te, $R", 0, 0, 0),
+(100002, "Grazie del tuo aiuto, $C, per oggi mi hai aiutato a sufficienza!\nRitorna domani.", 0, 0, 0),
+(100003, "Hai già molto lavoro da fare, $N. Non vorrei che ti affaticassi troppo... torna da me quando avrai concluso un po' del tuo lavoro.", 0, 0, 0);
 
 UPDATE `item_template` SET `Flags` = 64, `ScriptName` = 'item_azth_hearthstone_loot_sack', stackable = 1, `spellid_1` = 36177, maxcount = 5 WHERE (entry = 32558);
 
