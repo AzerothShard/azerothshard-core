@@ -12,6 +12,7 @@ modules/drassil/joiner
 !modules/acore
 !modules/worldengine
 !modules/BGItemLevel
+!modules/Jukebox
 
 build*/
 

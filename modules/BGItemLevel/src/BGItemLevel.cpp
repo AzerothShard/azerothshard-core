@@ -193,7 +193,7 @@ public:
   }
 
   //Check if a player is just entered in battleground/arena with not compatible items
-  void OnMapChanged(Player* player)
+  void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea)
   {
     if (player->InBattleground() || player->InArena())
     {
@@ -225,7 +225,12 @@ public:
     {
         for (ArenaTeam::MemberList::const_iterator itr = at->m_membersBegin(); itr != at->m_membersEnd(); ++itr)
         {
-            ap[GUID_LOPART(itr->Guid)] = (at->GetStats().WeekWins*100 / at->GetStats().WeekGames) / 100;
+            uint32 points=ap[GUID_LOPART(itr->Guid)];
+            if (at->GetStats().WeekWins > 0 && points > 0)
+                // sorry about multiple floating, just to be sure :P
+                ap[GUID_LOPART(itr->Guid)] = float(points * float(float(float(at->GetStats().WeekWins)*100 / at->GetStats().WeekGames) / 100));
+            else
+                ap[GUID_LOPART(itr->Guid)] = 0;
         }
     }
 };
