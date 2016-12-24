@@ -106,6 +106,7 @@ public:
                 creature->PlayDistanceSound(musicList[action].GetMusicId());
                 std::string msg = "Now playing: " + musicList[action].GetAuthor() + " - " + musicList[action].GetTitle();
                 creature->MonsterSay(msg.c_str(), 0, creature);
+                creature->AI()->DoAction(DATA_JUKEBOX_READY);
             }
             player->PlayerTalkClass->SendCloseGossip();
             return true;
