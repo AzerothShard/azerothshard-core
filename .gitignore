@@ -13,6 +13,7 @@ modules/drassil/joiner
 !modules/worldengine
 !modules/BGItemLevel
 !modules/Jukebox
+!modules/Jukebox/*
 
 build*/
 
