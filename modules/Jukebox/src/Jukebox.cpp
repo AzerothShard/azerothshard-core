@@ -30,33 +30,94 @@ public:
     }
 };
 
+enum npc_jukebox_enum
+{
+    EVENT_JUKEBOX_START = 1,
+
+    DATA_JUKEBOX_READY = 1,
+};
+
 
 class Jukebox : public CreatureScript
 {
 public:
     Jukebox() : CreatureScript("Jukebox") {}
 
+    struct npc_jukeboxAI : public ScriptedAI
+    {
+        npc_jukeboxAI(Creature *c) : ScriptedAI(c)
+        {
+            events.Reset();
+            jukeboxReady = true;
+        }
+
+        EventMap events;
+        bool jukeboxReady;
+
+        uint32 GetData(uint32 type) const
+        {
+            if (type == DATA_JUKEBOX_READY)
+                return (uint32)jukeboxReady;
+
+            return 0;
+        }
+
+        void DoAction(int32 param)
+        {
+            if (param == DATA_JUKEBOX_READY) {
+                jukeboxReady = false;
+                events.ScheduleEvent(EVENT_JUKEBOX_START, 3 * 60 * IN_MILLISECONDS, 1, 0);
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+            switch (events.GetEvent())
+            {
+                case EVENT_JUKEBOX_START:
+                {
+                    jukeboxReady = true;
+                }
+            }
+        }
+    };
+
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        for (uint32 i = 0; i < musicList.size(); i++)
-        {
-            player->ADD_GOSSIP_ITEM(0, musicList[i].GetAuthor() + " - " + musicList[i].GetTitle(), GOSSIP_SENDER_MAIN, i);
+        if (creature->AI()->GetData(DATA_JUKEBOX_READY) > 0) {
+            for (uint32 i = 0; i < musicList.size(); i++)
+            {
+                player->ADD_GOSSIP_ITEM(0, musicList[i].GetAuthor() + " - " + musicList[i].GetTitle(), GOSSIP_SENDER_MAIN, i);
+            }
+            player->SEND_GOSSIP_MENU(1, creature->GetGUID());
+            return true;
+        } else {
+            return false;
         }
-        player->SEND_GOSSIP_MENU(1, creature->GetGUID());
-        return true;
     }
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
-        player->PlayerTalkClass->ClearMenus();
-        if (action <= musicList.size())
-        {
-            creature->PlayDistanceSound(musicList[action].GetMusicId());
-            std::string msg = "Now playing: " + musicList[action].GetAuthor() + " - " + musicList[action].GetTitle();
-            creature->MonsterSay(msg.c_str(), 0, creature);
+        if (creature->AI()->GetData(DATA_JUKEBOX_READY) > 0) {
+            player->PlayerTalkClass->ClearMenus();
+            if (action <= musicList.size())
+            {
+                creature->PlayDistanceSound(musicList[action].GetMusicId());
+                std::string msg = "Now playing: " + musicList[action].GetAuthor() + " - " + musicList[action].GetTitle();
+                creature->MonsterSay(msg.c_str(), 0, creature);
+            }
+            player->PlayerTalkClass->SendCloseGossip();
+            return true;
         }
-        player->PlayerTalkClass->SendCloseGossip();
-        return true;
+        else {
+            return false;
+        }
+    }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_jukeboxAI(pCreature);
     }
 };
 
