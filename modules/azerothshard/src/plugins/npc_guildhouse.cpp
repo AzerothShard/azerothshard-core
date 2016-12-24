@@ -367,7 +367,7 @@ class npc_guild_master : public CreatureScript
 
         QueryResult result;
 
-        result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `id` = %u AND `guildId` = 0" , guildhouseId);
+        result = ExtraDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `id` = %u AND `guildId` = 0" , guildhouseId);
 
         if (!result)
         {
@@ -449,7 +449,7 @@ class npc_guild_master : public CreatureScript
         {
             QueryResult result;
 
-            result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `guildId` = %u", player->GetGuildId());
+            result = ExtraDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `guildId` = %u", player->GetGuildId());
 
             if (!result)
                 return;

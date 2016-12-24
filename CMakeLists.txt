@@ -111,6 +111,11 @@ endif()
 # add modules and dependencies
 CU_SUBDIRLIST(sub_DIRS  "${CMAKE_SOURCE_DIR}/modules" FALSE FALSE)
 FOREACH(subdir ${sub_DIRS})
+
+    if (";${ARGN};" MATCHES ";bar;")
+      continue()
+    endif()
+
     STRING(REGEX REPLACE "^${CMAKE_SOURCE_DIR}/" "" subdir_rel ${subdir})
     if(EXISTS "${subdir}/CMakeLists.txt")
         message("Loading module: ${subdir_rel}")
