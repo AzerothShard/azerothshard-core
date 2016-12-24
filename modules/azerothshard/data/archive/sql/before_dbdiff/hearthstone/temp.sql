@@ -2,13 +2,13 @@ DROP TABLE IF EXISTS sw_characters.`character_smartstone_commands`;
 CREATE TABLE sw_characters.`character_smartstone_commands`
 ( `playerGuid` INT(10) NOT NULL COMMENT 'player guid', 
 `command` INT(10) NOT NULL COMMENT 'player command id',
-  `dateExpired` BIGINT(10) NOT NULL DEFAULT '-1',
+  `dateExpired` BIGINT(10) NOT NULL DEFAULT '0',
   `charges` INT(10) NOT NULL DEFAULT '-1'); 
 
 ALTER TABLE sw_characters.`character_smartstone_commands`
   ADD CONSTRAINT `character_smartstone_commands` UNIQUE(playerGuid, command);
 
-UPDATE sw_world.`item_template` SET `Flags` = 64, `ScriptName` = 'azth_smart_stone', stackable = 1, `spellid_1` = 36177, maxcount = 5 WHERE (entry = 32547);
+UPDATE sw_world.`item_template` SET `name` = "Smartstone" `Flags` = 64, `ScriptName` = 'azth_smart_stone', stackable = 1, `spellid_1` = 36177, maxcount = 1 WHERE (entry = 32547);
 
 DROP TABLE IF EXISTS `sw_extra`.`smartstone_commands`;
 CREATE TABLE `sw_extra`.`smartstone_commands` (
