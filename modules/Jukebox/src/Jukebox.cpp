@@ -53,6 +53,7 @@ public:
 
         EventMap events;
         bool jukeboxReady;
+		bool enableUpdateAI = true;
 
         uint32 GetData(uint32 type) const
         {
@@ -66,20 +67,21 @@ public:
         {
             if (param == DATA_JUKEBOX_READY) {
                 jukeboxReady = false;
-                events.ScheduleEvent(EVENT_JUKEBOX_START, 3 * 60 * IN_MILLISECONDS, 1, 0);
+                events.ScheduleEvent(EVENT_JUKEBOX_START, 10 * 60 * IN_MILLISECONDS, 1, 0);
             }
         }
 
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
-            switch (events.GetEvent())
-            {
-                case EVENT_JUKEBOX_START:
-                {
-                    jukeboxReady = true;
-                }
-            }
+			switch (events.GetEvent())
+			{
+				case EVENT_JUKEBOX_START:
+				{
+					jukeboxReady = true;
+					events.Reset();
+				}
+			}
         }
     };
 
@@ -93,7 +95,8 @@ public:
             player->SEND_GOSSIP_MENU(1, creature->GetGUID());
             return true;
         } else {
-            return false;
+			player->SEND_GOSSIP_MENU(50002, creature->GetGUID());
+            return true;
         }
     }
 
