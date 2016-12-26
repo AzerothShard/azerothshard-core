@@ -591,11 +591,6 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
                 break;
             }
     }
-   
-    player->Say(std::to_string(achievementType), 0);
-    player->Say(std::to_string(returnData0(criteria)), 0);
-    player->Say(std::to_string(returnData1(criteria)), 0);
-    player->Say(std::to_string(entry), 0);
 
 /*	for (int i = 0; i < hsAchievementTable.size(); i++)
 	{

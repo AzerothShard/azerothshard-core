@@ -1,7 +1,7 @@
 DELETE FROM npc_text WHERE ID IN (32001, 32002);
-INSERT INTO npc_text (ID, text0_0, text0_1, lang0, Prob0, em0_0) VALUES 
-(32001, "Qui si paga in Marks of Azeroth!", 0, 0, 100, 0),
-(32002, "Ti serve più reputazione!", 0, 0, 100, 0);
+INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
+(32001, "Qui si paga in Marks of Azeroth!", 0, 0, 0),
+(32002, "Ti serve più reputazione!", 0, 0, 0);
 
 -- Quartermaster Ozorg (Dk start set vendor)
 -- FRIENDLY
@@ -51,8 +51,8 @@ INSERT INTO npc_vendor (entry, item, extendedcost) VALUES
 UPDATE creature_template SET resistance1 = 32000, gossip_menu_id = 32001 WHERE entry = 100100;
 
 DELETE FROM npc_text WHERE ID = 32000;
-INSERT INTO npc_text (ID, text0_0, text0_1, lang0, Prob0, em0_0) VALUES 
-(32000, "Se tu vuoi comprare, tu dare me Marks of Azeroth!", 0, 0, 100, 0);
+INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
+(32000, "Se tu vuoi comprare, tu dare me Marks of Azeroth!", 0, 0, 0);
 
 UPDATE creature_template SET MovementType = 1 WHERE entry = 100100; -- set some random movement
 
@@ -100,8 +100,8 @@ INSERT INTO npc_vendor (entry, item, extendedcost) VALUES
 UPDATE creature_template SET resistance1 = 32002, gossip_menu_id = 32001 WHERE entry = 100101;
 
 DELETE FROM npc_text WHERE ID = 32002;
-INSERT INTO npc_text (ID, text0_0, text0_1, lang0, Prob0, em0_0) VALUES 
-(32002, "Salve, $N. Sei qui per aiutare gli Argent Dawn? I tuoi Marks of Azeroth saranno estremamente utili per le nostre spese...", 0, 0, 100, 0);
+INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
+(32002, "Salve, $N. Sei qui per aiutare gli Argent Dawn? I tuoi Marks of Azeroth saranno estremamente utili per le nostre spese...", 0, 0, 0);
 
 -- Heirloom Vendor
 -- Neutral
@@ -158,5 +158,5 @@ INSERT INTO npc_vendor (entry, item, extendedcost) VALUES
 UPDATE creature_template SET resistance1 = 32003, gossip_menu_id = 32001 WHERE entry = 100102;
 
 DELETE FROM npc_text WHERE ID = 32003;
-INSERT INTO npc_text (ID, text0_0, text0_1, lang0, Prob0, em0_0) VALUES 
-(32003, "Hey, tu! Vuoi un po' di roba? L'ho rubat.. ricevuta giusto ieri... In cambio ti chiedo solo qualche Mark of Azeroth per delle... ehm.. ricerche...", 0, 0, 100, 0);
+INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
+(32003, "Hey, tu! Vuoi un po' di roba? L'ho rubat.. ricevuta giusto ieri... In cambio ti chiedo solo qualche Mark of Azeroth per delle... ehm.. ricerche...", 0, 0, 0);

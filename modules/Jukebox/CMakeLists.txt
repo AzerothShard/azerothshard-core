@@ -1,0 +1,3 @@
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/Jukebox.cpp")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/music.cpp")
+AC_ADD_SCRIPT_LOADER("Jukebox" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")
