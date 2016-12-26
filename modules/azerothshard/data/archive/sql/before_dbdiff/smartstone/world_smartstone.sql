@@ -1,6 +1,6 @@
 UPDATE `item_template` SET `name` = "Smartstone", `Flags` = 64, `ScriptName` = 'azth_smart_stone', stackable = 1, `spellid_1` = 36177, maxcount = 1 WHERE (entry = 32547);
 
-DELETE FROM item_template WHERE entry IN (987890, 987891);
+DELETE FROM item_template WHERE entry IN (987890, 987891, 987892);
 INSERT INTO item_template (entry, class, subclass, NAME, displayid, quality, description, scriptname, flags, stackable, `spellid_1`, buyprice) VALUES
 (987890, 0, 8, "Teletrasporto al Mercato Nero", 1542, 5, "Aggiungi alla smartstone", "smart_stone_command", 64, 1, 36177, 1000),
 (987891, 0, 8, "Mucca!", 472, 5, "Aggiungi alla smartstone la muccaAaAAaaaaAAAaa", "smart_stone_command", 64, 1, 36177, 100000),
