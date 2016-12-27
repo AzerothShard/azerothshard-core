@@ -199,11 +199,12 @@ SmartStoneCommand SmartStone::getCommandById(uint32 id)
 
 SmartStoneCommand SmartStone::getCommandByItem(uint32 item)
 {
-    int n = ssCommands2.size();
+    std::vector<SmartStoneCommand> temp(ssCommands2);
+    int n = temp.size();
     for (int i = 0; i < n; i++)
     {
-        if (ssCommands2[i].item == item)
-            return ssCommands2[i];
+        if (temp[i].item == item)
+            return temp[i];
     }
     return nullCommand;
 };
