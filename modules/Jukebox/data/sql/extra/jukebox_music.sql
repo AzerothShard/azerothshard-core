@@ -50,10 +50,10 @@ INSERT INTO `jukebox_music` (`author`, `title`, `sound_ID`) VALUES
 	('Dire Straits', 'Sultans of Swing', 18052),
 	('Megadeth', 'Tornado of Souls', 18049),
 	('Green Day', 'Holiday', 18043),
-	('[XMAS] Bobby Helmes', 'Jingle Bell Rock', 18053),
-	('[XMAS] Frank Sinatra', 'Let It Snow', 18054),
-	('[XMAS] Mariah Carey', 'All I Want For Christmas Is You', 18055),
-	('[XMAS] Wham!', 'Last Christmas', 18056);
+	('XMAS - Bobby Helmes', 'Jingle Bell Rock', 18053),
+	('XMAS - Frank Sinatra', 'Let It Snow', 18054),
+	('XMAS - Mariah Carey', 'All I Want For Christmas Is You', 18055),
+	('XMAS - Wham!', 'Last Christmas', 18056);
 /*!40000 ALTER TABLE `jukebox_music` ENABLE KEYS */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
