@@ -13,7 +13,7 @@ modules/drassil/joiner
 !modules/worldengine
 !modules/BGItemLevel
 !modules/Jukebox
-!modules/Jukebox/*
+!modules/smartstoneLootModifier
 
 build*/
 
