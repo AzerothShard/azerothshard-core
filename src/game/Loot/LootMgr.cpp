@@ -15,7 +15,6 @@
 #include "Group.h"
 #include "Player.h"
 #include "Containers.h"
-#include "ScriptMgr.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {
@@ -1328,7 +1327,6 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
                 continue;                                       // Error message already printed at loading stage
 
             uint32 maxcount = uint32(float(item->maxcount) * sWorld->getRate(RATE_DROP_ITEM_REFERENCED_AMOUNT));
-			sScriptMgr->OnAfterRefCount(item, maxcount);
             for (uint32 loop = 0; loop < maxcount; ++loop)      // Ref multiplicator
                 Referenced->Process(loot, rate, lootMode, item->group);
         }
