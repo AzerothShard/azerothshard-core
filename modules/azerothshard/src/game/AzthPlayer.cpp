@@ -163,6 +163,18 @@ void AzthPlayer::addSmartStoneCommand(uint32 id, bool query, uint64 dateExpired,
     smartStoneCommands.push_back(command);
 }
 
+bool AzthPlayer::hasSmartStoneCommand(uint32 id)
+{
+    std::vector<SmartStonePlayerCommand> temp(smartStoneCommands);
+    int n = temp.size();
+    for (int i = 0; i < n; i++)
+    {
+        if (temp[i].id == id)
+            return true;
+    }
+    return false;
+}
+
 void AzthPlayer::removeSmartStoneCommand(SmartStonePlayerCommand command, bool query)
 {
         // we need to specify the equal operator for struct to be able to run it:

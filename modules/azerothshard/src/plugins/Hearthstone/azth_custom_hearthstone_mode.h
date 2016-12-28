@@ -42,10 +42,9 @@ enum miscHs
 {
     PVE_QUEST_NUMBER = 1,
     MAX_PVE_QUEST_NUMBER = 3,
-    AZTH_REPUTATION_ID = 948,
-    PVE_LOWER_RANGE = 100000,
-    PVE_UPPER_RANGE = 100080,
-    PVE_RANGE = PVE_UPPER_RANGE - PVE_LOWER_RANGE
+    PVP_QUEST_NUMBER = 1,
+    MAX_PVP_QUEST_NUMBER = 3,
+    AZTH_REPUTATION_ID = 948
 };
 
 enum otherMiscHs
@@ -67,6 +66,8 @@ class HearthstoneMode
         int returnData0(AchievementCriteriaEntry const* criteria);
         int returnData1(AchievementCriteriaEntry const* criteria);
         std::vector<HearthstoneAchievement> hsAchievementTable;
+        std::vector<HearthstoneQuest> hsPveQuests;
+        std::vector<HearthstoneQuest> hsPvpQuests;
         int getQuality();
         std::vector<int> items[8];
         bool isInArray(int val);

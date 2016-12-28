@@ -238,28 +238,25 @@ int HearthstoneMode::returnData1(AchievementCriteriaEntry const* criteria)
 
 #define GOSSIP_ITEM_GIVE_PVE_QUEST      "Vorrei ricevere la mia missione PVE giornaliera."
 #define GOSSIP_ITEM_GIVE_PVP_QUEST      "Vorrei ricevere la mia missione PVP giornaliera."
-#define GOSSIP_ITEM_GIVE_EXTRA_QUEST    "Vorrei una missione extra!" // unused
-#define GOSSIP_ITEM_CHANGE_QUEST		"Vorrei cambiare la mia missione." // unused
 
 class npc_han_al : public CreatureScript
 {
 public:
+    uint32 pveId = 0;
+    uint32 pvpId = 0;
     npc_han_al() : CreatureScript("npc_han_al") { }
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
-        time_t t = time(NULL);
-        tm *lt = localtime(&t);
-        int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
-        srand(seed);
-        //int id = rand() % PVE_RANGE;
-        int id = PVE_LOWER_RANGE + (rand() % PVE_RANGE);
-        Quest const * questPve = sObjectMgr->GetQuestTemplate(id);
+        if (pveId == 0 && pvpId == 0)
+            return false;
+
+        Quest const * questPve = sObjectMgr->GetQuestTemplate(pveId);
+        Quest const * questPvp = sObjectMgr->GetQuestTemplate(pvpId);
         player->PlayerTalkClass->ClearMenus();
         switch (action)
         {
         case GOSSIP_ACTION_INFO_DEF:
-            // uint16 id = (player->GetGUID().GetEntry() * id) % PVE_RANGE;
 
             if (!questPve)
                 return false;
@@ -274,6 +271,16 @@ public:
             break;
         case GOSSIP_ACTION_INFO_DEF + 1:
 
+            if (!questPvp)
+                return false;
+
+            if (player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false))
+            {
+                player->AddQuest(questPvp, NULL);
+
+                // simply close gossip or send something else?
+                player->PlayerTalkClass->SendCloseGossip();
+            }
             break;
         case GOSSIP_ACTION_INFO_DEF + 2:
 
@@ -291,14 +298,21 @@ public:
         tm *lt = localtime(&t);
         int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
         srand(seed);
-        //int id = rand() % PVE_RANGE;
-        int idPve = PVE_LOWER_RANGE + (rand() % PVE_RANGE);
-        Quest const * questPve = sObjectMgr->GetQuestTemplate(idPve);
+        uint32 pveId = sHearthstoneMode->hsPveQuests.at(rand() % (sHearthstoneMode->hsPveQuests.size() - 1)).id;
+        Quest const * questPve = sObjectMgr->GetQuestTemplate(pveId);
+
+        t = time(NULL);
+        seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + player->GetGUID();
+        srand(seed);
+        uint32 pvpId = sHearthstoneMode->hsPvpQuests.at(rand() % (sHearthstoneMode->hsPvpQuests.size() - 1)).id;
+        Quest const * questPvp = sObjectMgr->GetQuestTemplate(pvpId);
+
+#pragma region "Pve Quest Check"
         int PveMaxCheck = 0;
-        int i = PVE_LOWER_RANGE;
-        while (i <= PVE_UPPER_RANGE && PveMaxCheck <= MAX_PVE_QUEST_NUMBER)
+        int i = 0;
+        while (i <= (sHearthstoneMode->hsPveQuests.size() - 1) && PveMaxCheck <= MAX_PVE_QUEST_NUMBER)
         {
-            if (player->GetQuestStatus(i) != QUEST_STATUS_NONE)
+            if (player->GetQuestStatus(sHearthstoneMode->hsPveQuests.at(i).id) != QUEST_STATUS_NONE)
             {
                 PveMaxCheck = PveMaxCheck + 1;
             }
@@ -308,6 +322,24 @@ public:
         {
             bitmask = bitmask | BITMASK_PVE;
         }
+#pragma endregion
+
+#pragma region "Pvp Quest Check"
+        int PvpMaxCheck = 0;
+        i = 0;
+        while (i <= (sHearthstoneMode->hsPvpQuests.size() - 1) && PvpMaxCheck <= MAX_PVE_QUEST_NUMBER) // NEED PVP MAX?
+        {
+            if (player->GetQuestStatus(sHearthstoneMode->hsPvpQuests.at(i).id) != QUEST_STATUS_NONE)
+            {
+                PvpMaxCheck = PvpMaxCheck + 1;
+            }
+            i = i + 1;
+        }
+        if (player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false) && PvpMaxCheck < MAX_PVP_QUEST_NUMBER)
+        {
+            bitmask = bitmask | BITMASK_PVP;
+        }
+#pragma endregion
 
         if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
         {
@@ -315,7 +347,7 @@ public:
         }
         if ((bitmask & BITMASK_PVP) == BITMASK_PVP)
         {
-            // player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVP_QUEST, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVP_QUEST, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         }
         if ((bitmask & BITMASK_EXTRA) == BITMASK_EXTRA)
         {
@@ -323,11 +355,11 @@ public:
         }
         if (bitmask == 0)
         {
-            if (player->hasQuest(idPve)) // and id pvp and id extra
+            if (player->hasQuest(pveId) && player->hasQuest(pvpId)) // and id extra
                 gossip = 100001;
             else { gossip = 100002; }
         }
-        if (PveMaxCheck >= MAX_PVE_QUEST_NUMBER)
+        if (PveMaxCheck >= MAX_PVE_QUEST_NUMBER && PvpMaxCheck >= MAX_PVP_QUEST_NUMBER)
             gossip = 100003;
 
         player->SEND_GOSSIP_MENU(gossip, creature->GetGUID());
@@ -658,6 +690,33 @@ void HearthstoneMode::loadHearthstone()
     } while (result->NextRow());
 
     sLog->outError("Hearthstone Mode: loaded %u transmog items", itemCount);
+
+        uint32 questCount = 0;
+        sHearthstoneMode->hsPveQuests.clear();
+        sHearthstoneMode->hsPvpQuests.clear();
+
+        QueryResult hsQuestResult = ExtraDatabase.PQuery("SELECT id, flag FROM hearthstone_quests");
+
+        if (hsQuestResult)
+        {
+            do
+            {
+                HearthstoneQuest hq = {};
+                hq.id = (*hsQuestResult)[0].GetUInt32();
+                hq.flag = (*hsQuestResult)[1].GetUInt32();
+                unsigned char bitmask = hq.flag;
+
+                if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
+                    sHearthstoneMode->hsPveQuests.push_back(hq); // push the newly created element in the list
+                if ((bitmask & BITMASK_PVP) == BITMASK_PVP)
+                    sHearthstoneMode->hsPvpQuests.push_back(hq); // push the newly created element in the list
+
+                questCount++;
+            } while (hsQuestResult->NextRow());
+        }
+    
+    // show log of loaded achievements at startup
+    sLog->outError("Hearthstone Mode: loaded %u quests", questCount);
 }
 
 void AddSC_hearthstone()
