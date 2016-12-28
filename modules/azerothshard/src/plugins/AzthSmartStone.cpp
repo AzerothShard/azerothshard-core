@@ -28,6 +28,12 @@ public:
 
         player->ADD_GOSSIP_ITEM(0, "Benvenuto nella tua SmartStone!", GOSSIP_SENDER_MAIN, 99999);
 
+        SmartStoneCommand teleport = sSmartStone->getCommandById(1);
+        player->ADD_GOSSIP_ITEM(teleport.icon, teleport.text, GOSSIP_SENDER_MAIN, teleport.id);
+
+        SmartStoneCommand characterMenu = sSmartStone->getCommandById(4);
+        player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.text, GOSSIP_SENDER_MAIN, characterMenu.id);
+
         std::vector<SmartStonePlayerCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
         int n = playerCommands.size();
 
@@ -43,8 +49,6 @@ public:
             }
 
             std::string text = command.text;
-
-            sLog->outError("Command duration: %u", playerCommands[i].duration);
 
             if (playerCommands[i].charges != -1)
                 text = text + " (" + std::to_string(playerCommands[i].charges) + ")";
@@ -90,7 +94,7 @@ public:
         // scripted action
         if (selectedCommand.type == DO_SCRIPTED_ACTION || action == 2000) // azeroth store
         {
-            if (selectedCommand.charges != 0)
+            if (selectedCommand.charges > 0)
             {
                 player->azthPlayer->decreaseSmartStoneCommandCharges(selectedCommand.id);
             }

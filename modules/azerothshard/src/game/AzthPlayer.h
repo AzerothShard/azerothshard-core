@@ -57,6 +57,7 @@ class AzthPlayer {
     void removeSmartStoneCommand(SmartStonePlayerCommand command, bool query);
     void decreaseSmartStoneCommandCharges(uint32 id);
     bool BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
+    bool hasSmartStoneCommand(uint32 id);
 
  private:
      Player *player;
