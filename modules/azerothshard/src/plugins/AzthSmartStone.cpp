@@ -34,9 +34,13 @@ public:
             SmartStoneCommand teleport = sSmartStone->getCommandById(1);
             player->ADD_GOSSIP_ITEM(teleport.icon, teleport.text, GOSSIP_SENDER_MAIN, teleport.id);
 
-            // menu character (renama, change faction, etc) id 4
+            // menu character (rename, change faction, etc) id 4
             SmartStoneCommand characterMenu = sSmartStone->getCommandById(4);
             player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.text, GOSSIP_SENDER_MAIN, characterMenu.id);
+
+            // menu passive bonus id 9
+            //SmartStoneCommand passiveMenu = sSmartStone->getCommandById(9);
+            //player->ADD_GOSSIP_ITEM(passiveMenu.icon, passiveMenu.text, GOSSIP_SENDER_MAIN, passiveMenu.id);
         }
 
         std::vector<SmartStonePlayerCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
@@ -47,7 +51,7 @@ public:
             SmartStoneCommand command = sSmartStone->getCommandById(playerCommands[i].id);
 
             // if expired or no charges
-            if ((playerCommands[i].duration <= time(NULL) || playerCommands[i].charges == 0) && playerCommands[i].duration != 0)
+            if ((playerCommands[i].duration <= time(NULL) && playerCommands[i].duration != 0) || playerCommands[i].charges == 0)
             {
                 player->azthPlayer->removeSmartStoneCommand(playerCommands[i], true);
                 continue;
@@ -106,7 +110,7 @@ public:
             switch (action)
             {
             case 2000: // store
-                sSmartStone->SmartStoneSendListInventory(player->GetSession(), 100000);
+                sSmartStone->SmartStoneSendListInventory(player->GetSession());
                 break;
 
             case 1: // black market teleport
@@ -136,6 +140,11 @@ public:
                 ChatHandler(player->GetSession()).SendSysMessage("Rilogga per cambiare razza!");
             }
             break;
+
+            case 6: //jukebox
+                player->SummonCreature(300205, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(),
+                    TEMPSUMMON_TIMED_DESPAWN, 600U, 0);
+                break;
 
             case 99999:
                 break;
@@ -287,7 +296,7 @@ public:
     }
 };
 
-void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 extendedCostStartValue)
+void SmartStone::SmartStoneSendListInventory(WorldSession * session)
 {
     int vendorGuid = 1;
     VendorItemData const* items = sObjectMgr->GetNpcVendorItemList(SMARTSTONE_VENDOR_ENTRY);
@@ -352,8 +361,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 exte
                      }*/
 
                      // reputation discount
-                uint32 ExtendedToGold = item->ExtendedCost > extendedCostStartValue ? (item->ExtendedCost - extendedCostStartValue) * 10000 : 0;
-                int32 price = item->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice)) : ExtendedToGold;
+                int32 price = item->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice)) : 0;
 
                 data << uint32(slot + 1);       // client expects counting to start at 1
                 data << uint32(item->item);

@@ -7,6 +7,7 @@
 
 #include "azth_custom_hearthstone_mode.h"
 
+// old
 void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue)
 {
     ;//sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_LIST_INVENTORY");
@@ -74,9 +75,12 @@ void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * se
                     continue;
                 }
 
-                // reputation discount
-                uint32 ExtendedToGold = item->ExtendedCost > extendedCostStartValue ? (item->ExtendedCost - extendedCostStartValue) * 10000 : 0;
-                int32 price = item->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice * discountMod)) : ExtendedToGold;
+                // the no-patch extended cost (shown in gold)
+                //uint32 ExtendedToGold = item->ExtendedCost > extendedCostStartValue ? (item->ExtendedCost - extendedCostStartValue) * 10000 : 0;
+                //int32 price = item->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice * discountMod)) : ExtendedToGold;
+
+                int32 price = item->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice * discountMod)) : 0;
+
 
                 data << uint32(slot + 1);       // client expects counting to start at 1
                 data << uint32(item->item);
@@ -286,6 +290,7 @@ public:
 
             break;
         }
+        player->PlayerTalkClass->SendCloseGossip();
         return true;
     }
 
@@ -298,13 +303,13 @@ public:
         tm *lt = localtime(&t);
         int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
         srand(seed);
-        uint32 pveId = sHearthstoneMode->hsPveQuests.at(rand() % (sHearthstoneMode->hsPveQuests.size() - 1)).id;
+        pveId = sHearthstoneMode->hsPveQuests.at(rand() % (sHearthstoneMode->hsPveQuests.size() - 1)).id;
         Quest const * questPve = sObjectMgr->GetQuestTemplate(pveId);
 
         t = time(NULL);
         seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + player->GetGUID();
         srand(seed);
-        uint32 pvpId = sHearthstoneMode->hsPvpQuests.at(rand() % (sHearthstoneMode->hsPvpQuests.size() - 1)).id;
+        pvpId = sHearthstoneMode->hsPvpQuests.at(rand() % (sHearthstoneMode->hsPvpQuests.size() - 1)).id;
         Quest const * questPvp = sObjectMgr->GetQuestTemplate(pvpId);
 
 #pragma region "Pve Quest Check"

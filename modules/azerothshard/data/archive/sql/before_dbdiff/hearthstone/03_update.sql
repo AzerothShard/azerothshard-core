@@ -11,7 +11,7 @@ UPDATE `quest_template` SET RewardItem1 = 37711, RewardAmount1 = 2 WHERE ID BETW
 -- hearthstone trasmog sack
 UPDATE item_template SET NAME = "Garga's Magic Box", description = "Non sono così egocentrico da chiamare un NPC come me." WHERE entry = 32558;
 
-DELETE FROM creature_questender WHERE id = 100001;
+DELETE FROM creature_questender WHERE id = 100001 AND quest <= 100080 AND quest >= 100000;
 INSERT INTO creature_questender (id, quest) VALUES 
 (100001, 100000),
 (100001, 100001),

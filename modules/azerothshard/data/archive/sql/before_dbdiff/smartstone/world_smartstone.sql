@@ -1,11 +1,14 @@
 UPDATE `item_template` SET `name` = "Smartstone", `Flags` = 64, `ScriptName` = 'azth_smart_stone', stackable = 1, `spellid_1` = 36177, maxcount = 1 WHERE (entry = 32547);
 
 
-DELETE FROM item_template WHERE entry IN (987890, 987891, 987892);
+DELETE FROM item_template WHERE entry IN (987890, 987891, 987892, 987893, 987894, 987895);
 INSERT INTO item_template (entry, class, subclass, NAME, displayid, quality, description, scriptname, flags, stackable, `spellid_1`, buyprice) VALUES
 (987890, 0, 8, "Change Faction!", 1542, 5, "Aggiungi alla smartstone il cambio fazione! (1 carica)", "smart_stone_command", 64, 1, 36177, 1000),
-(987891, 0, 8, "Rename!", 472, 5, "Aggiungi alla smartstone il rename! (1 carica)", "smart_stone_command", 64, 1, 36177, 100000),
-(987892, 0, 8, "Change Race!", 472, 5, "Aggiungi alla smartstone il cambio razza! (1 carica)", "smart_stone_command", 64, 1, 36177, 10000);
+(987891, 0, 8, "Rename!", 7629, 5, "Aggiungi alla smartstone il rename! (1 carica)", "smart_stone_command", 64, 1, 36177, 100000),
+(987892, 0, 8, "Change Race!", 472, 5, "Aggiungi alla smartstone il cambio razza! (1 carica)", "smart_stone_command", 64, 1, 36177, 10000),
+(987893, 0, 8, "Jukebox!", 41449, 5, "Divertiti con la tua musica! (1 carica)", "smart_stone_command", 64, 1, 36177, 10000),
+(987894, 0, 8, "Herbalism Bonus Loot!", 7396, 5, "Aumenta la chance di trovare materiali usando Herbalism! (passivo)", "smart_stone_command", 64, 1, 36177, 10000),
+(987895, 0, 8, "Mining Bonus Loot!", 6568, 5, "Aumenta la chance di trovare materiali usando Mining! (passivo)", "smart_stone_command", 64, 1, 36177, 10000);
 
 
 DELETE FROM creature_template WHERE entry = 170000;
@@ -17,4 +20,7 @@ DELETE FROM npc_vendor WHERE entry = 170000;
 INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES('170000','0','987890','0','0','0');
 INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES('170000','0','987891','0','0','0');
 INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES('170000','0','987892','0','0','0');
+INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES('170000','0','987893','0','0','0');
+INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES('170000','0','987894','0','0','0');
+INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES('170000','0','987895','0','0','0');
 
