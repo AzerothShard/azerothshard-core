@@ -1475,6 +1475,11 @@ void ScriptMgr::OnBeforeUpdateArenaPoints(ArenaTeam* at, std::map<uint32, uint32
     FOREACH_SCRIPT(GlobalScript)->OnBeforeUpdateArenaPoints(at,ap);
 }
 
+void ScriptMgr::OnAfterRefCount(LootStoreItem* LootStoreItem, uint32 &maxcount)
+{
+	FOREACH_SCRIPT(GlobalScript)->OnAfterRefCount(LootStoreItem, maxcount);
+}
+
 uint32 ScriptMgr::DealDamage(Unit* AttackerUnit, Unit *pVictim, uint32 damage, DamageEffectType damagetype)
 {
     FOR_SCRIPTS_RET(UnitScript, itr, end, damage)
