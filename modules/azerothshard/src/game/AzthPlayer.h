@@ -50,6 +50,7 @@ class AzthPlayer {
     uint8 getGroupLevel();
 
     void ForceKilledMonsterCredit(uint32 entry, uint64 guid);
+    uint64 lastSent;
     
     std::vector<SmartStonePlayerCommand> getSmartStoneCommands();
     void addSmartStoneCommand(SmartStonePlayerCommand command, bool query);

@@ -54,6 +54,11 @@ uint8 AzthPlayer::getGroupLevel()  {
 // Send a kill credit, skipping the normal checks on raid/battleground and pvp quests.
 void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid)
 {
+    // we need to check this, because the same criteria for achievements goes to more than just one
+    if (lastSent > time(NULL) - 250)
+        return;
+
+    lastSent = time(NULL);
     uint16 addkillcount = 1;
     uint32 real_entry = entry;
     if (guid)

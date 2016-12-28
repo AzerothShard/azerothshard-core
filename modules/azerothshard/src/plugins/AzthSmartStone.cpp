@@ -143,7 +143,7 @@ public:
 
             case 6: //jukebox
                 player->SummonCreature(300205, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(),
-                    TEMPSUMMON_TIMED_DESPAWN, 600U, 0);
+                    TEMPSUMMON_TIMED_DESPAWN, 600 * 1000, 0);
                 break;
 
             case 99999:
