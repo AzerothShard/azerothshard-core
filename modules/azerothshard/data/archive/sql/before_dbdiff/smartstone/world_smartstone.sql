@@ -4,7 +4,7 @@ UPDATE `item_template` SET `name` = "Smartstone", `Flags` = 64, `ScriptName` = '
 DELETE FROM item_template WHERE entry IN (987890, 987891, 987892);
 INSERT INTO item_template (entry, class, subclass, NAME, displayid, quality, description, scriptname, flags, stackable, `spellid_1`, buyprice) VALUES
 (987890, 0, 8, "Change Faction!", 1542, 5, "Aggiungi alla smartstone il cambio fazione! (1 carica)", "smart_stone_command", 64, 1, 36177, 1000),
-(987891, 0, 8, "Customize!", 472, 5, "Aggiungi alla smartstone il customize! (1 carica)", "smart_stone_command", 64, 1, 36177, 100000),
+(987891, 0, 8, "Rename!", 472, 5, "Aggiungi alla smartstone il rename! (1 carica)", "smart_stone_command", 64, 1, 36177, 100000),
 (987892, 0, 8, "Change Race!", 472, 5, "Aggiungi alla smartstone il cambio razza! (1 carica)", "smart_stone_command", 64, 1, 36177, 10000);
 
 

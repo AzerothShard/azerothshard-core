@@ -28,11 +28,16 @@ public:
 
         player->ADD_GOSSIP_ITEM(0, "Benvenuto nella tua SmartStone!", GOSSIP_SENDER_MAIN, 99999);
 
-        SmartStoneCommand teleport = sSmartStone->getCommandById(1);
-        player->ADD_GOSSIP_ITEM(teleport.icon, teleport.text, GOSSIP_SENDER_MAIN, teleport.id);
+        if (parent == 1)
+        {
+            // black market teleport id 1
+            SmartStoneCommand teleport = sSmartStone->getCommandById(1);
+            player->ADD_GOSSIP_ITEM(teleport.icon, teleport.text, GOSSIP_SENDER_MAIN, teleport.id);
 
-        SmartStoneCommand characterMenu = sSmartStone->getCommandById(4);
-        player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.text, GOSSIP_SENDER_MAIN, characterMenu.id);
+            // menu character (renama, change faction, etc) id 4
+            SmartStoneCommand characterMenu = sSmartStone->getCommandById(4);
+            player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.text, GOSSIP_SENDER_MAIN, characterMenu.id);
+        }
 
         std::vector<SmartStonePlayerCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
         int n = playerCommands.size();
@@ -103,16 +108,35 @@ public:
             case 2000: // store
                 sSmartStone->SmartStoneSendListInventory(player->GetSession(), 100000);
                 break;
-            case 1:
+
+            case 1: // black market teleport
+            {
                 if (!player->IsInCombat())
                     player->TeleportTo(1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
-                break;
-            case 2:
-                player->DeMorph();
-                break;
-            case 3:
-                player->SetDisplayId(1060);
-                break;
+            }
+            break;
+
+            case 2: // change faction
+            {
+                player->SetAtLoginFlag(AT_LOGIN_CHANGE_FACTION);
+                ChatHandler(player->GetSession()).SendSysMessage("Rilogga per cambiare fazione!");
+            }
+            break;
+
+            case 3: // rename
+            {
+                player->SetAtLoginFlag(AT_LOGIN_RENAME);
+                ChatHandler(player->GetSession()).SendSysMessage("Rilogga per cambiare nome! Attento, gli addon sono settati in base al nome!");
+            }
+            break;
+
+            case 5: //change race
+            {
+                player->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
+                ChatHandler(player->GetSession()).SendSysMessage("Rilogga per cambiare razza!");
+            }
+            break;
+
             case 99999:
                 break;
             default:
@@ -120,7 +144,7 @@ public:
                 break;
             }
             player->CLOSE_GOSSIP_MENU();
-           // return;
+            // return;
         }
 
         // open child
@@ -134,7 +158,7 @@ public:
 
             std::vector<SmartStoneCommand> playerCommands = player->azthPlayer->getSmartStoneCommands();
             int n = playerCommands.size();
-           
+
 
             for (int i = 0; i < n; i++)
             {
@@ -150,8 +174,8 @@ public:
 
             player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
             */
-            
-           // return;
+
+            // return;
         }
     }
 };
@@ -215,7 +239,7 @@ SmartStoneCommand SmartStone::getCommandByItem(uint32 item)
 
 bool SmartStone::isNullCommand(SmartStoneCommand command)
 {
-    return (command.id == NULL && command.text == "" && command.item == NULL && command.icon == NULL 
+    return (command.id == NULL && command.text == "" && command.item == NULL && command.icon == NULL
         && command.parent_menu == NULL && command.type == NULL && command.action == NULL);
 };
 
@@ -247,7 +271,7 @@ public:
 
     void OnLogin(Player* player) override
     {
-        QueryResult ssCommandsResult = 
+        QueryResult ssCommandsResult =
             CharacterDatabase.PQuery("SELECT command, dateExpired, charges FROM character_smartstone_commands WHERE playerGuid = %u ;", player->GetGUID());
 
         if (ssCommandsResult)
@@ -300,7 +324,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 exte
                 if (!session->GetPlayer()->IsGameMaster() && ((itemTemplate->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && session->GetPlayer()->GetTeamId() == TEAM_ALLIANCE) || (itemTemplate->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && session->GetPlayer()->GetTeamId() == TEAM_HORDE)))
                     continue;
 
-                
+
                 uint32 leftInStock = 0xFFFFFFFF;
 
                 std::vector<SmartStonePlayerCommand> playerCommands = session->GetPlayer()->azthPlayer->getSmartStoneCommands();
@@ -311,23 +335,23 @@ void SmartStone::SmartStoneSendListInventory(WorldSession * session, uint32 exte
                 for (int i = 0; i < n; i++)
                 {
                     //sLog->outError("Smartstone: isnullcommand: %u, command: %u, playercommand: %u", isNullCommand(command), command.id, playerCommands[i]);
-                    
+
 
                     if (!isNullCommand(command) && command.id == playerCommands[i].id)
                         leftInStock = 0;
                 }
-                
-               /* if (!session->GetPlayer()->IsGameMaster() && !leftInStock)
-                    continue;*/
 
-                /*ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(SMARTSTONE_VENDOR_ENTRY, item->item);
-                if (!sConditionMgr->IsObjectMeetToConditions(session->GetPlayer(), vendor, conditions))
-                {
-                    sLog->outError("SendListInventory: conditions not met for creature entry %u item %u", vendor->GetEntry(), item->item);
-                    continue;
-                }*/
+                /* if (!session->GetPlayer()->IsGameMaster() && !leftInStock)
+                     continue;*/
 
-                // reputation discount
+                     /*ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(SMARTSTONE_VENDOR_ENTRY, item->item);
+                     if (!sConditionMgr->IsObjectMeetToConditions(session->GetPlayer(), vendor, conditions))
+                     {
+                         sLog->outError("SendListInventory: conditions not met for creature entry %u item %u", vendor->GetEntry(), item->item);
+                         continue;
+                     }*/
+
+                     // reputation discount
                 uint32 ExtendedToGold = item->ExtendedCost > extendedCostStartValue ? (item->ExtendedCost - extendedCostStartValue) * 10000 : 0;
                 int32 price = item->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice)) : ExtendedToGold;
 
