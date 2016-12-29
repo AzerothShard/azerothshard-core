@@ -207,4 +207,5 @@ UPDATE `item_template` SET `Flags` = '64', `maxcount` = '5', `spellid_1` = '3617
 UPDATE `item_template` SET `name` = 'Garga\'s Magic Box', `Flags` = '64', `maxcount` = '5', `spellid_1` = '36177', `description` = 'Non sono così egocentrico da chiamare un NPC come me.', `ScriptName` = 'item_azth_hearthstone_loot_sack' WHERE `entry` = '32558';
 UPDATE `item_template` SET `name` = 'Mark of Azeroth', `Flags` = '0', `maxcount` = '0', `stackable` = '2147483647', `spellid_1` = '0', `spellcharges_1` = '0', `description` = 'Il bottino di ogni avventuriero!' WHERE `entry` = '37711';
 UPDATE `item_template` SET `name` = 'Mucca', `Flags` = '64', `stackable` = '1060', `spellid_1` = '36177', `ScriptName` = 'azth_get_morph' WHERE `entry` = '32543';
+UPDATE `item_template` SET `name` = 'Smartstone', `Flags` = '64', `spellid_1` = '36177', `ScriptName` = 'azth_smart_stone' WHERE `entry` = '32547';
 UPDATE `item_template` SET `name` = 'The Lich King', `Flags` = '64', `stackable` = '30721', `spellid_1` = '36177', `ScriptName` = 'azth_get_morph' WHERE `entry` = '32544';

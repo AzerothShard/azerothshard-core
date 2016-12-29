@@ -6,11 +6,12 @@ ADD PRIMARY KEY(`id`),
 ALTER TABLE `azth_clean_world`.`creature`
 ALTER TABLE `azth_clean_world`.`gameobject`
 ALTER TABLE `azth_clean_world`.`game_tele`
-AUTO_INCREMENT=1608, COMMENT='Tele Command';
-AUTO_INCREMENT=6814490, COMMENT='Gameobject System';
-AUTO_INCREMENT=9160626, COMMENT='Creature System';
+AUTO_INCREMENT=1612, COMMENT='Tele Command';
+AUTO_INCREMENT=7001248, COMMENT='Gameobject System';
+AUTO_INCREMENT=9160627, COMMENT='Creature System';
 DROP INDEX idx_id,
 DROP INDEX idx_map,
 DROP PRIMARY KEY,
 DROP PRIMARY KEY,
 DROP PRIMARY KEY,
+Query failed. 23 (HY000): Out of resources when opening file '/tmp/#sql_4e5_0.MYD' (Errcode: 24)

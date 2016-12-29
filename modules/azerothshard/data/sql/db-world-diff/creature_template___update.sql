@@ -1,8 +1,3 @@
-UPDATE `creature_template` SET `faction` = '21' WHERE `entry` = '20756';
-UPDATE `creature_template` SET `faction` = '29' WHERE `entry` = '1094';
-UPDATE `creature_template` SET `faction` = '29' WHERE `entry` = '16461';
-UPDATE `creature_template` SET `faction` = '29' WHERE `entry` = '5475';
-UPDATE `creature_template` SET `faction` = '29', `npcflag` = '6' WHERE `entry` = '22939';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '10636';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '11871';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '17178';
@@ -19,7 +14,6 @@ UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '32793';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '3323';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '3501';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '5471';
-UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '638';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '8122';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '9600';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '9983';
