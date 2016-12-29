@@ -86,10 +86,10 @@ public:
 
     // acquista app
 
-    if (parent == 1)
+    /*if (parent == 1)
       player->ADD_GOSSIP_ITEM(
           0, "|TInterface/ICONS/INV_Misc_Coin_03:30|t Azeroth Store",
-          GOSSIP_SENDER_MAIN, 2000);
+          GOSSIP_SENDER_MAIN, 2000);*/
 
     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
 
