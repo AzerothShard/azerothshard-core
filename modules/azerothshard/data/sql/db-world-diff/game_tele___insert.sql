@@ -5,3 +5,7 @@ INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orient
 INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1605', '-11345.5', '-4722.52', '7.29131', '3.5924', '1', 'gilda_southseas_1');
 INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1606', '-2954.77', '37.4218', '189.674', '3.53349', '1', 'gilda_mulgore_1');
 INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1607', '-13016.9', '-2196.34', '9.1386', '3.66308', '0', 'gilda_forbiddingsea_1');
+INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1608', '-4891.79', '1409.81', '480.626', '0.15', '0', 'gilda_dunmorogh_1');
+INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1609', '-3992.77', '-1468.51', '166.752', '4.44656', '0', 'gilda_wetlands_1');
+INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1610', '4251.37', '-2790.34', '6.70413', '1.4087', '0', 'gilda_ghostlands_1');
+INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1611', '-7540.82', '1106.38', '132.573', '4.48262', '0', 'labirinto');

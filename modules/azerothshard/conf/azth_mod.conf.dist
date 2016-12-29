@@ -2,6 +2,8 @@
 
 Motd = "Benvenuti nel reame di AzerothShard!"
 
+RealmZone = 8
+
 BirthdayTime = 1420822800
 
 StartPlayerMoney = 9000
