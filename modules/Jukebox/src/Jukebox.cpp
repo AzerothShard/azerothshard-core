@@ -67,7 +67,7 @@ public:
         {
             if (param == DATA_JUKEBOX_READY) {
                 jukeboxReady = false;
-                events.ScheduleEvent(EVENT_JUKEBOX_START, 10 * 60 * IN_MILLISECONDS, 1, 0);
+                events.ScheduleEvent(EVENT_JUKEBOX_START, 3 * 60 * IN_MILLISECONDS, 1, 0);
             }
         }
 

@@ -54,6 +54,11 @@ uint8 AzthPlayer::getGroupLevel()  {
 // Send a kill credit, skipping the normal checks on raid/battleground and pvp quests.
 void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid)
 {
+    // we need to check this, because the same criteria for achievements goes to more than just one achievement
+    if (lastSent > time(NULL) - 1)
+        return;
+
+    lastSent = time(NULL);
     uint16 addkillcount = 1;
     uint32 real_entry = entry;
     if (guid)
@@ -124,17 +129,11 @@ void AzthPlayer::addSmartStoneCommand(SmartStonePlayerCommand command, bool quer
 {
     
     uint64 sec = 0;
-    sLog->outError("duration %u", sSmartStone->getCommandById(command.id).duration);
+
     if (sSmartStone->getCommandById(command.id).duration > 0)
     {
         sec = time(NULL) + (sSmartStone->getCommandById(command.id).duration * 60);
     }
-
-    /*int32 charges = command.charges;
-    if (charges > 10000)
-    {
-        charges = -1;
-    }*/
 
     command.duration = sec;
 
@@ -148,7 +147,7 @@ void AzthPlayer::addSmartStoneCommand(SmartStonePlayerCommand command, bool quer
     }
 }
 
-// called only at server startup
+// called only at player login
 void AzthPlayer::addSmartStoneCommand(uint32 id, bool query, uint64 dateExpired, int32 charges)
 {
     if (time(NULL) <= dateExpired)
@@ -194,7 +193,7 @@ void AzthPlayer::decreaseSmartStoneCommandCharges(uint32 id)
         if (smartStoneCommands[i].id == id)
         {
             smartStoneCommands[i].charges = smartStoneCommands[i].charges - 1;
-            if (smartStoneCommands[i].charges == 0)
+            if (smartStoneCommands[i].charges == 0 || smartStoneCommands[i].charges < -1)
                 removeSmartStoneCommand(smartStoneCommands[i], true);
             else
                 CharacterDatabase.PExecute("UPDATE character_smartstone_commands SET charges = %i WHERE playerGuid = %u AND command = %u ;", smartStoneCommands[i].charges, player->GetGUID(), id);

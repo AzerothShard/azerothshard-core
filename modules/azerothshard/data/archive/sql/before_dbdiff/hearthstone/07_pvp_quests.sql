@@ -43,8 +43,8 @@ INSERT INTO creature_template (entry, killcredit1, modelid1, `name`, minlevel, m
 (110040, 110040, 17519, "Win Duel Kill Credit", 1, 1, 14, 0, 0, 0, 0, 0)
 ;
 
-
-DELETE FROM quest_template WHERE id >= 110000 AND id <= 110100;
+-- debug quests
+DELETE FROM quest_template WHERE id >= 110000 AND id <= 110039;
 INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTitle`, `LogDescription`, `QuestDescription`, `EndText`, `RequiredNpcOrGo1`, `RequiredNpcOrGoCount1`, ObjectiveText1) VALUES
 ('110000','2','3840','12482','Vinci Alterac Valley','Vinci Alterac Valley','Vinci Alterac Valley','Ritorna da Han\'al','110001','1', "Vinci Alterac Valley"),
 ('110001','2','3840','12482','Vinci Warsong Gulch','Vinci Warsong Gulch','Vinci Warsong Gulch','Ritorna da Han\'al','110002','1', "Vinci Warsong Gulch"),
@@ -88,4 +88,127 @@ INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTit
 (110039, '2','3840','12482', 'Win Duel', 'Win Duel', 'Win Duel', 'Ritorna da Han\'al', 110040, 1, 'Win Duel')
 ;
 
-UPDATE quest_template SET minlevel = 80, maxlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110000 AND id <= 110100;
+UPDATE quest_template SET minlevel = 80, maxlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110000 AND id <= 110300;
+
+
+-- real quests
+DELETE FROM quest_template WHERE id >= 110040 AND id <= 110095;
+INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTitle`, `LogDescription`, `QuestDescription`, `EndText`, `RequiredNpcOrGo1`, `RequiredNpcOrGoCount1`, ObjectiveText1, RewardItem1, RewardAmount1) VALUES
+(110040,'2','3840','12482','Vinci 2 Warsong Gulch','Vai, $N, la battaglia di Warsong Gulch ti attende! Da sempre orchi ed elfi della notte si sfidano in quelle terre... Prendi parte al conflitto e torna vittorioso a raccontarmelo!','Vinci Warsong Gulch','Ritorna da Han\'al','110002','2', "Warsong Gulch vinti", 37711, 2),
+(110041,'2','3840','12482','Vinci 4 Warsong Gulch','Vai, $N, la battaglia di Warsong Gulch ti attende! Da sempre orchi ed elfi della notte si sfidano in quelle terre... Prendi parte al conflitto e torna vittorioso a raccontarmelo!','Vinci Warsong Gulch','Ritorna da Han\'al','110002','4', "Warsong Gulch vinti", 37711, 3),
+(110042,'2','3840','12482','Vinci 2 Arathi Basin','Vai, $N, la battaglia di Arathi Basin ti attende! I Forsaken e la Lega di Arathor cercano di accumulare le ricchezze del luogo... aiuta una delle due parti e torna vincitore a raccontarmelo!','Vinci Arathi Basin','Ritorna da Han\'al','110003','2', "Arathi Basin vinti", 37711, 2),
+(110043,'2','3840','12482','Vinci 4 Arathi Basin','Vai, $N, la battaglia di Arathi Basin ti attende! I Forsaken e la Lega di Arathor cercano di accumulare le ricchezze del luogo... aiuta una delle due parti e torna vincitore a raccontarmelo!','Vinci Arathi Basin','Ritorna da Han\'al','110003','4', "Arathi Basin vinti", 37711, 3),
+(110044,'2','3840','12482','Vinci 2 Eye of the Storm','Vai, $N, la battaglia di Eye of the Storm ti attende! Corri a Netherstorm e prendi parte al conflitto... torna vittorioso a raccontarmelo!','Vinci Eye of the Storm','Ritorna da Han\'al','110004','2', "Eye of the Storm vinti", 37711, 2),
+(110045,'2','3840','12482','Vinci 4 Eye of the Storm','Vai, $N, la battaglia di Eye of the Storm ti attende! Corri a Netherstorm e prendi parte al conflitto... torna vittorioso a raccontarmelo!','Vinci Eye of the Storm','Ritorna da Han\'al','110004','4', "Eye of the Storm vinti", 37711, 3),
+(110046,'2','3840','12482','Cattura 3 flag in Arathi Basin','Cattura 3 flag in Arathi Basin!','Cattura 3 flag in Arathi Basin','Ritorna da Han\'al','110007','3', "Arathi Basin flag catturate", 37711, 2),
+(110047,'2','3840','12482','Cattura 5 flag in Arathi Basin','Cattura 5 flag in Arathi Basin!','Cattura 5 flag in Arathi Basin','Ritorna da Han\'al','110007','5', "Arathi Basin flag catturate", 37711, 3),
+(110048,'2','3840','12482','Cattura 3 flag in Warsong Gulch','Cattura 3 flag in Warsong Gulch!','Cattura 3 flag in Warsong Gulch','Ritorna da Han\'al','110008','3', "Warsong Gulch flag catturate", 37711, 2),
+(110049,'2','3840','12482','Cattura 5 flag in Warsong Gulch','Cattura 5 flag in Warsong Gulch!','Cattura 5 flag in Warsong Gulch','Ritorna da Han\'al','110008','5', "Warsong Gulch flag catturate", 37711, 3),
+(110050,'2','3840','12482','Recupera 3 flag in Warsong Gulch','Recupera 2 flag in Warsong Gulch!','Recupera 2 flag in Warsong Gulch','Ritorna da Han\'al','110009','2', "Warsong Gulch flag recuperate", 37711, 2),
+(110051,'2','3840','12482','Recupera 5 flag in Warsong Gulch','Recupera 3 flag in Warsong Gulch!','Recupera 3 flag in Warsong Gulch','Ritorna da Han\'al','110009','3', "Warsong Gulch flag recuperate", 37711, 3),
+(110052,'2','3840','12482','Cattura 2 flag in Eye of the Storm','Cattura 2 flag in Eye of the Storm!','Cattura 2 flag in Eye of the Storm','Ritorna da Han\'al','110010','2', "Eye of the Storm flag catturate", 37711, 2),
+(110053,'2','3840','12482','Cattura 4 flag in Eye of the Storm','Cattura 4 flag in Eye of the Storm!','Cattura 4 flag in Eye of the Storm','Ritorna da Han\'al','110010','4', "Eye of the Storm flag catturate", 37711, 3),
+(110054,'2','3840','12482','Difendi 3 basi in Arathi Basin','Difendi 3 basi in Arathi Basin!','Difendi 3 basi in Arathi Basin','Ritorna da Han\'al','110014','3', "Arathi Basin basi difese", 37711, 2),
+(110055,'2','3840','12482','Difendi 5 basi in Arathi Basin','Difendi 5 basi in Arathi Basin!','Difendi 5 basi in Arathi Basin','Ritorna da Han\'al','110014','5', "Arathi Basin basi difese", 37711, 3),
+(110056,'2','3840','12482','Nerfate il Bladestorm','Uccidi 5 Warrior','Uccidi 5 Warrior','Ritorna da Han\'al','110018','5', "Warrior Uccisi", 37711, 2),
+(110057,'2','3840','12482','Mortal Strike op','Uccidi 10 Warrior','Uccidi 10 Warrior','Ritorna da Han\'al','110018','10', "Warrior Uccisi", 37711, 3),
+(110058,'2','3840','12482','Come li uccido se hanno il Divine Shield?','Uccidi 5 Paladin','Uccidi 5 Paladin','Ritorna da Han\'al','110019','5', "Paladin Uccisi", 37711, 2),
+(110059,'2','3840','12482','Odio per i pala','Uccidi 10 Paladin','Uccidi 10 Paladin','Ritorna da Han\'al','110019','10', "Paladin Uccisi", 37711, 3),
+(110060,'2','3840','12482','Uccidili prima che ti uccidano','Uccidi 5 Hunter','Uccidi 5 Hunter','Ritorna da Han\'al','110020','5', "Hunter Uccisi", 37711, 2),
+(110061,'2','3840','12482','Tanto hanno quaranta Deterrance','Uccidi 10 Hunter','Uccidi 10 Hunter','Ritorna da Han\'al','110020','10', "Warrior Hunter", 37711, 3),
+(110062,'2','3840','12482','They do it from behind','Uccidi 5 Rogue','Uccidi 5 Rogue','Ritorna da Han\'al','110021','5', "Rogue Uccisi", 37711, 2),
+(110063,'2','3840','12482','Stai per uccidermi? LOL no, vanish, cos, sprint, bye','Uccidi 10 Rogue','Uccidi 10 Rogue','Ritorna da Han\'al','110021','10', "Rogue Uccisi", 37711, 3),
+(110064,'2','3840','12482','Ma è Illidan? Ah, no :,(','Uccidi 5 Warlock','Uccidi 5 Warlock','Ritorna da Han\'al','110026','5', "Warlock Uccisi", 37711, 2),
+(110065,'2','3840','12482','Fear, fear, fear','Uccidi 10 Warlock','Uccidi 10 Warlock','Ritorna da Han\'al','110026','10', "Warlock Uccisi", 37711, 3),
+(110066,'2','3840','12482','Tanto va in Bear Form e diventa immortale...','Uccidi 5 Druid','Uccidi 5 Druid','Ritorna da Han\'al','110027','5', "Druid Uccisi", 37711, 2),
+(110067,'2','3840','12482','Orsopollooo','Uccidi 10 Druid','Uccidi 10 Druid','Ritorna da Han\'al','110027','10', "Druid Uccisi", 37711, 3),
+(110068,'2','3840','12482','Ognuno per sè?','Uccidi 4 Human','Uccidi 4 Human','Ritorna da Han\'al','110028','4', "Human Uccisi", 37711, 2),
+(110069,'2','3840','12482','Massacro a Stormwind','Uccidi 7 Human','Uccidi 7 Human','Ritorna da Han\'al','110028','7', "Human Uccisi", 37711, 3),
+(110070,'2','3840','12482','Orgrimmar reputation','Uccidi 4 Orc','Uccidi 4 Orc','Ritorna da Han\'al','110029','4', "Orc Uccisi", 37711, 2),
+(110071,'2','3840','12482','Ma non assomiglia a Shrek','Uccidi 7 Orc','Uccidi 7 Orc','Ritorna da Han\'al','110029','7', "Orc Uccisi", 37711, 3),
+(110072,'2','3840','12482','Ma non è uno gnomo?','Uccidi 4 Dwarf','Uccidi 4 Dwarf','Ritorna da Han\'al','110030','4', "Dwarf Uccisi", 37711, 2),
+(110073,'2','3840','12482','Re Magni in pensione','Uccidi 7 Dwarf','Uccidi 7 Dwarf','Ritorna da Han\'al','110030','7', "Dwarf Uccisi", 37711, 3),
+(110074,'2','3840','12482','Taglialegna','Uccidi 4 Night Elf','Uccidi 4 Night Elf','Ritorna da Han\'al','110031','4', "Night Elf Uccisi", 37711, 2),
+(110075,'2','3840','12482','Ma non erano buggati?','Uccidi 7 Night Elf','Uccidi 7 Night Elf','Ritorna da Han\'al','110031','7', "Night Elf Uccisi", 37711, 3),
+(110076,'2','3840','12482','Ma è già morto...','Uccidi 4 Undead','Uccidi 4 Undead','Ritorna da Han\'al','110032','4', "Undead Uccisi", 37711, 2),
+(110077,'2','3840','12482','Mmm... che profumino...','Uccidi 7 Undead','Uccidi 7 Undead','Ritorna da Han\'al','110032','7', "Undead Uccisi", 37711, 3),
+(110078,'2','3840','12482','Mucche Killer','Uccidi 4 Tauren','Uccidi 4 Tauren','Ritorna da Han\'al','110033','4', "Tauren Uccisi", 37711, 2),
+(110079,'2','3840','12482','Tutti cornuti','Uccidi 7 Tauren','Uccidi 7 Tauren','Ritorna da Han\'al','110033','7', "Tauren Uccisi", 37711, 3),
+(110080,'2','3840','12482','Non si distinguono','Uccidi 4 Gnome','Uccidi 4 Gnome','Ritorna da Han\'al','110034','4', "Gnome Uccisi", 37711, 2),
+(110081,'2','3840','12482','Basso è bello','Uccidi 7 Gnome','Uccidi 7 Gnome','Ritorna da Han\'al','110034','7', "Gnome Uccisi", 37711, 3),
+(110082,'2','3840','12482','Rock and Troll','Uccidi 4 Troll','Uccidi 4 Troll','Ritorna da Han\'al','110035','4', "Troll Uccisi", 37711, 2),
+(110083,'2','3840','12482','Vodoo is life','Uccidi 7 Troll','Uccidi 7 Troll','Ritorna da Han\'al','110035','7', "Troll Uccisi", 37711, 3),
+(110084,'2','3840','12482','Sig Nicious I love you','Uccidi 4 Blood Elf','Uccidi 4 Blood Elf','Ritorna da Han\'al','110036','4', "Blood Elf Uccisi", 37711, 2),
+(110085,'2','3840','12482','Preferivo senza Sunwell','Uccidi 7 Blood Elf','Uccidi 7 Blood Elf','Ritorna da Han\'al','110036','7', "Blood Elf Uccisi", 37711, 3),
+(110086,'2','3840','12482','Rimandateli sul loro pianeta! Ruspa!','Uccidi 4 Draenei','Uccidi 4 Draenei','Ritorna da Han\'al','110037','4', "Draenei Uccisi", 37711, 2),
+(110087,'2','3840','12482','Odio per i Draenei','Uccidi 7 Draenei','Uccidi 7 Draenei','Ritorna da Han\'al','110037','7', "Draenei Uccisi", 37711, 3),
+(110088,'2','3840','12482','Occhio al Mind Control','Uccidi 5 Priest','Uccidi 5 Priest','Ritorna da Han\'al','110022','5', "Priest Uccisi", 37711, 2),
+(110089,'2','3840','12482','Tanto ti shottano anche da Disci...','Uccidi 10 Priest','Uccidi 10 Priest','Ritorna da Han\'al','110022','10', "Priest Uccisi", 37711, 3),
+(110090,'2','3840','12482','Incubo per i caster','Uccidi 5 Death Knight','Uccidi 5 Death Knight','Ritorna da Han\'al','110023','5', "Death Knight Uccisi", 37711, 2),
+(110091,'2','3840','12482','Ah, ma è immune agli stun??','Uccidi 10 Death Knight','Uccidi 10 Death Knight','Ritorna da Han\'al','110023','10', "Death Knight Uccisi", 37711, 3),
+(110092,'2','3840','12482','Non fanno abbastanza danno','Uccidi 5 Shaman','Uccidi 5 Shaman','Ritorna da Han\'al','110024','5', "Shaman Uccisi", 37711, 2),
+(110093,'2','3840','12482','Ma quello è un Lava Bur..','Uccidi 10 Shaman','Uccidi 10 Shaman','Ritorna da Han\'al','110024','10', "Shaman Uccisi", 37711, 3),
+(110094,'2','3840','12482','Ice Barrier indistruttibile','Uccidi 5 Mage','Uccidi 5 Mage','Ritorna da Han\'al','110025','5', "Mage Uccisi", 37711, 2),
+(110095,'2','3840','12482','Ma quanto scappa col Blink?!','Uccidi 10 Mage','Uccidi 10 Mage','Ritorna da Han\'al','110025','10', "Mage Uccisi", 37711, 3);
+
+UPDATE quest_template SET minlevel = 80, maxlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110040 AND id <= 110095;
+UPDATE quest_template SET method = 0, questTYPE = 0, flags = 4098, RewardFactionID1 = 948, RewardFactionValue1 = 1, RewardFactionOverride1 = 0, unknown0 = 1 WHERE id >= 110040 AND id <= 110095;
+
+DELETE FROM creature_questender WHERE id = 100001 AND quest <= 110040 AND quest >= 110095;
+INSERT INTO creature_questender (id, quest) VALUES 
+(100001, 110040),
+(100001, 110041),
+(100001, 110042),
+(100001, 110043),
+(100001, 110044),
+(100001, 110045),
+(100001, 110046),
+(100001, 110047),
+(100001, 110048),
+(100001, 110049),
+(100001, 110050),
+(100001, 110051),
+(100001, 110052),
+(100001, 110053),
+(100001, 110054),
+(100001, 110055),
+(100001, 110056),
+(100001, 110057),
+(100001, 110058),
+(100001, 110059),
+(100001, 110060),
+(100001, 110061),
+(100001, 110062),
+(100001, 110063),
+(100001, 110064),
+(100001, 110065),
+(100001, 110066),
+(100001, 110067),
+(100001, 110068),
+(100001, 110069),
+(100001, 110070),
+(100001, 110071),
+(100001, 110072),
+(100001, 110073),
+(100001, 110074),
+(100001, 110075),
+(100001, 110076),
+(100001, 110077),
+(100001, 110078),
+(100001, 110079),
+(100001, 110080),
+(100001, 110081),
+(100001, 110082),
+(100001, 110083),
+(100001, 110084),
+(100001, 110085),
+(100001, 110086),
+(100001, 110087),
+(100001, 110088),
+(100001, 110089),
+(100001, 110090),
+(100001, 110091),
+(100001, 110092),
+(100001, 110093),
+(100001, 110094),
+(100001, 110095);

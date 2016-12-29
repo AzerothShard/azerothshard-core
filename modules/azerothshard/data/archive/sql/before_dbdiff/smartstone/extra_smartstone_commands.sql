@@ -16,8 +16,12 @@ CREATE TABLE `smartstone_commands` (
 
 DELETE FROM `smartstone_commands`;
 INSERT INTO `smartstone_commands` (id, `text`, item, icon, parent_menu, `type`, `action`, charges, duration, `comment`) VALUES 
-(1, "Teletrasportami al Mercato Nero", NULL, 2, 1, 1, 0, 2, 0, "Teletrasporto al Mercato Nero"),
+(1, "Teletrasportami al Mercato Nero", NULL, 2, 1, 1, 0, -1, 0, "Teletrasporto al Mercato Nero"),
 (2, "Change Faction", 987890, 0, 2, 1, 0, 1, 0, "Change Faction 1 charge"),
 (3, "Rename", 987891, 0, 2, 1, 0, 1, 0, "Rename character 1 charge"),
 (4, "Menù character", NULL, 1, 1, 2, 2, -1, 0, "submenu character"),
-(5, "Change Race", 987892, 0, 2, 1, 3, 1, 0, "Change character race 1 charge");
+(5, "Change Race", 987892, 0, 2, 1, 0, 1, 0, "Change character race 1 charge"),
+(6, "Jukebox!", 987893, 6, 1, 1, 0, 1, 0, "summon jukebox"),
+(7, "Herbalism", 987894, 0, 3, 1, 0, -1, 0, "bonus loot herbalism"),
+(8, "Mining", 987895, 0, 3, 1, 0, -1, 0, "bonus loot mining"),
+(9, "Bonus passivi", NULL, 1, 1, 2, 3, -1, 0, "submenu for passive bonuses");
