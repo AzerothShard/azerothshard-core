@@ -635,12 +635,6 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
 			if 
 	}*/
 
-	sLog->outError("AAAAAAAAAA");
-	sLog->outError("Achi type: %u", achievementType);
-	sLog->outError("data0: %u", returnData0(criteria));
-	sLog->outError("data1: %u", returnData1(criteria));
-	sLog->outError("entry: %u", entry);
-
     if (entry)
         player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit
 }

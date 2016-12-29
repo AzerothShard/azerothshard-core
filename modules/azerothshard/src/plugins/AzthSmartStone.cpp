@@ -107,10 +107,6 @@ public:
     if (selectedCommand.type == DO_SCRIPTED_ACTION ||
         action == 2000) // azeroth store
     {
-      if (selectedCommand.charges > 0) {
-        player->azthPlayer->decreaseSmartStoneCommandCharges(
-            selectedCommand.id);
-      }
       switch (action) {
       case 2000: // store
         sSmartStone->SmartStoneSendListInventory(player->GetSession());
@@ -146,6 +142,8 @@ public:
       } break;
 
       case 6: // jukebox
+          if (player->FindNearestCreature(300205, 20.f, true) != NULL)
+              return;
         player->SummonCreature(300205, player->GetPositionX(),
                                player->GetPositionY(), player->GetPositionZ(),
                                player->GetOrientation(),
@@ -158,6 +156,10 @@ public:
         sLog->outError("Smartstone: unhandled command! ID: %u, player GUID: %u",
                        action, player->GetGUID());
         break;
+      }
+      if (selectedCommand.charges > 0) {
+          player->azthPlayer->decreaseSmartStoneCommandCharges(
+              selectedCommand.id);
       }
       player->CLOSE_GOSSIP_MENU();
       // return;
