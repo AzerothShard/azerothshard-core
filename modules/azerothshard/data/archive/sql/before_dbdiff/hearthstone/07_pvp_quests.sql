@@ -154,7 +154,7 @@ INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTit
 UPDATE quest_template SET minlevel = 80, maxlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110040 AND id <= 110095;
 UPDATE quest_template SET method = 0, questTYPE = 0, flags = 4098, RewardFactionID1 = 948, RewardFactionValue1 = 1, RewardFactionOverride1 = 0, unknown0 = 1 WHERE id >= 110040 AND id <= 110095;
 
-DELETE FROM creature_questender WHERE id = 100001 AND quest <= 110040 AND quest >= 110095;
+DELETE FROM creature_questender WHERE id = 100001 AND quest >= 110040 AND quest <= 110095;
 INSERT INTO creature_questender (id, quest) VALUES 
 (100001, 110040),
 (100001, 110041),
@@ -211,4 +211,4 @@ INSERT INTO creature_questender (id, quest) VALUES
 (100001, 110092),
 (100001, 110093),
 (100001, 110094),
-(100001, 110095);
+(100001, 110095); 
