@@ -308,6 +308,7 @@ public:
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
         return true;
     }
+
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
         player->PlayerTalkClass->ClearMenus();
@@ -319,12 +320,14 @@ public:
     }
 };
 
-void SmartStone::SmartStoneSendListInventory(WorldSession *session, int vendorGuid) {
-  VendorItemData const *items =
-      sObjectMgr->GetNpcVendorItemList(SMARTSTONE_VENDOR_ENTRY);
+void SmartStone::SmartStoneSendListInventory(WorldSession *session, uint64 vendorGuid) {
+  VendorItemData const *items = sObjectMgr->GetNpcVendorItemList(SMARTSTONE_VENDOR_ENTRY);
+  
+  
+  
   if (!items) {
     WorldPacket data(SMSG_LIST_INVENTORY, 8 + 1 + 1);
-    data << uint64(vendorGuid);
+    data << vendorGuid;
     data << uint8(0); // count == 0, next will be error code
     data << uint8(0); // "Vendor has no inventory"
     session->SendPacket(&data);
@@ -335,7 +338,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession *session, int vendorGu
   uint8 count = 0;
 
   WorldPacket data(SMSG_LIST_INVENTORY, 8 + 1 + itemCount * 8 * 4);
-  data << uint64(vendorGuid);
+  data << vendorGuid;
 
   size_t countPos = data.wpos();
   data << uint8(count);
@@ -365,7 +368,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession *session, int vendorGu
         int n = playerCommands.size();
         SmartStoneCommand command = sSmartStone->getCommandByItem(item->item);
 
-        // I comandi che il player gi� ha li oscuriamo
+        // we hide commands that the player already has
         for (int i = 0; i < n; i++) {
           // sLog->outError("Smartstone: isnullcommand: %u, command: %u,
           // playercommand: %u", isNullCommand(command), command.id,

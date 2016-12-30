@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2016 AzerothCore
+// Copyright (c) 2016 AzerothCore
 // Author: Gargarensis
 // Refactored by: mik1893 
 // This software is provided 'as-is', without any express or implied
@@ -540,7 +540,6 @@ bool HearthstoneMode::PlayerCanUseItem(Item const* item, Player* player, bool cl
 
     if (proto)
     {
-        player->Say(proto->Name1, 0);
         if ((proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY) && player->GetTeamId(true) != TEAM_HORDE)
             return false;
 
