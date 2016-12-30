@@ -54,7 +54,7 @@ public:
     std::vector<SmartStoneCommand> ssCommands2;
 
     void loadCommands();
-    void SmartStoneSendListInventory(WorldSession * session);
+    void SmartStoneSendListInventory(WorldSession * session, int vendorGuid);
     SmartStoneCommand getCommandById(uint32 id);
     SmartStoneCommand getCommandByItem(uint32 item);
     bool isNullCommand(SmartStoneCommand command);

@@ -109,7 +109,7 @@ public:
     {
       switch (action) {
       case 2000: // store
-        sSmartStone->SmartStoneSendListInventory(player->GetSession());
+        //sSmartStone->SmartStoneSendListInventory(player->GetSession());
         break;
 
       case 1: // black market teleport
@@ -296,8 +296,30 @@ public:
   }
 };
 
-void SmartStone::SmartStoneSendListInventory(WorldSession *session) {
-  int vendorGuid = 1;
+class smartstone_vendor : public CreatureScript {
+public:
+    smartstone_vendor() : CreatureScript("smartstone_vendor") {}
+
+    bool OnGossipHello(Player* player, Creature* creature) override
+    {
+        player->PlayerTalkClass->ClearMenus();
+
+        player->ADD_GOSSIP_ITEM(0, "Salve, vorrei comprare nuove app!", GOSSIP_SENDER_MAIN, 1);
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+        return true;
+    }
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+    {
+        player->PlayerTalkClass->ClearMenus();
+
+        if (action == 1)
+            sSmartStone->SmartStoneSendListInventory(player->GetSession(), creature->GetGUID());
+
+        return true;
+    }
+};
+
+void SmartStone::SmartStoneSendListInventory(WorldSession *session, int vendorGuid) {
   VendorItemData const *items =
       sObjectMgr->GetNpcVendorItemList(SMARTSTONE_VENDOR_ENTRY);
   if (!items) {
@@ -402,4 +424,5 @@ void AddSC_azth_smart_stone() // Add to scriptloader normally
   new azth_smart_stone();
   new azth_smartstone_world();
   new azth_smartstone_player_commands();
+  new smartstone_vendor();
 }

@@ -14,6 +14,8 @@ modules/drassil/joiner
 !modules/BGItemLevel
 !modules/Jukebox
 !modules/smartstoneLootModifier
+!modules/smartstone
+!modules/hearthstone-mode
 
 build*/
 
