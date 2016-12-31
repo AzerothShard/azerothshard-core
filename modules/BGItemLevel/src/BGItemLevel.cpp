@@ -112,14 +112,15 @@ public:
     //prevent crashes if any season found
     if (actualSeason->GetItemLevel() == 0)
     {
-        sLog->outString(">> No correspondent season found. Check DB table `season`.");
+        sLog->outString(">> No correspondent season found. Check DB table `season`.\n");
         sLog->outString();
+        ArenaSeasonSystemEnabled = false;
         return; 
     }
 
     maxItemLevel = actualSeason->GetItemLevel();
 
-    sLog->outString(">> Season script for PVP loaded, actual item level: %u", actualSeason->GetItemLevel());
+    sLog->outString(">> Season script for PVP loaded, actual item level: %u\n", actualSeason->GetItemLevel());
     sLog->outString();
   }
 };
