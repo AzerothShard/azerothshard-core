@@ -664,7 +664,7 @@ void HearthstoneMode::loadHearthstone()
     }
 
     // show log of loaded achievements at startup
-    sLog->outError("Hearthstone Mode: loaded %u achievement definitions", count);
+    sLog->outString("Hearthstone Mode: loaded %u achievement definitions", count);
 
     int itemCount = 0;
 
@@ -687,7 +687,7 @@ void HearthstoneMode::loadHearthstone()
         itemCount++;
     } while (result->NextRow());
 
-    sLog->outError("Hearthstone Mode: loaded %u transmog items", itemCount);
+    sLog->outString("Hearthstone Mode: loaded %u transmog items", itemCount);
 
         uint32 questCount = 0;
         sHearthstoneMode->hsPveQuests.clear();
@@ -714,7 +714,7 @@ void HearthstoneMode::loadHearthstone()
         }
     
     // show log of loaded achievements at startup
-    sLog->outError("Hearthstone Mode: loaded %u quests", questCount);
+    sLog->outString("Hearthstone Mode: loaded %u quests", questCount);
 }
 
 void AddSC_hearthstone()

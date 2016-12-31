@@ -229,7 +229,7 @@ void SmartStone::loadCommands() {
     } while (ssCommandsResult->NextRow());
   }
 
-  sLog->outError("Smartstone: loaded %u commands", count);
+  sLog->outString("Smartstone: loaded %u commands", count);
 }
 
 SmartStoneCommand SmartStone::getCommandById(uint32 id) {
