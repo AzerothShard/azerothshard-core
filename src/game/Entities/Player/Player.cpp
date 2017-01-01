@@ -5020,6 +5020,18 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
+            /* WoW Armory */
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARMORY_STATS);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+            
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_FEED_LOG);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+            trans->PAppend("DELETE FROM armory_character_stats WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_feed_log WHERE guid = '%u'", guid);
+            /* WoW Armory */
+
             CharacterDatabase.CommitTransaction(trans);
             break;
         }
@@ -17426,6 +17438,11 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         return false;
     }
 
+    /* WoW Armory */
+    // Cleanup old Wowarmory feeds
+    InitWowarmoryFeeds();
+    /* WoW Armory */
+
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 
@@ -19268,7 +19285,7 @@ void Player::SaveToDB(bool create, bool logout)
     // first save/honor gain after midnight will also update the player's honor fields
     UpdateHonorFields();
 
-    ;//sLog->outDebug(LOG_FILTER_UNITS, "The value of player %s at save: ", m_name.c_str());
+    //sLog->outDebug(LOG_FILTER_UNITS, "The value of player %s at save: ", m_name.c_str());
     outDebugValues();
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -19304,6 +19321,35 @@ void Player::SaveToDB(bool create, bool logout)
         _SaveStats(trans);
 
     CharacterDatabase.CommitTransaction(trans);
+
+    /* World of Warcraft Armory */
+    // Place this code AFTER CharacterDatabase.CommitTransaction(); to avoid some character saving errors.
+    // Wowarmory feeds
+    if (!m_wowarmory_feeds.empty())
+    {
+        std::ostringstream sWowarmory;
+        sWowarmory << "INSERT IGNORE INTO character_feed_log (guid,type,data,date,counter,difficulty,item_guid,item_quality) VALUES ";
+        for (WowarmoryFeeds::iterator iter = m_wowarmory_feeds.begin(); iter < m_wowarmory_feeds.end(); ++iter)
+        {
+            //                      guid                    type                        data                    date                            counter                   difficulty                        item_guid                      item_quality
+            sWowarmory << "(" << (*iter).guid << ", " << (*iter).type << ", " << (*iter).data << ", " << uint64((*iter).date) << ", " << (*iter).counter << ", " << uint32((*iter).difficulty) << ", " << (*iter).item_guid << ", " << (*iter).item_quality << ")";
+            if (iter != m_wowarmory_feeds.end() - 1)
+                sWowarmory << ",";
+        }
+        CharacterDatabase.PExecute(sWowarmory.str().c_str());
+        // Clear old saved feeds from storage - they are not required for server core.
+        InitWowarmoryFeeds();
+    }
+    // Character stats
+    std::ostringstream ps;
+    time_t t = time(NULL);
+    CharacterDatabase.PExecute("DELETE FROM armory_character_stats WHERE guid = %u", GetGUIDLow());
+    ps << "INSERT INTO armory_character_stats (guid, data, save_date) VALUES (" << GetGUIDLow() << ", '";
+    for (uint16 i = 0; i < m_valuesCount; ++i)
+        ps << GetUInt32Value(i) << " ";
+    ps << "', " << uint64(t) << ");";
+    CharacterDatabase.PExecute(ps.str().c_str());
+    /* World of Warcraft Armory */
 
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
@@ -27095,3 +27141,47 @@ void Player::UpdateKnownTitles()
 }
 
 //[/AZTH]
+
+
+//[ARMORY]
+void Player::InitWowarmoryFeeds()
+{
+    // Clear feeds
+    m_wowarmory_feeds.clear();
+}
+
+void Player::CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality)
+{
+    /*
+        1 - TYPE_ACHIEVEMENT_FEED
+        2 - TYPE_ITEM_FEED
+        3 - TYPE_BOSS_FEED
+    */
+    if (GetGUIDLow() == 0)
+    {
+        sLog->outError("misc", "[Wowarmory]: player is not initialized, unable to create log entry!");
+        return;
+    }
+    if (type <= 0 || type > 3)
+    {
+        sLog->outError("misc", "[Wowarmory]: unknown feed type: %d, ignore.", type);
+        return;
+    }
+    if (data == 0)
+    {
+        sLog->outError("misc", "[Wowarmory]: empty data (GUID: %u), ignore.", GetGUIDLow());
+        return;
+    }
+    WowarmoryFeedEntry feed;
+    feed.guid = GetGUIDLow();
+    feed.type = type;
+    feed.data = data;
+    feed.difficulty = type == 3 ? GetMap()->GetDifficulty() : 0;
+    feed.item_guid  = item_guid;
+    feed.item_quality = item_quality;
+    feed.counter = 0;
+    feed.date = time(NULL);
+    sLog->outDebug(LOG_FILTER_NONE, "[Wowarmory]: create wowarmory feed (GUID: %u, type: %d, data: %u).", feed.guid, feed.type, feed.data);
+    m_wowarmory_feeds.push_back(feed);
+}
+//[/ARMORY]
