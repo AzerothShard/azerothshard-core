@@ -2128,9 +2128,9 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement)
         return;
 
     SendAchievementEarned(achievement);
-    //<--ARMORY
+    //[AZTH]
     GetPlayer()->CreateWowarmoryFeed(1, achievement->ID, 0, 0);
-    //ARMORY -->
+    //[/AZTH]
     CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
     ca.date = time(NULL);
     ca.changed = true;

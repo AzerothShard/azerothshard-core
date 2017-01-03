@@ -5020,7 +5020,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
-            /* WoW Armory */
+            //[AZTH]
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARMORY_STATS);
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
@@ -5030,7 +5030,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             trans->Append(stmt);
             trans->PAppend("DELETE FROM armory_character_stats WHERE guid = '%u'", guid);
             trans->PAppend("DELETE FROM character_feed_log WHERE guid = '%u'", guid);
-            /* WoW Armory */
+            //[/AZTH]
 
             CharacterDatabase.CommitTransaction(trans);
             break;
@@ -17438,10 +17438,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         return false;
     }
 
-    /* WoW Armory */
+    //[AZTH]
     // Cleanup old Wowarmory feeds
     InitWowarmoryFeeds();
-    /* WoW Armory */
+    //[/AZTH]
 
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
@@ -19322,7 +19322,7 @@ void Player::SaveToDB(bool create, bool logout)
 
     CharacterDatabase.CommitTransaction(trans);
 
-    /* World of Warcraft Armory */
+    //[AZTH]
     // Place this code AFTER CharacterDatabase.CommitTransaction(); to avoid some character saving errors.
     // Wowarmory feeds
     if (!m_wowarmory_feeds.empty())
@@ -19349,7 +19349,7 @@ void Player::SaveToDB(bool create, bool logout)
         ps << GetUInt32Value(i) << " ";
     ps << "', " << uint64(t) << ");";
     CharacterDatabase.PExecute(ps.str().c_str());
-    /* World of Warcraft Armory */
+    //[/AZTH]
 
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
@@ -27140,10 +27140,6 @@ void Player::UpdateKnownTitles()
         SetUInt32Value(PLAYER_CHOSEN_TITLE, new_title);
 }
 
-//[/AZTH]
-
-
-//[ARMORY]
 void Player::InitWowarmoryFeeds()
 {
     // Clear feeds
@@ -27184,4 +27180,4 @@ void Player::CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uin
     sLog->outDebug(LOG_FILTER_NONE, "[Wowarmory]: create wowarmory feed (GUID: %u, type: %d, data: %u).", feed.guid, feed.type, feed.data);
     m_wowarmory_feeds.push_back(feed);
 }
-//[/ARMORY]
+//[/AZTH]

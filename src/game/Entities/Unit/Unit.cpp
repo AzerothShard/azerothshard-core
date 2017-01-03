@@ -839,11 +839,6 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
             {
                 bg->UpdatePlayerScore(killer, SCORE_DAMAGE_DONE, damage);
 
-                /** World of Warcraft Armory **/
-                if (Battleground *bgV = ((Player*)victim)->GetBattleground())
-                    bgV->UpdatePlayerScore(((Player*)victim), SCORE_DAMAGE_TAKEN, damage);
-                /** World of Warcraft Armory **/
-
                 killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_DAMAGE_DONE, damage, 0, victim); // pussywizard: InBattleground() optimization
             }
             //killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HIT_DEALT, damage); // pussywizard: optimization
@@ -10017,15 +10012,6 @@ int32 Unit::DealHeal(Unit* healer, Unit* victim, uint32 addhealth)
         //player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_TOTAL_HEALING_RECEIVED, gain); // pussywizard: optimization
         //player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEALING_RECEIVED, addhealth); // pussywizard: optimization
     }*/
-    
-    
-    /** World of Warcraft Armory **/
-    if (Player* player = victim->ToPlayer())
-    {
-        if (Battleground *bgV = victim->ToPlayer()->GetBattleground())
-            bgV->UpdatePlayerScore((Player*)victim, SCORE_HEALING_TAKEN, gain);
-    }
-    /** World of Warcraft Armory **/
 
     return gain;
 }
@@ -16488,7 +16474,7 @@ void Unit::Kill(Unit* killer, Unit* victim, bool durabilityLoss, WeaponAttackTyp
         {
 
             Map* instanceMap = creature->GetMap();
-            Player* creditedPlayer = killer ? killer->GetCharmerOrOwnerPlayerOrPlayerItself() : NULL; //???
+            //Player* creditedPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
             // TODO: do instance binding anyway if the charmer/owner is offline
 
             if (instanceMap->IsDungeon() && player)
@@ -16496,7 +16482,6 @@ void Unit::Kill(Unit* killer, Unit* victim, bool durabilityLoss, WeaponAttackTyp
                     if (creature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
                     {
                         instanceMap->ToInstanceMap()->PermBindAllPlayers();
-                        creditedPlayer->CreateWowarmoryFeed(3, creature->GetCreatureTemplate()->Entry, 0, 0);
                     }
         }
     }

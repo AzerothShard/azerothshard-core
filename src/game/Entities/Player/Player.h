@@ -1104,7 +1104,7 @@ private:
     bool _isPvP;
 };
 
-/* World of Warcraft Armory */
+//[AZTH]
 struct WowarmoryFeedEntry
 {
     uint32 guid;         // Player GUID
@@ -1118,7 +1118,7 @@ struct WowarmoryFeedEntry
 };
 
 typedef std::vector<WowarmoryFeedEntry> WowarmoryFeeds;
-/* World of Warcraft Armory */
+//[/AZTH]
 
 
 class Player : public Unit, public GridObject<Player>
@@ -1131,7 +1131,7 @@ class Player : public Unit, public GridObject<Player>
         explicit Player(WorldSession* session);
         ~Player();
 
-        // [AZTH] Custom variables
+        //[AZTH] Custom variables
         AzthPlayer *azthPlayer;
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
@@ -2459,10 +2459,10 @@ class Player : public Unit, public GridObject<Player>
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
 
-        /* World of Warcraft Armory */
+        //[AZTH]
         void CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality);
         void InitWowarmoryFeeds();
-        /* World of Warcraft Armory */
+        //[/AZTH]
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
@@ -3006,9 +3006,10 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
 
-        //WoW Armory
+        //[AZTH]
         // World of Warcraft Armory Feeds
         WowarmoryFeeds m_wowarmory_feeds;
+        //[/AZTH]
 
         InstanceTimeMap _instanceResetTimes;
         uint32 _pendingBindId;
