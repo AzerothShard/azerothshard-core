@@ -19,7 +19,7 @@ public:
   loadSeason() : WorldScript("loadSeason") {}
   void OnStartup()
   {
-    QueryResult result = WorldDatabase.PQuery("SELECT * FROM season ORDER BY startingFrom DESC;");
+    QueryResult result = WorldDatabase.PQuery("SELECT * FROM season ORDER BY startingFrom;");
     QueryResult getLastDate = CharacterDatabase.PQuery("SELECT * FROM worldstates WHERE entry = 100000;");
 
     if (!result)
