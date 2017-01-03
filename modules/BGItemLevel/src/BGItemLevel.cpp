@@ -37,12 +37,13 @@ public:
     struct tm * lastChangeDateConverted = localtime(&lastChange);
     uint32 lastChangeDay = lastChangeDateConverted->tm_mday;
 
+    bool enable;
+
     //get status of the system: enabled or disabled
-    istringstream(arena_timestamp_table[2].GetString()) >> ArenaSeasonSystemEnabled;
+    istringstream(arena_timestamp_table[2].GetString()) >> enable;
 
 
     bool actualSeasonFound = false;
-    Season* actualSeason = new Season(0, 0, 0); //initialize season
 
     //ACTUAL TIME FROM CORE
     time_t t = time(0);   
@@ -56,14 +57,14 @@ public:
     //check if today is friday and is not the same friday of today
     if (now->tm_wday == 5 && day != lastChangeDay)
     {
-            if (ArenaSeasonSystemEnabled)
+            if (enable)
             {
-                ArenaSeasonSystemEnabled = false;
+                sASeasonMgr->setEnabled(false);
                 QueryResult setModeDisabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=0 WHERE entry=100000;"); //set arena season to disabled
             }
             else
             {
-                ArenaSeasonSystemEnabled = true;
+                sASeasonMgr->setEnabled(true);
                 QueryResult setModeEnabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=1 WHERE entry=100000;"); //set arena season to enabled
             }
             QueryResult setLastDate = CharacterDatabase.PQuery("UPDATE worldstates SET value=%u WHERE entry=100000;", t); //set new timestamp
@@ -101,26 +102,26 @@ public:
 
         if (date > dbStartDate && date < dbEndDate)
         {
-            actualSeason->SetItemLevel(season_table[0].GetUInt32());
-            actualSeason->SetStartingDate(time_t(season_table[1].GetUInt32()));
-            actualSeason->SetEndDate(time_t((season_table[2].GetUInt32())));
+            sASeasonMgr->SetItemLevel(season_table[0].GetUInt32());
+            sASeasonMgr->SetStartingDate(time_t(season_table[1].GetUInt32()));
+            sASeasonMgr->SetEndDate(time_t((season_table[2].GetUInt32())));
             actualSeasonFound = true;
         }
         
     } while (!actualSeasonFound && result->NextRow());
 
     //prevent crashes if any season found
-    if (actualSeason->GetItemLevel() == 0)
+    if (sASeasonMgr->GetItemLevel() == 0)
     {
         sLog->outString(">> No correspondent season found. Check DB table `season`.\n");
         sLog->outString();
-        ArenaSeasonSystemEnabled = false;
+        sASeasonMgr->setEnabled(false);
         return; 
     }
 
-    maxItemLevel = actualSeason->GetItemLevel();
+    maxItemLevel = sASeasonMgr->GetItemLevel();
 
-    sLog->outString(">> Season script for PVP loaded, actual item level: %u\n", actualSeason->GetItemLevel());
+    sLog->outString(">> Season script for PVP loaded, actual item level: %u\n", sASeasonMgr->GetItemLevel());
     sLog->outString();
   }
 };
@@ -134,7 +135,7 @@ public:
   void checkPlayerItem(Player* player, Battleground* battleground, bool inBattleground)
   {
 
-    if (!ArenaSeasonSystemEnabled)
+    if (!sASeasonMgr->isEnabled())
     {
         return; //SYSTEM DISABLED
     }
