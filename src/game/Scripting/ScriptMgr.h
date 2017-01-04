@@ -883,7 +883,7 @@ class PlayerScript : public ScriptObject
         virtual void OnQuestRewardItem(Player* player, Item* item, uint32 count) { }
 
         //Before buying something from any vendor
-        virtual void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
+        virtual void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot) { };
 
 };
 

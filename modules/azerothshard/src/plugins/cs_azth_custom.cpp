@@ -39,6 +39,7 @@
          static std::vector<ChatCommand> lookupAzthCommands = {
              { "maxskill", SEC_PLAYER, true , &handleAzthMaxSkill, ""},
              { "xp"      , SEC_PLAYER, false, &handleAzthXP, ""},
+             { "smartstone"      , SEC_PLAYER, true, &handleAzthSmartstone, "" },
          };
 
          static std::vector<ChatCommand> commandTable = {
@@ -338,7 +339,29 @@
              handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest XP Rate set to %.2f.", me->azthPlayer->GetPlayerQuestRate());
          return true;
      }
+
+     static bool handleAzthSmartstone(ChatHandler* handler, const char* args)
+     {
+         Player* player = handler->GetSession()->GetPlayer();
+
+         if (!player)
+             return false;
+
+         if (player->HasItemCount(32547, 1U, true))
+         {
+             handler->PSendSysMessage("|CFF7BBEF7[SmartStone]|r: Hai già una smartstone!");
+             return true;
+         }
+         else
+         {
+             player->AddItem(32547, 1);
+         }
+
+         return true;
+     }
  };
+
+
 
  void AddSC_azth_commandscript() {
      new azth_commandscript();
