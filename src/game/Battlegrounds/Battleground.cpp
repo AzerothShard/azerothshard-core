@@ -1446,6 +1446,7 @@ void Battleground::UpdatePlayerScore(Player* player, uint32 type, uint32 value, 
                     itr2->second.HealingDone += value;
             }
             break;
+
         default:
             sLog->outError("Battleground::UpdatePlayerScore: unknown score type (%u) for BG (map: %u, instance id: %u)!",
                 type, m_MapId, m_InstanceID);
