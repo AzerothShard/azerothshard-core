@@ -41,12 +41,12 @@ time_t Season::GetEndDate() const
     return endDate;
 }
 
-bool Season::isEnabled()
+bool Season::IsEnabled() const
 {
     return enabled;
 }
 
-void Season::setEnabled(bool enable) const
+void Season::SetEnabled(bool enable)
 {
     enabled = enable;
 }

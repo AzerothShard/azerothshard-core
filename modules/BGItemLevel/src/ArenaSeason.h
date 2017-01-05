@@ -8,13 +8,13 @@ public:
     int GetItemLevel() const;
     time_t GetStartingDate() const;
     time_t GetEndDate() const;
-    bool isEnabled() const;
+    bool IsEnabled() const;
 
     //SETTERS
     void SetItemLevel(int itemLevel);
     void SetStartingDate(time_t startingDate);
     void SetEndDate(time_t endDate);
-    void setEnabled(bool enable);
+    void SetEnabled(bool enable);
 
     Season();
     Season(int itemLevel, time_t startingDate, time_t endDate);

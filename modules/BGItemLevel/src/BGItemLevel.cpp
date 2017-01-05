@@ -59,12 +59,12 @@ public:
     {
             if (enable)
             {
-                sASeasonMgr->setEnabled(false);
+                sASeasonMgr->SetEnabled(false);
                 QueryResult setModeDisabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=0 WHERE entry=100000;"); //set arena season to disabled
             }
             else
             {
-                sASeasonMgr->setEnabled(true);
+                sASeasonMgr->SetEnabled(true);
                 QueryResult setModeEnabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=1 WHERE entry=100000;"); //set arena season to enabled
             }
             QueryResult setLastDate = CharacterDatabase.PQuery("UPDATE worldstates SET value=%u WHERE entry=100000;", t); //set new timestamp
@@ -115,7 +115,7 @@ public:
     {
         sLog->outString(">> No correspondent season found. Check DB table `season`.\n");
         sLog->outString();
-        sASeasonMgr->setEnabled(false);
+        sASeasonMgr->SetEnabled(false);
         return; 
     }
 
@@ -135,7 +135,7 @@ public:
   void checkPlayerItem(Player* player, Battleground* battleground, bool inBattleground)
   {
 
-    if (!sASeasonMgr->isEnabled())
+    if (!sASeasonMgr->IsEnabled())
     {
         return; //SYSTEM DISABLED
     }
@@ -227,12 +227,24 @@ public:
     {
         for (ArenaTeam::MemberList::const_iterator itr = at->m_membersBegin(); itr != at->m_membersEnd(); ++itr)
         {
-            uint32 points=ap[GUID_LOPART(itr->Guid)];
-            if (at->GetStats().WeekWins > 0 && points > 0)
-                // sorry about multiple floating, just to be sure :P
-                ap[GUID_LOPART(itr->Guid)] = float(points * float(float(float(at->GetStats().WeekWins)*100 / at->GetStats().WeekGames) / 100));
-            else
-                ap[GUID_LOPART(itr->Guid)] = 0;
+            uint32 points = ap[GUID_LOPART(itr->Guid)];
+            uint8 minGames = 10;
+
+            if (points == 0)
+                continue;
+
+            // assume you've done at least a win to get the basic bonus
+            uint32 weekWins = at->GetStats().WeekWins ? at->GetStats().WeekWins : 1;
+
+            float modifier = float(at->GetStats().WeekWins * 100 / minGames) / 100;
+
+            if (modifier < 0.1)
+                modifier = 0.1; // 10% as min value
+            else if (modifier > 2) // max value
+                modifier = 2;
+
+            // sorry about multiple floating, just to be sure :P
+            ap[GUID_LOPART(itr->Guid)] = float(points * modifier);
         }
     }
 };
