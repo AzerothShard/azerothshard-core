@@ -325,7 +325,7 @@ void GuildHouseObject::LoadGuildHouse()
     while (result->NextRow());
 
 
-    sLog->outError("Loaded  %u Guildhouses", GH_map.size());
+    sLog->outDetail("Loaded  %u Guildhouses", GH_map.size());
 }
 
 void GuildHouseObject::LoadGuildHouseAdd()
@@ -334,7 +334,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
     mGuildGuardID.clear();
 
 
-    sLog->outError("Loading GuildHouse npcs - objects...");
+    sLog->outDetail("Loading GuildHouse npcs - objects...");
 
     QueryResult result = WorldDatabase.Query("SELECT `guid`,`type`,`id`,`add_type` FROM `guildhouses_add` ORDER BY Id ASC");
 
@@ -377,7 +377,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
     } 
     while (result->NextRow());
 
-    sLog->outError("Loaded  %u Guildhouse objects", GH_AddHouse.size());
+    sLog->outDetail("Loaded  %u Guildhouse objects", GH_AddHouse.size());
 }
 
 uint32 GuildHouseObject::GetGuildByGuardID(uint32 guid)
@@ -462,6 +462,7 @@ void GuildHouseObject::ControlGuildHouse()
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 pGuild->ModifyBankMoney(trans, (*itr).second.price * 75000, true);
                 CharacterDatabase.CommitTransaction(trans);
+                sLog->outDetail("GuildHouse %u set to 0 because guild %u has low members ( < %u )", (*itr).first, pGuild->GetId(), (*itr).second.min_member );
             }           
     }
 }
