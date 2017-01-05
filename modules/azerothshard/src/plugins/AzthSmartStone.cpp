@@ -294,6 +294,14 @@ public:
       } while (ssCommandsResult->NextRow());
     }
   }
+
+  void OnBeforeBuyFromVendor(Player *player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot) {
+      if (!sSmartStone->isNullCommand(sSmartStone->getCommandByItem(item)))
+      {
+          player->azthPlayer->BuySmartStoneCommand(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
+          item = 0;
+      }
+  }
 };
 
 class smartstone_vendor : public CreatureScript {
