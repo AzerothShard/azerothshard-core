@@ -9,3 +9,4 @@ INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orient
 INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1609', '-3992.77', '-1468.51', '166.752', '4.44656', '0', 'gilda_wetlands_1');
 INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1610', '4251.37', '-2790.34', '6.70413', '1.4087', '0', 'gilda_ghostlands_1');
 INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1611', '-7540.82', '1106.38', '132.573', '4.48262', '0', 'labirinto');
+INSERT INTO `game_tele` (`id`, `position_x`, `position_y`, `position_z`, `orientation`, `map`, `name`) VALUES('1612', '-7540.51', '1136.96', '132.574', '4.72684', '0', 'labirinto1');
