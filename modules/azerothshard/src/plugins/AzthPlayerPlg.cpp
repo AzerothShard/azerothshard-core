@@ -121,7 +121,7 @@ public:
         player->azthPlayer->m_completed_criteria_map.erase(critId);
     }
 
-    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot)
+    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot) override
     {
         long price = 0;
 
@@ -146,12 +146,15 @@ public:
 
         if (crItem->ExtendedCost)
         {
+            if (crItem->ExtendedCost <= 2997)
+                return;
+
             price = crItem->ExtendedCost;
             price = price * (-1);
         }
         else
         {
-            ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item);
+            /*ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item);
             if (!pProto)
             {
                 return;
@@ -160,8 +163,8 @@ public:
             if (crItem->IsGoldRequired(pProto))
             {
                 price = pProto->BuyPrice;
-            }
-            
+            }*/
+            return;
         }
 
 
