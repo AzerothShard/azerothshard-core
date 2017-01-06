@@ -21,7 +21,7 @@ public:
 
 	ItemToSell();
 	ItemToSell(uint32 id, string name, uint32 extCost, bool canBeBought);
-    void SendListInventory(WorldSession * session, uint64 vendorGuid, std::vector<ItemToSell> buyableItems);
+    void SendListInventoryDonorVendor(WorldSession * session, uint64 vendorGuid, std::vector<ItemToSell> buyableItems);
     string CapitalizeFirstLetterEveryWord(string str);
 
 private:

@@ -96,7 +96,7 @@ public:
             }
             else
             {
-                sItemToSell->SendListInventory(player->GetSession(), creature->GetGUID(), allItems);
+                sItemToSell->SendListInventoryDonorVendor(player->GetSession(), creature->GetGUID(), allItems);
             }
         }
         return true;

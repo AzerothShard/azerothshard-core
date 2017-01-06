@@ -67,9 +67,9 @@ void ItemToSell::SetCanBeBought(bool ItsCanBeBought)
     canBeBought = ItsCanBeBought;
 }
 
-void ItemToSell::SendListInventory(WorldSession *session, uint64 vendorGuid, std::vector<ItemToSell> buyableItems) {
+void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vendorGuid, std::vector<ItemToSell> allItems) {
 
-    uint8 itemCount = buyableItems.size();
+    uint32 itemCount = allItems.size();
     uint8 count = 0;
 
     WorldPacket data(SMSG_LIST_INVENTORY, 8 + 1 + itemCount * 8 * 4);
@@ -78,16 +78,21 @@ void ItemToSell::SendListInventory(WorldSession *session, uint64 vendorGuid, std
     size_t countPos = data.wpos();
     data << uint8(count);
 
-    for (uint8 slot = 0; slot < itemCount; ++slot) {
-        ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(buyableItems[slot].GetId());
+    if (itemCount > MAX_VENDOR_ITEMS)
+    {
+        itemCount = MAX_VENDOR_ITEMS;
+    }
+
+    for (uint32 slot = 0; slot < itemCount; ++slot) {
+        ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(allItems[slot].GetId());
         
-        uint32 extCost = buyableItems[slot].GetExtCost();
+        uint32 extCost = allItems[slot].GetExtCost();
         if (_proto)
         {
             data << uint32(slot + 1); // client expects counting to start at 1
-            data << uint32(buyableItems[slot].GetId());
+            data << uint32(allItems[slot].GetId());
             data << uint32(_proto->DisplayInfoID);
-            if (buyableItems[slot].GetCanBeBought())
+            if (allItems[slot].GetCanBeBought())
                 data << int32(0xFFFFFFFF);
             else
                 data << int32(0);
@@ -95,8 +100,8 @@ void ItemToSell::SendListInventory(WorldSession *session, uint64 vendorGuid, std
             data << uint32(_proto->MaxDurability);
             data << uint32(_proto->BuyCount);
             data << uint32(extCost);
-         }
-         if (++count >= MAX_VENDOR_ITEMS)
+        }
+        if (++count >= MAX_VENDOR_ITEMS)
             break;
     }
 
