@@ -16,6 +16,7 @@ modules/drassil/joiner
 !modules/smartstoneLootModifier
 !modules/smartstone
 !modules/hearthstone-mode
+!modules/DonationsVendor
 
 build*/
 
