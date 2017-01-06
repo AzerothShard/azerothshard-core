@@ -121,25 +121,12 @@ public:
         player->azthPlayer->m_completed_criteria_map.erase(critId);
     }
 
-    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot) override
+    void OnAfterStoreOrEquipNewItem(Player* player, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore) override
     {
         long price = 0;
 
-        Creature* creature = player->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
-
-        if (!creature)
-        {
-            return;
-        }
-
-        VendorItemData const* vItems = creature->GetVendorItems();
+        VendorItemData const* vItems = pVendor->GetVendorItems();
         if (!vItems || vItems->Empty())
-        {
-            return;
-        }
-
-        VendorItem const* crItem = vItems->GetItem(vendorslot);
-        if (!crItem || crItem->item != item)
         {
             return;
         }
@@ -169,7 +156,7 @@ public:
 
 
         ExtraDatabase.PQuery("INSERT INTO `buy_log` (`playerGuid`, `item`, `vendor`, `price`) VALUES (%u, %u, %u, %ld);",
-            player->GetGUID(), item, vendorguid, price);
+            player->GetGUID(), item, pVendor->GetGUID(), price);
     }
 
 };

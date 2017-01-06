@@ -1535,6 +1535,11 @@ void ScriptMgr::OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uin
     FOREACH_SCRIPT(PlayerScript)->OnBeforeBuyItemFromVendor(player, vendorguid, vendorslot, item, count, bag, slot);
 }
 
+void ScriptMgr::OnAfterStoreOrEquipNewItem(Player* player, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore) 
+{
+    FOREACH_SCRIPT(PlayerScript)->OnAfterStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, pVendor, crItem, bStore);
+}
+
 AllMapScript::AllMapScript(const char* name)
     : ScriptObject(name)
 {

@@ -298,11 +298,9 @@ public:
   
   void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot) override
   {
-      sLog->outString("entrato");
       if (!sSmartStone->isNullCommand(sSmartStone->getCommandByItem(item)))
       {
-          sLog->outString("entrato2");
-          player->azthPlayer->BuySmartStoneCommand(vendorguid, slot, item, count, NULL_BAG, NULL_SLOT);
+          player->azthPlayer->BuySmartStoneCommand(vendorguid, vendorslot, item, count, NULL_BAG, NULL_SLOT);
           item = 0;
       }
   }
