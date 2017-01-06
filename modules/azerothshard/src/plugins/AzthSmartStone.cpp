@@ -91,6 +91,12 @@ public:
           0, "|TInterface/ICONS/INV_Misc_Coin_03:30|t Azeroth Store",
           GOSSIP_SENDER_MAIN, 2000);*/
 
+    if (parent != 1)
+    {
+        // back to main menu command
+        player->ADD_GOSSIP_ITEM(0, "Indietro", GOSSIP_SENDER_MAIN, 2001);
+    }
+
     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
 
     parent = 1;
@@ -100,6 +106,14 @@ public:
   void OnGossipSelect(Player *player, Item *item, uint32 sender,
                       uint32 action) override {
     player->PlayerTalkClass->ClearMenus();
+
+    // back to main menu command
+    if (action == 2001)
+    {
+        parent = 1;
+        player->CLOSE_GOSSIP_MENU();
+        OnUse(player, item, SpellCastTargets());
+    }
 
     SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
 
