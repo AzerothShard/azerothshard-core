@@ -139,6 +139,11 @@ public:
         return; //SYSTEM DISABLED
     }
 
+    if (player->IsGameMaster())
+    {
+        return;
+    }
+
     uint32 INVENTORY_END = 18;
     uint32 counter = 0;
     string incompatibleItems[18];
