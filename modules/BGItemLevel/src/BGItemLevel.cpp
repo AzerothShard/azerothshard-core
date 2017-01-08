@@ -41,6 +41,7 @@ public:
     //get status of the system: enabled or disabled
     istringstream(arena_timestamp_table[2].GetString()) >> enable;
 
+    sASeasonMgr->SetEnabled(enable);
 
     bool actualSeasonFound = false;
 
@@ -53,17 +54,16 @@ public:
     uint32 date = (month * 31 * 24 * 60 * 60) + (day * 24 * 60 * 60) + seconds;
 
 
+
     //check if today is friday and is not the same friday of today
     if (now->tm_wday == 5 && day != lastChangeDay)
     {
             if (enable)
             {
-                sASeasonMgr->SetEnabled(false);
                 QueryResult setModeDisabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=0 WHERE entry=100000;"); //set arena season to disabled
             }
             else
             {
-                sASeasonMgr->SetEnabled(true);
                 QueryResult setModeEnabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=1 WHERE entry=100000;"); //set arena season to enabled
             }
             QueryResult setLastDate = CharacterDatabase.PQuery("UPDATE worldstates SET value=%u WHERE entry=100000;", t); //set new timestamp
