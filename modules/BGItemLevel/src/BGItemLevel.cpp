@@ -35,6 +35,8 @@ public:
     struct tm * lastChangeDateConverted = localtime(&lastChange);
     uint32 lastChangeDay = lastChangeDateConverted->tm_mday;
 
+    bool enable;
+
 
     //get status of the system: enabled or disabled
     istringstream(arena_timestamp_table[2].GetString()) >> enable;
@@ -56,7 +58,7 @@ public:
     {
             if (enable)
             {
-                ArenaSeasonSystemEnabled = false;
+                sASeasonMgr->SetEnabled(false);
                 QueryResult setModeDisabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=0 WHERE entry=100000;"); //set arena season to disabled
             }
             else
