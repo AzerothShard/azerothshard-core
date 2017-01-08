@@ -45,3 +45,13 @@ void Season::SetEndDate(time_t ItsEndDate)
 {
     endDate = ItsEndDate;
 }
+
+bool Season::IsEnabled() const
+{
+    return enabled;
+}
+
+void Season::SetEnabled(bool enable)
+{
+    this->enabled = enable;
+}
