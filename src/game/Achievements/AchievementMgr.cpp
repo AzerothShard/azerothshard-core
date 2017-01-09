@@ -807,10 +807,12 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
     {
         AchievementCriteriaEntry const* achievementCriteria = (*i);
         AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementCriteria->referredAchievement);
-        if (!achievement)
-            continue;
 
         sHearthstoneMode->sendQuestCredit(GetPlayer(), achievementCriteria); //[AZTH] need it before the check on completed achievements
+
+
+        if (!achievement)
+            continue;
 
         if (!CanUpdateCriteria(achievementCriteria, achievement))
             continue;
