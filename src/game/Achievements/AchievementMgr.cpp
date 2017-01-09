@@ -30,6 +30,7 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
+#include "Hearthstone/azth_custom_hearthstone_mode.h" //[AZTH]
 
 namespace Trinity
 {
@@ -2006,6 +2007,9 @@ void AchievementMgr::SetCriteriaProgress(AchievementCriteriaEntry const* entry, 
                 newValue = progress->counter < changeValue ? changeValue : progress->counter;
                 break;
         }
+
+        
+        sHearthstoneMode->sendQuestCredit(GetPlayer(), entry); //[AZTH] need it before te return
 
         // not update (not mark as changed) if counter will have same value
         if (ptype != PROGRESS_RESET && progress->counter == newValue && !entry->timeLimit)
