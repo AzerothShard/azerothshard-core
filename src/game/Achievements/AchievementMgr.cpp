@@ -800,7 +800,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             break;
     }
 
-    if (!achievementCriteriaList)
+    if (!achievementCriteriaList) 
         return;
 
     for (AchievementCriteriaEntryList::const_iterator i = achievementCriteriaList->begin(); i != achievementCriteriaList->end(); ++i)
@@ -809,6 +809,8 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
         AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementCriteria->referredAchievement);
         if (!achievement)
             continue;
+
+        sHearthstoneMode->sendQuestCredit(GetPlayer(), achievementCriteria); //[AZTH] need it before the check on completed achievements
 
         if (!CanUpdateCriteria(achievementCriteria, achievement))
             continue;
@@ -2007,9 +2009,6 @@ void AchievementMgr::SetCriteriaProgress(AchievementCriteriaEntry const* entry, 
                 newValue = progress->counter < changeValue ? changeValue : progress->counter;
                 break;
         }
-
-        
-        sHearthstoneMode->sendQuestCredit(GetPlayer(), entry); //[AZTH] need it before te return
 
         // not update (not mark as changed) if counter will have same value
         if (ptype != PROGRESS_RESET && progress->counter == newValue && !entry->timeLimit)
