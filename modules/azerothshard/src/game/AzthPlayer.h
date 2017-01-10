@@ -53,7 +53,7 @@ public:
   uint8 getGroupLevel();
 
   void ForceKilledMonsterCredit(uint32 entry, uint64 guid);
-  time_t lastSent;
+  time_t lastSent = time(NULL);
 
   std::vector<SmartStonePlayerCommand> getSmartStoneCommands();
   void addSmartStoneCommand(SmartStonePlayerCommand command, bool query);
