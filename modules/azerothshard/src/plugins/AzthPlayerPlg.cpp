@@ -151,9 +151,10 @@ public:
             return;
         }
 
+        uint32 guid = pVendor ? pVendor->GetEntry() : 0;
 
         ExtraDatabase.PQuery("INSERT INTO `buy_log` (`playerGuid`, `item`, `vendor`, `price`) VALUES (%u, %u, %u, %ld);",
-            player->GetGUID(), item, pVendor->GetGUID(), price);
+            player->GetGUIDLow(), item, guid, price);
     }
 
 };
