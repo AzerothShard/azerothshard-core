@@ -6,7 +6,8 @@
 #include "music.h"
 #include "ScriptedCreature.h"
 
-std::vector<music> musicList;
+std::map<string, std::map<int, music>> musicList;
+std::vector<string> genresName;
 
 class loadMusic : public WorldScript
 {
@@ -14,18 +15,20 @@ public:
     loadMusic() : WorldScript("loadMusic") {}
     void OnStartup()
     {
-        QueryResult music_table = ExtraDatabase.PQuery("SELECT * FROM jukebox_music ORDER BY author ASC, title;"); //author, title and music id from DB
+        QueryResult music_table = ExtraDatabase.PQuery("SELECT * FROM jukebox_music ORDER BY author ASC, title;"); //author, title, music id and genre from DB
         if (!music_table)
         {
-            sLog->outString(">> Loaded 0 musics for jukebox. DB table `jukebox_music` is empty.");
+            sLog->outString(">> Loaded 0 musics for jukebox. DB table `jukebox_music` is empty.\n");
             sLog->outString();
             return;
         }
-
         Field* musicField = music_table->Fetch();
 
-        do {
-            musicList.push_back(music(musicField[0].GetString(), musicField[1].GetString(), musicField[2].GetUInt32())); //push data into musicList array
+        uint32 t = 1;
+        do
+        {
+            musicList[musicField[3].GetString()][t] = music(musicField[0].GetString(), musicField[1].GetString(), musicField[2].GetUInt32(), musicField[3].GetString());
+            t++;
         } while (music_table->NextRow());
     }
 };
@@ -87,10 +90,14 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
+        uint32 genresCounter = 0;
         if (creature->AI()->GetData(DATA_JUKEBOX_READY) > 0) {
-            for (uint32 i = 0; i < musicList.size(); i++)
+            for (std::map<string, std::map<int, music>>::iterator it = musicList.begin(); it != musicList.end(); it++)
             {
-                player->ADD_GOSSIP_ITEM(0, musicList[i].GetAuthor() + " - " + musicList[i].GetTitle(), GOSSIP_SENDER_MAIN, i);
+                string genre = it->first;
+                player->ADD_GOSSIP_ITEM(0, genre, GOSSIP_SENDER_MAIN, genresCounter);
+                genresName.push_back(genre);
+                genresCounter++;
             }
             player->SEND_GOSSIP_MENU(1, creature->GetGUID());
             return true;
@@ -104,14 +111,25 @@ public:
     {
         if (creature->AI()->GetData(DATA_JUKEBOX_READY) > 0) {
             player->PlayerTalkClass->ClearMenus();
-            if (action <= musicList.size())
+
+            if (action < 1000)
             {
-                creature->PlayDistanceSound(musicList[action].GetMusicId());
-                std::string msg = "Now playing: " + musicList[action].GetAuthor() + " - " + musicList[action].GetTitle();
+                for (std::map<int, music>::iterator it = musicList[genresName[action]].begin(); it != musicList[genresName[action]].end(); it++)
+                {
+                    player->ADD_GOSSIP_ITEM(0, it->second.GetAuthor() + " - " + it->second.GetTitle(), GOSSIP_SENDER_MAIN, ((action+1)*1000)+ it->first); //action +1 to avoid 0*1000 = 0
+                    player->SEND_GOSSIP_MENU(1, creature->GetGUID());
+                }
+            }
+            else
+            {
+                string genre = genresName[((int)((action) / 1000))-1]; // -1 to revert action +1 did before
+                uint32 id = action - (int)((action) / 1000) * 1000;
+                creature->PlayDistanceSound(musicList[genre][id].GetMusicId());
+                std::string msg = "Now playing: " + musicList[genre][id].GetAuthor() + " - " + musicList[genre][id].GetTitle();
                 creature->MonsterSay(msg.c_str(), 0, creature);
                 creature->AI()->DoAction(DATA_JUKEBOX_READY);
+                player->PlayerTalkClass->SendCloseGossip();
             }
-            player->PlayerTalkClass->SendCloseGossip();
             return true;
         }
         else {
