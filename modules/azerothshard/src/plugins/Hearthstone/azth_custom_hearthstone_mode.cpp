@@ -140,6 +140,7 @@ int HearthstoneMode::getQuality()
 int HearthstoneMode::returnData0(AchievementCriteriaEntry const* criteria)
 {
     int value = -1;
+
     switch (criteria->requiredType)
     {
     case 0:
@@ -608,7 +609,7 @@ bool HearthstoneMode::PlayerCanUseItem(Item const* item, Player* player, bool cl
 }
 
 
-void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria)
+void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria, std::vector<uint32>& hsCheckList)
 {
     uint32 entry = 0;
 
@@ -627,6 +628,7 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
                 break;
             }
     }
+    
 
 /*	for (int i = 0; i < hsAchievementTable.size(); i++)
 	{
@@ -634,8 +636,10 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
 			if 
 	}*/
 
-    if (entry)
-        player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit
+    if (entry != 0 && std::find(hsCheckList.begin(), hsCheckList.end(), entry) == hsCheckList.end()) {
+        hsCheckList.push_back(entry);
+        player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit   
+    }
 }
 
 void HearthstoneMode::loadHearthstone()
