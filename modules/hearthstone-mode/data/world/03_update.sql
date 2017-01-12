@@ -115,5 +115,5 @@ UPDATE quest_template SET method = 0, questTYPE = 0, flags = 4098, RewardFaction
 DELETE FROM item_template WHERE entry >= 100017 AND subclass IN (0, 5, 7,8,9,10); 
 
 -- flag raid to raid quests
-UPDATE `quest_template` SET `Flags` = 4290 WHERE ID BETWEEN 100000 AND 100046;
-UPDATE `quest_template` SET `Flags` = 4290 WHERE ID = 100080;
+UPDATE `quest_template` SET `Flags` = 4290, questType = 62 WHERE ID BETWEEN 100000 AND 100046;
+UPDATE `quest_template` SET `Flags` = 4290, questType = 62 WHERE ID = 100080;
