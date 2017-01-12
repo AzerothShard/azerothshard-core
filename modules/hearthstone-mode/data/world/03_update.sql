@@ -113,3 +113,7 @@ INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES
 UPDATE quest_template SET method = 0, questTYPE = 0, flags = 4098, RewardFactionID1 = 948, RewardFactionValue1 = 1, RewardFactionOverride1 = 0, unknown0 = 1 WHERE ID BETWEEN 100000 AND 100080;
 
 DELETE FROM item_template WHERE entry >= 100017 AND subclass IN (0, 5, 7,8,9,10); 
+
+-- flag raid to raid quests
+UPDATE `quest_template` SET `Flags` = 4290, questType = 62 WHERE ID BETWEEN 100000 AND 100046;
+UPDATE `quest_template` SET `Flags` = 4290, questType = 62 WHERE ID = 100080;

@@ -152,7 +152,7 @@ INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTit
 (110095,'2','3840','12482','Ma quanto scappa col Blink?!','Uccidi 10 Mage','Uccidi 10 Mage','Ritorna da Han\'al','110025','10', "Mage Uccisi", 37711, 3);
 
 UPDATE quest_template SET minlevel = 80, maxlevel = 80, questlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110040 AND id <= 110095;
-UPDATE quest_template SET method = 0, questTYPE = 0, flags = 4098, RewardFactionID1 = 948, RewardFactionValue1 = 1, RewardFactionOverride1 = 0, unknown0 = 1, QuestSortID = -241 WHERE id >= 110040 AND id <= 110095;
+UPDATE quest_template SET method = 0, questTYPE = 41, flags = 4098, RewardFactionID1 = 948, RewardFactionValue1 = 1, RewardFactionOverride1 = 0, unknown0 = 1, QuestSortID = -241 WHERE id >= 110040 AND id <= 110095;
 
 DELETE FROM creature_questender WHERE id = 100001 AND quest >= 110040 AND quest <= 110095;
 INSERT INTO creature_questender (id, quest) VALUES 
