@@ -195,6 +195,7 @@ void AzthPlayer::decreaseSmartStoneCommandCharges(uint32 id) {
 bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
                                       uint32 item, uint8 count, uint8 bag,
                                       uint8 slot) {
+
   // cheating attempt
   if (count < 1)
     count = 1;
@@ -225,16 +226,13 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
         player->GetTeamId(true) == TEAM_HORDE)))
     return false;
 
-  /* Creature* creature = GetNPCIfCanInteractWith(vendorguid,
-   UNIT_NPC_FLAG_VENDOR);
+   Creature* creature = player->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
    if (!creature)
    {
-       ;//sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: BuyItemFromVendor - Unit
-   (GUID: %u) not found or you can't interact with him.",
-   uint32(GUID_LOPART(vendorguid)));
-       SendBuyError(BUY_ERR_DISTANCE_TOO_FAR, NULL, item, 0);
+       //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: BuyItemFromVendor - Unit   (GUID: %u) not found or you can't interact with him.",   uint32(GUID_LOPART(vendorguid)));
+       player->SendBuyError(BUY_ERR_DISTANCE_TOO_FAR, NULL, item, 0);
        return false;
-   }*/
+   }
 
   /* ConditionList conditions =
    sConditionMgr->GetConditionsForNpcVendorEvent(creature->GetEntry(), item);
@@ -422,7 +420,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
     ChatHandler(player->GetSession())
         .SendSysMessage("Hai sbloccato una nuova app per la tua SmartStone!");
 
-    sScriptMgr->OnAfterStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, nullptr, crItem, false);
+    sScriptMgr->OnAfterStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, creature, crItem, false);
   }
 
   // return crItem->maxcount != 0;
