@@ -37,10 +37,9 @@ public:
     struct tm * lastChangeDateConverted = localtime(&lastChange);
     uint32 lastChangeDay = lastChangeDateConverted->tm_mday;
 
-    bool enable;
 
     //get status of the system: enabled or disabled
-    istringstream(arena_timestamp_table[2].GetString()) >> enable;
+    istringstream(arena_timestamp_table[2].GetString()) >> ArenaSeasonSystemEnabled;
 
 
     bool actualSeasonFound = false;
@@ -57,14 +56,14 @@ public:
     //check if today is friday and is not the same friday of today
     if (now->tm_wday == 5 && day != lastChangeDay)
     {
-            if (enable)
+            if (ArenaSeasonSystemEnabled)
             {
-                sASeasonMgr->SetEnabled(false);
+                ArenaSeasonSystemEnabled = false;
                 QueryResult setModeDisabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=0 WHERE entry=100000;"); //set arena season to disabled
             }
             else
             {
-                sASeasonMgr->SetEnabled(true);
+                ArenaSeasonSystemEnabled = true;
                 QueryResult setModeEnabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=1 WHERE entry=100000;"); //set arena season to enabled
             }
             QueryResult setLastDate = CharacterDatabase.PQuery("UPDATE worldstates SET value=%u WHERE entry=100000;", t); //set new timestamp
@@ -115,7 +114,7 @@ public:
     {
         sLog->outString(">> No correspondent season found. Check DB table `season`.\n");
         sLog->outString();
-        sASeasonMgr->SetEnabled(false);
+        ArenaSeasonSystemEnabled = false;
         return; 
     }
 
@@ -135,7 +134,7 @@ public:
   void checkPlayerItem(Player* player, Battleground* battleground, bool inBattleground)
   {
 
-    if (!sASeasonMgr->IsEnabled())
+    if (!ArenaSeasonSystemEnabled)
     {
         return; //SYSTEM DISABLED
     }

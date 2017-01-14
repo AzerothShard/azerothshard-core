@@ -252,8 +252,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
        return false;
    }*/
 
-  VendorItemData const *vItems =
-      sObjectMgr->GetNpcVendorItemList(sSmartStone->SMARTSTONE_VENDOR_ENTRY);
+  VendorItemData const *vItems = sObjectMgr->GetNpcVendorItemList(sSmartStone->SMARTSTONE_VENDOR_ENTRY);
   if (!vItems || vItems->Empty()) {
     player->SendBuyError(BUY_ERR_CANT_FIND_ITEM, NULL, item, 0);
     return false;

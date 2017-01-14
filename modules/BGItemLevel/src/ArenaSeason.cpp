@@ -41,16 +41,6 @@ time_t Season::GetEndDate() const
     return endDate;
 }
 
-bool Season::IsEnabled() const
-{
-    return enabled;
-}
-
-void Season::SetEnabled(bool enable)
-{
-    enabled = enable;
-}
-
 void Season::SetEndDate(time_t ItsEndDate)
 {
     endDate = ItsEndDate;
