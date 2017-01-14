@@ -55,8 +55,8 @@ public:
 
 
 
-    //check if today is friday and is not the same friday of today
-    if (now->tm_wday == 5 && day != lastChangeDay)
+    //check if today is saturday and is not the same saturday of today
+    if (now->tm_wday == 6 && day != lastChangeDay)
     {
             if (enable)
             {

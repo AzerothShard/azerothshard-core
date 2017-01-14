@@ -65,10 +65,13 @@ public:
                             uint8 count, uint8 bag, uint8 slot);
   bool hasSmartStoneCommand(uint32 id);
 
+  uint32 GetTimeWalkingLevel() const;
+  void SetTimeWalkingLevel(uint32 timeWalkingLevel);
+
 private:
   Player *player;
   uint32 arena1v1Info[7]; // ARENA_TEAM_END
-
+  uint32 timeWalkingLevel;
   float playerQuestRate, maxQuestRate;
 
   std::vector<SmartStonePlayerCommand> smartStoneCommands;

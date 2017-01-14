@@ -7,6 +7,17 @@
 #include "Player.h"
 #include "World.h"
 
+
+uint32 AzthPlayer::GetTimeWalkingLevel() const
+{
+    return timeWalkingLevel;
+}
+
+void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
+{
+    timeWalkingLevel = itsTimeWalkingLevel;
+}
+
 AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
   player = origin;
