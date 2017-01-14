@@ -574,9 +574,17 @@ void KillRewarder::_RewardPlayer(Player* player, bool isDungeon)
     // Give reputation and kill credit only in PvE.
     if (!_isPvP || _isBattleGround)
     {
-        const float rate = _group ?
+        //[AZTH] removed const from rate
+        float rate = _group ?
             _groupRate * float(player->getLevel()) / _sumLevel : // Group rate depends on summary level.
-            1.0f;                                                // Personal rate is 100%.
+            1.0f;
+
+        //[AZTH] workaround for high exp rate in dungeons
+        if (isDungeon && player->azthPlayer->GetPlayerQuestRate() > 0) {
+            rate *= player->azthPlayer->GetPlayerQuestRate();
+        }
+
+        // Personal rate is 100%.
         if (_xp)
             // 4.2. Give XP.
             _RewardXP(player, rate);
