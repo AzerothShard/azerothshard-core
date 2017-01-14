@@ -30,6 +30,7 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
+#include "Hearthstone/azth_custom_hearthstone_mode.h" //[AZTH]
 
 namespace Trinity
 {
@@ -799,13 +800,19 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             break;
     }
 
-    if (!achievementCriteriaList)
+    if (!achievementCriteriaList) 
         return;
+    
+    //[AZTH]
+    std::vector<uint32> hsCheckList;
 
     for (AchievementCriteriaEntryList::const_iterator i = achievementCriteriaList->begin(); i != achievementCriteriaList->end(); ++i)
     {
         AchievementCriteriaEntry const* achievementCriteria = (*i);
         AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementCriteria->referredAchievement);
+
+        sHearthstoneMode->sendQuestCredit(GetPlayer(), achievementCriteria, hsCheckList); //[AZTH] need it before the check on completed achievements
+
         if (!achievement)
             continue;
 
@@ -1696,6 +1703,9 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 if (IsCompletedAchievement(*itr))
                     CompletedAchievement(*itr);
     }
+    
+    //[AZTH]
+    hsCheckList.clear();
 }
 
 bool AchievementMgr::IsCompletedCriteria(AchievementCriteriaEntry const* achievementCriteria, AchievementEntry const* achievement)

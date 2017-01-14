@@ -50,12 +50,6 @@ uint8 AzthPlayer::getGroupLevel() {
 // Send a kill credit, skipping the normal checks on raid/battleground and pvp
 // quests.
 void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid) {
-  // we need to check this, because the same criteria for achievements goes to
-  // more than just one achievement
-  if (lastSent > time(NULL) - 1)
-    return;
-
-  lastSent = time(NULL);
   uint16 addkillcount = 1;
   uint32 real_entry = entry;
   if (guid) {
@@ -201,6 +195,7 @@ void AzthPlayer::decreaseSmartStoneCommandCharges(uint32 id) {
 bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
                                       uint32 item, uint8 count, uint8 bag,
                                       uint8 slot) {
+
   // cheating attempt
   if (count < 1)
     count = 1;
@@ -231,16 +226,13 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
         player->GetTeamId(true) == TEAM_HORDE)))
     return false;
 
-  /* Creature* creature = GetNPCIfCanInteractWith(vendorguid,
-   UNIT_NPC_FLAG_VENDOR);
+   Creature* creature = player->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
    if (!creature)
    {
-       ;//sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: BuyItemFromVendor - Unit
-   (GUID: %u) not found or you can't interact with him.",
-   uint32(GUID_LOPART(vendorguid)));
-       SendBuyError(BUY_ERR_DISTANCE_TOO_FAR, NULL, item, 0);
+       //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: BuyItemFromVendor - Unit   (GUID: %u) not found or you can't interact with him.",   uint32(GUID_LOPART(vendorguid)));
+       player->SendBuyError(BUY_ERR_DISTANCE_TOO_FAR, NULL, item, 0);
        return false;
-   }*/
+   }
 
   /* ConditionList conditions =
    sConditionMgr->GetConditionsForNpcVendorEvent(creature->GetEntry(), item);
@@ -427,6 +419,8 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
         sSmartStone->toPlayerCommand(command), true);
     ChatHandler(player->GetSession())
         .SendSysMessage("Hai sbloccato una nuova app per la tua SmartStone!");
+
+    sScriptMgr->OnAfterStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, creature, crItem, false);
   }
 
   // return crItem->maxcount != 0;

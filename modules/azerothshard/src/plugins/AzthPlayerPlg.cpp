@@ -81,9 +81,6 @@ public:
         AzthPlayer::AzthAchiData& it = player->azthPlayer->m_completed_criteria_map[criteria->ID];
         it.level = player->getLevel();
         it.levelParty = player->azthPlayer->getGroupLevel();
-
-        // hearthstone mode
-        sHearthstoneMode->sendQuestCredit(player, criteria);
     }
 
     // Following 2 functions save our temporary maps inside the db
@@ -154,9 +151,10 @@ public:
             return;
         }
 
+        uint32 guid = pVendor ? pVendor->GetEntry() : 0;
 
         ExtraDatabase.PQuery("INSERT INTO `buy_log` (`playerGuid`, `item`, `vendor`, `price`) VALUES (%u, %u, %u, %ld);",
-            player->GetGUID(), item, pVendor->GetGUID(), price);
+            player->GetGUIDLow(), item, guid, price);
     }
 
 };

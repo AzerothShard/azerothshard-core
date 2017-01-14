@@ -16,6 +16,7 @@
 #include "Opcodes.h"
 #include "Log.h"
 #include "ObjectMgr.h"
+#include <vector>       // std::vector
 
 struct HearthstoneAchievement
 {
@@ -62,7 +63,7 @@ class HearthstoneMode
 {
     public:
         void AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue);
-        void sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria);
+        void sendQuestCredit(Player *player, AchievementCriteriaEntry const* criteria, std::vector<uint32>& hsCheckList);
         int returnData0(AchievementCriteriaEntry const* criteria);
         int returnData1(AchievementCriteriaEntry const* criteria);
         std::vector<HearthstoneAchievement> hsAchievementTable;
