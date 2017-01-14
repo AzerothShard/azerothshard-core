@@ -34,7 +34,7 @@ Rate.Drop.Item.Referenced       = 1
 Rate.Drop.Money                 = 1.5
 
 Rate.XP.Quest   = 6
-Rate.XP.Explore = 3
+Rate.XP.Explore = 1
 
 Rate.XP.BattlegroundKill = 30
 
@@ -492,7 +492,7 @@ Azth.Rate.Arena1v1 = 0.2;
 #		Default: 0 (Don't show message)
 
 Player.customXP.security = 0
-Player.customXP.maxValue = 6
+Player.customXP.maxValue = 12
 Player.customXP.showOnLogin = 1
 
 ###################################################################################################
