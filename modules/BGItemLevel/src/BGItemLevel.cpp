@@ -8,6 +8,7 @@
 #include "ArenaSeason.h"
 #include "Common.h"
 #include "ArenaTeam.h"
+#include "Group.h"
 
 uint32 maxItemLevel;
 
@@ -166,13 +167,36 @@ public:
     {
       if (!inBattleground)
       {
-        for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)
-          if (BattlegroundQueueTypeId q = player->GetBattlegroundQueueTypeId(qslot))
+          if (player->GetGroup() != NULL)
           {
-            BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
-            queue.RemovePlayer(player->GetGUID(), q, qslot);
-            player->RemoveBattlegroundQueueId(q);
+              Group *group = player->GetGroup();
+              for (Group::member_citerator mitr = group->GetMemberSlots().begin(); mitr != group->GetMemberSlots().end(); ++mitr)
+              {
+                  uint64 guid = MAKE_NEW_GUID(mitr->guid, 0, HIGHGUID_PLAYER);
+                  Player *groupMember = ObjectAccessor::FindPlayerInOrOutOfWorld(guid);
+                  if (groupMember)
+                  {
+                      for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)
+                          if (BattlegroundQueueTypeId q = player->GetBattlegroundQueueTypeId(qslot))
+                          {
+                              BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
+                              queue.RemovePlayer(player->GetGUID(), q, qslot);
+                              player->RemoveBattlegroundQueueId(q);
+                          }
+                  }
+                  
+              }
           }
+          else
+          {
+            for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)
+                if (BattlegroundQueueTypeId q = player->GetBattlegroundQueueTypeId(qslot))
+                    {
+                        BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
+                        queue.RemovePlayer(player->GetGUID(), q, qslot);
+                        player->RemoveBattlegroundQueueId(q);
+                    }
+           }
       }
       else
       {
