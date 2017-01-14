@@ -334,9 +334,9 @@
          player->azthPlayer->SetPlayerQuestRate(rate);
 
          if (me->azthPlayer->GetPlayerQuestRate() == 0.0f)
-             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest XP Rate set to 0. You won't gain any experience from now on.");
+             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to 0. You won't gain any experience from now on.");
          else
-             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest XP Rate set to %.2f.", me->azthPlayer->GetPlayerQuestRate());
+             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to %.2f.", me->azthPlayer->GetPlayerQuestRate());
          return true;
      }
 
