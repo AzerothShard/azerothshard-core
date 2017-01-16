@@ -177,11 +177,11 @@ public:
                   if (groupMember)
                   {
                       for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)
-                          if (BattlegroundQueueTypeId q = player->GetBattlegroundQueueTypeId(qslot))
+                          if (BattlegroundQueueTypeId q = groupMember->GetBattlegroundQueueTypeId(qslot))
                           {
                               BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
-                              queue.RemovePlayer(player->GetGUID(), q, qslot);
-                              player->RemoveBattlegroundQueueId(q);
+                              queue.RemovePlayer(groupMember->GetGUID(), q, qslot);
+                              groupMember->RemoveBattlegroundQueueId(q);
                           }
                   }
                   
