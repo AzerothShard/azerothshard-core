@@ -4,8 +4,10 @@
 #include "raid.h"
 #include "Creature.h"
 #include "AzthPlayer.h"
+#include "AzthLevelStat.h"
 
 std::map<uint32, raid> raidList;
+std::map<uint32, AzthLevelStat> timeWalkingLevelsStatsList;
 
 enum npc_timewalking_enum
 {
@@ -35,6 +37,25 @@ public:
         {
             raidList[timeWalking_Field[0].GetUInt32()] = raid(timeWalking_Field[0].GetUInt32(), timeWalking_Field[1].GetString(), timeWalking_Field[2].GetUInt32(), timeWalking_Field[3].GetUInt32(), timeWalking_Field[4].GetUInt32(), timeWalking_Field[5].GetUInt32());
         } while (timewalking_table->NextRow());
+    
+        
+        
+        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,health,resistance,healing,damage,power_cost,all_stat,mana,crit_chance,miss_chance,dodge_chance,parry_chance,block_chance FROM timewalking_levels ORDER BY level;");
+        if (!timewalkingLevel_table)
+        {
+            sLog->outString(">> Loaded 0 levels for TimeWalking. DB table `timewalking_levels` is empty.\n");
+            sLog->outString();
+            return;
+        }
+
+        Field* timeWalkingLevel_Field = timewalkingLevel_table->Fetch();
+
+        do
+        {
+            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetFloat(), timeWalkingLevel_Field[9].GetUInt32(), timeWalkingLevel_Field[10].GetUInt32(), timeWalkingLevel_Field[11].GetUInt32(), timeWalkingLevel_Field[12].GetUInt32(), timeWalkingLevel_Field[13].GetUInt32());
+        } while (timewalkingLevel_table->NextRow());
+
+        sAzthLevelStat->SetLevelStatList(timeWalkingLevelsStatsList);
     }
 };
 
@@ -48,6 +69,7 @@ public:
         player->ADD_GOSSIP_ITEM(0, "Raid con bonus", GOSSIP_SENDER_MAIN, 4);
         player->ADD_GOSSIP_ITEM(0, "Raid standard", GOSSIP_SENDER_MAIN, 5);
         player->ADD_GOSSIP_ITEM_EXTENDED(0, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
+        player->ADD_GOSSIP_ITEM(0, "Riportami al mio livello", GOSSIP_SENDER_MAIN, 7);
         player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_MAIN, creature->GetGUID());
         return true;
     }
@@ -146,7 +168,12 @@ public:
         {
             uint32 level = action - 10000;
             player->azthPlayer->SetTimeWalkingLevel(level);
-            //creature->MonsterSay(raidList.GetName().c_str(), 0, creature);
+            player->PlayerTalkClass->SendCloseGossip();
+        }
+        
+        else if (action == 7)
+        {
+            player->azthPlayer->SetTimeWalkingLevel(NULL);
             player->PlayerTalkClass->SendCloseGossip();
         }
 
@@ -155,8 +182,47 @@ public:
 };
 
 
+class modAttackMelleeStats : public UnitScript
+{
+public:
+    modAttackMelleeStats() : UnitScript("modAttackMelleeStats") {}
+    void OnBeforeRollMeleeOutcomeAgainst(const Unit* attacker, const Unit* victim, WeaponAttackType attType, int32 &crit_chance, int32 &miss_chance, int32 &dodge_chance, int32 &parry_chance, int32 &block_chance)
+    {
+        if (victim->isType(TYPEMASK_PLAYER))
+        {
+            if (victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel() != NULL)
+            {
+                crit_chance = 0;
+                miss_chance = 0;
+                dodge_chance = 0;
+                parry_chance = 0;
+                block_chance = 0;
+            }
+
+        }
+    }
+};
+
+/*class modMana : public PlayerScript
+{
+public:
+    modMana() : PlayerScript("modMana") {}
+    void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
+    {
+        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
+        {
+            if (power == POWER_MANA)
+            {
+                value = 0.0f;
+            }
+        }
+    }
+};*/
+
 void AddSC_TimeWalking()
 {
     new loadTimeWalkingRaid();
     new TimeWalkingGossip();
+    //new modMana();
+    new modAttackMelleeStats();
 }

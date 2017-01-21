@@ -6,8 +6,9 @@
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "World.h"
+#include "AzthLevelStat.h"
 
-
+//[TIMEWALKING]
 uint32 AzthPlayer::GetTimeWalkingLevel() const
 {
     return timeWalkingLevel;
@@ -16,7 +17,47 @@ uint32 AzthPlayer::GetTimeWalkingLevel() const
 void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
 {
     timeWalkingLevel = itsTimeWalkingLevel;
+    Player* player = this->player;
+    map<uint32, AzthLevelStat> levelStatList = sAzthLevelStat->GetLevelStatList();
+    AzthLevelStat stats = levelStatList[itsTimeWalkingLevel];
+
+    //apply debuf/buff section (spell)
+    if (itsTimeWalkingLevel != NULL)
+    {
+        for (uint32 i = 0; i < stats.GetHealth(); i++)
+            player->AddAura(TIMEWALKING_AURA_MOD_HEALTH, player);
+
+        for (uint32 i = 0; i < stats.GetResistance(); i++)
+            player->AddAura(TIMEWALKING_AURA_MOD_RESISTANCE, player);
+
+        for (uint32 i = 0; i < stats.GetHealing(); i++)
+            player->AddAura(TIMEWALKING_AURA_MOD_HEALING, player);
+
+        for (uint32 i = 0; i < stats.GetDamage(); i++)
+            player->AddAura(TIMEWALKING_AURA_MOD_DAMAGE, player);
+
+        for (uint32 i = 0; i < stats.GetPowerCost(); i++)
+            player->AddAura(TIMEWALKING_AURA_MOD_POWERCOST, player);
+
+        for (uint32 i = 0; i < stats.GetAllStats(); i++)
+            player->AddAura(TIMEWALKING_AURA_MOD_ALLSTATS, player);
+
+        player->AddAura(TIMEWALKING_AURA_VISIBLE, player);
+    }
+    else
+    {
+        player->RemoveAura(TIMEWALKING_AURA_MOD_HEALTH);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_RESISTANCE);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_HEALING);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_DAMAGE);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_POWERCOST);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_ALLSTATS);
+        player->RemoveAura(TIMEWALKING_AURA_VISIBLE);
+    }
+
+    //
 }
+//[/TIMEWALKING]
 
 AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
