@@ -13,6 +13,7 @@ class Player;
 class SmartStone;
 
 class AzthPlayer {
+    uint32 timeWalkingLevel = NULL;
 public:
   explicit AzthPlayer(Player *origin);
   ~AzthPlayer();
@@ -71,7 +72,7 @@ public:
 private:
   Player *player;
   uint32 arena1v1Info[7]; // ARENA_TEAM_END
-  uint32 timeWalkingLevel;
+  //uint32 timeWalkingLevel;
   float playerQuestRate, maxQuestRate;
   std::vector<SmartStonePlayerCommand> smartStoneCommands;
 };
