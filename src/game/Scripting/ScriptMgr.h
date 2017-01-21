@@ -444,6 +444,8 @@ public:
 
     //Called when Damage is Dealt
     virtual uint32 DealDamage(Unit* AttackerUnit, Unit *pVictim, uint32 damage, DamageEffectType damagetype) { return damage; }
+
+    virtual void OnBeforeRollMeleeOutcomeAgainst(const Unit* /*attacker*/, const Unit* /*victim*/, WeaponAttackType /*attType*/, int32& /*crit_chance*/, int32& /*miss_chance*/ , int32& /*dodge_chance*/ , int32& /*parry_chance*/ , int32& /*block_chance*/ ) {   };
 };
 
 class MovementHandlerScript : public ScriptObject
@@ -886,7 +888,9 @@ class PlayerScript : public ScriptObject
         virtual void OnBeforeBuyItemFromVendor(Player* /*player*/, uint64 /*vendorguid*/, uint32 /*vendorslot*/, uint32 &/*item*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/) { };
 
         //Before buying something from any vendor
-        virtual void OnAfterStoreOrEquipNewItem(Player* /*player*/, uint32 /*vendorslot*/, uint32 &/*item*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) { };
+        virtual void OnAfterStoreOrEquipNewItem(Player* /*player*/, uint32 /*vendorslot*/, uint32& /*item*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) { };
+
+        virtual void OnAfterUpdateMaxPower(Player* /*player*/, Powers& /*power*/, float& /*value*/) { }
 };
 
 class GuildScript : public ScriptObject
@@ -1198,6 +1202,7 @@ class ScriptMgr
         void OnQuestRewardItem(Player* player, Item* item, uint32 count);
         void OnBeforeBuyItemFromVendor(Player * player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot);
         void OnAfterStoreOrEquipNewItem(Player* player, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore);
+        void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value);
 
     public: /* GuildScript */
 
@@ -1245,6 +1250,8 @@ class ScriptMgr
         void ModifySpellDamageTaken(Unit* target, Unit* attacker, int32& damage);
         void ModifyHealRecieved(Unit* target, Unit* attacker, uint32& addHealth);
         uint32 DealDamage(Unit* AttackerUnit, Unit *pVictim, uint32 damage, DamageEffectType damagetype);
+        void OnBeforeRollMeleeOutcomeAgainst(const Unit* attacker, const Unit* victim, WeaponAttackType attType, int32 &crit_chance, int32 &miss_chance, int32 &dodge_chance, int32 &parry_chance, int32 &block_chance);
+
     
     public: /* MovementHandlerScript */
         
