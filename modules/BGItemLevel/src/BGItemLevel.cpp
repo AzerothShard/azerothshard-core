@@ -61,10 +61,12 @@ public:
     {
             if (enable)
             {
+                sASeasonMgr->SetEnabled(false);
                 QueryResult setModeDisabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=0 WHERE entry=100000;"); //set arena season to disabled
             }
             else
             {
+                sASeasonMgr->SetEnabled(true);
                 QueryResult setModeEnabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=1 WHERE entry=100000;"); //set arena season to enabled
             }
             QueryResult setLastDate = CharacterDatabase.PQuery("UPDATE worldstates SET value=%u WHERE entry=100000;", t); //set new timestamp
