@@ -1,0 +1,3 @@
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/TimeWalking.cpp")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/raid.cpp")
+AC_ADD_SCRIPT_LOADER("TimeWalking" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")

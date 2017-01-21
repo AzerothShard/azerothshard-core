@@ -17,6 +17,7 @@ modules/drassil/joiner
 !modules/smartstone
 !modules/hearthstone-mode
 !modules/DonationsVendor
+!modules/TimeWalking
 
 build*/
 
