@@ -45,7 +45,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
         player->SetAuraStack(TIMEWALKING_AURA_MOD_ALLSTATS, player, stats.GetAllStats());
         player->AddAura(TIMEWALKING_AURA_VISIBLE, player);
 
-        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("INSERT INTO timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
+        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("INSERT IGNORE INTO timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
     }
     else
     {
