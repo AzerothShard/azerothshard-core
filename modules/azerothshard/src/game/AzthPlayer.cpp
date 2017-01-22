@@ -57,7 +57,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
         player->RemoveAura(TIMEWALKING_AURA_MOD_ALLSTATS);
         player->RemoveAura(TIMEWALKING_AURA_VISIBLE);
 
-        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM `extra`.`timewalking_characters_active` WHERE  `id`=%d;"), player->GetGUID());
+        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());
     }
 
     //
