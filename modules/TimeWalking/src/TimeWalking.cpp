@@ -11,12 +11,12 @@ std::map<uint32, AzthLevelStat> timeWalkingLevelsStatsList;
 
 enum npc_timewalking_enum
 {
-    TIMEWALKING_GOSSIP_NPC_TEXT_MAIN = 1,
-    TIMEWALKING_GOSSIP_NPC_TEXT_BONUS = 1,
-    TIMEWALKING_GOSSIP_NPC_TEXT_EXP = 1,
-    TIMEWALKING_GOSSIP_NPC_TEXT_PHASE = 1,
-    TIMEWALKING_GOSSIP_NPC_TEXT_RAID = 1,
-    TIMEWALKING_GOSSIP_NPC_TEXT_ALREADYAPPLIED = 1,
+    TIMEWALKING_GOSSIP_NPC_TEXT_MAIN = 50100,
+    TIMEWALKING_GOSSIP_NPC_TEXT_BONUS = 50101,
+    TIMEWALKING_GOSSIP_NPC_TEXT_EXP = 50102,
+    TIMEWALKING_GOSSIP_NPC_TEXT_PHASE = 50103,
+    TIMEWALKING_GOSSIP_NPC_TEXT_RAID = 50104,
+    TIMEWALKING_GOSSIP_NPC_TEXT_ALREADYAPPLIED = 50105,
 };
 
 class loadTimeWalkingRaid : public WorldScript
@@ -70,7 +70,7 @@ public:
         player->ADD_GOSSIP_ITEM(0, "Raid con bonus", GOSSIP_SENDER_MAIN, 4);
         player->ADD_GOSSIP_ITEM(0, "Raid standard", GOSSIP_SENDER_MAIN, 5);
         player->ADD_GOSSIP_ITEM_EXTENDED(0, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
-        player->ADD_GOSSIP_ITEM(0, "Riportami al mio livello", GOSSIP_SENDER_MAIN, 7);
+        player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
         player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_MAIN, creature->GetGUID());
         return true;
     }
