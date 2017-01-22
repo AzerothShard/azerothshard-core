@@ -194,32 +194,18 @@ class modAttackMelleeStats : public UnitScript
 {
 public:
     modAttackMelleeStats() : UnitScript("modAttackMelleeStats") {}
-    void OnBeforeRollMeleeOutcomeAgainst(const Unit* attacker, const Unit* victim, WeaponAttackType attType, int32 &crit_chance, int32 &miss_chance, int32 &dodge_chance, int32 &parry_chance, int32 &block_chance)
+    void OnBeforeRollMeleeOutcomeAgainst(const Unit* attacker, const Unit* victim, WeaponAttackType attType, int32 &attackerMaxSkillValueForLevel, int32 &victimMaxSkillValueForLevel, int32 &attackerWeaponSkill, int32 &victimDefenseSkill, int32 &crit_chance, int32 &miss_chance, int32 &dodge_chance, int32 &parry_chance, int32 &block_chance)
     {
         if (victim->isType(TYPEMASK_PLAYER))
         {
             if (victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel() != NULL)
             {
-                map<uint32, AzthLevelStat> levelStatList = sAzthLevelStat->GetLevelStatList();
-                uint32 race = victim->ToPlayer()->getRace();
-                uint32 Class = victim->ToPlayer()->getClass();
-                for (std::map<uint32, AzthLevelStat>::iterator it = levelStatList.begin(); it != levelStatList.end(); it++)
-                {
-                    if (it->second.GetRace() == race && it->second.GetClass() == Class)
-                    {
-                        if (it->second.GetLevel() == victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel())
-                        {
-                            AzthLevelStat stats = it->second;
-                            crit_chance = stats.GetCritChance();
-                            miss_chance = stats.GetMissChance();
-                            dodge_chance = stats.GetDodgeChance();
-                            parry_chance = stats.GetParryChance();
-                            block_chance = stats.GetBlockChance();
-                        }
-                    }
-                }
+                miss_chance = (attacker->MeleeSpellMissChance(victim, attType, int32(attacker->GetWeaponSkillValue(attType, victim)) - int32(victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel() * 5), 0))*100;
+                attackerMaxSkillValueForLevel = attacker->GetMaxSkillValueForLevel(attacker);
+                victimMaxSkillValueForLevel = victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel() * 5; 
+                /*attackerWeaponSkill = 0;
+                victimDefenseSkill = victim->ToPlayer()->GetMaxSkillValue(SKILL_DEFENSE) + uint32(victim->ToPlayer()->GetRatingBonusValue(CR_DEFENSE_SKILL));*/
             }
-
         }
     }
 };
