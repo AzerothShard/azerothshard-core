@@ -41,9 +41,22 @@ INSERT INTO `timewalking` (`id`, `name`, `exp`, `phase`, `level`, `bonus`) VALUE
 	(14, 'Onyxia\'s Lair', 3, 12, 80, 0);
 /*!40000 ALTER TABLE `timewalking` ENABLE KEYS */;
 
+-- Dump della struttura di tabella extra.timewalking_characters_active
+CREATE TABLE IF NOT EXISTS `timewalking_characters_active` (
+  `id` int(11) NOT NULL,
+  `level` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Dump dei dati della tabella extra.timewalking_characters_active: ~0 rows (circa)
+/*!40000 ALTER TABLE `timewalking_characters_active` DISABLE KEYS */;
+/*!40000 ALTER TABLE `timewalking_characters_active` ENABLE KEYS */;
+
 -- Dump della struttura di tabella extra.timewalking_levels
 CREATE TABLE IF NOT EXISTS `timewalking_levels` (
-  `level` int(11) NOT NULL,
+  `level` int(11) NOT NULL AUTO_INCREMENT,
+  `race` int(11) NOT NULL DEFAULT '0',
+  `class` int(11) NOT NULL DEFAULT '0',
   `health` int(11) NOT NULL,
   `resistance` int(11) NOT NULL,
   `healing` int(11) NOT NULL,
@@ -56,13 +69,15 @@ CREATE TABLE IF NOT EXISTS `timewalking_levels` (
   `dodge_chance` int(11) NOT NULL,
   `parry_chance` int(11) NOT NULL,
   `block_chance` int(11) NOT NULL,
-  PRIMARY KEY (`level`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`level`,`race`,`class`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
--- Dump dei dati della tabella extra.timewalking_levels: ~0 rows (circa)
+-- Dump dei dati della tabella extra.timewalking_levels: ~3 rows (circa)
 /*!40000 ALTER TABLE `timewalking_levels` DISABLE KEYS */;
-INSERT INTO `timewalking_levels` (`level`, `health`, `resistance`, `healing`, `damage`, `power_cost`, `all_stat`, `mana`, `crit_chance`, `miss_chance`, `dodge_chance`, `parry_chance`, `block_chance`) VALUES
-	(50, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20);
+INSERT INTO `timewalking_levels` (`level`, `race`, `class`, `health`, `resistance`, `healing`, `damage`, `power_cost`, `all_stat`, `mana`, `crit_chance`, `miss_chance`, `dodge_chance`, `parry_chance`, `block_chance`) VALUES
+	(5, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5),
+	(5, 1, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5),
+	(6, 1, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6);
 /*!40000 ALTER TABLE `timewalking_levels` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

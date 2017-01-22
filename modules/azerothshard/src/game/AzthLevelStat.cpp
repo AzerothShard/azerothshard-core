@@ -17,9 +17,11 @@ AzthLevelStat::AzthLevelStat()
     blockChance = uint32(0);
 }
 
-AzthLevelStat::AzthLevelStat(uint32 level, uint32 health, uint32 resistance, uint32 healing, uint32 damage, uint32 powerCost, uint32 allStats, float mana, uint32 critChance, uint32 missChance, uint32 dodgeChance, uint32 parryChance, uint32 blockChance)
+AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 health, uint32 resistance, uint32 healing, uint32 damage, uint32 powerCost, uint32 allStats, float mana, uint32 critChance, uint32 missChance, uint32 dodgeChance, uint32 parryChance, uint32 blockChance)
 {
     this->level = level;
+    this->race = race;
+    this->Class = Class;
     this->health = health;
     this->resistance = resistance;
     this->healing = healing;
@@ -49,17 +51,35 @@ uint32 AzthLevelStat::GetLevel() const
     return level;
 }
 
-
 void AzthLevelStat::SetLevel(uint32 level)
 {
     this->level = level;
+}
+
+uint32 AzthLevelStat::GetRace() const
+{
+    return race;
+}
+
+void AzthLevelStat::SetRace(uint32 race)
+{
+    this->race = race;
+}
+
+uint32 AzthLevelStat::GetClass() const
+{
+    return Class;
+}
+
+void AzthLevelStat::SetClass(uint32 Class)
+{
+    this->Class = Class;
 }
 
 uint32 AzthLevelStat::GetHealth() const
 {
     return health;
 }
-
 
 void AzthLevelStat::SetHealth(uint32 health)
 {

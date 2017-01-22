@@ -19,30 +19,33 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
     timeWalkingLevel = itsTimeWalkingLevel;
     Player* player = this->player;
     map<uint32, AzthLevelStat> levelStatList = sAzthLevelStat->GetLevelStatList();
-    AzthLevelStat stats = levelStatList[itsTimeWalkingLevel];
+    AzthLevelStat stats;
 
-    //apply debuf/buff section (spell)
+    uint32 race = player->getRace();
+    uint32 Class = player->getClass();
+    for (std::map<uint32, AzthLevelStat>::iterator it = levelStatList.begin(); it != levelStatList.end(); it++)
+    {
+        if (it->second.GetRace() == race && it->second.GetClass() == Class)
+        {
+            if (it->second.GetLevel() == itsTimeWalkingLevel)
+            {
+                stats = it->second;
+            }
+        }
+    }
+
+    //apply debuf/buff section (spell) and enable timewalking mode
     if (itsTimeWalkingLevel != NULL)
     {
-        for (uint32 i = 0; i < stats.GetHealth(); i++)
-            player->AddAura(TIMEWALKING_AURA_MOD_HEALTH, player);
-
-        for (uint32 i = 0; i < stats.GetResistance(); i++)
-            player->AddAura(TIMEWALKING_AURA_MOD_RESISTANCE, player);
-
-        for (uint32 i = 0; i < stats.GetHealing(); i++)
-            player->AddAura(TIMEWALKING_AURA_MOD_HEALING, player);
-
-        for (uint32 i = 0; i < stats.GetDamage(); i++)
-            player->AddAura(TIMEWALKING_AURA_MOD_DAMAGE, player);
-
-        for (uint32 i = 0; i < stats.GetPowerCost(); i++)
-            player->AddAura(TIMEWALKING_AURA_MOD_POWERCOST, player);
-
-        for (uint32 i = 0; i < stats.GetAllStats(); i++)
-            player->AddAura(TIMEWALKING_AURA_MOD_ALLSTATS, player);
-
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_HEALTH, player, stats.GetHealth());
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_RESISTANCE, player, stats.GetResistance());
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_HEALING, player, stats.GetHealing());
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_DAMAGE, player, stats.GetDamage());
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_POWERCOST, player, stats.GetPowerCost());
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_ALLSTATS, player, stats.GetAllStats());
         player->AddAura(TIMEWALKING_AURA_VISIBLE, player);
+
+        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("INSERT INTO timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
     }
     else
     {
@@ -53,6 +56,8 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
         player->RemoveAura(TIMEWALKING_AURA_MOD_POWERCOST);
         player->RemoveAura(TIMEWALKING_AURA_MOD_ALLSTATS);
         player->RemoveAura(TIMEWALKING_AURA_VISIBLE);
+
+        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM `extra`.`timewalking_characters_active` WHERE  `id`=%d;"), player->GetGUID());
     }
 
     //

@@ -19,6 +19,8 @@ class AzthLevelStat
 public:
     //GETTERS 
     uint32 GetLevel() const;
+    uint32 GetRace() const;
+    uint32 GetClass() const;
     uint32 GetHealth() const;
     uint32 GetResistance() const;
     uint32 GetHealing() const;
@@ -37,6 +39,8 @@ public:
 
     //SETTERS 
     void SetLevel(uint32 level);
+    void SetRace(uint32 race);
+    void SetClass(uint32 Class);
     void SetHealth(uint32 health);
     void SetResistance(uint32 resistance);
     void SetHealing(uint32 healing);
@@ -53,11 +57,13 @@ public:
     void SetLevelStatList(map<uint32, AzthLevelStat> levelStatList);
 
     AzthLevelStat();
-    AzthLevelStat(uint32 level, uint32 health, uint32 resistance, uint32 healing, uint32 damage, uint32 powerCost, uint32 allStats, float mana, uint32 critChance, uint32 missChance, uint32 dodgeChance, uint32 parryChance, uint32 blockChance);
+    AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 health, uint32 resistance, uint32 healing, uint32 damage, uint32 powerCost, uint32 allStats, float mana, uint32 critChance, uint32 missChance, uint32 dodgeChance, uint32 parryChance, uint32 blockChance);
 
 
 private:
     uint32 level;
+    uint32 race;
+    uint32 Class;
     uint32 health;
     uint32 resistance;
     uint32 healing;

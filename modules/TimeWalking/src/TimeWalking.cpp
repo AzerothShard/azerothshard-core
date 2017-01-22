@@ -16,6 +16,7 @@ enum npc_timewalking_enum
     TIMEWALKING_GOSSIP_NPC_TEXT_EXP = 1,
     TIMEWALKING_GOSSIP_NPC_TEXT_PHASE = 1,
     TIMEWALKING_GOSSIP_NPC_TEXT_RAID = 1,
+    TIMEWALKING_GOSSIP_NPC_TEXT_ALREADYAPPLIED = 1,
 };
 
 class loadTimeWalkingRaid : public WorldScript
@@ -40,7 +41,7 @@ public:
     
         
         
-        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,health,resistance,healing,damage,power_cost,all_stat,mana,crit_chance,miss_chance,dodge_chance,parry_chance,block_chance FROM timewalking_levels ORDER BY level;");
+        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,race,class,health,resistance,healing,damage,power_cost,all_stat,mana,crit_chance,miss_chance,dodge_chance,parry_chance,block_chance FROM timewalking_levels ORDER BY level;");
         if (!timewalkingLevel_table)
         {
             sLog->outString(">> Loaded 0 levels for TimeWalking. DB table `timewalking_levels` is empty.\n");
@@ -52,7 +53,7 @@ public:
 
         do
         {
-            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetFloat(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[9].GetUInt32(), timeWalkingLevel_Field[10].GetUInt32(), timeWalkingLevel_Field[11].GetUInt32(), timeWalkingLevel_Field[12].GetUInt32());
+            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()*1000+timeWalkingLevel_Field[1].GetUInt32()*10+timeWalkingLevel_Field[2].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[9].GetFloat(), timeWalkingLevel_Field[10].GetUInt32(), timeWalkingLevel_Field[11].GetUInt32(), timeWalkingLevel_Field[12].GetUInt32(), timeWalkingLevel_Field[13].GetUInt32(), timeWalkingLevel_Field[14].GetUInt32());
         } while (timewalkingLevel_table->NextRow());
 
         sAzthLevelStat->SetLevelStatList(timeWalkingLevelsStatsList);
@@ -167,8 +168,15 @@ public:
         else if (action >= 10000) //apply level
         {
             uint32 level = action - 10000;
-            player->azthPlayer->SetTimeWalkingLevel(level);
-            player->PlayerTalkClass->SendCloseGossip();
+            if (player->azthPlayer->GetTimeWalkingLevel() == NULL)
+            {
+                player->azthPlayer->SetTimeWalkingLevel(level);
+                player->PlayerTalkClass->SendCloseGossip();
+            }
+            else
+            {
+                player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_ALREADYAPPLIED, creature->GetGUID());
+            }
         }
         
         else if (action == 7)
@@ -192,22 +200,48 @@ public:
         {
             if (victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel() != NULL)
             {
-                crit_chance = 0;
-                miss_chance = 0;
-                dodge_chance = 0;
-                parry_chance = 0;
-                block_chance = 0;
+                map<uint32, AzthLevelStat> levelStatList = sAzthLevelStat->GetLevelStatList();
+                uint32 race = victim->ToPlayer()->getRace();
+                uint32 Class = victim->ToPlayer()->getClass();
+                for (std::map<uint32, AzthLevelStat>::iterator it = levelStatList.begin(); it != levelStatList.end(); it++)
+                {
+                    if (it->second.GetRace() == race && it->second.GetClass() == Class)
+                    {
+                        if (it->second.GetLevel() == victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel())
+                        {
+                            AzthLevelStat stats = it->second;
+                            crit_chance = stats.GetCritChance();
+                            miss_chance = stats.GetMissChance();
+                            dodge_chance = stats.GetDodgeChance();
+                            parry_chance = stats.GetParryChance();
+                            block_chance = stats.GetBlockChance();
+                        }
+                    }
+                }
             }
 
         }
     }
 };
 
-/*class modMana : public PlayerScript
+class timeWalkingPlayer : public PlayerScript
 {
 public:
-    modMana() : PlayerScript("modMana") {}
-    void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
+    timeWalkingPlayer() : PlayerScript("timeWalkingPlayer") {}
+    void OnLogin(Player* player) 
+    {
+        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("SELECT id,level FROM timewalking_characters_active WHERE id = %d;"), player->GetGUID());
+        //clean player to avoid problems
+        player->azthPlayer->SetTimeWalkingLevel(NULL);
+        if (timewalkingCharactersActive_table) //if is in timewalking mode apply debuff
+        {
+            Field* timewalkingCharactersActive_field = timewalkingCharactersActive_table->Fetch();
+
+            player->azthPlayer->SetTimeWalkingLevel(timewalkingCharactersActive_field[1].GetUInt32());
+        }
+    }
+    
+    /*void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
     {
         if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
         {
@@ -216,13 +250,13 @@ public:
                 value = 0.0f;
             }
         }
-    }
-};*/
+    }*/
+};
 
 void AddSC_TimeWalking()
 {
     new loadTimeWalkingRaid();
     new TimeWalkingGossip();
-    //new modMana();
+    new timeWalkingPlayer();
     new modAttackMelleeStats();
 }
