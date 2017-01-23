@@ -37,24 +37,40 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
     //apply debuf/buff section (spell) and enable timewalking mode
     if (itsTimeWalkingLevel != NULL)
     {
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_HEALTH, player, stats.GetHealth());
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_RESISTANCE, player, stats.GetResistance());
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_HEALING, player, stats.GetHealing());
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_DAMAGE, player, stats.GetDamage());
+        uint32 stamina = player->GetStat(STAT_STAMINA);
+        uint32 staminaDebuffCount = (uint32)((stamina * stats.GetStaPct()) / 100);
+        
+        uint32 strength = player->GetStat(STAT_STRENGTH);
+        uint32 strengthDebuffCount = (uint32)((strength * stats.GetStrPct()) / 100);
+
+        uint32 agility = player->GetStat(STAT_AGILITY);
+        uint32 agilityDebuffCount = (uint32)((agility * stats.GetAgiPct()) / 100);
+
+        uint32 intellect = player->GetStat(STAT_INTELLECT);
+        uint32 intellectDebuffCount = (uint32)((intellect * stats.GetIntPct()) / 100);
+
+        uint32 spirit = player->GetStat(STAT_SPIRIT);
+        uint32 spiritDebuffCount = (uint32)((spirit * stats.GetSpiPct()) / 100);
+
+
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_STAMINA, player, staminaDebuffCount);
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_STRENGTH, player, strengthDebuffCount);
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_AGILITY, player, agilityDebuffCount);
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_INTELLECT, player, intellectDebuffCount);
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_SPIRIT, player, spiritDebuffCount);
         player->SetAuraStack(TIMEWALKING_AURA_MOD_POWERCOST, player, stats.GetPowerCost());
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_ALLSTATS, player, stats.GetAllStats());
         player->AddAura(TIMEWALKING_AURA_VISIBLE, player);
 
         QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("INSERT IGNORE INTO timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
     }
     else
     {
-        player->RemoveAura(TIMEWALKING_AURA_MOD_HEALTH);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_RESISTANCE);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_HEALING);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_DAMAGE);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_STRENGTH);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_AGILITY);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_INTELLECT);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_SPIRIT);
         player->RemoveAura(TIMEWALKING_AURA_MOD_POWERCOST);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_ALLSTATS);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_STAMINA);
         player->RemoveAura(TIMEWALKING_AURA_VISIBLE);
 
         QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());

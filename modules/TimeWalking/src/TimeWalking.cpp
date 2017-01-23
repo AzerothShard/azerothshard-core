@@ -41,7 +41,7 @@ public:
     
         
         
-        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,race,class,health,resistance,healing,damage,power_cost,all_stat,mana,crit_chance,miss_chance,dodge_chance,parry_chance,block_chance FROM timewalking_levels ORDER BY level;");
+        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,race,class,strength_pct,agility_pct,stamina_pct,intellect_pct,spirit_pct,power_cost,all_stat,mana,crit_chance,miss_chance,dodge_chance,parry_chance,block_chance FROM timewalking_levels ORDER BY level;");
         if (!timewalkingLevel_table)
         {
             sLog->outString(">> Loaded 0 levels for TimeWalking. DB table `timewalking_levels` is empty.\n");
@@ -53,7 +53,7 @@ public:
 
         do
         {
-            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()*10000+timeWalkingLevel_Field[1].GetUInt32()*100+timeWalkingLevel_Field[2].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[9].GetFloat(), timeWalkingLevel_Field[10].GetUInt32(), timeWalkingLevel_Field[11].GetUInt32(), timeWalkingLevel_Field[12].GetUInt32(), timeWalkingLevel_Field[13].GetUInt32(), timeWalkingLevel_Field[14].GetUInt32());
+            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()*10000+timeWalkingLevel_Field[1].GetUInt32()*100+timeWalkingLevel_Field[2].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[9].GetUInt32(), timeWalkingLevel_Field[10].GetFloat(), timeWalkingLevel_Field[11].GetUInt32(), timeWalkingLevel_Field[12].GetUInt32(), timeWalkingLevel_Field[13].GetUInt32(), timeWalkingLevel_Field[14].GetUInt32(), timeWalkingLevel_Field[15].GetUInt32());
         } while (timewalkingLevel_table->NextRow());
 
         sAzthLevelStat->SetLevelStatList(timeWalkingLevelsStatsList);
@@ -227,16 +227,32 @@ public:
         }
     }
     
-    /*void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
+    void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
     {
         if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
         {
             if (power == POWER_MANA)
             {
-                value = 0.0f;
+                QueryResult getBaseMana = WorldDatabase.PQuery(("SELECT basemana FROM player_classlevelstats WHERE class = %d AND level = %d"), player->getClass(), player->azthPlayer->GetTimeWalkingLevel());
+                Field* getBaseMana_field = getBaseMana->Fetch();
+                uint32 baseMana = getBaseMana_field[0].GetUInt32();
+                uint32 manaBonus = player->GetManaBonusFromIntellect();
+                value = baseMana + manaBonus;
             }
         }
-    }*/
+    }
+
+    void OnAfterUpdateMaxHealth(Player* player, float& value)
+    {
+        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
+        {
+            QueryResult getBaseHp = WorldDatabase.PQuery(("SELECT basehp FROM player_classlevelstats WHERE class = %d AND level = %d"), player->getClass(), player->azthPlayer->GetTimeWalkingLevel());
+            Field* getBaseHp_field = getBaseHp->Fetch();
+            uint32 baseHp = getBaseHp_field[0].GetUInt32();
+            uint32 hpBonus = player->GetHealthBonusFromStamina();
+            value = baseHp + hpBonus;
+        }
+    }
 };
 
 void AddSC_TimeWalking()

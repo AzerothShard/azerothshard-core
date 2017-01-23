@@ -4,12 +4,12 @@
 
 enum aura_timewalking_enum
 {
-    TIMEWALKING_AURA_MOD_HEALTH = 909090,
-    TIMEWALKING_AURA_MOD_RESISTANCE = 909091,
-    TIMEWALKING_AURA_MOD_HEALING = 909092,
-    TIMEWALKING_AURA_MOD_DAMAGE = 909093,
-    TIMEWALKING_AURA_MOD_POWERCOST = 909094,
-    TIMEWALKING_AURA_MOD_ALLSTATS = 909095,
+    TIMEWALKING_AURA_MOD_AGILITY = 909090,
+    TIMEWALKING_AURA_MOD_INTELLECT = 909091,
+    TIMEWALKING_AURA_MOD_SPIRIT = 909092,
+    TIMEWALKING_AURA_MOD_STAMINA = 909093,
+    TIMEWALKING_AURA_MOD_STRENGTH = 909094,
+    TIMEWALKING_AURA_MOD_POWERCOST = 909095,
     TIMEWALKING_AURA_VISIBLE = 909096
 };
 
@@ -21,10 +21,11 @@ public:
     uint32 GetLevel() const;
     uint32 GetRace() const;
     uint32 GetClass() const;
-    uint32 GetHealth() const;
-    uint32 GetResistance() const;
-    uint32 GetHealing() const;
-    uint32 GetDamage() const;
+    uint32 GetStrPct() const;
+    uint32 GetAgiPct() const;
+    uint32 GetStaPct() const;
+    uint32 GetIntPct() const;
+    uint32 GetSpiPct() const;
     uint32 GetPowerCost() const;
     uint32 GetAllStats() const;
     float GetMana() const;
@@ -41,10 +42,11 @@ public:
     void SetLevel(uint32 level);
     void SetRace(uint32 race);
     void SetClass(uint32 Class);
-    void SetHealth(uint32 health);
-    void SetResistance(uint32 resistance);
-    void SetHealing(uint32 healing);
-    void SetDamage(uint32 damage);
+    void SetStrPct(uint32 strength);
+    void SetAgiPct(uint32 agility);
+    void SetStaPct(uint32 stamina);
+    void SetIntPct(uint32 intellect);
+    void SetSpiPct(uint32 spirit);
     void SetPowerCost(uint32 powerCost);
     void SetAllStats(uint32 allStas);
     void SetMana(float mana);
@@ -57,17 +59,18 @@ public:
     void SetLevelStatList(map<uint32, AzthLevelStat> levelStatList);
 
     AzthLevelStat();
-    AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 health, uint32 resistance, uint32 healing, uint32 damage, uint32 powerCost, uint32 allStats, float mana, uint32 critChance, uint32 missChance, uint32 dodgeChance, uint32 parryChance, uint32 blockChance);
+    AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 powerCost, uint32 allStats, float mana, uint32 critChance, uint32 missChance, uint32 dodgeChance, uint32 parryChance, uint32 blockChance);
 
 
 private:
     uint32 level;
     uint32 race;
     uint32 Class;
-    uint32 health;
-    uint32 resistance;
-    uint32 healing;
-    uint32 damage;
+    uint32 strength;
+    uint32 agility;
+    uint32 stamina;
+    uint32 intellect;
+    uint32 spirit;
     uint32 powerCost;
     uint32 allStats;
     float mana;
