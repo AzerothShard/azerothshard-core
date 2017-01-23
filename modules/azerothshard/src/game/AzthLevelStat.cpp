@@ -11,16 +11,9 @@ AzthLevelStat::AzthLevelStat()
     intellect = uint32(0);
     spirit = uint32(0);
     powerCost = uint32(0);
-    allStats = uint32(0);
-    mana = float(0.0f);
-    critChance = uint32(0);
-    missChance = uint32(0);
-    dodgeChance = uint32(0);
-    parryChance = uint32(0);
-    blockChance = uint32(0);
 }
 
-AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 powerCost, uint32 allStats, float mana, uint32 critChance, uint32 missChance, uint32 dodgeChance, uint32 parryChance, uint32 blockChance)
+AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 powerCost)
 {
     this->level = level;
     this->race = race;
@@ -31,13 +24,6 @@ AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 str
     this->intellect = intellect;
     this->spirit = spirit;
     this->powerCost = powerCost;
-    this->allStats = allStats;
-    this->mana = mana;
-    this->critChance = critChance;
-    this->missChance = missChance;
-    this->dodgeChance = dodgeChance;
-    this->parryChance = parryChance;
-    this->blockChance = blockChance;
 }
 
 map<uint32, AzthLevelStat> AzthLevelStat::GetLevelStatList() const
@@ -138,74 +124,4 @@ uint32 AzthLevelStat::GetPowerCost() const
 void AzthLevelStat::SetPowerCost(uint32 powerCost)
 {
     this->powerCost = powerCost;
-}
-
-uint32 AzthLevelStat::GetAllStats() const
-{
-    return allStats;
-}
-
-void AzthLevelStat::SetAllStats(uint32 allStats)
-{
-    this->allStats = allStats;
-}
-
-float AzthLevelStat::GetMana() const
-{
-    return mana;
-}
-
-void AzthLevelStat::SetMana(float mana)
-{
-    this->mana = mana;
-}
-
-uint32 AzthLevelStat::GetCritChance() const
-{
-    return critChance;
-}
-
-void AzthLevelStat::SetCritChance(uint32 critChance)
-{
-    this->critChance = critChance;
-}
-
-uint32 AzthLevelStat::GetMissChance() const
-{
-    return missChance;
-}
-
-void AzthLevelStat::SetMissChance(uint32 missChance)
-{
-    this->missChance = missChance;
-}
-
-uint32 AzthLevelStat::GetDodgeChance() const
-{
-    return dodgeChance;
-}
-
-void AzthLevelStat::SetDodgeChance(uint32 dodgeChance)
-{
-    this->dodgeChance = dodgeChance;
-}
-
-uint32 AzthLevelStat::GetParryChance() const
-{
-    return parryChance;
-}
-
-void AzthLevelStat::SetParryChance(uint32 parryChance)
-{
-    this->parryChance = parryChance;
-}
-
-uint32 AzthLevelStat::GetBlockChance() const
-{
-    return blockChance;
-}
-
-void AzthLevelStat::SetBlockChance(uint32 blockChance)
-{
-    this->blockChance = blockChance;
 }
