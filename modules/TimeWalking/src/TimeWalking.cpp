@@ -1,10 +1,16 @@
 #include "ScriptMgr.h"
+#include "Unit.h"
+#include "Pet.h"
+#include "SharedDefines.h"
 #include "Player.h"
 #include "Common.h"
 #include "raid.h"
 #include "Creature.h"
 #include "AzthPlayer.h"
 #include "AzthLevelStat.h"
+#include "SpellAuras.h"
+#include "SpellAuraEffects.h"
+#include "SpellMgr.h"
 
 std::map<uint32, raid> raidList;
 std::map<uint32, AzthLevelStat> timeWalkingLevelsStatsList;
@@ -229,14 +235,24 @@ public:
     
     void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
     {
-        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
+        uint32 timeWalkingLevel = player->azthPlayer->GetTimeWalkingLevel();
+        if (timeWalkingLevel != NULL)
         {
             if (power == POWER_MANA)
             {
                 QueryResult getBaseMana = WorldDatabase.PQuery(("SELECT basemana FROM player_classlevelstats WHERE class = %d AND level = %d"), player->getClass(), player->azthPlayer->GetTimeWalkingLevel());
                 Field* getBaseMana_field = getBaseMana->Fetch();
                 uint32 baseMana = getBaseMana_field[0].GetUInt32();
-                uint32 manaBonus = player->GetManaBonusFromIntellect();
+                
+                float intellectPct = sAzthLevelStat->GetLevelStatList()[timeWalkingLevel * 10000 + player->getRace() * 100 + player->getClass()].GetIntPct();
+                float intellect = player->GetStat(STAT_INTELLECT);
+                float intellectTimewalking = ((intellect * intellectPct) / 100); //to be adjusted
+
+                float baseInt = intellectTimewalking < 20 ? intellectTimewalking : 20;
+                float moreInt = intellectTimewalking - baseInt;
+
+                uint32 manaBonus = baseInt + (moreInt*15.0f);
+
                 value = baseMana + manaBonus;
             }
         }
@@ -244,21 +260,221 @@ public:
 
     void OnAfterUpdateMaxHealth(Player* player, float& value)
     {
-        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
+        uint32 timeWalkingLevel = player->azthPlayer->GetTimeWalkingLevel();
+        if (timeWalkingLevel != NULL)
         {
             QueryResult getBaseHp = WorldDatabase.PQuery(("SELECT basehp FROM player_classlevelstats WHERE class = %d AND level = %d"), player->getClass(), player->azthPlayer->GetTimeWalkingLevel());
             Field* getBaseHp_field = getBaseHp->Fetch();
             uint32 baseHp = getBaseHp_field[0].GetUInt32();
-            uint32 hpBonus = player->GetHealthBonusFromStamina();
+            
+            float staminaPct = sAzthLevelStat->GetLevelStatList()[timeWalkingLevel * 10000 + player->getRace() * 100 + player->getClass()].GetStaPct();
+            float stamina = player->GetStat(STAT_STAMINA);
+            float staminaTimewalking = ((stamina * staminaPct) / 100); //to be adjusted
+
+            float baseStam = staminaTimewalking < 20 ? staminaTimewalking : 20;
+            float moreStam = staminaTimewalking - baseStam;
+
+            uint32 hpBonus = baseStam + (moreStam*10.0f);
             value = baseHp + hpBonus;
         }
     }
 
-    void OnBeforeUpdateAttackPowerAndDamage(Player* player, float& level, bool ranged)
+    void OnAfterUpdateAttackPowerAndDamage(Player* player, float& level, float& base_attPower, float& attPowerMod, float& attPowerMultiplier, bool ranged)
     {
         if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
         {
-            level = player->azthPlayer->GetTimeWalkingLevel();
+            float val2 = 0.0f;
+            level = float(player->azthPlayer->GetTimeWalkingLevel());
+
+            UnitMods unitMod = ranged ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
+
+            uint16 index = UNIT_FIELD_ATTACK_POWER;
+            uint16 index_mod = UNIT_FIELD_ATTACK_POWER_MODS;
+            uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
+
+            float agilityPct = sAzthLevelStat->GetLevelStatList()[level * 10000 + player->getRace() * 100 + player->getClass()].GetAgiPct();
+            float agility = player->GetStat(STAT_AGILITY);
+            float agilityTimewalking = ((agility * agilityPct) / 100); //to be adjusted
+
+            float strengthPct = sAzthLevelStat->GetLevelStatList()[level * 10000 + player->getRace() * 100 + player->getClass()].GetStrPct();
+            float strength = player->GetStat(STAT_STRENGTH);
+            float strengthTimewalking = ((strength * strengthPct) / 100); //to be adjusted
+
+            if (ranged)
+            {
+                index = UNIT_FIELD_RANGED_ATTACK_POWER;
+                index_mod = UNIT_FIELD_RANGED_ATTACK_POWER_MODS;
+                index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
+
+                switch (player->getClass())
+                {
+                case CLASS_HUNTER:
+                    val2 = level * 2.0f + agilityTimewalking - 10.0f;
+                    break;
+                case CLASS_ROGUE:
+                    val2 = level + agilityTimewalking - 10.0f;
+                    break;
+                case CLASS_WARRIOR:
+                    val2 = level + agilityTimewalking - 10.0f;
+                    break;
+                case CLASS_DRUID:
+                    switch (player->GetShapeshiftForm())
+                    {
+                    case FORM_CAT:
+                    case FORM_BEAR:
+                    case FORM_DIREBEAR:
+                        val2 = 0.0f; break;
+                    default:
+                        val2 = agilityTimewalking - 10.0f; break;
+                    }
+                    break;
+                default: val2 = agilityTimewalking - 10.0f; break;
+                }
+            }
+            else
+            {
+                switch (player->getClass())
+                {
+                case CLASS_WARRIOR:
+                    val2 = level * 3.0f + strengthTimewalking  * 2.0f - 20.0f;
+                    break;
+                case CLASS_PALADIN:
+                    val2 = level * 3.0f + strengthTimewalking  * 2.0f - 20.0f;
+                    break;
+                case CLASS_DEATH_KNIGHT:
+                    val2 = level * 3.0f + strengthTimewalking  * 2.0f - 20.0f;
+                    break;
+                case CLASS_ROGUE:
+                    val2 = level * 2.0f + strengthTimewalking + agilityTimewalking - 20.0f;
+                    break;
+                case CLASS_HUNTER:
+                    val2 = level * 2.0f + strengthTimewalking + agilityTimewalking - 20.0f;
+                    break;
+                case CLASS_SHAMAN:
+                    val2 = level * 2.0f + strengthTimewalking + agilityTimewalking - 20.0f;
+                    break;
+                case CLASS_DRUID:
+                {
+                    // Check if Predatory Strikes is skilled
+                    float mLevelMult = 0.0f;
+                    float weapon_bonus = 0.0f;
+                    if (player->IsInFeralForm())
+                    {
+                        Unit::AuraEffectList const& mDummy = player->GetAuraEffectsByType(SPELL_AURA_DUMMY);
+                        for (Unit::AuraEffectList::const_iterator itr = mDummy.begin(); itr != mDummy.end(); ++itr)
+                        {
+                            AuraEffect* aurEff = *itr;
+                            if (aurEff->GetSpellInfo()->SpellIconID == 1563)
+                            {
+                                switch (aurEff->GetEffIndex())
+                                {
+                                case 0: // Predatory Strikes (effect 0)
+                                    mLevelMult = CalculatePct(1.0f, aurEff->GetAmount());
+                                    break;
+                                case 1: // Predatory Strikes (effect 1)
+                                    if (Item* mainHand = player->GetItemByPos(EQUIPMENT_SLOT_MAINHAND))
+                                    {
+                                        // also gains % attack power from equipped weapon
+                                        ItemTemplate const* proto = mainHand->GetTemplate();
+                                        if (!proto)
+                                            continue;
+
+                                        uint32 ap = proto->getFeralBonus();
+                                        // Get AP Bonuses from weapon
+                                        for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+                                        {
+                                            if (i >= proto->StatsCount)
+                                                break;
+
+                                            if (proto->ItemStat[i].ItemStatType == ITEM_MOD_ATTACK_POWER)
+                                                ap += proto->ItemStat[i].ItemStatValue;
+                                        }
+
+                                        // Get AP Bonuses from weapon spells
+                                        for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+                                        {
+                                            // no spell
+                                            if (!proto->Spells[i].SpellId || proto->Spells[i].SpellTrigger != ITEM_SPELLTRIGGER_ON_EQUIP)
+                                                continue;
+
+                                            // check if it is valid spell
+                                            SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId);
+                                            if (!spellproto)
+                                                continue;
+
+                                            for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+                                                if (spellproto->Effects[j].ApplyAuraName == SPELL_AURA_MOD_ATTACK_POWER)
+                                                    ap += spellproto->Effects[j].CalcValue();
+                                        }
+
+                                        weapon_bonus = CalculatePct(float(ap), aurEff->GetAmount());
+                                    }
+                                    break;
+                                default:
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    switch (player->GetShapeshiftForm())
+                    {
+                    case FORM_CAT:
+                        val2 = (player->azthPlayer->GetTimeWalkingLevel() * mLevelMult) + strengthTimewalking * 2.0f + agilityTimewalking - 20.0f + weapon_bonus /*+ m_baseFeralAP*/;
+                        break;
+                    case FORM_BEAR:
+                    case FORM_DIREBEAR:
+                        val2 = (player->azthPlayer->GetTimeWalkingLevel() * mLevelMult) + strengthTimewalking * 2.0f - 20.0f + weapon_bonus /*+ m_baseFeralAP*/;
+                        break;
+                    case FORM_MOONKIN:
+                        val2 = (player->azthPlayer->GetTimeWalkingLevel() * mLevelMult) + strengthTimewalking * 2.0f - 20.0f /*+ m_baseFeralAP*/;
+                        break;
+                    default:
+                        val2 = strengthTimewalking * 2.0f - 20.0f;
+                        break;
+                    }
+                    break;
+                }
+                case CLASS_MAGE:
+                    val2 = strengthTimewalking - 10.0f;
+                    break;
+                case CLASS_PRIEST:
+                    val2 = strengthTimewalking - 10.0f;
+                    break;
+                case CLASS_WARLOCK:
+                    val2 = strengthTimewalking - 10.0f;
+                    break;
+                }
+            }
+
+            player->SetModifierValue(unitMod, BASE_VALUE, val2);
+
+            base_attPower = player->GetModifierValue(unitMod, BASE_VALUE) * player->GetModifierValue(unitMod, BASE_PCT);
+            attPowerMod = player->GetModifierValue(unitMod, TOTAL_VALUE);
+
+            //add dynamic flat mods
+            if (ranged)
+            {
+                if ((player->getClassMask() & CLASSMASK_WAND_USERS) == 0)
+                {
+                    std::list<AuraEffect*> mRAPbyStat = player->GetAuraEffectsByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_OF_STAT_PERCENT);
+                    for (std::list<AuraEffect*>::const_iterator i = mRAPbyStat.begin(); i != mRAPbyStat.end(); ++i)
+                        attPowerMod += CalculatePct(player->GetStat(Stats((*i)->GetMiscValue())), (*i)->GetAmount());
+                }
+            }
+            else
+            {
+                std::list<AuraEffect*> mAPbyStat = player->GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_STAT_PERCENT);
+                for (std::list<AuraEffect*>::const_iterator i = mAPbyStat.begin(); i != mAPbyStat.end(); ++i)
+                    attPowerMod += CalculatePct(player->GetStat(Stats((*i)->GetMiscValue())), (*i)->GetAmount());
+
+                std::list<AuraEffect*> mAPbyArmor = player->GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR);
+                for (std::list<AuraEffect*>::const_iterator iter = mAPbyArmor.begin(); iter != mAPbyArmor.end(); ++iter)
+                    // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
+                    attPowerMod += int32(player->GetArmor() / (*iter)->GetAmount());
+            }
+
+            attPowerMultiplier = player->GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
         }
     }
 };
