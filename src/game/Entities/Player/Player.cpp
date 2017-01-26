@@ -7913,10 +7913,17 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
     // req. check at equip, but allow use for extended range if range limit max level, set proper level
     uint32 ssd_level = getLevel();
+    
+    // [AZTH] Timewalking
+    if (azthPlayer->GetTimeWalkingLevel() > 0 ) {
+        ssd_level = azthPlayer->GetTimeWalkingLevel();
+    }
+        
+    
     if (ssd && ssd_level > ssd->MaxLevel)
         ssd_level = ssd->MaxLevel;
 
-    ScalingStatValuesEntry const* ssv = proto->ScalingStatValue ? sScalingStatValuesStore.LookupEntry(ssd_level) : NULL;
+    ScalingStatValuesEntry const* ssv = proto->ScalingStatValue || azthPlayer->GetTimeWalkingLevel() > 0 ? sScalingStatValuesStore.LookupEntry(ssd_level) : NULL;
     if (only_level_scale && !ssv)
         return;
 
@@ -7925,12 +7932,26 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
         uint32 statType = 0;
         int32  val = 0;
         // If set ScalingStatDistribution need get stats and values from it
-        if (ssd && ssv)
+        if (ssv)
         {
-            if (ssd->StatMod[i] < 0)
-                continue;
-            statType = ssd->StatMod[i];
-            val = (ssv->getssdMultiplier(proto->ScalingStatValue) * ssd->Modifier[i]) / 10000;
+            if (ssd && azthPlayer->GetTimeWalkingLevel() == NULL) {
+                if (ssd->StatMod[i] < 0)
+                    continue;
+                statType = ssd->StatMod[i];
+                val = (ssv->getssdMultiplier(proto->ScalingStatValue) * ssd->Modifier[i]) / 10000;
+            } else {
+                // [AZTH] Timewalking
+                if (i >= proto->StatsCount)
+                    continue;
+                
+                statType = proto->ItemStat[i].ItemStatType;
+                
+                ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(80);
+
+                uint32 modifier = ((float)maxSSV->getssdMultiplier(proto->ScalingStatValue)/(float)proto->ItemStat[i].ItemStatValue)*10000;
+                
+                val = (ssv->getssdMultiplier(proto->ScalingStatValue) * modifier) / 10000;
+            }
         }
         else
         {

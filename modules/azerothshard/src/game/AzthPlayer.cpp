@@ -37,20 +37,18 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
     //apply debuf/buff section (spell) and enable timewalking mode
     if (itsTimeWalkingLevel != NULL)
     {
-        uint32 stamina = player->GetStat(STAT_STAMINA);
-        uint32 staminaDebuffCount = (uint32)((stamina * stats.GetStaPct()) / 100);
+        PlayerLevelInfo info;
+        sObjectMgr->GetPlayerLevelInfo(player->getRace(true), player->getClass(), 80, &info);
+
+        uint32 staminaDebuffCount = (uint32)((info.stats[STAT_STAMINA] * stats.GetStaPct()) / 100);
         
-        uint32 strength = player->GetStat(STAT_STRENGTH);
-        uint32 strengthDebuffCount = (uint32)((strength * stats.GetStrPct()) / 100);
+        uint32 strengthDebuffCount = (uint32)((info.stats[STAT_STRENGTH]  * stats.GetStrPct()) / 100);
 
-        uint32 agility = player->GetStat(STAT_AGILITY);
-        uint32 agilityDebuffCount = (uint32)((agility * stats.GetAgiPct()) / 100);
+        uint32 agilityDebuffCount = (uint32)((info.stats[STAT_AGILITY]  * stats.GetAgiPct()) / 100);
 
-        uint32 intellect = player->GetStat(STAT_INTELLECT);
-        uint32 intellectDebuffCount = (uint32)((intellect * stats.GetIntPct()) / 100);
+        uint32 intellectDebuffCount = (uint32)((info.stats[STAT_INTELLECT] * stats.GetIntPct()) / 100);
 
-        uint32 spirit = player->GetStat(STAT_SPIRIT);
-        uint32 spiritDebuffCount = (uint32)((spirit * stats.GetSpiPct()) / 100);
+        uint32 spiritDebuffCount = (uint32)((info.stats[STAT_SPIRIT] * stats.GetSpiPct()) / 100);
 
 
         player->SetAuraStack(TIMEWALKING_AURA_MOD_STAMINA, player, staminaDebuffCount);
