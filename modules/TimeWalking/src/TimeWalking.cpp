@@ -233,6 +233,16 @@ public:
         }
     }
     
+
+
+    void OnBeforeInitTalentForLevel(Player* player, uint8& level, uint32& talentPointsForLevel)
+    {
+        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
+        {
+            talentPointsForLevel = 71;
+        }
+    }
+
     void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
     {
         uint32 timeWalkingLevel = player->azthPlayer->GetTimeWalkingLevel();

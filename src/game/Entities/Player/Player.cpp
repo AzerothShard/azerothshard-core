@@ -3318,6 +3318,8 @@ void Player::InitTalentForLevel()
     uint8 level = getLevel();
     uint32 talentPointsForLevel = CalculateTalentsPoints();
 
+    sScriptMgr->OnBeforeInitTalentForLevel(this, level, talentPointsForLevel);
+
     // xinef: more talent points that we have are used, reset
     if (m_usedTalentCount > talentPointsForLevel)
         resetTalents(true);
@@ -11941,6 +11943,19 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
                 }
             }
             dest = ((INVENTORY_SLOT_BAG_0 << 8) | eslot);
+
+            //[AZTH]
+            if (pItem->GetTemplate()->ScalingStatDistribution == (10000 + pItem->GetEntry()))
+            {
+                if (azthPlayer->GetTimeWalkingLevel() != NULL || getLevel() == 80)
+                {
+                    return EQUIP_ERR_OK;
+                }
+                else
+                    return EQUIP_ERR_CANT_EQUIP_LEVEL_I;
+            }
+            //[/AZTH]
+
             return EQUIP_ERR_OK;
         }
     }

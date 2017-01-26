@@ -896,6 +896,7 @@ class PlayerScript : public ScriptObject
 
         virtual void OnAfterUpdateAttackPowerAndDamage(Player* /*player*/, float& /*level*/, float& /*base_attPower*/, float& /*attPowerMod*/, float& /*attPowerMultiplier*/, bool /*ranged*/) { }
 
+        virtual void OnBeforeInitTalentForLevel(Player* /*player*/, uint8& /*level*/, uint32& /*talentPointsForLevel*/) { }
 };
 
 class GuildScript : public ScriptObject
@@ -1210,6 +1211,7 @@ class ScriptMgr
         void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value);
         void OnAfterUpdateMaxHealth(Player* player, float& value);
         void OnAfterUpdateAttackPowerAndDamage(Player* player, float& level, float& base_attPower, float& attPowerMod, float& attPowerMultiplier, bool ranged);
+        void OnBeforeInitTalentForLevel(Player* player, uint8& level, uint32& talentPointsForLevel);
 
     public: /* GuildScript */
 
