@@ -7,6 +7,8 @@
 #include "Player.h"
 #include "World.h"
 #include "AzthLevelStat.h"
+#include "Unit.h"
+#include "Pet.h"
 
 //[TIMEWALKING]
 
@@ -54,6 +56,9 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
     {
 
         player->GiveLevel(80);
+        if (player->GetPet()) {
+            player->GetPet()->GivePetLevel(80);
+        }
         player->SetUInt32Value(PLAYER_XP, 0);
         player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
         QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());

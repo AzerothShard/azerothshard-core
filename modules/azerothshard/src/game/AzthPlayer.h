@@ -67,7 +67,6 @@ public:
   bool hasSmartStoneCommand(uint32 id);
 
   void loadTimeWalkingFromDB();
-
   uint32 GetTimeWalkingLevel() const;
   void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool giveLevel=true);
 

@@ -8,6 +8,9 @@
 #include "ItemPrototype.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "SpellAuras.h"
+
+class AuraApplication;
 
 class AzthUtils
 {
@@ -15,6 +18,10 @@ class AzthUtils
 public:
     AzthUtils();
     ~AzthUtils();
+
+    void removeTimewalkingAura(Unit * unit);
+
+    float getCustomMultiplier(ItemTemplate const * pProto, uint32 multiplier);
 
     uint32 calculateItemScalingValue(ItemTemplate const* pProto,Player *pl = NULL);
 };

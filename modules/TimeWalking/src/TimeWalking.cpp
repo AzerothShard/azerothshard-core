@@ -9,6 +9,7 @@
 #include "AzthPlayer.h"
 #include "AzthLevelStat.h"
 #include "m_ctype.h"
+#include "AzthUtils.h"
 
 std::map<uint32, raid> raidList;
 std::map<uint32, AzthLevelStat> timeWalkingLevelsStatsList;
@@ -91,6 +92,16 @@ public:
             s.end(), [](char c) { return !isdigit(c); }) == s.end();
     }
 
+    void setTimeWalking(Player* player,uint32 level)
+    {
+        sAzthUtils->removeTimewalkingAura(player);
+        if (player->GetPet() != NULL) {
+            sAzthUtils->removeTimewalkingAura(player->GetPet());
+        }
+
+        player->azthPlayer->SetTimeWalkingLevel(level);
+    }
+
     bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code)
     {
         player->PlayerTalkClass->ClearMenus();
@@ -103,8 +114,7 @@ public:
                 return false;
             }
 
-            player->RemoveAllAuras();
-            player->azthPlayer->SetTimeWalkingLevel(level);
+            setTimeWalking(player, level);
             player->PlayerTalkClass->SendCloseGossip();
         }
 
@@ -187,8 +197,7 @@ public:
             uint32 level = action - 10000;
             if (player->azthPlayer->GetTimeWalkingLevel() == NULL)
             {
-                player->RemoveAllAuras();
-                player->azthPlayer->SetTimeWalkingLevel(level);
+                setTimeWalking(player, level);
                 player->PlayerTalkClass->SendCloseGossip();
             }
             else
@@ -199,8 +208,7 @@ public:
         
         else if (action == 7)
         {
-            player->RemoveAllAuras();
-            player->azthPlayer->SetTimeWalkingLevel(NULL);
+            setTimeWalking(player, NULL);
             player->PlayerTalkClass->SendCloseGossip();
         }
 

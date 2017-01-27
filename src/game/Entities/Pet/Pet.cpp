@@ -1621,6 +1621,10 @@ bool Pet::resetTalents()
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return false;
 
+    //[AZTH] Timewalking
+    if (((Player*)owner)->azthPlayer->GetTimeWalkingLevel() != NULL)
+        return false;
+
     // not need after this call
     if (owner->ToPlayer()->HasAtLoginFlag(AT_LOGIN_RESET_PET_TALENTS))
         owner->ToPlayer()->RemoveAtLoginFlag(AT_LOGIN_RESET_PET_TALENTS, true);

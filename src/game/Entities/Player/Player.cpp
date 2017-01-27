@@ -7909,23 +7909,15 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
         return;
 
     ScalingStatDistributionEntry const* ssd = proto->ScalingStatDistribution ? sScalingStatDistributionStore.LookupEntry(proto->ScalingStatDistribution) : NULL;
-    //if (only_level_scale && !ssd)
-    //    return;
+    if (only_level_scale && !ssd)
+        return;
 
     // req. check at equip, but allow use for extended range if range limit max level, set proper level
     uint32 ssd_level = getLevel();
 
     // [AZTH] Timewalking
-    //uint32 azthScalingStatValue = proto->ScalingStatValue;
-    //if (azthPlayer->GetTimeWalkingLevel() > 0) {
-    //    ssd_level = azthPlayer->GetTimeWalkingLevel();
-        uint32 azthScalingStatValue = sAzthUtils->calculateItemScalingValue(proto, this);
-        //if (apply && azthScalingStatValue)
-        //    return;
-
-        azthScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : azthScalingStatValue;
-    //}
-
+    uint32 azthScalingStatValue = sAzthUtils->calculateItemScalingValue(proto, this);
+    azthScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : azthScalingStatValue;
 
     if (ssd && ssd_level > ssd->MaxLevel)
         ssd_level = ssd->MaxLevel;
@@ -7956,9 +7948,11 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
                 ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(proto->RequiredLevel);
 
-                uint32 modifier = ((float)maxSSV->getssdMultiplier(azthScalingStatValue) / (float)proto->ItemStat[i].ItemStatValue) * 10000;
+                float mulMax = sAzthUtils->getCustomMultiplier(proto, (float)maxSSV->getssdMultiplier(azthScalingStatValue));
+                uint32 modifier = ( mulMax / (float)proto->ItemStat[i].ItemStatValue) * 10000;
 
-                val = (ssv->getssdMultiplier(azthScalingStatValue) * modifier) / 10000;
+                float mul = sAzthUtils->getCustomMultiplier(proto, (float)ssv->getssdMultiplier(azthScalingStatValue));
+                val = (mul * modifier) / 10000;
             }
         }
         else
@@ -8221,10 +8215,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingStatValuesEntry const* ssv, bool apply)
 {
     // [AZTH] Timewalking
-    //uint32 azthScalingStatValue = proto->ScalingStatValue;
-    //if (azthPlayer->GetTimeWalkingLevel() > 0) {
-        uint32 azthScalingStatValue = proto->ScalingStatValue ? proto->ScalingStatValue : sAzthUtils->calculateItemScalingValue(proto, this);
-    //}
+    uint32 azthScalingStatValue = proto->ScalingStatValue ? proto->ScalingStatValue : sAzthUtils->calculateItemScalingValue(proto, this);
 
     WeaponAttackType attType = BASE_ATTACK;
     float damage = 0.0f;
@@ -8399,10 +8390,10 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change)
 
 void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change)
 {
-    // [AZTH]
+    // [AZTH] Timewalking
     if (item) {
         ItemTemplate const* proto = item->GetTemplate();
-        if (proto->RequiredLevel > this->getLevel() && azthPlayer->GetTimeWalkingLevel() > 0) {
+        if (proto->RequiredLevel > this->getLevel()) {
             return;
         }
     }
@@ -8880,7 +8871,9 @@ void Player::_ApplyAllLevelScaleItemMods(bool apply)
             if (!proto)
                 continue;
 
-            _ApplyItemBonuses(proto, i, apply, true);
+            // [AZTH]
+            //_ApplyItemBonuses(proto, i, apply, true);
+            _ApplyItemMods(m_items[i], i, apply);
         }
     }
 }
@@ -11985,18 +11978,6 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
             }
             dest = ((INVENTORY_SLOT_BAG_0 << 8) | eslot);
 
-            //[AZTH]
-            if (pItem->GetTemplate()->ScalingStatDistribution == (10000 + pItem->GetEntry()))
-            {
-                if (azthPlayer->GetTimeWalkingLevel() != NULL || getLevel() == 80)
-                {
-                    return EQUIP_ERR_OK;
-                }
-                else
-                    return EQUIP_ERR_CANT_EQUIP_LEVEL_I;
-            }
-            //[/AZTH]
-
             return EQUIP_ERR_OK;
         }
     }
@@ -14236,16 +14217,17 @@ void Player::ApplyEnchantment(Item* item, bool apply)
 
 void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool apply_dur, bool ignore_condition)
 {
-    ItemTemplate const* proto = item->GetTemplate();
-    if (proto->RequiredLevel > this->getLevel() && azthPlayer->GetTimeWalkingLevel() > 0) {
-        return;
-    }
-
     if (!item || !item->IsEquipped())
         return;
 
     if (slot >= MAX_ENCHANTMENT_SLOT)
         return;
+
+    //[AZTH] Timewalking
+    ItemTemplate const* proto = item->GetTemplate();
+    if (proto->RequiredLevel > this->getLevel()) {
+        return;
+    }
 
     uint32 enchant_id = item->GetEnchantmentId(slot);
     if (!enchant_id)
