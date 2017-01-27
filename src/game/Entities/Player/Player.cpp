@@ -8396,6 +8396,8 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
         if (proto->RequiredLevel > this->getLevel()) {
             return;
         }
+    } else if (azthPlayer->GetTimeWalkingLevel() != NULL) {
+        return;
     }
 
     if (apply)

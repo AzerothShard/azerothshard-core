@@ -130,7 +130,7 @@ void AzthLevelStat::SetDamPct(uint32 damage)
 
 uint32 AzthLevelStat::GetHealPct() const
 {
-    return damage;
+    return heal;
 }
 
 void AzthLevelStat::SetHealPct(uint32 heal)

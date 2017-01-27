@@ -48,9 +48,10 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     if (pProto->RequiredLevel <= pl->getLevel()) // remove / apply
         return 0;
 
+    uint32 mul = 1; // should be 1 ?
+
     // SHOULDERS
     if (pProto->InventoryType == INVTYPE_SHOULDERS) { 
-        uint32 mul = 8; // should be 1 ?
         if (pProto->Class == ITEM_CLASS_ARMOR) {
             switch (pProto->SubClass) {
             case ITEM_SUBCLASS_ARMOR_CLOTH :
@@ -69,39 +70,42 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
 
     // WEAPONS 
     if (pProto->InventoryType == INVTYPE_2HWEAPON) {
-        return 8 + 1024;
+        return mul + 1024;
     }
 
     if (pProto->InventoryType == INVTYPE_WEAPON || pProto->InventoryType == INVTYPE_WEAPONMAINHAND
         || pProto->InventoryType == INVTYPE_WEAPONOFFHAND) {
-        return 8 + 512; // should be 4 ?
+        return mul + 512; // should be 4 ?
     }
 
     // RANGED
     if (pProto->InventoryType == INVTYPE_RANGED || pProto->InventoryType == INVTYPE_AMMO || pProto->InventoryType == INVTYPE_THROWN)
-        return 8 + 8192; // should be 16 ?
+        return mul + 8192; // should be 16 ?
         
     // WANDS
     if (pProto->InventoryType == INVTYPE_RANGEDRIGHT)
-        return 8 + 16384; // should be 16 ?
+        return mul + 16384; // should be 16 ?
 
 
     // CLOAK
     if (pProto->InventoryType == INVTYPE_CLOAK) {
-        return 8 + 524288;
+        return mul + 524288;
     }
     
     // ARMOR
     if (pProto->InventoryType == INVTYPE_SHIELD) {
-        return 8 + 8388608;
+        return mul + 8388608;
     }
 
     if (pProto->InventoryType == INVTYPE_TRINKET) {
-        return 8; // should be 2 ?
+        return mul; // should be 2 ?
     }
 
+    // special cases
+    if (pProto->InventoryType == INVTYPE_FINGER || pProto->InventoryType == INVTYPE_NECK)
+        return mul;
+
     if (pProto->Class == ITEM_CLASS_ARMOR) {
-        uint32 mul = 8; // should be 262144 ?
         switch (pProto->SubClass) {
         case ITEM_SUBCLASS_ARMOR_CLOTH:
             return mul + 1048576;

@@ -40,7 +40,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
     //apply debuf/buff section (spell) and enable timewalking mode
     if (itsTimeWalkingLevel != NULL)
     {
-        AzthLevelStat stats = sAzthLevelStat->GetLevelStatList()[player->getLevel() * 10000 + player->getRace() * 100 + player->getClass()];
+        AzthLevelStat stats = sAzthLevelStat->GetLevelStatList()[timeWalkingLevel * 10000 + player->getRace() * 100 + player->getClass()];
 
         
         //->GiveLevel(timeWalkingLevel);
@@ -61,6 +61,10 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
         }
         player->SetUInt32Value(PLAYER_XP, 0);
         player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_HEALING);
+        player->RemoveAura(TIMEWALKING_AURA_MOD_DAMAGESPELL);
+        player->RemoveAura(TIMEWALKING_AURA_VISIBLE);
+
         QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());
     }
 

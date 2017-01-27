@@ -29,7 +29,7 @@ public:
     loadTimeWalkingRaid() : WorldScript("loadTimeWalkingRaid") {}
     void OnStartup()
     {
-        QueryResult timewalking_table = ExtraDatabase.PQuery("SELECT id,name,exp,phase,level,bonus FROM timewalking ORDER BY exp, phase, level, name;"); //author, title, music id and genre from DB
+        QueryResult timewalking_table = ExtraDatabase.PQuery("SELECT id,name,exp,phase,level,bonus FROM timewalking ORDER BY exp, phase, level, name;");
         if (!timewalking_table)
         {
             sLog->outString(">> Loaded 0 raids for TimeWalking. DB table `timewalking` is empty.\n");
