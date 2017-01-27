@@ -66,8 +66,10 @@ public:
                             uint8 count, uint8 bag, uint8 slot);
   bool hasSmartStoneCommand(uint32 id);
 
+  void loadTimeWalkingFromDB();
+
   uint32 GetTimeWalkingLevel() const;
-  void SetTimeWalkingLevel(uint32 timeWalkingLevel);
+  void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool giveLevel=true);
 
 private:
   Player *player;

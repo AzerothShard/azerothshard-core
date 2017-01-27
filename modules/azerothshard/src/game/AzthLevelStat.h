@@ -1,15 +1,14 @@
+#ifndef AZTH_LEVEL_STATS_H
+#define	AZTH_LEVEL_STATS_H
+
 #include "Common.h"
 #include "Define.h"
 #include "Config.h"
 
 enum aura_timewalking_enum
 {
-    TIMEWALKING_AURA_MOD_AGILITY = 909090,
-    TIMEWALKING_AURA_MOD_INTELLECT = 909091,
-    TIMEWALKING_AURA_MOD_SPIRIT = 909092,
-    TIMEWALKING_AURA_MOD_STAMINA = 909093,
-    TIMEWALKING_AURA_MOD_STRENGTH = 909094,
-    TIMEWALKING_AURA_MOD_POWERCOST = 909095,
+    TIMEWALKING_AURA_MOD_HEALING = 909092,
+    TIMEWALKING_AURA_MOD_DAMAGESPELL = 909093,
     TIMEWALKING_AURA_VISIBLE = 909096
 };
 
@@ -26,7 +25,8 @@ public:
     uint32 GetStaPct() const;
     uint32 GetIntPct() const;
     uint32 GetSpiPct() const;
-    uint32 GetPowerCost() const;
+    uint32 GetDamPct() const;
+    uint32 GetHealPct() const;
 
     map<uint32, AzthLevelStat> GetLevelStatList() const;
 
@@ -40,12 +40,14 @@ public:
     void SetStaPct(uint32 stamina);
     void SetIntPct(uint32 intellect);
     void SetSpiPct(uint32 spirit);
-    void SetPowerCost(uint32 powerCost);
+    void SetDamPct(uint32 damage);
+    void SetHealPct(uint32 heal);
+
 
     void SetLevelStatList(map<uint32, AzthLevelStat> levelStatList);
 
     AzthLevelStat();
-    AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 powerCost);
+    AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 damage, uint32 heal);
 
 
 private:
@@ -57,8 +59,11 @@ private:
     uint32 stamina;
     uint32 intellect;
     uint32 spirit;
-    uint32 powerCost;
+    uint32 damage;
+    uint32 heal;
     map<uint32, AzthLevelStat> levelStatList;
 };
 
 #define sAzthLevelStat ACE_Singleton<AzthLevelStat, ACE_Null_Mutex>::instance()
+
+#endif AZTH_LEVEL_STATS_H

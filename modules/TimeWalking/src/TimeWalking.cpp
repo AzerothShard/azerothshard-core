@@ -8,9 +8,7 @@
 #include "Creature.h"
 #include "AzthPlayer.h"
 #include "AzthLevelStat.h"
-#include "SpellAuras.h"
-#include "SpellAuraEffects.h"
-#include "SpellMgr.h"
+#include "m_ctype.h"
 
 std::map<uint32, raid> raidList;
 std::map<uint32, AzthLevelStat> timeWalkingLevelsStatsList;
@@ -47,7 +45,7 @@ public:
     
         
         
-        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,race,class,strength_pct,agility_pct,stamina_pct,intellect_pct,spirit_pct,power_cost FROM timewalking_levels ORDER BY level;");
+        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,race,class,strength_pct,agility_pct,stamina_pct,intellect_pct,spirit_pct,damage_pct,heal_pct FROM timewalking_levels ORDER BY level;");
         if (!timewalkingLevel_table)
         {
             sLog->outString(">> Loaded 0 levels for TimeWalking. DB table `timewalking_levels` is empty.\n");
@@ -59,7 +57,7 @@ public:
 
         do
         {
-            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()*10000+timeWalkingLevel_Field[1].GetUInt32()*100+timeWalkingLevel_Field[2].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32());
+            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()*10000+timeWalkingLevel_Field[1].GetUInt32()*100+timeWalkingLevel_Field[2].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[9].GetUInt32());
         } while (timewalkingLevel_table->NextRow());
 
         sAzthLevelStat->SetLevelStatList(timeWalkingLevelsStatsList);
@@ -73,18 +71,24 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        player->ADD_GOSSIP_ITEM(0, "Raid con bonus", GOSSIP_SENDER_MAIN, 4);
-        player->ADD_GOSSIP_ITEM(0, "Raid standard", GOSSIP_SENDER_MAIN, 5);
-        player->ADD_GOSSIP_ITEM_EXTENDED(0, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
-        player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
+        if (player->getLevel() >= 80) {
+            player->ADD_GOSSIP_ITEM(0, "Raid con bonus", GOSSIP_SENDER_MAIN, 4);
+            player->ADD_GOSSIP_ITEM(0, "Raid standard", GOSSIP_SENDER_MAIN, 5);
+            player->ADD_GOSSIP_ITEM_EXTENDED(0, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
+        }
+
+        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
+            player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
+
         player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_MAIN, creature->GetGUID());
+
         return true;
     }
     
     bool _is_number(const std::string& s)
     {
         return !s.empty() && std::find_if(s.begin(), 
-            s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+            s.end(), [](char c) { return !isdigit(c); }) == s.end();
     }
 
     bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code)
@@ -99,6 +103,7 @@ public:
                 return false;
             }
 
+            player->RemoveAllAuras();
             player->azthPlayer->SetTimeWalkingLevel(level);
             player->PlayerTalkClass->SendCloseGossip();
         }
@@ -182,6 +187,7 @@ public:
             uint32 level = action - 10000;
             if (player->azthPlayer->GetTimeWalkingLevel() == NULL)
             {
+                player->RemoveAllAuras();
                 player->azthPlayer->SetTimeWalkingLevel(level);
                 player->PlayerTalkClass->SendCloseGossip();
             }
@@ -193,32 +199,12 @@ public:
         
         else if (action == 7)
         {
+            player->RemoveAllAuras();
             player->azthPlayer->SetTimeWalkingLevel(NULL);
             player->PlayerTalkClass->SendCloseGossip();
         }
 
         return true;
-    }
-};
-
-
-class modAttackMelleeStats : public UnitScript
-{
-public:
-    modAttackMelleeStats() : UnitScript("modAttackMelleeStats") {}
-    void OnBeforeRollMeleeOutcomeAgainst(const Unit* attacker, const Unit* victim, WeaponAttackType attType, int32 &attackerMaxSkillValueForLevel, int32 &victimMaxSkillValueForLevel, int32 &attackerWeaponSkill, int32 &victimDefenseSkill, int32 &crit_chance, int32 &miss_chance, int32 &dodge_chance, int32 &parry_chance, int32 &block_chance)
-    {
-        if (victim->isType(TYPEMASK_PLAYER))
-        {
-            if (victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel() != NULL)
-            {
-                miss_chance = (attacker->MeleeSpellMissChance(victim, attType, int32(attacker->GetWeaponSkillValue(attType, victim)) - int32(victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel() * 5), 0))*100;
-                attackerMaxSkillValueForLevel = attacker->GetMaxSkillValueForLevel(attacker);
-                victimMaxSkillValueForLevel = victim->ToPlayer()->azthPlayer->GetTimeWalkingLevel() * 5; 
-                /*attackerWeaponSkill = 0;
-                victimDefenseSkill = victim->ToPlayer()->GetMaxSkillValue(SKILL_DEFENSE) + uint32(victim->ToPlayer()->GetRatingBonusValue(CR_DEFENSE_SKILL));*/
-            }
-        }
     }
 };
 
@@ -228,76 +214,14 @@ public:
     timeWalkingPlayer() : PlayerScript("timeWalkingPlayer") {}
     void OnLogin(Player* player) 
     {
-        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("SELECT id,level FROM timewalking_characters_active WHERE id = %d;"), player->GetGUID());
-        //clean player to avoid problems
-        player->azthPlayer->SetTimeWalkingLevel(NULL);
-        if (timewalkingCharactersActive_table) //if is in timewalking mode apply debuff
-        {
-            Field* timewalkingCharactersActive_field = timewalkingCharactersActive_table->Fetch();
-
-            player->azthPlayer->SetTimeWalkingLevel(timewalkingCharactersActive_field[1].GetUInt32());
-        }
+        // nothing for now
     }
     
-
-
     void OnBeforeInitTalentForLevel(Player* player, uint8& level, uint32& talentPointsForLevel)
     {
         if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
         {
             talentPointsForLevel = 71;
-        }
-    }
-
-    void OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
-    {
-        uint32 timeWalkingLevel = player->azthPlayer->GetTimeWalkingLevel();
-        if (timeWalkingLevel != NULL)
-        {
-            if (power == POWER_MANA)
-            {
-                PlayerClassLevelInfo classInfo;
-                sObjectMgr->GetPlayerClassLevelInfo(player->getClass(), timeWalkingLevel, &classInfo);
-
-                uint32 baseMana = classInfo.basemana;
-                
-                float intellect = player->GetStat(STAT_INTELLECT);
-                
-                float baseInt = intellect < 20 ? intellect : 20;
-                float moreInt = intellect - baseInt;
-
-                uint32 manaBonus = baseInt + (moreInt*15.0f);
-
-                value = baseMana + manaBonus;
-            }
-        }
-    }
-
-    void OnAfterUpdateMaxHealth(Player* player, float& value)
-    {
-        uint32 timeWalkingLevel = player->azthPlayer->GetTimeWalkingLevel();
-        if (timeWalkingLevel != NULL)
-        {
-            PlayerClassLevelInfo classInfo;
-            sObjectMgr->GetPlayerClassLevelInfo(player->getClass(), timeWalkingLevel, &classInfo);
-            
-            uint32 baseHp = classInfo.basehealth;
-            
-            float stamina = player->GetStat(STAT_STAMINA);
-
-            float baseStam = stamina < 20 ? stamina : 20;
-            float moreStam = stamina - baseStam;
-
-            uint32 hpBonus = baseStam + (moreStam*10.0f);
-            value = baseHp + hpBonus;
-        }
-    }
-
-    void OnBeforeUpdateAttackPowerAndDamage(Player* player, float& level, float& base_attPower, float& attPowerMod, float& attPowerMultiplier, bool ranged)
-    {
-        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
-        {
-            level = player->azthPlayer->GetTimeWalkingLevel();
         }
     }
 };
@@ -307,5 +231,4 @@ void AddSC_TimeWalking()
     new loadTimeWalkingRaid();
     new TimeWalkingGossip();
     new timeWalkingPlayer();
-    new modAttackMelleeStats();
 }

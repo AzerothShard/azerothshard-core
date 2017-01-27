@@ -16,6 +16,8 @@
 #include "ObjectAccessor.h"
 #include "SpellInfo.h"
 #include "AzthSmartStone.h"
+#include "AzthPlayer.h"
+#include "AzthUtils.h"
 
 void WorldSession::HandleSplitItemOpcode(WorldPacket & recvData)
 {
@@ -466,7 +468,16 @@ void WorldSession::HandleItemQuerySingleOpcode(WorldPacket & recvData)
      queryData << pProto->AllowableClass;
      queryData << pProto->AllowableRace;
      queryData << pProto->ItemLevel;
-     queryData << pProto->RequiredLevel;
+
+     //[AZTH] an item that requires level 80
+     // will be visualized as an item that requires level 1 ( for heirloom purpose )
+     // but if you are not a timewalker you can't equip it with lvl < 80
+     //if (pProto->RequiredLevel >= 80 && pProto->InventoryType > 0)
+     //    queryData << 1;
+     //else
+         queryData << pProto->RequiredLevel;
+     // [/AZTH]
+
      queryData << pProto->RequiredSkill;
      queryData << pProto->RequiredSkillRank;
      queryData << pProto->RequiredSpell;
@@ -483,8 +494,17 @@ void WorldSession::HandleItemQuerySingleOpcode(WorldPacket & recvData)
          queryData << pProto->ItemStat[i].ItemStatType;
          queryData << pProto->ItemStat[i].ItemStatValue;
      }
-     queryData << pProto->ScalingStatDistribution;            // scaling stats distribution
-     queryData << pProto->ScalingStatValue;                   // some kind of flags used to determine stat values column
+
+     // [AZTH] 
+     /*if (pProto->RequiredLevel >= 80 && pProto->InventoryType > 0) {
+         queryData << pProto->ItemId+1000;                           // scaling stats
+         queryData << sAzthUtils->calculateItemScalingValue(pProto); // Scaling value
+     }
+     else {*/
+         queryData << pProto->ScalingStatDistribution;            // scaling stats distribution
+         queryData << pProto->ScalingStatValue;                   // some kind of flags used to determine stat values column
+     //}
+
      for (int i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
      {
          queryData << pProto->Damage[i].DamageMin;

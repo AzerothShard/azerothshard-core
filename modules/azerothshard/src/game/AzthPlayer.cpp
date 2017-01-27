@@ -9,68 +9,53 @@
 #include "AzthLevelStat.h"
 
 //[TIMEWALKING]
+
+void AzthPlayer::loadTimeWalkingFromDB() {
+    QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("SELECT id,level FROM timewalking_characters_active WHERE id = %d;"), player->GetGUID());
+    //clean player to avoid problems
+    //player->azthPlayer->SetTimeWalkingLevel(NULL);
+    if (timewalkingCharactersActive_table) //if is in timewalking mode apply debuff
+    {
+        Field* timewalkingCharactersActive_field = timewalkingCharactersActive_table->Fetch();
+
+        player->azthPlayer->SetTimeWalkingLevel(timewalkingCharactersActive_field[1].GetUInt32());
+    }
+}
+
 uint32 AzthPlayer::GetTimeWalkingLevel() const
 {
     return timeWalkingLevel;
 }
 
-void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel)
+void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
 {
     timeWalkingLevel = itsTimeWalkingLevel;
+
+    if (!giveLevel)
+        return;
+ 
     Player* player = this->player;
-    map<uint32, AzthLevelStat> levelStatList = sAzthLevelStat->GetLevelStatList();
-    AzthLevelStat stats;
-
-    uint32 race = player->getRace();
-    uint32 Class = player->getClass();
-    for (std::map<uint32, AzthLevelStat>::iterator it = levelStatList.begin(); it != levelStatList.end(); it++)
-    {
-        if (it->second.GetRace() == race && it->second.GetClass() == Class)
-        {
-            if (it->second.GetLevel() == itsTimeWalkingLevel)
-            {
-                stats = it->second;
-            }
-        }
-    }
-
     //apply debuf/buff section (spell) and enable timewalking mode
     if (itsTimeWalkingLevel != NULL)
     {
-        PlayerLevelInfo info;
-        sObjectMgr->GetPlayerLevelInfo(player->getRace(true), player->getClass(), 80, &info);
+        AzthLevelStat stats = sAzthLevelStat->GetLevelStatList()[player->getLevel() * 10000 + player->getRace() * 100 + player->getClass()];
 
-        uint32 staminaDebuffCount = (uint32)((info.stats[STAT_STAMINA] * stats.GetStaPct()) / 100);
         
-        uint32 strengthDebuffCount = (uint32)((info.stats[STAT_STRENGTH]  * stats.GetStrPct()) / 100);
-
-        uint32 agilityDebuffCount = (uint32)((info.stats[STAT_AGILITY]  * stats.GetAgiPct()) / 100);
-
-        uint32 intellectDebuffCount = (uint32)((info.stats[STAT_INTELLECT] * stats.GetIntPct()) / 100);
-
-        uint32 spiritDebuffCount = (uint32)((info.stats[STAT_SPIRIT] * stats.GetSpiPct()) / 100);
-
-
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_STAMINA, player, staminaDebuffCount);
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_STRENGTH, player, strengthDebuffCount);
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_AGILITY, player, agilityDebuffCount);
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_INTELLECT, player, intellectDebuffCount);
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_SPIRIT, player, spiritDebuffCount);
-        player->SetAuraStack(TIMEWALKING_AURA_MOD_POWERCOST, player, stats.GetPowerCost());
+        //->GiveLevel(timeWalkingLevel);
+        player->GiveLevel(timeWalkingLevel);
+        player->SetUInt32Value(PLAYER_XP, 0);
+        player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_HEALING, player, stats.GetHealPct());
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_DAMAGESPELL, player, stats.GetDamPct());
         player->AddAura(TIMEWALKING_AURA_VISIBLE, player);
-
         QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("INSERT IGNORE INTO timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
     }
     else
     {
-        player->RemoveAura(TIMEWALKING_AURA_MOD_STRENGTH);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_AGILITY);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_INTELLECT);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_SPIRIT);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_POWERCOST);
-        player->RemoveAura(TIMEWALKING_AURA_MOD_STAMINA);
-        player->RemoveAura(TIMEWALKING_AURA_VISIBLE);
 
+        player->GiveLevel(80);
+        player->SetUInt32Value(PLAYER_XP, 0);
+        player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
         QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());
     }
 

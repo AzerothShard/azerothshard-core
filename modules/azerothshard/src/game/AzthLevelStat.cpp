@@ -10,10 +10,11 @@ AzthLevelStat::AzthLevelStat()
     stamina = uint32(0);
     intellect = uint32(0);
     spirit = uint32(0);
-    powerCost = uint32(0);
+    damage = uint32(0);
+    heal = uint32(0);
 }
 
-AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 powerCost)
+AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 damage, uint32 heal)
 {
     this->level = level;
     this->race = race;
@@ -23,7 +24,8 @@ AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 str
     this->stamina = stamina;
     this->intellect = intellect;
     this->spirit = spirit;
-    this->powerCost = powerCost;
+    this->damage = damage;
+    this->heal = heal;
 }
 
 map<uint32, AzthLevelStat> AzthLevelStat::GetLevelStatList() const
@@ -116,12 +118,22 @@ void AzthLevelStat::SetSpiPct(uint32 spirit)
     this->spirit = spirit;
 }
 
-uint32 AzthLevelStat::GetPowerCost() const
+uint32 AzthLevelStat::GetDamPct() const
 {
-    return powerCost;
+    return damage;
 }
 
-void AzthLevelStat::SetPowerCost(uint32 powerCost)
+void AzthLevelStat::SetDamPct(uint32 damage)
 {
-    this->powerCost = powerCost;
+    this->damage = damage;
+}
+
+uint32 AzthLevelStat::GetHealPct() const
+{
+    return damage;
+}
+
+void AzthLevelStat::SetHealPct(uint32 heal)
+{
+    this->heal = heal;
 }
