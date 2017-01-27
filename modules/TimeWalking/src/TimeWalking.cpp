@@ -8,7 +8,6 @@
 #include "Creature.h"
 #include "AzthPlayer.h"
 #include "AzthLevelStat.h"
-#include "m_ctype.h"
 #include "AzthUtils.h"
 
 std::map<uint32, raid> raidList;
