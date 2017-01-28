@@ -13,7 +13,7 @@ class Player;
 class SmartStone;
 
 class AzthPlayer {
-    uint32 timeWalkingLevel = NULL;
+    uint32 timeWalkingLevel = 0;
 public:
   explicit AzthPlayer(Player *origin);
   ~AzthPlayer();

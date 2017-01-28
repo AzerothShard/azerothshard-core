@@ -38,7 +38,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
  
     Player* player = this->player;
     //apply debuf/buff section (spell) and enable timewalking mode
-    if (itsTimeWalkingLevel != NULL)
+    if (itsTimeWalkingLevel > 0)
     {
         AzthLevelStat stats = sAzthLevelStat->GetLevelStatList()[timeWalkingLevel * 10000 + player->getRace() * 100 + player->getClass()];
 
