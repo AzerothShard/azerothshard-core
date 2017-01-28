@@ -8396,7 +8396,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
         if (proto->RequiredLevel > this->getLevel()) {
             return;
         }
-    } else if (azthPlayer->GetTimeWalkingLevel() != NULL) {
+    } else if (azthPlayer->GetTimeWalkingLevel() > 0) {
         return;
     }
 
@@ -12306,7 +12306,7 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
 
         //[AZTH] if you are a timewalker you can equip all items
         // because you are an 80 with "fake low level"
-        if (azthPlayer->GetTimeWalkingLevel() == NULL) {
+        if (azthPlayer->GetTimeWalkingLevel() == 0) {
             if (getLevel() < proto->RequiredLevel)
                 return EQUIP_ERR_CANT_EQUIP_LEVEL_I;
         }

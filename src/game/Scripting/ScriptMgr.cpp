@@ -1545,6 +1545,7 @@ void ScriptMgr::OnAfterStoreOrEquipNewItem(Player* player, uint32 vendorslot, ui
     FOREACH_SCRIPT(PlayerScript)->OnAfterStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, pVendor, crItem, bStore);
 }
 
+
 void ScriptMgr::OnAfterUpdateMaxPower(Player* player, Powers& power, float& value)
 {
     FOREACH_SCRIPT(PlayerScript)->OnAfterUpdateMaxPower(player, power, value);
@@ -1568,6 +1569,11 @@ void ScriptMgr::OnAfterUpdateAttackPowerAndDamage(Player* player, float& level, 
 void ScriptMgr::OnBeforeInitTalentForLevel(Player* player, uint8& level, uint32& talentPointsForLevel)
 {
     FOREACH_SCRIPT(PlayerScript)->OnBeforeInitTalentForLevel(player, level, talentPointsForLevel);
+}
+
+void ScriptMgr::OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange)
+{
+    FOREACH_SCRIPT(BattlegroundScript)->OnAfterArenaRatingCalculation(bg, winnerMatchmakerChange, loserMatchmakerChange);
 }
 
 AllMapScript::AllMapScript(const char* name)

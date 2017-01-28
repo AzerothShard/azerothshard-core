@@ -1,6 +1,5 @@
 #include "ScriptMgr.h"
 #include "Unit.h"
-#include "Pet.h"
 #include "SharedDefines.h"
 #include "Player.h"
 #include "Common.h"
@@ -10,6 +9,7 @@
 #include "AzthLevelStat.h"
 #include "AzthUtils.h"
 #include "AzthAchievement.h"
+#include "Pet.h"
 
 std::map<uint32, raid> raidList;
 std::map<uint32, AzthLevelStat> timeWalkingLevelsStatsList;
@@ -102,7 +102,7 @@ public:
             player->ADD_GOSSIP_ITEM_EXTENDED(0, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
         }
 
-        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
+        if (player->azthPlayer->GetTimeWalkingLevel() > 0)
             player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
 
         player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_MAIN, creature->GetGUID());
@@ -126,11 +126,15 @@ public:
         player->azthPlayer->SetTimeWalkingLevel(level);
     }
 
-    bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code)
+    bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code) override
     {
         player->PlayerTalkClass->ClearMenus();
+        
+        if (sender != GOSSIP_SENDER_MAIN)
+            return false;
 
-        if (action == uint32(6) && _is_number(code))
+
+        if (action == 6 && _is_number(code))
         {
             int level = atoi(code);
             if (level < 0 || level > 80)
@@ -142,9 +146,10 @@ public:
             player->PlayerTalkClass->SendCloseGossip();
         }
 
+        return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action) override
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == 4)
@@ -219,7 +224,7 @@ public:
         else if (action >= 10000) //apply level
         {
             uint32 level = action - 10000;
-            if (player->azthPlayer->GetTimeWalkingLevel() == NULL)
+            if (player->azthPlayer->GetTimeWalkingLevel() == 0)
             {
                 setTimeWalking(player, level);
                 player->PlayerTalkClass->SendCloseGossip();
@@ -232,7 +237,7 @@ public:
         
         else if (action == 7)
         {
-            setTimeWalking(player, NULL);
+            setTimeWalking(player, 0);
             player->PlayerTalkClass->SendCloseGossip();
         }
 
@@ -251,7 +256,7 @@ public:
     
     void OnBeforeInitTalentForLevel(Player* player, uint8& level, uint32& talentPointsForLevel)
     {
-        if (player->azthPlayer->GetTimeWalkingLevel() != NULL)
+        if (player->azthPlayer->GetTimeWalkingLevel() > 0)
         {
             talentPointsForLevel = 71;
         }

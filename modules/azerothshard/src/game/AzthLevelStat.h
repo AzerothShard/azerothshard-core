@@ -66,4 +66,4 @@ private:
 
 #define sAzthLevelStat ACE_Singleton<AzthLevelStat, ACE_Null_Mutex>::instance()
 
-#endif AZTH_LEVEL_STATS_H
+#endif

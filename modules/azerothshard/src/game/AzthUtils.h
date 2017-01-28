@@ -28,4 +28,4 @@ public:
 
 #define sAzthUtils ACE_Singleton<AzthUtils, ACE_Null_Mutex>::instance()
 
-#endif AZTH_UTILS_H
+#endif
