@@ -9,9 +9,11 @@
 #include "AzthPlayer.h"
 #include "AzthLevelStat.h"
 #include "AzthUtils.h"
+#include "AzthAchievement.h"
 
 std::map<uint32, raid> raidList;
 std::map<uint32, AzthLevelStat> timeWalkingLevelsStatsList;
+std::map<uint32, AzthAchievement> azthAchievementList;
 
 enum npc_timewalking_enum
 {
@@ -29,6 +31,8 @@ public:
     loadTimeWalkingRaid() : WorldScript("loadTimeWalkingRaid") {}
     void OnStartup()
     {
+
+        //Loading timewalking instance
         QueryResult timewalking_table = ExtraDatabase.PQuery("SELECT id,name,exp,phase,level,bonus FROM timewalking ORDER BY exp, phase, level, name;");
         if (!timewalking_table)
         {
@@ -40,11 +44,13 @@ public:
 
         do
         {
-            raidList[timeWalking_Field[0].GetUInt32()] = raid(timeWalking_Field[0].GetUInt32(), timeWalking_Field[1].GetString(), timeWalking_Field[2].GetUInt32(), timeWalking_Field[3].GetUInt32(), timeWalking_Field[4].GetUInt32(), timeWalking_Field[5].GetUInt32());
+            raidList[timeWalking_Field[0].GetUInt32()] = raid(timeWalking_Field[0].GetUInt32(), timeWalking_Field[1].GetString(), timeWalking_Field[2].GetUInt32(), timeWalking_Field[3].GetUInt32(), timeWalking_Field[4].GetUInt32(), timeWalking_Field[5].GetUInt32(), timeWalking_Field[6].GetUInt32());
         } while (timewalking_table->NextRow());
-    
         
+        sAzthRaid->SetRaidList(raidList);
         
+        //-------------------------------------------------------------------
+        //Loading levels
         QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,race,class,strength_pct,agility_pct,stamina_pct,intellect_pct,spirit_pct,damage_pct,heal_pct FROM timewalking_levels ORDER BY level;");
         if (!timewalkingLevel_table)
         {
@@ -61,6 +67,25 @@ public:
         } while (timewalkingLevel_table->NextRow());
 
         sAzthLevelStat->SetLevelStatList(timeWalkingLevelsStatsList);
+
+        //-------------------------------------------------------------------
+        //Loading achievement
+        QueryResult azthAchievement_table = ExtraDatabase.PQuery("SELECT * FROM azth_achievements WHERE criteria != 0 ORDER BY achievement;");
+        if (!azthAchievement_table)
+        {
+            sLog->outString(">> Loaded 0 achievements for TimeWalking. DB table `azth_achievements` is empty.\n");
+            sLog->outString();
+            return;
+        }
+
+        Field* azthAchievement_field = azthAchievement_table->Fetch();
+
+        do
+        {
+            azthAchievementList[timeWalkingLevel_Field[1].GetUInt32()] = AzthAchievement(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[10].GetUInt32(), timeWalkingLevel_Field[11].GetString(), timeWalkingLevel_Field[12].GetString());
+        } while (timewalkingLevel_table->NextRow());
+
+        sAzthAchievement->SetAchievementList(azthAchievementList);
     }
 };
 

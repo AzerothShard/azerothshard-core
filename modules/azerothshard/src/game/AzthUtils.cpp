@@ -48,7 +48,7 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     if (pProto->RequiredLevel <= pl->getLevel()) // remove / apply
         return 0;
 
-    uint32 mul = 1; // should be 1 ?
+    uint32 mul = 4; // should be 1 ?
 
     // SHOULDERS
     if (pProto->InventoryType == INVTYPE_SHOULDERS) { 
