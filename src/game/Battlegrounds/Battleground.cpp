@@ -31,6 +31,7 @@
 #include "BattlegroundRL.h"
 #include "BattlegroundRV.h"
 #include "Transport.h"
+#include "ScriptMgr.h"
 
 namespace Trinity
 {
@@ -802,6 +803,8 @@ void Battleground::EndBattleground(TeamId winnerTeamId)
                 winnerMatchmakerRating = GetArenaMatchmakerRating(winnerTeamId);
                 winnerMatchmakerChange = bValidArena ? winnerArenaTeam->WonAgainst(winnerMatchmakerRating, loserMatchmakerRating, winnerChange, GetBgMap()) : 0;
                 loserMatchmakerChange = loserArenaTeam->LostAgainst(loserMatchmakerRating, winnerMatchmakerRating, loserChange, GetBgMap());
+
+                sScriptMgr->OnAfterArenaRatingCalculation(this, winnerMatchmakerChange, loserMatchmakerChange);
 
                 SetArenaMatchmakerRating(winnerTeamId, winnerMatchmakerRating + winnerMatchmakerChange);
                 SetArenaMatchmakerRating(GetOtherTeamId(winnerTeamId), loserMatchmakerRating + loserMatchmakerChange);
