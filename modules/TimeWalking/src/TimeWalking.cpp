@@ -70,7 +70,7 @@ public:
 
         //-------------------------------------------------------------------
         //Loading achievement
-        QueryResult azthAchievement_table = ExtraDatabase.PQuery("SELECT achievement,criteria,Points,category,parentCategory,difficulty,levelMax,levelMin,level,originalPoints,Name,Description FROM azth_achievements WHERE criteria != 0 ORDER BY achievement;");
+        QueryResult azthAchievement_table = ExtraDatabase.PQuery("SELECT achievement,criteria,Points,category,parentCategory,difficulty,levelMax,levelMin,level,originalPoints,Name,Description,reward,rewardCount FROM azth_achievements WHERE criteria != 0 ORDER BY achievement;");
         if (!azthAchievement_table)
         {
             sLog->outString(">> Loaded 0 achievements for TimeWalking. DB table `azth_achievements` is empty.\n");

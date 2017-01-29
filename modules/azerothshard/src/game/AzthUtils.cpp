@@ -35,6 +35,8 @@ uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
         // we could add item level check too
         return 80;
     }
+
+    return pProto->RequiredLevel;
 }
 
 float AzthUtils::getCustomMultiplier(ItemTemplate const * pProto,uint32 multiplier) {
