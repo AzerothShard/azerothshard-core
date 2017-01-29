@@ -134,7 +134,7 @@ public:
   checkItemLevel() : PlayerScript("checkItemLevel") {}
 
   //Check not compatible items
-  void checkPlayerItem(Player* player, Battleground* battleground, bool inBattleground)
+  void checkPlayerItem(Player* player, bool inBattleground)
   {
 
     if (!sASeasonMgr->IsEnabled())
@@ -166,42 +166,19 @@ public:
       }
     }
     
-    bool isArena=battleground->isArena();
-    
     if (incompatible)
     {
       if (!inBattleground)
       {
-          if (player->GetGroup() != NULL)
+          for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)
           {
-              Group *group = player->GetGroup();
-              for (Group::member_citerator mitr = group->GetMemberSlots().begin(); mitr != group->GetMemberSlots().end(); ++mitr)
+              if (BattlegroundQueueTypeId q = player->GetBattlegroundQueueTypeId(qslot))
               {
-                  uint64 guid = MAKE_NEW_GUID(mitr->guid, 0, HIGHGUID_PLAYER);
-                  Player *groupMember = ObjectAccessor::FindPlayerInOrOutOfWorld(guid);
-                  if (groupMember)
-                  {
-                      for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)
-                          if (BattlegroundQueueTypeId q = groupMember->GetBattlegroundQueueTypeId(qslot))
-                          {
-                              BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
-                              queue.RemovePlayer(groupMember->GetGUID(), (isArena == false), qslot);
-                              groupMember->RemoveBattlegroundQueueId(q);
-                          }
-                  }
-                  
+                  BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
+                  queue.RemovePlayer(player->GetGUID(), false, qslot);
+                  player->RemoveBattlegroundQueueId(q);
               }
           }
-          else
-          {
-            for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)
-                if (BattlegroundQueueTypeId q = player->GetBattlegroundQueueTypeId(qslot))
-                    {
-                        BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
-                        queue.RemovePlayer(player->GetGUID(), (isArena == false), qslot);
-                        player->RemoveBattlegroundQueueId(q);
-                    }
-           }
       }
       else
       {
@@ -216,15 +193,15 @@ public:
   }
 
   //Check if a player join (queue) battleground with not compatible items
-  void OnPlayerJoinBG(Player* player, Battleground* battleground)
+  void OnPlayerJoinBG(Player* player)
   {
-    checkPlayerItem(player, battleground, false);
+    checkPlayerItem(player, false);
   }
 
   //Check if a player join (queue) arena with not compatible items
-  void OnPlayerJoinArena(Player* player, Battleground* battleground)
+  void OnPlayerJoinArena(Player* player)
   {
-    checkPlayerItem(player, battleground, false);
+    checkPlayerItem(player, false);
   }
 
   //Check if a player is just entered in battleground/arena with not compatible items
@@ -232,8 +209,7 @@ public:
   {
     if (player->InBattleground() || player->InArena())
     {
-      Battleground* battleground = player->GetBattleground();
-      checkPlayerItem(player, battleground, true);
+      checkPlayerItem(player, true);
     }
   }
 
@@ -242,9 +218,7 @@ public:
   {
     if (player->InBattleground() || player->InArena())
     {
-      Battleground* battleground = player->GetBattleground();
-      checkPlayerItem(player, battleground, true);
-      player->AddAura(26913, player);
+      checkPlayerItem(player, true);
     }
   }
 };
