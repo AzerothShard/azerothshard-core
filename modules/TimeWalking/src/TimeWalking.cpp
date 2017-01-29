@@ -33,7 +33,7 @@ public:
     {
 
         //Loading timewalking instance
-        QueryResult timewalking_table = ExtraDatabase.PQuery("SELECT id,name,exp,phase,level,bonus FROM timewalking ORDER BY exp, phase, level, name;");
+        QueryResult timewalking_table = ExtraDatabase.PQuery("SELECT id,name,exp,phase,level,bonus,criteria FROM timewalking ORDER BY exp, phase, level, name;");
         if (!timewalking_table)
         {
             sLog->outString(">> Loaded 0 raids for TimeWalking. DB table `timewalking` is empty.\n");
@@ -70,7 +70,7 @@ public:
 
         //-------------------------------------------------------------------
         //Loading achievement
-        QueryResult azthAchievement_table = ExtraDatabase.PQuery("SELECT * FROM azth_achievements WHERE criteria != 0 ORDER BY achievement;");
+        QueryResult azthAchievement_table = ExtraDatabase.PQuery("SELECT achievement,criteria,Points,category,parentCategory,difficulty,levelMax,levelMin,level,originalPoints,Name,Description FROM azth_achievements WHERE criteria != 0 ORDER BY achievement;");
         if (!azthAchievement_table)
         {
             sLog->outString(">> Loaded 0 achievements for TimeWalking. DB table `azth_achievements` is empty.\n");
@@ -82,8 +82,14 @@ public:
 
         do
         {
-            azthAchievementList[timeWalkingLevel_Field[1].GetUInt32()] = AzthAchievement(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[10].GetUInt32(), timeWalkingLevel_Field[11].GetString(), timeWalkingLevel_Field[12].GetString());
-        } while (timewalkingLevel_table->NextRow());
+            azthAchievementList[azthAchievement_field[1].GetUInt32()] = AzthAchievement(
+                // achievement                                criteria                           Points                                 category                           parentCategory                    difficulty                        
+                azthAchievement_field[0].GetUInt32(), azthAchievement_field[1].GetUInt32(), azthAchievement_field[2].GetUInt32(), azthAchievement_field[3].GetUInt32(), azthAchievement_field[4].GetUInt32(), azthAchievement_field[5].GetUInt32(),
+                // levelMax                                 levelMin                                    level                              originalPoints                        Name                              Description
+                azthAchievement_field[6].GetUInt32(), azthAchievement_field[7].GetUInt32(), azthAchievement_field[8].GetUInt32(), azthAchievement_field[9].GetUInt32(), azthAchievement_field[10].GetString(), azthAchievement_field[11].GetString(),
+                //reward                                        rewardCount
+                azthAchievement_table[12].GetUInt32(), azthAchievement_field[13].GetUInt32());
+        } while (azthAchievement_table->NextRow());
 
         sAzthAchievement->SetAchievementList(azthAchievementList);
     }

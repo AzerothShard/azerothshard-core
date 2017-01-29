@@ -17,7 +17,7 @@ AzthAchievement::AzthAchievement()
     
 }
 
-AzthAchievement::AzthAchievement(uint32 achievement, uint32 criteria, uint32 points, uint32 category, uint32 parentCategory, uint32 difficulty, uint32 levelMax, uint32 levelMin, uint32 level, uint32 originalPoints, string name, string description)
+AzthAchievement::AzthAchievement(uint32 achievement, uint32 criteria, uint32 points, uint32 category, uint32 parentCategory, uint32 difficulty, uint32 levelMax, uint32 levelMin, uint32 level, uint32 originalPoints, string name, string description, uint32 reward, uint32 rewardCount)
 {
     this->achievement = achievement;
     this->criteria = criteria;
@@ -31,6 +31,8 @@ AzthAchievement::AzthAchievement(uint32 achievement, uint32 criteria, uint32 poi
     this->originalPoints = originalPoints;
     this->name = name;
     this->description = description;
+    this->reward = reward;
+    this->rewardCount = rewardCount;
 }
 
 map<uint32, AzthAchievement> AzthAchievement::GetAchievementList() const
@@ -101,4 +103,14 @@ string AzthAchievement::GetName() const
 string AzthAchievement::GetDescription() const
 {
     return description;
+}
+
+uint32 AzthAchievement::GetReward() const
+{
+    return reward;
+}
+
+uint32 AzthAchievement::GetRewardCount() const
+{
+    return rewardCount;
 }

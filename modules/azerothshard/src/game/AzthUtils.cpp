@@ -31,7 +31,7 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
 }
 
 float AzthUtils::getCustomMultiplier(ItemTemplate const * pProto,uint32 multiplier) {
-    if (pProto->RequiredLevel >= 80) {
+    if (pProto->RequiredLevel == 0 || pProto->RequiredLevel >= 80) {
         return multiplier;
     }
     else {
@@ -45,7 +45,7 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     if (pl == nullptr)
         return 0;
     
-    if (pProto->RequiredLevel <= pl->getLevel()) // remove / apply
+    if (pProto->RequiredLevel != 0 && pProto->RequiredLevel <= pl->getLevel()) // remove / apply
         return 0;
 
     //uint32 mul = 4; // should be 1 ?

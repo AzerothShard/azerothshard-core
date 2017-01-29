@@ -22,13 +22,15 @@ public:
     uint32 GetOriginalPoints() const;
     string GetName() const;
     string GetDescription() const;
+    uint32 GetReward() const;
+    uint32 GetRewardCount() const;
 
     map<uint32, AzthAchievement> GetAchievementList() const;
 
     void SetAchievementList(map<uint32, AzthAchievement> achievementList);
 
     AzthAchievement();
-    AzthAchievement(uint32 achievement, uint32 criteria, uint32 points, uint32 category, uint32 parentCategory, uint32 difficulty, uint32 levelMax, uint32 levelMin, uint32 level, uint32 originalPoints, string name, string description);
+    AzthAchievement(uint32 achievement, uint32 criteria, uint32 points, uint32 category, uint32 parentCategory, uint32 difficulty, uint32 levelMax, uint32 levelMin, uint32 level, uint32 originalPoints, string name, string description, uint32 reward, uint32 rewardCount);
 
 
 private:
@@ -44,6 +46,8 @@ private:
     uint32 originalPoints;
     string name;
     string description;
+    uint32 reward;
+    uint32 rewardCount;
     map<uint32, AzthAchievement> achievementList;
 };
 
