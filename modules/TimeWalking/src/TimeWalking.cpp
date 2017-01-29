@@ -88,7 +88,7 @@ public:
                 // levelMax                                 levelMin                                    level                              originalPoints                        Name                              Description
                 azthAchievement_field[6].GetUInt32(), azthAchievement_field[7].GetUInt32(), azthAchievement_field[8].GetUInt32(), azthAchievement_field[9].GetUInt32(), azthAchievement_field[10].GetString(), azthAchievement_field[11].GetString(),
                 //reward                                        rewardCount
-                azthAchievement_table[12].GetUInt32(), azthAchievement_field[13].GetUInt32());
+                azthAchievement_field[12].GetUInt32(), azthAchievement_field[13].GetUInt32());
         } while (azthAchievement_table->NextRow());
 
         sAzthAchievement->SetAchievementList(azthAchievementList);
