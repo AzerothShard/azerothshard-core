@@ -165,6 +165,9 @@ public:
         }
       }
     }
+    
+    bool isArena=battleground->isArena();
+    
     if (incompatible)
     {
       if (!inBattleground)
@@ -182,7 +185,7 @@ public:
                           if (BattlegroundQueueTypeId q = groupMember->GetBattlegroundQueueTypeId(qslot))
                           {
                               BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
-                              queue.RemovePlayer(groupMember->GetGUID(), q, qslot);
+                              queue.RemovePlayer(groupMember->GetGUID(), (isArena == false), qslot);
                               groupMember->RemoveBattlegroundQueueId(q);
                           }
                   }
@@ -195,7 +198,7 @@ public:
                 if (BattlegroundQueueTypeId q = player->GetBattlegroundQueueTypeId(qslot))
                     {
                         BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(q);
-                        queue.RemovePlayer(player->GetGUID(), q, qslot);
+                        queue.RemovePlayer(player->GetGUID(), (isArena == false), qslot);
                         player->RemoveBattlegroundQueueId(q);
                     }
            }
