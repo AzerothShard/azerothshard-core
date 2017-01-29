@@ -4,8 +4,15 @@
 #include "Common.h"
 #include "Define.h"
 
+enum npc_donationsVendor_enum
+{
+    NO_ITEM_FOUND = 50003,
+    NPC_DONATIONS_VENDOR_ID = 300206,
+};
+
 class ItemToSell
 {
+    friend class ACE_Singleton<ItemToSell, ACE_Null_Mutex>;
 public:
 	//GETTERS
 	string GetName() const;

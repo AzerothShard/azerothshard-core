@@ -1,15 +1,10 @@
 #include "ScriptMgr.h"
 #include "Player.h"
 #include "Item.h"
-#include "ItemToSell.cpp"
+#include "ItemToSell.h"
 #include "ConditionMgr.h"
 
 std::vector<ItemToSell> ItemToSellList;
-
-enum npc_donationsVendorMenu_enum
-{
-    NO_ITEM_FOUND = 50003,
-};
 
 class loadItemVendor : public WorldScript
 {

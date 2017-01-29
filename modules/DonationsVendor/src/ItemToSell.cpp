@@ -3,11 +3,6 @@
 #include "WorldSession.h"
 #include "Opcodes.h"
 
-enum npc_donationsVendor_enum
-{
-    NPC_DONATIONS_VENDOR_ID = 300206,
-};
-
 
 ItemToSell::ItemToSell()
 {
