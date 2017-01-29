@@ -7946,7 +7946,8 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
                 statType = proto->ItemStat[i].ItemStatType;
 
-                ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(proto->RequiredLevel);
+                // hack for items that don't have a required level
+                ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(sAzthUtils->getCalcReqLevel(proto));
 
                 float mulMax = sAzthUtils->getCustomMultiplier(proto, (float)maxSSV->getssdMultiplier(azthScalingStatValue));
                 uint32 modifier = ( mulMax / (float)proto->ItemStat[i].ItemStatValue) * 10000;
@@ -8393,7 +8394,8 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
     // [AZTH] Timewalking
     if (item) {
         ItemTemplate const* proto = item->GetTemplate();
-        if (proto->RequiredLevel > this->getLevel()) {
+        uint32 req=sAzthUtils->getCalcReqLevel(proto);
+        if (req > this->getLevel()) {
             return;
         }
     } else if (azthPlayer->GetTimeWalkingLevel() > 0) {
@@ -14227,7 +14229,8 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
 
     //[AZTH] Timewalking
     ItemTemplate const* proto = item->GetTemplate();
-    if (proto->RequiredLevel > this->getLevel()) {
+    uint32 req=sAzthUtils->getCalcReqLevel(proto);
+    if (req > this->getLevel()) {
         return;
     }
 

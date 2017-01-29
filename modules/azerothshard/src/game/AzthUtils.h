@@ -23,6 +23,8 @@ public:
 
     float getCustomMultiplier(ItemTemplate const * pProto, uint32 multiplier);
 
+    uint32 getCalcReqLevel(ItemTemplate const* pProto);
+
     uint32 calculateItemScalingValue(ItemTemplate const* pProto,Player *pl = NULL);
 };
 
