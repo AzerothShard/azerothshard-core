@@ -19,6 +19,7 @@ modules/drassil/joiner
 !modules/DonationsVendor
 !modules/TimeWalking
 !modules/TournamentSet
+!modules/npc_solo3v3
 
 build*/
 
