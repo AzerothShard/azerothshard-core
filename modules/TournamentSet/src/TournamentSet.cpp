@@ -6,7 +6,6 @@
 #include "AzthPlayer.h"
 #include "AzthGearScaling.h"
 #include "AzthGearScalingSocket.h"
-#include "Pet.h"
 
 std::map<uint32, AzthGearScaling> tournamentTempGearList;
 std::map<uint32, AzthGearScalingSocket> tournamentTempGearSocketList;
@@ -62,16 +61,18 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        if (!player->azthPlayer->hasGear())
-        {
-            string str = "Gli item attualmente equippati saranno mandati alla mail, vuoi proseguire?";
-            player->ADD_GOSSIP_ITEM_EXTENDED(0, "Deadly", GOSSIP_SENDER_MAIN, 5, str, 0, false);
-            player->ADD_GOSSIP_ITEM_EXTENDED(0, "Furious", GOSSIP_SENDER_MAIN, 6, str, 0, false);
-            player->ADD_GOSSIP_ITEM_EXTENDED(0, "Relentless", GOSSIP_SENDER_MAIN, 7, str, 0, false);
-            //player->ADD_GOSSIP_ITEM_EXTENDED(0, "Wrathful", GOSSIP_SENDER_MAIN, 8, str.c_str(), 0, false);
+        if (player->getLevel()>=80) {
+            if (!player->azthPlayer->hasGear())
+            {
+                string str = "Gli item attualmente equippati saranno mandati alla mail, vuoi proseguire?";
+                player->ADD_GOSSIP_ITEM_EXTENDED(0, "Deadly", GOSSIP_SENDER_MAIN, 5, str, 0, false);
+                player->ADD_GOSSIP_ITEM_EXTENDED(0, "Furious", GOSSIP_SENDER_MAIN, 6, str, 0, false);
+                player->ADD_GOSSIP_ITEM_EXTENDED(0, "Relentless", GOSSIP_SENDER_MAIN, 7, str, 0, false);
+                //player->ADD_GOSSIP_ITEM_EXTENDED(0, "Wrathful", GOSSIP_SENDER_MAIN, 8, str.c_str(), 0, false);
+            }
+            else
+                player->ADD_GOSSIP_ITEM(0, "Rimuovi il set PVP", GOSSIP_SENDER_MAIN, 9);
         }
-        else
-            player->ADD_GOSSIP_ITEM(0, "Rimuovi il set PVP", GOSSIP_SENDER_MAIN, 9);
 
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
         return true;
@@ -85,11 +86,11 @@ public:
         if (action >= 10000) //spec selected -> equip new gear
         {
             uint32 season = action / 10000;
-            uint32 spec = action - (season * 10000);
+            uint32 spec = action - (season * 10000) - (player->getClass()*100);
             AzthGearScaling set = sAzthGearScaling->GetGearScalingList()[action];
             equipSet(set, player);
-            player->azthPlayer->SetTempGear(TRUE);
-            QueryResult PVPSetCharactersActive_table = ExtraDatabase.PQuery(("INSERT IGNORE INTO tournamentSet_characters_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
+            player->azthPlayer->SetTempGear(true);
+            QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_tournamentset_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
             player->SaveToDB(false, false);
             player->PlayerTalkClass->SendCloseGossip();
         }
@@ -105,10 +106,10 @@ public:
                     player->DestroyItem(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                 }
             }
-            player->azthPlayer->SetTempGear(FALSE);
-            QueryResult PVPSetCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM tournamentSet_characters_active WHERE  `id`=%d;"), player->GetGUID());
+            player->azthPlayer->SetTempGear(false);
+            QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_tournamentset_active WHERE  `id`=%d;"), player->GetGUID());
             player->SaveToDB(false, false);
-            ChatHandler(player->GetSession()).PSendSysMessage("Hai tolto il set PVP, i tuoi precedenti item sono nella mail");
+            ChatHandler(player->GetSession()).PSendSysMessage("Il set pvp tournament e' stato rimosso");
             player->PlayerTalkClass->SendCloseGossip();
         }
 
@@ -138,6 +139,7 @@ public:
         //remove equipped items and send to mail
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         MailDraft* draft = new MailDraft("Item rimossi", "");
+        bool hasItems=false;
         for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX < INVENTORY_END; INVENTORY_INDEX++)
         {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
@@ -147,10 +149,14 @@ public:
                 item->DeleteFromInventoryDB(trans);                   // deletes item from character's inventory
                 item->SaveToDB(trans);
                 draft->AddItem(item);
-
+                hasItems=true;
             }
         }
-        draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+        if (hasItems)
+            draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+        
+        delete draft;
+
         CharacterDatabase.CommitTransaction(trans);
 
 
@@ -323,17 +329,17 @@ class tournamentPlayer : public PlayerScript
 {
 public:
     tournamentPlayer() : PlayerScript("tournamentPlayer") {}
-    void onLogin(Player* player)
+    void OnLogin(Player* player) override
     {
-        QueryResult PVPSetCharactersActive_table = ExtraDatabase.PQuery(("SELECT id,season,spec FROM tournamentSet_characters_active WHERE id = %d;"), player->GetGUID());
+        QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("SELECT id,season,spec FROM azth_tournamentset_active WHERE id = %d;"), player->GetGUID());
 
         if (PVPSetCharactersActive_table)
-            player->azthPlayer->SetTempGear(TRUE);
+            player->azthPlayer->SetTempGear(true);
     }
 
-    void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea)
+    void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override
     {
-        if (!player->InBattleground() || !player->InArena())
+        if (!player->IsGameMaster() && (!player->InBattleground() || !player->InArena()))
         {
             if (player->azthPlayer->hasGear())
             {
@@ -346,10 +352,11 @@ public:
                         player->DestroyItem(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                     }
                 }
-                player->azthPlayer->SetTempGear(FALSE);
-                QueryResult PVPSetCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM tournamentSet_characters_active WHERE  `id`=%d;"), player->GetGUID());
+                player->azthPlayer->SetTempGear(false);
+                QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_tournamentset_active WHERE  `id`=%d;"), player->GetGUID());
                 player->SaveToDB(false, false);
-                ChatHandler(player->GetSession()).PSendSysMessage("Il tuo set PVP è stato rimosso, non puoi cambiare zona con un set temporaneo! I tuoi precedenti item sono nella mail");
+                ChatHandler(player->GetSession()).PSendSysMessage("Il tuo set PVP e' stato rimosso, non puoi cambiare zona con un set temporaneo!");
+                // teleport to dalaran
                 WorldLocation loc = WorldLocation(571, 5804.15f, 624.771f, 647.767f, 1.64f);
                 player->TeleportTo(loc);
             }
