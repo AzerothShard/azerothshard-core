@@ -1,6 +1,6 @@
 #include "raid.h"
 
-raid::raid()
+TwRaid::TwRaid()
 {
 	id = uint32(0);
 	name = string("");
@@ -11,7 +11,7 @@ raid::raid()
     criteria = uint32(0);
 }
 
-raid::raid(uint32 ItsId, string ItsName, uint32 ItsExp, uint32 ItsPhase, uint32 ItsLevel, uint32 ItsBonus, uint32 ItsCriteria)
+TwRaid::TwRaid(uint32 ItsId, string ItsName, uint32 ItsExp, uint32 ItsPhase, uint32 ItsLevel, uint32 ItsBonus, uint32 ItsCriteria)
 {
 	id = ItsId;
 	name = ItsName;
@@ -22,82 +22,87 @@ raid::raid(uint32 ItsId, string ItsName, uint32 ItsExp, uint32 ItsPhase, uint32 
     criteria = ItsCriteria;
 }
 
-map<uint32, raid> raid::GetRaidList() const
+map<uint32, TwRaid> TwRaid::GetRaidList() const
 {
     return raidList;
 }
 
-void raid::SetRaidList(map<uint32, raid> raidList)
+void TwRaid::SetRaidList(map<uint32, TwRaid> raidList)
 {
     this->raidList = raidList;
 }
 
-uint32 raid::GetId() const
+uint32 TwRaid::GetId() const
 {
 	return id;
 }
 
-void raid::SetId(uint32 ItsId)
+void TwRaid::SetId(uint32 ItsId)
 {
 	id = ItsId;
 }
 
-string raid::GetName() const
+string TwRaid::GetName() const
 {
 	return name;
 }
 
-void raid::SetName(string ItsName)
+void TwRaid::SetName(string ItsName)
 {
 	name = ItsName;
 }
 
-uint32 raid::GetExp() const
+uint32 TwRaid::GetExp() const
 {
     return exp;
 }
 
-void raid::SetExp(uint32 ItsExp)
+void TwRaid::SetExp(uint32 ItsExp)
 {
     exp = ItsExp;
 }
 
-uint32 raid::GetPhase() const
+uint32 TwRaid::GetPhase() const
 {
 	return phase;
 }
 
-void raid::SetPhase(uint32 ItsPhase)
+void TwRaid::SetPhase(uint32 ItsPhase)
 {
 	phase = ItsPhase;
 }
 
-uint32 raid::GetLevel() const
+uint32 TwRaid::GetLevel() const
 {
     return level;
 }
 
-void raid::SetLevel(uint32 ItsLevel)
+void TwRaid::SetLevel(uint32 ItsLevel)
 {
     level = ItsLevel;
 }
 
-uint32 raid::GetBonus() const
+uint32 TwRaid::GetBonus() const
 {
     return bonus;
 }
 
-void raid::SetBonus(uint32 ItsBonus)
+uint32 TwRaid::hasBonus() const
+{
+    return bonus == 1;
+}
+
+void TwRaid::SetBonus(uint32 ItsBonus)
 {
     bonus = ItsBonus;
 }
 
-uint32 raid::GetCriteria() const
+uint32 TwRaid::GetCriteria() const
 {
     return criteria;
 }
 
-void raid::SetCriteria(uint32 ItsCriteria)
+void TwRaid::SetCriteria(uint32 ItsCriteria)
 {
     criteria = ItsCriteria;
 }

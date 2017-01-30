@@ -11,7 +11,8 @@
 #include "AzthAchievement.h"
 #include "Pet.h"
 
-std::map<uint32, raid> raidList;
+typedef std::map<uint32, TwRaid> RaidList;
+RaidList raidList;
 std::map<uint32, AzthLevelStat> timeWalkingLevelsStatsList;
 std::map<uint32, AzthAchievement> azthAchievementList;
 
@@ -44,7 +45,7 @@ public:
 
         do
         {
-            raidList[timeWalking_Field[0].GetUInt32()] = raid(timeWalking_Field[0].GetUInt32(), timeWalking_Field[1].GetString(), timeWalking_Field[2].GetUInt32(), timeWalking_Field[3].GetUInt32(), timeWalking_Field[4].GetUInt32(), timeWalking_Field[5].GetUInt32(), timeWalking_Field[6].GetUInt32());
+            raidList[timeWalking_Field[0].GetUInt32()] = TwRaid(timeWalking_Field[0].GetUInt32(), timeWalking_Field[1].GetString(), timeWalking_Field[2].GetUInt32(), timeWalking_Field[3].GetUInt32(), timeWalking_Field[4].GetUInt32(), timeWalking_Field[5].GetUInt32(), timeWalking_Field[6].GetUInt32());
         } while (timewalking_table->NextRow());
         
         sAzthRaid->SetRaidList(raidList);
@@ -160,7 +161,7 @@ public:
         player->PlayerTalkClass->ClearMenus();
         if (action == 4)
         {
-            for (std::map<uint32, raid>::iterator it = raidList.begin(); it != raidList.end(); it++)
+            for (std::map<uint32, TwRaid>::iterator it = raidList.begin(); it != raidList.end(); it++)
             {
                 if (it->second.GetBonus() == 1)
                 {
@@ -174,7 +175,7 @@ public:
         {
             std::vector<uint32> expList;
 
-            for (std::map<uint32, raid>::iterator it = raidList.begin(); it != raidList.end(); it++)
+            for (std::map<uint32, TwRaid>::iterator it = raidList.begin(); it != raidList.end(); it++)
             {
                 string exp;
                 if (it->second.GetExp() == 1)
@@ -202,7 +203,7 @@ public:
         {
             std::vector<uint32> phaseList;
 
-            for (std::map<uint32, raid>::iterator it = raidList.begin(); it != raidList.end(); it++)
+            for (std::map<uint32, TwRaid>::iterator it = raidList.begin(); it != raidList.end(); it++)
             {
                 if (it->second.GetExp() == action)
                 {
@@ -218,7 +219,7 @@ public:
         }
         else if(action >= 1000 && action < 10000) //generate raid menu
         {
-            for (std::map<uint32, raid>::iterator it = raidList.begin(); it != raidList.end(); it++)
+            for (std::map<uint32, TwRaid>::iterator it = raidList.begin(); it != raidList.end(); it++)
             {
                 if (it->second.GetPhase() == action - 1000)
                 {
@@ -255,10 +256,64 @@ class timeWalkingPlayer : public PlayerScript
 {
 public:
     timeWalkingPlayer() : PlayerScript("timeWalkingPlayer") {}
-    void OnLogin(Player* player) 
+
+    void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria)
     {
-        // nothing for now
+        AzthAchievement achi = sAzthAchievement->GetAchievementList()[criteria->ID];
+
+        uint32 count = achi.GetRewardCount();
+        uint32 reward = achi.GetReward();
+
+        if (!reward || !count)
+            return;
+
+        uint32 level = player->azthPlayer->getGroupLevel() > 0 ? player->azthPlayer->getGroupLevel() : player->getLevel();
+
+        if (achi.GetLevelMin() <= level && achi.GetLevelMax() >= level) {
+            ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(reward);
+            if (!_proto)
+                return;
+
+
+            bool hasBonus = false;
+            RaidList rList = sAzthRaid->GetRaidList();
+            for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
+                if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
+                    hasBonus = true;
+                    break;
+                }
+            }
+
+            if (level <= achi.GetLevel())
+                count *= 2;
+
+            if (hasBonus)
+                count *= 3;
+
+            if (_proto->IsCurrencyToken())
+                player->AddItem(reward, count);
+            else {
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                MailDraft* draft = new MailDraft(_proto->Name1, "");
+                
+                for (uint32 i = 0; i < count; i++)
+                {
+                    Item *item = NewItemOrBag(_proto);
+                    if (!item->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), _proto->ItemId, player)) {
+                        delete item;
+                        return;
+                    }
+                    draft->AddItem(item);
+                }
+
+                draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+                CharacterDatabase.CommitTransaction(trans);
+                ChatHandler(player->GetSession()).PSendSysMessage("Complimenti! |cffff0000  %s x%d|r ti è stato inviato via mail", _proto->Name1.c_str(), count);
+            }
+        }
+
     }
+
     
     void OnBeforeInitTalentForLevel(Player* player, uint8& level, uint32& talentPointsForLevel)
     {
