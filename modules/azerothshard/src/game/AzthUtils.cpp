@@ -31,8 +31,35 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
 }
 
 uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
-    if (pProto->RequiredLevel == 0) {
-        // we could add item level check too
+    if (pProto->RequiredLevel <= 1 && pProto->ItemLevel >= 6) { // zones >= lvl 5 
+        // classic rare and lower
+        if (pProto->ItemLevel <= 60)
+            return pProto->ItemLevel;
+        
+        // classic epic
+        if (pProto->ItemLevel > 60 && pProto->ItemLevel <= pProto->ItemLevel <= 92 && pProto->Quality >= ITEM_QUALITY_EPIC) {
+            return 60;
+        }
+        
+        // tbc low level items
+        if (pProto->ItemLevel > 81 && pProto->ItemLevel <= pProto->ItemLevel <= 92) {
+            return 60;
+        }
+        
+        // tbc rare and lower
+        if (pProto->ItemLevel > 92 && pProto->ItemLevel <= pProto->ItemLevel <= 115) {
+            return ((pProto->ItemLevel) - 92 / 2 ) +1;
+        }
+            
+        // tbc epic
+        if (pProto->ItemLevel > 115 && pProto->ItemLevel <= pProto->ItemLevel <= 164 && pProto->Quality >= ITEM_QUALITY_EPIC) {
+            return ((pProto->ItemLevel) - 130 / 3 ) + 1;
+        }
+        
+        //if (pProto->ItemLevel > 130 && pProto->ItemLevel <= 284)
+        //    return 80;
+        
+        // 130 - 284
         return 80;
     }
 
