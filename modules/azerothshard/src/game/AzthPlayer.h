@@ -14,7 +14,7 @@ class SmartStone;
 
 class AzthPlayer {
     uint32 timeWalkingLevel = 0;
-    bool PVPTempGear = FALSE;
+    bool PVPTempGear = false;
 public:
     void SetTempGear(bool hasGear);
     bool hasGear();

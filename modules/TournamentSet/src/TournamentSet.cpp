@@ -88,7 +88,7 @@ public:
             uint32 spec = action - (season * 10000);
             AzthGearScaling set = sAzthGearScaling->GetGearScalingList()[action];
             equipSet(set, player);
-            player->azthPlayer->SetTempGear(TRUE);
+            player->azthPlayer->SetTempGear(true);
             QueryResult PVPSetCharactersActive_table = ExtraDatabase.PQuery(("INSERT IGNORE INTO tournamentSet_characters_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
             player->SaveToDB(false, false);
             player->PlayerTalkClass->SendCloseGossip();
@@ -105,7 +105,7 @@ public:
                     player->DestroyItem(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                 }
             }
-            player->azthPlayer->SetTempGear(FALSE);
+            player->azthPlayer->SetTempGear(false);
             QueryResult PVPSetCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM tournamentSet_characters_active WHERE  `id`=%d;"), player->GetGUID());
             player->SaveToDB(false, false);
             ChatHandler(player->GetSession()).PSendSysMessage("Hai tolto il set PVP, i tuoi precedenti item sono nella mail");
@@ -346,7 +346,7 @@ public:
                         player->DestroyItem(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                     }
                 }
-                player->azthPlayer->SetTempGear(FALSE);
+                player->azthPlayer->SetTempGear(false);
                 QueryResult PVPSetCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM tournamentSet_characters_active WHERE  `id`=%d;"), player->GetGUID());
                 player->SaveToDB(false, false);
                 ChatHandler(player->GetSession()).PSendSysMessage("Il tuo set PVP è stato rimosso, non puoi cambiare zona con un set temporaneo! I tuoi precedenti item sono nella mail");
