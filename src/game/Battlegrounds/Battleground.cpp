@@ -219,6 +219,28 @@ Battleground::~Battleground()
 
     for (BattlegroundScoreMap::const_iterator itr = PlayerScores.begin(); itr != PlayerScores.end(); ++itr)
         delete itr->second;
+
+    //[AZTH] SoloQ 3v3
+    // Cleanup temp arena teams for solo 3v3
+    if (isArena() && isRated() && GetArenaType() == ARENA_TYPE_3v3_SOLO)
+    {
+        ArenaTeam *tempAlliArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
+        ArenaTeam *tempHordeArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
+
+
+        if (tempAlliArenaTeam && tempAlliArenaTeam->GetId() >= 0xFFF00000)
+        {
+            sArenaTeamMgr->RemoveArenaTeam(tempAlliArenaTeam->GetId());
+            delete tempAlliArenaTeam;
+        }
+
+        if (tempHordeArenaTeam && tempHordeArenaTeam->GetId() >= 0xFFF00000)
+        {
+            sArenaTeamMgr->RemoveArenaTeam(tempHordeArenaTeam->GetId());
+            delete tempHordeArenaTeam;
+        }
+
+    }
 }
 
 void Battleground::Update(uint32 diff)
@@ -1929,7 +1951,54 @@ int32 Battleground::GetObjectType(uint64 guid)
     sLog->outError("Battleground::GetObjectType: player used gameobject (GUID: %u) which is not in internal data for BG (map: %u, instance id: %u), cheating?",
         GUID_LOPART(guid), m_MapId, m_InstanceID);
     return -1;
+
 }
+
+//[AZTH] SoloQ 3v3
+void Battleground::CheckStartSolo3v3Arena()
+{
+    if (GetArenaType() != ARENA_TYPE_3v3_SOLO)
+        return;
+
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;  // if CheckArenaWinConditions ends the game
+
+    bool someoneNotInArena = false;
+
+    ArenaTeam* team[2];
+    team[0] = sArenaTeamMgr->GetArenaTeamById(ALLIANCE);
+    team[1] = sArenaTeamMgr->GetArenaTeamById(HORDE);
+
+    ASSERT(team[0] && team[1]);
+
+    for (int i = 0; i < 2; i++)
+    {
+        for (ArenaTeam::MemberList::iterator itr = team[i]->m_membersBegin(); itr != team[i]->m_membersEnd(); itr++)
+        {
+            Player* plr = sObjectAccessor->FindPlayer(itr->Guid);
+            if (!plr)
+            {
+                someoneNotInArena = true;
+                continue;
+            }
+
+            if (plr->GetInstanceId() != GetInstanceID())
+            {
+                if (sConfigMgr->GetBoolDefault("Solo.3v3.CastDeserterOnAfk", true))
+                    plr->CastSpell(plr, 26013, true); // Deserter
+                someoneNotInArena = true;
+            }
+        }
+    }
+
+    if (someoneNotInArena && sConfigMgr->GetBoolDefault("Solo.3v3.StopGameIncomplete", true))
+    {
+        SetRated(false);
+        EndBattleground(TEAM_NEUTRAL);
+    }
+}
+
+//[/AZTH]
 
 void Battleground::HandleKillUnit(Creature* /*victim*/, Player* /*killer*/)
 {

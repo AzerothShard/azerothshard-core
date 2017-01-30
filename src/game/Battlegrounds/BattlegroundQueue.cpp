@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "ChannelMgr.h"
 #include "Channel.h"
+#include "../npc_solo3v3/src/npc_solo3v3.h"
 
 /*********************************************************/
 /***            BATTLEGROUND QUEUE SYSTEM              ***/
@@ -1081,9 +1082,88 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             bgQueue.RemovePlayer(m_PlayerGuid, false, queueSlot);
         }
     }
-
     return true;
 }
+
+//[AZTH] SoloQ 3v3
+bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
+{
+    bool soloTeam[BG_TEAMS_COUNT][MAX_TALENT_CAT]; // 2 teams and each team 3 players - set to true when slot is taken
+    for (int i = 0; i < BG_TEAMS_COUNT; i++)
+        for (int j = 0; j < MAX_TALENT_CAT; j++)
+            soloTeam[i][j] = false; // default false = slot not taken
+
+    m_SelectionPools[TEAM_ALLIANCE].Init();
+    m_SelectionPools[TEAM_HORDE].Init();
+
+    bool filterTalents = sConfigMgr->GetBoolDefault("Arena.1v1.BlockForbiddenTalents", true);
+
+    for (int teamId = 0; teamId < 2; teamId++) // BG_QUEUE_PREMADE_ALLIANCE and BG_QUEUE_PREMADE_HORDE
+    {
+        for (GroupsQueueType::iterator itr = m_QueuedGroups[bracket_id][teamId].begin(); itr != m_QueuedGroups[bracket_id][teamId].end(); ++itr)
+        {
+            if ((*itr)->IsInvitedToBGInstanceGUID) // Skip when invited
+                continue;
+            
+            GroupQueueInfo* groupQueue = (*itr);
+            std::set<uint64> *players = &(*itr)->Players;
+            for (std::set<uint64>::iterator it = players->begin(); it != players->end(); it++)
+            {
+                uint64 guid = *it;
+                Player* plr = sObjectAccessor->FindPlayer(guid);
+                if (!plr)
+                    continue;
+
+                if (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() + m_SelectionPools[TEAM_HORDE].GetPlayerCount() == 6)
+                    return true;
+
+                Solo3v3TalentCat plrCat = GetTalentCatForSolo3v3(plr); // get talent cat
+                if (filterTalents && soloTeam[TEAM_ALLIANCE][plrCat] == false // is slot free in alliance team?
+                    || (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() != 3))
+                {
+                    if (m_SelectionPools[TEAM_ALLIANCE].AddGroup(groupQueue, 3)); // added successfully?
+                    {
+                        soloTeam[TEAM_ALLIANCE][plrCat] = true; // okay take this slot
+                        if (groupQueue->ArenaTeamId != TEAM_ALLIANCE) // move to other team
+                        {
+                            groupQueue->ArenaTeamId = TEAM_ALLIANCE;
+                            m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].push_front(groupQueue);
+                            itr = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].erase(itr);
+                            return CheckSolo3v3Arena(bracket_id);
+                        }
+                    }
+                }
+                else if (filterTalents && soloTeam[TEAM_HORDE][plrCat] == false || !filterTalents) // nope? and in horde team?
+                {
+                    if (m_SelectionPools[TEAM_HORDE].AddGroup((*itr), 3))
+                    {
+                        soloTeam[TEAM_HORDE][plrCat] = true;
+
+                        if (groupQueue->ArenaTeamId != TEAM_HORDE) // move to other team
+                        {
+                            groupQueue->ArenaTeamId = TEAM_HORDE;
+                            m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].push_front((*itr));
+                            itr = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr);
+                            return CheckSolo3v3Arena(bracket_id);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    int countAll = 0;
+    for (int i = 0; i < BG_TEAMS_COUNT; i++)
+    {
+        for (int j = 0; j < MAX_TALENT_CAT; j++)
+            if (soloTeam[i][j])
+                countAll++;
+    }
+
+    return countAll == 6 ||
+        (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() + m_SelectionPools[TEAM_HORDE].GetPlayerCount() == 6);
+}
+//[/AZTH]
 
 void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 {
