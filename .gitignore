@@ -18,6 +18,7 @@ modules/drassil/joiner
 !modules/hearthstone-mode
 !modules/DonationsVendor
 !modules/TimeWalking
+!modules/TournamentSet
 
 build*/
 

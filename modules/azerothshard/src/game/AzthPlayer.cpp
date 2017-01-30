@@ -72,6 +72,16 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
 }
 //[/TIMEWALKING]
 
+void AzthPlayer::SetTempGear(bool PVPTempGear)
+{
+    this->PVPTempGear = PVPTempGear;
+}
+
+bool AzthPlayer::hasGear()
+{
+    return PVPTempGear;
+}
+
 AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
   player = origin;

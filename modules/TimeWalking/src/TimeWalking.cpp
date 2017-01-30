@@ -131,6 +131,7 @@ public:
         }
 
         player->azthPlayer->SetTimeWalkingLevel(level);
+        player->SaveToDB(false, false);
     }
 
     bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code) override

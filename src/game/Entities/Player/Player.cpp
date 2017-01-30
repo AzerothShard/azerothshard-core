@@ -10317,6 +10317,7 @@ uint8 Player::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) c
 
 InventoryResult Player::CanUnequipItems(uint32 item, uint32 count) const
 {
+
     uint32 tempcount = 0;
 
     InventoryResult res = EQUIP_ERR_OK;
@@ -11822,6 +11823,7 @@ InventoryResult Player::CanEquipNewItem(uint8 slot, uint16 &dest, uint32 item, b
 
 InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool swap, bool not_loading) const
 {
+
     dest = 0;
     if (pItem)
     {
@@ -11991,6 +11993,11 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
 
 InventoryResult Player::CanUnequipItem(uint16 pos, bool swap) const
 {
+    //[AZTH]
+    if (azthPlayer->hasGear())
+        return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+    //[/AZTH]
+
     // Applied only to equipped items and bank bags
     if (!IsEquipmentPos(pos) && !IsBagPos(pos))
         return EQUIP_ERR_OK;
