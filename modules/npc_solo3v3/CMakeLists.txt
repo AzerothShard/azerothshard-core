@@ -1,2 +1,0 @@
-AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/npc_solo3v3.cpp")
-AC_ADD_SCRIPT_LOADER("npc_solo3v3" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")
