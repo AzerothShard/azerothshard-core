@@ -33,6 +33,11 @@
 #include "Transport.h"
 #include "ScriptMgr.h"
 
+//[AZTH]
+#include "ArenaTeamMgr.h"
+#include "../npc_solo3v3/src/npc_solo3v3.h"
+//[/AZTH]
+
 namespace Trinity
 {
     class BattlegroundChatBuilder
@@ -927,6 +932,10 @@ void Battleground::EndBattleground(TeamId winnerTeamId)
     {
         Player* player = itr->second;
         TeamId bgTeamId = player->GetBgTeamId();
+
+        //[AZTH]
+        // rewardGoodGuys();
+
         // should remove spirit of redemption
         if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
@@ -1387,7 +1396,29 @@ void Battleground::ReadyMarkerClicked(Player* p)
         return;
     readyMarkerClickedSet.insert(p->GetGUIDLow());
     uint32 count = readyMarkerClickedSet.size();
-    uint32 req = GetArenaType()*2;
+    uint32 req = 0;
+
+    switch (GetArenaType())
+    {
+        case ARENA_TYPE_2v2:
+            req = 4;
+            break;
+        case ARENA_TYPE_3v3:
+            req = 6;
+            break;
+        case ARENA_TYPE_5v5:
+            req = 2;
+            break;
+        // [AZTH]
+        case ARENA_TYPE_1v1:
+            req = 2;
+            break;
+        case ARENA_TYPE_3v3_SOLO:
+            req = 6;
+            break;
+        //[/AZTH]
+    }
+
     p->GetSession()->SendNotification("You are marked as ready %u/%u", count, req);
     if (count == req)
     {
@@ -1931,54 +1962,6 @@ int32 Battleground::GetObjectType(uint64 guid)
     sLog->outError("Battleground::GetObjectType: player used gameobject (GUID: %u) which is not in internal data for BG (map: %u, instance id: %u), cheating?",
         GUID_LOPART(guid), m_MapId, m_InstanceID);
     return -1;
-<<<<<<< Updated upstream
-=======
-
-}
-
-//[AZTH] SoloQ 3v3
-void Battleground::CheckStartSolo3v3Arena()
-{
-    if (GetArenaType() != ARENA_TYPE_3v3_SOLO)
-        return;
-
-    if (GetStatus() != STATUS_IN_PROGRESS)
-        return;  // if CheckArenaWinConditions ends the game
-
-    bool someoneNotInArena = false;
-
-    ArenaTeam* team[2];
-    team[0] = sArenaTeamMgr->GetArenaTeamById(TEAM_ALLIANCE);
-    team[1] = sArenaTeamMgr->GetArenaTeamById(TEAM_HORDE);
-
-    ASSERT(team[0] && team[1]);
-
-    for (int i = 0; i < 2; i++)
-    {
-        for (ArenaTeam::MemberList::iterator itr = team[i]->m_membersBegin(); itr != team[i]->m_membersEnd(); itr++)
-        {
-            Player* plr = sObjectAccessor->FindPlayer(itr->Guid);
-            if (!plr)
-            {
-                someoneNotInArena = true;
-                continue;
-            }
-
-            if (plr->GetInstanceId() != GetInstanceID())
-            {
-                if (sConfigMgr->GetBoolDefault("Solo.3v3.CastDeserterOnAfk", true))
-                    plr->CastSpell(plr, 26013, true); // Deserter
-                someoneNotInArena = true;
-            }
-        }
-    }
-
-    if (someoneNotInArena && sConfigMgr->GetBoolDefault("Solo.3v3.StopGameIncomplete", true))
-    {
-        SetRated(false);
-        EndBattleground(TEAM_NEUTRAL);
-    }
->>>>>>> Stashed changes
 }
 
 void Battleground::HandleKillUnit(Creature* /*victim*/, Player* /*killer*/)
@@ -2046,3 +2029,106 @@ uint8 Battleground::GetUniqueBracketId() const
 {
     return GetMinLevel() / 10;
 }
+
+//[AZTH] Custom functions & SoloQ 3v3
+
+void Battleground::cleanUp3v3SoloQ() {
+    // Cleanup temp arena teams for solo 3v3
+    if (isArena() && isRated() && GetArenaType() == ARENA_TYPE_3v3_SOLO)
+    {
+        ArenaTeam *tempAlliArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
+        ArenaTeam *tempHordeArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
+
+        if (tempAlliArenaTeam && tempAlliArenaTeam->GetId() >= 0xFFF00000)
+        {
+            sArenaTeamMgr->RemoveArenaTeam(tempAlliArenaTeam->GetId());
+            delete tempAlliArenaTeam;
+        }
+
+        if (tempHordeArenaTeam && tempHordeArenaTeam->GetId() >= 0xFFF00000)
+        {
+            sArenaTeamMgr->RemoveArenaTeam(tempHordeArenaTeam->GetId());
+            delete tempHordeArenaTeam;
+        }
+
+    }
+}
+
+
+void Battleground::CheckStartSolo3v3Arena()
+{
+    if (GetArenaType() != ARENA_TYPE_3v3_SOLO)
+        return;
+
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;  // if CheckArenaWinConditions ends the game
+
+    bool someoneNotInArena = false;
+
+    ArenaTeam* team[2];
+    team[0] = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
+    team[1] = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
+
+    ASSERT(team[0] && team[1]);
+
+    for (int i = 0; i < 2; i++)
+    {
+        for (ArenaTeam::MemberList::iterator itr = team[i]->m_membersBegin(); itr != team[i]->m_membersEnd(); itr++)
+        {
+            Player* plr = sObjectAccessor->FindPlayer(itr->Guid);
+            if (!plr)
+            {
+                someoneNotInArena = true;
+                continue;
+            }
+
+            if (plr->GetInstanceId() != GetInstanceID())
+            {
+                if (sConfigMgr->GetBoolDefault("Solo.3v3.CastDeserterOnAfk", true))
+                    plr->CastSpell(plr, 26013, true); // Deserter
+                someoneNotInArena = true;
+            }
+        }
+    }
+
+    if (someoneNotInArena && sConfigMgr->GetBoolDefault("Solo.3v3.StopGameIncomplete", true))
+    {
+        SetRated(false);
+        EndBattleground(TEAM_NEUTRAL);
+    }
+}
+
+/*
+void Battleground::rewardGoodGuys() {
+    // Reward winners "BattleArenas Reward Box" in 2v2 and 3v3 rated battles
+        // And Badge of Justice as reward from Solo Queue
+
+    if (team == winner && isArena())
+    {
+        if (isRated())
+        {
+            // Dont reward players in arena preparation
+            if (!player->HasAura(SPELL_ARENA_PREPARATION))
+            {
+                if (GetArenaType() == ARENA_TYPE_3v3)
+                {
+                    //player->AddItem(54218, 1); // Add two BattleArenas Reward Box
+
+                    // Bonus rewards for Healers
+                    if (Arena1v1CheckTalents(player) == false);
+                    //player->AddItem(54218, 1); // Add two BattleArenas Reward Box
+                }
+
+                if (GetArenaType() == ARENA_TYPE_5v5) // 1v1 rated
+                    //player->AddItem(29434, 5); // Add 5 Badge of Justice
+
+                    if (GetArenaType() == ARENA_TYPE_3v3_SOLO)
+                    {
+                        //player->AddItem(54218, 1); // Add one BattleArenas Reward Box
+                    }
+            }
+        }
+    }
+
+}
+*/

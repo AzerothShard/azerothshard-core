@@ -34,6 +34,8 @@ public:
 
   uint32 getArena1v1Info(uint8 type);
   void setArena1v1Info(uint8 type, uint32 value);
+  uint32 getArena3v3Info(uint8 type);
+  void setArena3v3Info(uint8 type, uint32 value);
 
   uint16 levelPlayer;
   uint16 tmpLevelPg;
@@ -76,6 +78,7 @@ public:
 private:
   Player *player;
   uint32 arena1v1Info[7]; // ARENA_TEAM_END
+  uint32 arena3v3Info[7]; // ARENA_TEAM_END
   float playerQuestRate, maxQuestRate;
   std::vector<SmartStonePlayerCommand> smartStoneCommands;
 };

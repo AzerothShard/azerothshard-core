@@ -488,6 +488,10 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
             case ARENA_TYPE_1v1:
                 maxPlayersPerTeam = 1;
                 break;
+
+            case ARENA_TYPE_3v3_SOLO:
+                maxPlayersPerTeam = 3; // 3v3 soloqeueue
+                break;
 //[/AZTH]
             case ARENA_TYPE_2v2:
                 maxPlayersPerTeam = 2;
@@ -498,11 +502,6 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
             case ARENA_TYPE_5v5:
                 maxPlayersPerTeam = 5;
                 break;
-//[AZTH]
-            case ARENA_TYPE_3v3_SOLO:
-                maxPlayersPerTeam = 3; // 3v3 soloqeueue
-                break;
-//[/AZTH]
         }
 
         bg->SetMaxPlayersPerTeam(maxPlayersPerTeam);
@@ -820,6 +819,8 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
 //[AZTH]
                 case ARENA_TYPE_1v1:
                     return BATTLEGROUND_QUEUE_1v1;
+                case ARENA_TYPE_3v3_SOLO:
+                    return BATTLEGROUND_QUEUE_3v3_SOLO;
 //[/AZTH]
                 case ARENA_TYPE_2v2:
                     return BATTLEGROUND_QUEUE_2v2;
@@ -855,6 +856,7 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
             return BATTLEGROUND_RB;
 //[AZTH]
         case BATTLEGROUND_QUEUE_1v1:
+        case BATTLEGROUND_QUEUE_3v3_SOLO:
 //[/AZTH]
         case BATTLEGROUND_QUEUE_2v2:
         case BATTLEGROUND_QUEUE_3v3:
@@ -872,6 +874,8 @@ uint8 BattlegroundMgr::BGArenaType(BattlegroundQueueTypeId bgQueueTypeId)
 //[AZTH]
         case BATTLEGROUND_QUEUE_1v1:
             return ARENA_TYPE_1v1;
+        case BATTLEGROUND_QUEUE_3v3_SOLO:
+            return ARENA_TYPE_3v3_SOLO;
 //[/AZTH]
         case BATTLEGROUND_QUEUE_2v2:
             return ARENA_TYPE_2v2;

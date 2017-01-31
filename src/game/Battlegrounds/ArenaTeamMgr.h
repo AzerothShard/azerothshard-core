@@ -32,17 +32,21 @@ public:
     void DistributeArenaPoints();
 
     uint32 GenerateArenaTeamId();
-    uint32 GenerateTempArenaTeamId();
     void SetNextArenaTeamId(uint32 Id) { NextArenaTeamId = Id; }
 
     uint32 GetNextArenaLogId() { return ++LastArenaLogId; }
     void SetLastArenaLogId(uint32 id) { LastArenaLogId = id; }
 
+    //[AZTH] custom functions
+    uint32 GenerateTempArenaTeamId();
+
 protected:
     uint32 NextArenaTeamId;
-    uint32 NextTempArenaTeamId;
     ArenaTeamContainer ArenaTeamStore;
     uint32 LastArenaLogId;
+
+    //[AZTH] custom properties
+    uint32 NextTempArenaTeamId;
 };
 
 #define sArenaTeamMgr ACE_Singleton<ArenaTeamMgr, ACE_Null_Mutex>::instance()

@@ -45,21 +45,23 @@ public:
 			infoQueue << "Queued Healers: " << cache3v3Queue[HEALER] << " (Bonus Rewards!)" << "\n";
 		}
 
-		if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5)
-			|| player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO))
+		if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO))
 			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Leave Solo queue", GOSSIP_SENDER_MAIN, 3, "Are you sure you want to remove the solo queue?", 0, false);
 
 		if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)) == NULL)
 			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Create new Solo arena team", GOSSIP_SENDER_MAIN, 1, "Create new solo arena team?", sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1), false);
 		else
 		{
-			if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5) == false &&
-				player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO) == false)
+			if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO) == false)
 			{
 			    //player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Queue up for 1vs1 Wargame\n", GOSSIP_SENDER_MAIN, 20);
 				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Queue up for 3vs3 Arena Solo\n", GOSSIP_SENDER_MAIN, 2);
 			}
+
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Show statistics", GOSSIP_SENDER_MAIN, 4);
 		}
+
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/INV_Misc_Coin_03:30|t How to Use NPC?", GOSSIP_SENDER_MAIN, 8);
 
 		player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, infoQueue.str().c_str(), GOSSIP_SENDER_MAIN, 0);
 		player->SEND_GOSSIP_MENU(60015, me->GetGUID());
@@ -110,28 +112,57 @@ public:
 			return true;
 		}
 
-		case 20: // 1v1 Join Queue Arena (rated)
-		{
-			if (ArenaCheckFullEquipAndTalents(player) && Arena1v1CheckTalents(player)
-				&& JoinQueueArena(player, me, true, ARENA_TYPE_1v1) == false)
-				ChatHandler(player->GetSession()).SendSysMessage("Something went wrong while joining queue. Already in another queue?");
-
-			player->CLOSE_GOSSIP_MENU();
-			return true;
-		}
-
 		case 3: // Leave Queue
 		{
-			uint8 arenaType = ARENA_TYPE_1v1;
-			if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO))
-				arenaType = ARENA_TYPE_3v3_SOLO;
+            if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO)) {
+                uint8 arenaType = ARENA_TYPE_3v3_SOLO;
 
-			WorldPacket Data;
-			Data << arenaType << (uint8)0x0 << (uint32)BATTLEGROUND_AA << (uint16)0x0 << (uint8)0x0;
-			player->GetSession()->HandleBattleFieldPortOpcode(Data);
-			player->CLOSE_GOSSIP_MENU();
-			return true;
+                WorldPacket Data;
+                Data << arenaType << (uint8)0x0 << (uint32)BATTLEGROUND_AA << (uint16)0x0 << (uint8)0x0;
+                player->GetSession()->HandleBattleFieldPortOpcode(Data);
+                player->CLOSE_GOSSIP_MENU();
+
+            }
+            return true;
 		}
+
+        case 4: // get statistics
+        {
+            ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)));
+            if (at) {
+                std::stringstream s;
+                s << "Rating: " << at->GetStats().Rating;
+                s << "\nRank: " << at->GetStats().Rank;
+                s << "\nSeason Games: " << at->GetStats().SeasonGames;
+                s << "\nSeason Wins: " << at->GetStats().SeasonWins;
+                s << "\nWeek Games: " << at->GetStats().WeekGames;
+                s << "\nWeek Wins: " << at->GetStats().WeekWins;
+
+                ChatHandler(player->GetSession()).PSendSysMessage(s.str().c_str());
+            }
+            return true;
+        }
+        case 5: // Disband arenateam
+        {
+            WorldPacket Data;
+            Data << (uint32)player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3));
+            player->GetSession()->HandleArenaTeamLeaveOpcode(Data);
+            ChatHandler(player->GetSession()).PSendSysMessage("Arena team deleted!");
+            player->CLOSE_GOSSIP_MENU();
+            return true;
+        }
+        break;
+
+        case 8: // Script Info
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Click on Create new 3v3 SoloQ Arena team", GOSSIP_SENDER_MAIN, uiAction);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Join 3v3 SoloQ Arena and ready!", GOSSIP_SENDER_MAIN, uiAction);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Enjoy!", GOSSIP_SENDER_MAIN, uiAction);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<- Back", GOSSIP_SENDER_MAIN, 7);
+            player->SEND_GOSSIP_MENU(68, me->GetGUID());
+            return true;
+        }
+        break;
 		}
 
 		OnGossipHello(player, me);
@@ -147,7 +178,7 @@ private:
 		if (!player)
 			return false;
 
-		if (sConfigMgr->GetBoolDefault("Arena.CheckEquipAndTalents", true))
+		if (!sConfigMgr->GetBoolDefault("Arena.CheckEquipAndTalents", true))
 			return true;
 
 		std::stringstream err;
@@ -269,8 +300,6 @@ private:
 			return false;
 
 		uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3);
-		if (slot >= MAX_ARENA_SLOT)
-			return false;
 
 		// Check if player is already in an arena team
 		if (player->GetArenaTeamId(slot))
@@ -299,7 +328,7 @@ private:
 		// Create arena team
 		ArenaTeam* arenaTeam = new ArenaTeam();
 
-		if (!arenaTeam->Create(player->GetGUID(), ARENA_TEAM_1v1, teamName.str(), 4283124816, 45, 4294242303, 5, 4294705149))
+		if (!arenaTeam->Create(player->GetGUID(), ARENA_TEAM_SOLO_3v3, teamName.str(), 4283124816, 45, 4294242303, 5, 4294705149))
 		{
 			delete arenaTeam;
 			return false;
@@ -307,7 +336,6 @@ private:
 
 		// Register arena team
 		sArenaTeamMgr->AddArenaTeam(arenaTeam);
-		arenaTeam->AddMember(player->GetGUID());
 
 		ChatHandler(player->GetSession()).SendSysMessage("Arena team successful created!");
 

@@ -5811,6 +5811,21 @@ SpellCastResult Spell::CheckCast(bool strict)
                 break;
             }
             case SPELL_EFFECT_TALENT_SPEC_SELECT:
+
+                //[AZTH]
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    Player* plr = m_caster->ToPlayer();
+                    if (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO) ||
+                        plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_1v1))
+                    {
+                        plr->GetSession()->SendAreaTriggerMessage("You can't change your talents while in queue for 1v1 or 3v3.");
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
+
+                }
+                //[/AZTH]
+
                 // can't change during already started arena/battleground
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                     if (Battleground const* bg = m_caster->ToPlayer()->GetBattleground())

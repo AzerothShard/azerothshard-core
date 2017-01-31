@@ -71,19 +71,13 @@ void ArenaTeamMgr::RemoveArenaTeam(uint32 arenaTeamId)
 
 uint32 ArenaTeamMgr::GenerateArenaTeamId()
 {
-    if (NextArenaTeamId >= 0xFFFFFFFE)
+    // [AZTH] changed max value from 0xFFFFFFFE to 0xFFF00000 ( to make room for temp teams )
+    if (NextArenaTeamId >= 0xFFF00000)
     {
         sLog->outError("Arena team ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
     return NextArenaTeamId++;
-}
-
-uint32 ArenaTeamMgr::GenerateTempArenaTeamId()
-{
-    if (NextTempArenaTeamId >= 0xFFFFFFFE)
-        NextTempArenaTeamId = 0xFFF00000;
-    return NextTempArenaTeamId++;
 }
 
 void ArenaTeamMgr::LoadArenaTeams()
@@ -192,4 +186,14 @@ void ArenaTeamMgr::DistributeArenaPoints()
     sWorld->SendWorldText(LANG_DIST_ARENA_POINTS_TEAM_END);
 
     sWorld->SendWorldText(LANG_DIST_ARENA_POINTS_END);
+}
+
+
+//[AZTH] custom functions
+
+uint32 ArenaTeamMgr::GenerateTempArenaTeamId()
+{
+    if (NextTempArenaTeamId >= 0xFFFFFFFE)
+        NextTempArenaTeamId = 0xFFF00000;
+    return NextTempArenaTeamId++;
 }

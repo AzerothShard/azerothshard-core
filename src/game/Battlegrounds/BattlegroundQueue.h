@@ -12,6 +12,9 @@
 #include "Battleground.h"
 #include "EventProcessor.h"
 
+//[AZTH]
+#include "ArenaTeam.h"
+
 #include <deque>
 
 #define COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME 10
@@ -61,15 +64,7 @@ class BattlegroundQueue
         bool CheckPremadeMatch(BattlegroundBracketId bracket_id, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam);
         bool CheckNormalMatch(Battleground* bgTemplate, BattlegroundBracketId bracket_id, uint32 minPlayers, uint32 maxPlayers);
         bool CheckSkirmishForSameFaction(BattlegroundBracketId bracket_id, uint32 minPlayersPerTeam);
-<<<<<<< Updated upstream
-=======
 
-        //[AZTH]
-        bool CheckSolo3v3Arena(BattlegroundBracketId bracket_id);
-
-        void CreateTempArenaTeamForQueue(ArenaTeam * arenaTeams[]);
-
->>>>>>> Stashed changes
         GroupQueueInfo* AddGroup(Player* leader, Group* group, PvPDifficultyEntry const*  bracketEntry, bool isRated, bool isPremade, uint32 ArenaRating, uint32 MatchmakerRating, uint32 ArenaTeamId);
         void RemovePlayer(uint64 guid, bool sentToBg, uint32 playerQueueSlot);
         bool IsPlayerInvitedToRatedArena(uint64 pl_guid);
@@ -115,6 +110,11 @@ class BattlegroundQueue
 
         //one selection pool for horde, other one for alliance
         SelectionPool m_SelectionPools[BG_TEAMS_COUNT];
+
+        //[AZTH] custom functions
+        bool CheckSolo3v3Arena(BattlegroundBracketId bracket_id);
+        void CreateTempArenaTeamForQueue(ArenaTeam * arenaTeams[]);
+
     private:
 
         BattlegroundTypeId m_bgTypeId;

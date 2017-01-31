@@ -222,10 +222,11 @@ enum ArenaType
 {
 //[AZTH]
     ARENA_TYPE_1v1          = 1,
+    ARENA_TYPE_3v3_SOLO     = 4, // 3v3 soloqueue
 //[/AZTH]
     ARENA_TYPE_2v2          = 2,
     ARENA_TYPE_3v3          = 3,
-    ARENA_TYPE_5v5          = 5 //[AZTH]
+    ARENA_TYPE_5v5          = 5
 };
 
 enum BattlegroundType
@@ -630,6 +631,10 @@ class Battleground
 
         BattlegroundIC* ToBattlegroundIC() { if (GetBgTypeID() == BATTLEGROUND_IC) return reinterpret_cast<BattlegroundIC*>(this); else return NULL; }
         BattlegroundIC const* ToBattlegroundIC() const { if (GetBgTypeID() == BATTLEGROUND_IC) return reinterpret_cast<const BattlegroundIC*>(this); else return NULL; }
+
+        //[AZTH] custom functions
+        void CheckStartSolo3v3Arena();
+        void cleanUp3v3SoloQ();
 
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground

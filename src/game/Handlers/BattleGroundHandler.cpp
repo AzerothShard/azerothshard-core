@@ -24,6 +24,9 @@
 #include "Group.h"
 #include "ScriptMgr.h"
 
+//[AZTH]
+#include "../npc_solo3v3/src/npc_solo3v3.h"
+
 void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket & recvData)
 {
     uint64 guid;
@@ -368,6 +371,10 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     BattlegroundTypeId bgTypeId = BattlegroundTypeId(bgTypeId_);
     BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, arenaType);
     BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
+
+    // [AZTH]
+    if ((bgQueueTypeId == BATTLEGROUND_QUEUE_1v1 || bgQueueTypeId == BATTLEGROUND_QUEUE_3v3_SOLO ) && Arena1v1CheckTalents(_player) == false)
+        return;
 
     // get group info from queue
     GroupQueueInfo ginfo;

@@ -1926,6 +1926,11 @@ class Player : public Unit, public GridObject<Player>
                 azthPlayer->setArena1v1Info(type, value);
                 return;
             }
+
+            if (slot >= ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)) {
+                azthPlayer->setArena3v3Info(type, value);
+                return;
+            }
 // [/AZTH]
             SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + type, value);
         }
@@ -1934,6 +1939,9 @@ class Player : public Unit, public GridObject<Player>
             // [AZTH]
             if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_1v1))
                 return azthPlayer->getArena1v1Info(ARENA_TEAM_PERSONAL_RATING);
+
+            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3))
+                return azthPlayer->getArena3v3Info(ARENA_TEAM_PERSONAL_RATING);
             // [/AZTH]
             return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_PERSONAL_RATING); 
         }
@@ -1943,6 +1951,9 @@ class Player : public Unit, public GridObject<Player>
             // [AZTH] use static method of ArenaTeam to retrieve the slot
             if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_1v1))
                 return GetArenaTeamIdFromDB(this->GetGUID(), ARENA_TEAM_1v1);
+
+            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3))
+                return GetArenaTeamIdFromDB(this->GetGUID(), ARENA_TEAM_SOLO_3v3);
             // [/AZTH]
             return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_ID);
         }

@@ -95,6 +95,12 @@ void AzthPlayer::setArena1v1Info(uint8 type, uint32 value) {
   arena1v1Info[type] = value;
 }
 
+uint32 AzthPlayer::getArena3v3Info(uint8 type) { return arena3v3Info[type]; }
+
+void AzthPlayer::setArena3v3Info(uint8 type, uint32 value) {
+    arena3v3Info[type] = value;
+}
+
 float AzthPlayer::GetPlayerQuestRate() { return playerQuestRate; }
 
 uint8 AzthPlayer::getGroupLevel() {

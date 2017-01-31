@@ -174,4 +174,5 @@ static Solo3v3TalentCat GetTalentCatForSolo3v3(Player* player)
     return talCat;
 }
 
+
 #endif

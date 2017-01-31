@@ -17,6 +17,9 @@
 #include "ChannelMgr.h"
 #include "Channel.h"
 
+//[AZTH]
+#include "../npc_solo3v3/src/npc_solo3v3.h"
+
 /*********************************************************/
 /***            BATTLEGROUND QUEUE SYSTEM              ***/
 /*********************************************************/
@@ -857,18 +860,10 @@ void BattlegroundQueue::BattlegroundQueueUpdate(BattlegroundBracketId bracket_id
         // Solo 3v3
         if (CheckSolo3v3Arena(bracket_id))
         {
-            // we successfully created a pool
-            BattlegroundTypeId newBgTypeId = sBattlegroundMgr->RandomSystem.GetCurrentRandomBg();
-            Battleground* specificTemplate = sBattlegroundMgr->GetBattlegroundTemplate(newBgTypeId);
-            if (!specificTemplate)
-                return;
-            PvPDifficultyEntry const* specificBracket = GetBattlegroundBracketByLevel(specificTemplate->GetMapId(), sBattlegroundMgr->randomBgDifficultyEntry.minLevel);
-            if (!specificBracket)
-                return;
-            uint32 minLvl = specificBracket->minLevel;
-            uint32 maxLvl = specificBracket->maxLevel;
+            uint32 minLvl = bracketEntry->minLevel;
+            uint32 maxLvl = bracketEntry->maxLevel;
 
-            Battleground* arena = sBattlegroundMgr->CreateNewBattleground(newBgTypeId, minLvl, maxLvl, m_arenaType, isRated);
+            Battleground* arena = sBattlegroundMgr->CreateNewBattleground(m_bgTypeId, minLvl, maxLvl, m_arenaType, isRated);
             if (!arena)
                 return;
 
@@ -881,7 +876,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(BattlegroundBracketId bracket_id
                 for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
                 {
                     (*citr)->ArenaTeamId = arenaTeams[i]->GetId();
-                    InviteGroupToBG((*citr), arena, (*citr)->Team);
+                    BattlegroundMgr::InviteGroupToBG((*citr), arena, (*citr)->teamId);
                 }
 
             // Override ArenaTeamId to temp arena team (was first set in InviteGroupToBG)
@@ -897,6 +892,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(BattlegroundBracketId bracket_id
         }
     }
     //[/AZTH]
+
     // check if can start new rated arenas (can create many in single queue update)
     else if (bg_template->isArena())
     {
@@ -1127,12 +1123,17 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             bgQueue.RemovePlayer(m_PlayerGuid, false, queueSlot);
         }
     }
-<<<<<<< Updated upstream
-=======
     return true;
 }
 
-//[AZTH] SoloQ 3v3
+void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
+{
+    //do nothing
+}
+
+
+//[AZTH] Custom functions & SoloQ 3v3
+
 bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
 {
     bool soloTeam[BG_TEAMS_COUNT][MAX_TALENT_CAT]; // 2 teams and each team 3 players - set to true when slot is taken
@@ -1144,12 +1145,74 @@ bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
     m_SelectionPools[TEAM_HORDE].Init();
 
     bool filterTalents = sConfigMgr->GetBoolDefault("Arena.1v1.BlockForbiddenTalents", false);
->>>>>>> Stashed changes
 
-    return true;
+    for (int teamId = 0; teamId < 2; teamId++) // BG_QUEUE_PREMADE_ALLIANCE and BG_QUEUE_PREMADE_HORDE
+    {
+        for (GroupsQueueType::iterator itr = m_QueuedGroups[bracket_id][teamId].begin(); itr != m_QueuedGroups[bracket_id][teamId].end(); ++itr)
+        {
+            if ((*itr)->IsInvitedToBGInstanceGUID) // Skip when invited
+                continue;
+
+            std::set<uint64> *grpPlr = &(*itr)->Players;
+            for (std::set<uint64>::iterator grpPlrItr = grpPlr->begin(); grpPlrItr != grpPlr->end(); grpPlrItr++)
+            {
+                Player* plr = sObjectAccessor->FindPlayer(*grpPlrItr);
+                if (!plr)
+                    continue;
+
+                if (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() + m_SelectionPools[TEAM_HORDE].GetPlayerCount() == 6)
+                    return true;
+
+                Solo3v3TalentCat plrCat = GetTalentCatForSolo3v3(plr); // get talent cat
+
+                if (filterTalents && soloTeam[TEAM_ALLIANCE][plrCat] == false // is slot free in alliance team?
+                    || (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() != 3))
+                {
+                    if (m_SelectionPools[TEAM_ALLIANCE].AddGroup((*itr), 3)) // added successfully?
+                    {
+                        soloTeam[TEAM_ALLIANCE][plrCat] = true; // okay take this slot
+
+                        if ((*itr)->teamId != TEAM_ALLIANCE) // move to other team
+                        {
+                            (*itr)->teamId = TEAM_ALLIANCE;
+                            m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].push_front((*itr));
+                            itr = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].erase(itr);
+                            return CheckSolo3v3Arena(bracket_id);
+                        }
+                    }
+                }
+                else if (filterTalents && soloTeam[TEAM_HORDE][plrCat] == false || !filterTalents) // nope? and in horde team?
+                {
+                    if (m_SelectionPools[TEAM_HORDE].AddGroup((*itr), 3))
+                    {
+                        soloTeam[TEAM_HORDE][plrCat] = true;
+
+                        if ((*itr)->teamId != TEAM_HORDE) // move to other team
+                        {
+                            (*itr)->teamId = TEAM_HORDE;
+                            m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].push_front((*itr));
+                            itr = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr);
+                            return CheckSolo3v3Arena(bracket_id);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    int countAll = 0;
+    for (int i = 0; i < BG_TEAMS_COUNT; i++)
+    {
+        for (int j = 0; j < MAX_TALENT_CAT; j++)
+            if (soloTeam[i][j])
+                countAll++;
+    }
+
+    return countAll == 6 ||
+        (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() + m_SelectionPools[TEAM_HORDE].GetPlayerCount() == 6);
 }
-<<<<<<< Updated upstream
-=======
+
+
 void BattlegroundQueue::CreateTempArenaTeamForQueue(ArenaTeam *arenaTeams[])
 {
     // Create temp arena team
@@ -1181,9 +1244,3 @@ void BattlegroundQueue::CreateTempArenaTeamForQueue(ArenaTeam *arenaTeams[])
     }
 }
 //[/AZTH]
->>>>>>> Stashed changes
-
-void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
-{
-    //do nothing
-}

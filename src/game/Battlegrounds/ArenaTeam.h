@@ -75,7 +75,7 @@ enum ArenaTeamTypes
 //[/AZTH]
     ARENA_TEAM_2v2      = 2,
     ARENA_TEAM_3v3      = 3,
-    ARENA_TEAM_5v5      = 5 //[AZTH]
+    ARENA_TEAM_5v5      = 5
 };
 
 struct ArenaTeamMember
@@ -114,7 +114,6 @@ class ArenaTeam
         ~ArenaTeam();
 
         bool Create(uint64 captainGuid, uint8 type, std::string const& teamName, uint32 backgroundColor, uint8 emblemStyle, uint32 emblemColor, uint8 borderStyle, uint32 borderColor);
-        void CreateTempForSolo3v3(Player * plr[], uint8 team);
         void Disband(WorldSession* session);
 
         typedef std::list<ArenaTeamMember> MemberList;
@@ -193,6 +192,12 @@ class ArenaTeam
 
         MemberList     Members;
         ArenaTeamStats Stats;
+
+    //AZTH
+    public:
+        void ArenaTeam::saveSoloDB();
+        void CreateTempForSolo3v3(Player * plr[], uint8 team);
+        uint32 GetAverageMMR();
 };
 #endif
 
