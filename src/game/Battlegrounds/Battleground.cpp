@@ -547,6 +547,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                 ArenaSpectator::HandleResetCommand(*itr);
 
             CheckArenaWinConditions();
+            //[AZTH]
+            CheckStartSolo3v3Arena();
 
             // pussywizard: arena spectator stuff
             if (GetStatus() == STATUS_IN_PROGRESS)
@@ -1929,6 +1931,54 @@ int32 Battleground::GetObjectType(uint64 guid)
     sLog->outError("Battleground::GetObjectType: player used gameobject (GUID: %u) which is not in internal data for BG (map: %u, instance id: %u), cheating?",
         GUID_LOPART(guid), m_MapId, m_InstanceID);
     return -1;
+<<<<<<< Updated upstream
+=======
+
+}
+
+//[AZTH] SoloQ 3v3
+void Battleground::CheckStartSolo3v3Arena()
+{
+    if (GetArenaType() != ARENA_TYPE_3v3_SOLO)
+        return;
+
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;  // if CheckArenaWinConditions ends the game
+
+    bool someoneNotInArena = false;
+
+    ArenaTeam* team[2];
+    team[0] = sArenaTeamMgr->GetArenaTeamById(TEAM_ALLIANCE);
+    team[1] = sArenaTeamMgr->GetArenaTeamById(TEAM_HORDE);
+
+    ASSERT(team[0] && team[1]);
+
+    for (int i = 0; i < 2; i++)
+    {
+        for (ArenaTeam::MemberList::iterator itr = team[i]->m_membersBegin(); itr != team[i]->m_membersEnd(); itr++)
+        {
+            Player* plr = sObjectAccessor->FindPlayer(itr->Guid);
+            if (!plr)
+            {
+                someoneNotInArena = true;
+                continue;
+            }
+
+            if (plr->GetInstanceId() != GetInstanceID())
+            {
+                if (sConfigMgr->GetBoolDefault("Solo.3v3.CastDeserterOnAfk", true))
+                    plr->CastSpell(plr, 26013, true); // Deserter
+                someoneNotInArena = true;
+            }
+        }
+    }
+
+    if (someoneNotInArena && sConfigMgr->GetBoolDefault("Solo.3v3.StopGameIncomplete", true))
+    {
+        SetRated(false);
+        EndBattleground(TEAM_NEUTRAL);
+    }
+>>>>>>> Stashed changes
 }
 
 void Battleground::HandleKillUnit(Creature* /*victim*/, Player* /*killer*/)

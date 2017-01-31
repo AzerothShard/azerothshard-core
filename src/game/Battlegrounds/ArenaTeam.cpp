@@ -74,6 +74,62 @@ bool ArenaTeam::Create(uint64 captainGuid, uint8 type, std::string const& teamNa
     return true;
 }
 
+//[AZTH]
+void ArenaTeam::CreateTempForSolo3v3(Player* plr[], uint8 team)
+{
+    // Generate new arena team id
+    TeamId = sArenaTeamMgr->GenerateTempArenaTeamId();
+
+    // Assign member variables
+    CaptainGuid = plr[0]->GetGUID();
+    Type = ARENA_TEAM_5v5;
+
+    std::stringstream ssTeamName;
+    ssTeamName << "Solo Team " << (team + 1);
+    TeamName = ssTeamName.str();
+
+    BackgroundColor = 0;
+    EmblemStyle = 0;
+    EmblemColor = 0;
+    BorderStyle = 0;
+    BorderColor = 0;
+
+    Stats.WeekGames = 0;
+    Stats.SeasonGames = 0;
+    Stats.Rating = 0;
+    Stats.WeekWins = 0;
+    Stats.SeasonWins = 0;
+
+    for (int i = 0; i < 3; i++)
+    {
+        ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(plr[i]->GetArenaTeamId(GetSlotByType(ARENA_TEAM_5v5)));
+
+        if (!team)
+            continue;
+
+        ArenaTeamMember newMember;
+        for (MemberList::const_iterator itr = team->Members.begin(); itr != team->Members.end(); ++itr)
+        {
+            newMember = *itr;
+        }
+
+        Stats.WeekGames += team->Stats.WeekGames;
+        Stats.SeasonGames += team->Stats.SeasonGames;
+        Stats.Rating += team->GetRating();
+        Stats.WeekWins += team->Stats.WeekWins;
+        Stats.SeasonWins += team->Stats.SeasonWins;
+
+        Members.push_back(newMember);
+    }
+
+    Stats.WeekGames /= 3;
+    Stats.SeasonGames /= 3;
+    Stats.Rating /= 3;
+    Stats.WeekWins /= 3;
+    Stats.SeasonWins /= 3;
+}
+//[/AZTH]
+
 bool ArenaTeam::AddMember(uint64 playerGuid)
 {
     std::string playerName;
@@ -542,6 +598,7 @@ uint8 ArenaTeam::GetSlotByType(uint32 type)
     {
         case ARENA_TEAM_2v2: return 0;
         case ARENA_TEAM_3v3: return 1;
+        case ARENA_TEAM_SOLO_3v3: return 2;
         case ARENA_TEAM_5v5: return 2;
 //[AZTH]
         case ARENA_TEAM_1v1: return 3;

@@ -498,6 +498,11 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
             case ARENA_TYPE_5v5:
                 maxPlayersPerTeam = 5;
                 break;
+//[AZTH]
+            case ARENA_TYPE_3v3_SOLO:
+                maxPlayersPerTeam = 3; // 3v3 soloqeueue
+                break;
+//[/AZTH]
         }
 
         bg->SetMaxPlayersPerTeam(maxPlayersPerTeam);

@@ -851,6 +851,52 @@ void BattlegroundQueue::BattlegroundQueueUpdate(BattlegroundBracketId bracket_id
             bg->StartBattleground();
         }
     }
+    //[AZTH]
+    else if (m_arenaType == ARENA_TYPE_3v3_SOLO)
+    {
+        // Solo 3v3
+        if (CheckSolo3v3Arena(bracket_id))
+        {
+            // we successfully created a pool
+            BattlegroundTypeId newBgTypeId = sBattlegroundMgr->RandomSystem.GetCurrentRandomBg();
+            Battleground* specificTemplate = sBattlegroundMgr->GetBattlegroundTemplate(newBgTypeId);
+            if (!specificTemplate)
+                return;
+            PvPDifficultyEntry const* specificBracket = GetBattlegroundBracketByLevel(specificTemplate->GetMapId(), sBattlegroundMgr->randomBgDifficultyEntry.minLevel);
+            if (!specificBracket)
+                return;
+            uint32 minLvl = specificBracket->minLevel;
+            uint32 maxLvl = specificBracket->maxLevel;
+
+            Battleground* arena = sBattlegroundMgr->CreateNewBattleground(newBgTypeId, minLvl, maxLvl, m_arenaType, isRated);
+            if (!arena)
+                return;
+
+            // Create temp arena team and store arenaTeamId
+            ArenaTeam* arenaTeams[BG_TEAMS_COUNT];
+            CreateTempArenaTeamForQueue(arenaTeams);
+
+            // invite those selection pools
+            for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
+                for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
+                {
+                    (*citr)->ArenaTeamId = arenaTeams[i]->GetId();
+                    InviteGroupToBG((*citr), arena, (*citr)->Team);
+                }
+
+            // Override ArenaTeamId to temp arena team (was first set in InviteGroupToBG)
+            arena->SetArenaTeamIdForTeam(TEAM_ALLIANCE, arenaTeams[TEAM_ALLIANCE]->GetId());
+            arena->SetArenaTeamIdForTeam(TEAM_HORDE, arenaTeams[TEAM_HORDE]->GetId());
+
+            // Set matchmaker rating for calculating rating-modifier on EndBattleground (when a team has won/lost)
+            arena->SetArenaMatchmakerRating(TEAM_ALLIANCE, arenaTeams[TEAM_ALLIANCE]->GetAverageMMR());
+            arena->SetArenaMatchmakerRating(TEAM_HORDE, arenaTeams[TEAM_HORDE]->GetAverageMMR());
+
+            // start bg
+            arena->StartBattleground();
+        }
+    }
+    //[/AZTH]
     // check if can start new rated arenas (can create many in single queue update)
     else if (bg_template->isArena())
     {
@@ -1081,9 +1127,61 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             bgQueue.RemovePlayer(m_PlayerGuid, false, queueSlot);
         }
     }
+<<<<<<< Updated upstream
+=======
+    return true;
+}
+
+//[AZTH] SoloQ 3v3
+bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
+{
+    bool soloTeam[BG_TEAMS_COUNT][MAX_TALENT_CAT]; // 2 teams and each team 3 players - set to true when slot is taken
+    for (int i = 0; i < BG_TEAMS_COUNT; i++)
+        for (int j = 0; j < MAX_TALENT_CAT; j++)
+            soloTeam[i][j] = false; // default false = slot not taken
+
+    m_SelectionPools[TEAM_ALLIANCE].Init();
+    m_SelectionPools[TEAM_HORDE].Init();
+
+    bool filterTalents = sConfigMgr->GetBoolDefault("Arena.1v1.BlockForbiddenTalents", false);
+>>>>>>> Stashed changes
 
     return true;
 }
+<<<<<<< Updated upstream
+=======
+void BattlegroundQueue::CreateTempArenaTeamForQueue(ArenaTeam *arenaTeams[])
+{
+    // Create temp arena team
+    for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
+    {
+        ArenaTeam* tempArenaTeam = new ArenaTeam();  // delete it when all players have left the arena match. Stored in sArenaTeamMgr
+        Player* atPlr[3];
+        uint32 atPlrItr = 0;
+
+        for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
+        {
+            if (atPlrItr >= 3)
+                break; // Should never happen
+
+
+            std::set<uint64> *players = &(*citr)->Players;
+            for (std::set<uint64>::iterator it = players->begin(); it != players->end(); it++)
+            {
+                uint64 guid = *it;
+                if (Player* pPlr = sObjectAccessor->FindPlayer(guid))
+                    atPlr[atPlrItr++] = pPlr;
+                break;
+            }
+        }
+
+        tempArenaTeam->CreateTempForSolo3v3(atPlr, i);
+        sArenaTeamMgr->AddArenaTeam(tempArenaTeam);
+        arenaTeams[i] = tempArenaTeam;
+    }
+}
+//[/AZTH]
+>>>>>>> Stashed changes
 
 void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 {

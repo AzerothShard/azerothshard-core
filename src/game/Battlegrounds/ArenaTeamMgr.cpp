@@ -79,6 +79,13 @@ uint32 ArenaTeamMgr::GenerateArenaTeamId()
     return NextArenaTeamId++;
 }
 
+uint32 ArenaTeamMgr::GenerateTempArenaTeamId()
+{
+    if (NextTempArenaTeamId >= 0xFFFFFFFE)
+        NextTempArenaTeamId = 0xFFF00000;
+    return NextTempArenaTeamId++;
+}
+
 void ArenaTeamMgr::LoadArenaTeams()
 {
     uint32 oldMSTime = getMSTime();
