@@ -1573,7 +1573,7 @@ void ScriptMgr::OnBeforeInitTalentForLevel(Player* player, uint8& level, uint32&
 
 void ScriptMgr::OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange)
 {
-    FOREACH_SCRIPT(BattlegroundScript)->OnAfterArenaRatingCalculation(bg, winnerMatchmakerChange, loserMatchmakerChange, winnerChange, loserChange);
+    FOREACH_SCRIPT(FormulaScript)->OnAfterArenaRatingCalculation(bg, winnerMatchmakerChange, loserMatchmakerChange, winnerChange, loserChange);
 }
 
 AllMapScript::AllMapScript(const char* name)

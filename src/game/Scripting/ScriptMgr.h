@@ -287,6 +287,9 @@ class FormulaScript : public ScriptObject
 
         // Called when calculating the experience rate for group experience.
         virtual void OnGroupRateCalculation(float& /*rate*/, uint32 /*count*/, bool /*isRaid*/) { }
+
+        // Called after calculating arena rating changes
+        virtual void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange) { };
 };
 
 template<class TMap> class MapScript : public UpdatableScript<TMap>
@@ -599,7 +602,6 @@ class BattlegroundScript : public ScriptObject
         // Should return a fully valid Battleground object for the type ID.
         virtual Battleground* GetBattleground() const = 0;
 
-        virtual void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange) { };
 };
 
 class OutdoorPvPScript : public ScriptObject
@@ -1054,6 +1056,7 @@ class ScriptMgr
         void OnBaseGainCalculation(uint32& gain, uint8 playerLevel, uint8 mobLevel, ContentLevels content);
         void OnGainCalculation(uint32& gain, Player* player, Unit* unit);
         void OnGroupRateCalculation(float& rate, uint32 count, bool isRaid);
+        void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange);
 
     public: /* MapScript */
 
@@ -1113,8 +1116,6 @@ class ScriptMgr
     public: /* BattlegroundScript */
 
         Battleground* CreateBattleground(BattlegroundTypeId typeId);
-
-        void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange);
 
     public: /* OutdoorPvPScript */
 
