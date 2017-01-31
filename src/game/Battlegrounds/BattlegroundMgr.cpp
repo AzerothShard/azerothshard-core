@@ -822,10 +822,6 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
                     return BATTLEGROUND_QUEUE_3v3;
                 case ARENA_TYPE_5v5:
                     return BATTLEGROUND_QUEUE_5v5;
-//[AZTH]
-                case ARENA_TYPE_3v3_SOLO:
-                    return BATTLEGROUND_QUEUE_3v3_SOLO;
-//[/AZTH]
                 default:
                     return BATTLEGROUND_QUEUE_NONE;
             }
@@ -858,9 +854,6 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
         case BATTLEGROUND_QUEUE_2v2:
         case BATTLEGROUND_QUEUE_3v3:
         case BATTLEGROUND_QUEUE_5v5:
- //[AZTH]
-        case BATTLEGROUND_QUEUE_3v3_SOLO:
-//[/AZTH]
             return BATTLEGROUND_AA;
         default:
             return BattlegroundTypeId(0);                   // used for unknown template (it existed and do nothing)
@@ -881,10 +874,6 @@ uint8 BattlegroundMgr::BGArenaType(BattlegroundQueueTypeId bgQueueTypeId)
             return ARENA_TYPE_3v3;
         case BATTLEGROUND_QUEUE_5v5:
             return ARENA_TYPE_5v5;
-//[AZTH]
-        case BATTLEGROUND_QUEUE_3v3_SOLO:
-            return ARENA_TYPE_3v3_SOLO;
-//[/AZTH]
         default:
             return 0;
     }

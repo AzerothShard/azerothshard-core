@@ -222,7 +222,6 @@ enum ArenaType
 {
 //[AZTH]
     ARENA_TYPE_1v1          = 1,
-    ARENA_TYPE_3v3_SOLO     = 4, // 3v3 soloqueue
 //[/AZTH]
     ARENA_TYPE_2v2          = 2,
     ARENA_TYPE_3v3          = 3,
@@ -573,8 +572,6 @@ class Battleground
         bool DelObject(uint32 type);
         bool AddSpiritGuide(uint32 type, float x, float y, float z, float o, TeamId teamId);
         int32 GetObjectType(uint64 guid);
-
-        void CheckStartSolo3v3Arena();
 
         void DoorOpen(uint32 type);
         void DoorClose(uint32 type);

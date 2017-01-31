@@ -22369,7 +22369,8 @@ void Player::LeaveBattleground(Battleground* bg)
         return;
 
     // Deserter tracker - leave BG
-    if (bg->isBattleground() || bg->GetArenaType() == ARENA_TYPE_3v3_SOLO && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_TRACK_DESERTERS) && (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN))
+    if (bg->isBattleground() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_TRACK_DESERTERS)
+        && (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN))
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_DESERTER_TRACK);
         stmt->setUInt32(0, GetGUIDLow());
