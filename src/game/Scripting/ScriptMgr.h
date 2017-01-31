@@ -599,7 +599,7 @@ class BattlegroundScript : public ScriptObject
         // Should return a fully valid Battleground object for the type ID.
         virtual Battleground* GetBattleground() const = 0;
 
-        virtual void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange) { };
+        virtual void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange) { };
 };
 
 class OutdoorPvPScript : public ScriptObject
@@ -1114,7 +1114,7 @@ class ScriptMgr
 
         Battleground* CreateBattleground(BattlegroundTypeId typeId);
 
-        void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange);
+        void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange);
 
     public: /* OutdoorPvPScript */
 
