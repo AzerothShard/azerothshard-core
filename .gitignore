@@ -20,6 +20,7 @@ modules/drassil/joiner
 !modules/TimeWalking
 !modules/TournamentSet
 !modules/AzerothTournament
+!modules/npc_solo3v3
 
 build*/
 
