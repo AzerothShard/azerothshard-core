@@ -19,27 +19,28 @@ CREATE TABLE IF NOT EXISTS `timewalking` (
   `phase` int(3) NOT NULL DEFAULT '0',
   `level` int(11) NOT NULL DEFAULT '0',
   `bonus` int(1) NOT NULL DEFAULT '0',
+  `criteria` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 
 -- Dump dei dati della tabella extra.timewalking: ~14 rows (circa)
 DELETE FROM `timewalking`;
 /*!40000 ALTER TABLE `timewalking` DISABLE KEYS */;
-INSERT INTO `timewalking` (`id`, `name`, `exp`, `phase`, `level`, `bonus`) VALUES
-	(1, 'Ragefire Chasm', 1, 1, 10, 1),
-	(2, 'Deadmines', 1, 1, 10, 0),
-	(3, 'Blackfathom Deeps', 1, 2, 15, 0),
-	(4, 'The Stockade', 1, 2, 15, 0),
-	(5, 'Razorfen Kraul', 1, 3, 25, 1),
-	(6, 'Uldaman', 1, 4, 30, 0),
-	(7, 'Razorfen Downs', 1, 5, 35, 0),
-	(8, 'Blackrock Depths: Detention Block', 1, 6, 42, 0),
-	(9, 'Lower Blackrock Spire', 1, 7, 48, 0),
-	(10, 'Molten Core', 1, 8, 50, 0),
-	(11, 'Hellfire Citadel: Hellfire Ramparts', 2, 9, 57, 1),
-	(12, 'Coilfang Reservoir: The Steamvault', 2, 10, 65, 0),
-	(13, 'Coilfang Reservoir: Serpentshrine Cavern', 2, 11, 70, 0),
-	(14, 'Onyxia\'s Lair', 3, 12, 80, 0);
+INSERT INTO `timewalking` (`id`, `name`, `exp`, `phase`, `level`, `bonus`, `criteria`) VALUES
+	(1, 'Ragefire Chasm', 1, 1, 10, 1, NULL),
+	(2, 'Deadmines', 1, 1, 10, 0, NULL),
+	(3, 'Blackfathom Deeps', 1, 2, 15, 0, NULL),
+	(4, 'The Stockade', 1, 2, 15, 0, NULL),
+	(5, 'Razorfen Kraul', 1, 3, 25, 1, NULL),
+	(6, 'Uldaman', 1, 4, 30, 0, NULL),
+	(7, 'Razorfen Downs', 1, 5, 35, 0, NULL),
+	(8, 'Blackrock Depths: Detention Block', 1, 6, 42, 0, NULL),
+	(9, 'Lower Blackrock Spire', 1, 7, 48, 0, NULL),
+	(10, 'Molten Core', 1, 8, 50, 0, NULL),
+	(11, 'Hellfire Citadel: Hellfire Ramparts', 2, 9, 57, 1, NULL),
+	(12, 'Coilfang Reservoir: The Steamvault', 2, 10, 65, 0, NULL),
+	(13, 'Coilfang Reservoir: Serpentshrine Cavern', 2, 11, 70, 0, NULL),
+	(14, 'Onyxia\'s Lair', 3, 12, 80, 0, NULL);
 /*!40000 ALTER TABLE `timewalking` ENABLE KEYS */;
 
 -- Dump della struttura di tabella extra.timewalking_characters_active
@@ -50,15 +51,14 @@ CREATE TABLE IF NOT EXISTS `timewalking_characters_active` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Dump dei dati della tabella extra.timewalking_characters_active: ~5 rows (circa)
+-- Dump dei dati della tabella extra.timewalking_characters_active: ~4 rows (circa)
 DELETE FROM `timewalking_characters_active`;
 /*!40000 ALTER TABLE `timewalking_characters_active` DISABLE KEYS */;
 INSERT INTO `timewalking_characters_active` (`id`, `level`, `spec`) VALUES
 	(8, 10, NULL),
 	(11, 10, 1),
 	(12, 3, NULL),
-	(13, 10, NULL),
-	(15, 50, NULL);
+	(13, 10, NULL);
 /*!40000 ALTER TABLE `timewalking_characters_active` ENABLE KEYS */;
 
 -- Dump della struttura di tabella extra.timewalking_levels
