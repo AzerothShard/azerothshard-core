@@ -508,4 +508,103 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
   return true;
 }
 
+bool AzthPlayer::AzthMaxPlayerSkill() {
+
+    Player* target = player;
+    if (!target) {
+        return false;
+    }
+    if (target->getLevel() < 80) {
+        ChatHandler(player->GetSession()).PSendSysMessage(LANG_LEVEL_MINREQUIRED, 80);
+        return false;
+    }
+
+    static const SkillSpells spells[] = { ONE_HAND_AXES, TWO_HAND_AXES, ONE_HAND_MACES,
+        TWO_HAND_MACES, POLEARMS, ONE_HAND_SWORDS, TWO_HAND_SWORDS, STAVES, BOWS,
+        GUNS, DAGGERS, WANDS, CROSSBOWS, FIST_WEAPONS };
+
+    std::list<SkillSpells> learnList;
+    for (int s = 0; s<sizeof(spells); s++) {
+        SkillSpells spell = spells[s];
+        switch (target->getClass()) {
+        case CLASS_WARRIOR:
+            if (spell != WANDS)
+                learnList.push_back(spell);
+            break;
+        case CLASS_DEATH_KNIGHT:
+        case CLASS_PALADIN:
+            if (spell != STAVES && spell != BOWS && spell != GUNS && spell != DAGGERS &&
+                spell != WANDS && spell != CROSSBOWS && spell != FIST_WEAPONS)
+                learnList.push_back(spell);
+            break;
+        case CLASS_HUNTER:
+            if (spell != ONE_HAND_MACES && spell != TWO_HAND_MACES && spell != WANDS)
+                learnList.push_back(spell);
+            break;
+        case CLASS_ROGUE:
+            if (spell != TWO_HAND_AXES && spell != TWO_HAND_MACES && spell != POLEARMS &&
+                spell != TWO_HAND_SWORDS && spell != STAVES && spell != WANDS)
+                learnList.push_back(spell);
+            break;
+        case CLASS_PRIEST:
+            if (spell == WANDS || spell == ONE_HAND_MACES || spell == STAVES ||
+                spell == DAGGERS)
+                learnList.push_back(spell);
+            break;
+        case CLASS_SHAMAN:
+            if (spell != ONE_HAND_SWORDS && spell != TWO_HAND_SWORDS && spell != POLEARMS &&
+                spell != BOWS && spell != GUNS && spell != WANDS && spell != CROSSBOWS)
+                learnList.push_back(spell);
+            break;
+        case CLASS_WARLOCK:
+        case CLASS_MAGE:
+            if (spell == WANDS || spell == ONE_HAND_SWORDS || spell == STAVES ||
+                spell == DAGGERS)
+                learnList.push_back(spell);
+            break;
+        case CLASS_DRUID:
+            if (spell != ONE_HAND_SWORDS && spell != TWO_HAND_SWORDS &&
+                spell != BOWS && spell != GUNS && spell != WANDS && spell != CROSSBOWS &&
+                spell != ONE_HAND_AXES && spell != TWO_HAND_AXES)
+                learnList.push_back(spell);
+            break;
+        default:
+            break;
+        }
+    }
+
+    for (std::list<SkillSpells>::const_iterator spell = learnList.begin(), end = learnList.end(); spell != end; ++spell) {
+        if (!target->HasSpell(*spell))
+            target->learnSpell(*spell);
+    }
+
+    target->UpdateSkillsToMaxSkillsForLevel();
+    return true;
+}
+
+bool AzthPlayer::AzthSelfChangeXp(float rate)
+{
+
+    if (!player || !player->GetSession())
+        return false;
+
+    ChatHandler* ch = new ChatHandler(player->GetSession());
+
+    float maxRate = sWorld->getFloatConfig(CONFIG_PLAYER_MAXIMUM_INDIVIDUAL_XP_RATE);
+    if (rate < 0 || rate > maxRate) {
+        ch->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Invalid rate specified, must be in interval [0, %.2f].", maxRate);
+        return false;
+    }
+
+    CustomRates::SaveXpRateToDB(player, rate);
+
+    player->azthPlayer->SetPlayerQuestRate(rate);
+
+    if (player->azthPlayer->GetPlayerQuestRate() == 0.0f)
+        ch->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to 0. You won't gain any experience from now on.");
+    else
+        ch->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to %.2f.", player->azthPlayer->GetPlayerQuestRate());
+    return true;
+}
+
 AzthPlayer::~AzthPlayer() {}

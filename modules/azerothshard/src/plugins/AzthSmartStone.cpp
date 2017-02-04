@@ -80,8 +80,14 @@ public:
       }
 
       if (!command.id == 0 && command.parent_menu == parent)
-        player->ADD_GOSSIP_ITEM(command.icon, text, GOSSIP_SENDER_MAIN,
-                                command.id);
+          if (command.type != 3)
+          { 
+            player->ADD_GOSSIP_ITEM(command.icon, text, GOSSIP_SENDER_MAIN,command.id);
+          }
+          else
+          {
+              player->ADD_GOSSIP_ITEM_EXTENDED(command.icon, text, GOSSIP_SENDER_MAIN, command.id, "Scrivi il valore desiderato.", 0, true);
+          }
     }
 
     // acquista app
@@ -164,6 +170,13 @@ public:
                                TEMPSUMMON_TIMED_DESPAWN, 600 * 1000, 0);
         break;
 
+      case 10: // maxskill
+          player->azthPlayer->AzthMaxPlayerSkill();
+          break;
+
+      case 11: //change exp, done at selectcode
+          break;
+
       case 99999:
         break;
       default:
@@ -184,34 +197,82 @@ public:
       parent = selectedCommand.action;
       player->CLOSE_GOSSIP_MENU();
       OnUse(player, item, SpellCastTargets());
-      /*
-      player->PlayerTalkClass->ClearMenus();
-
-      std::vector<SmartStoneCommand> playerCommands =
-      player->azthPlayer->getSmartStoneCommands();
-      int n = playerCommands.size();
-
-
-      for (int i = 0; i < n; i++)
-      {
-          SmartStoneCommand command = playerCommands[i];
-          if (!command.id == 0 && command.parent_menu == selectedCommand.action)
-          {
-              player->ADD_GOSSIP_ITEM(command.icon, command.text,
-      GOSSIP_SENDER_MAIN, command.id);
-          }
-      }
-
-      if (selectedCommand.action == 1)
-          player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_03:30|t
-      Azeroth Store", GOSSIP_SENDER_MAIN, 2000);
-
-      player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
-      */
-
-      // return;
     }
   }
+
+  void OnGossipSelectCode(Player* player, Item* item, uint32 sender, uint32 action, const char* code) override
+  {
+      player->PlayerTalkClass->ClearMenus();
+
+      SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
+
+      // scripted action
+      if (selectedCommand.type == DO_SCRIPTED_ACTION || action == 2000) // azeroth store
+      {
+          switch (action) {
+          case 2000: // store
+              break;
+
+          case 1: // black market teleport
+              break;
+
+          case 2: // change faction
+              break;
+
+          case 3: // rename
+              break;
+
+          case 5: // change race
+              break;
+
+          case 6: // jukebox
+              break;
+
+          case 10: // maxskill
+              break;
+
+          case 11: //change exp
+              if (isFloatNumber(code))
+              {
+                  float exp = atof(code);
+                  player->azthPlayer->AzthSelfChangeXp(exp);
+              }
+              break;
+
+          case 99999:
+              break;
+          default:
+              sLog->outError("Smartstone: unhandled command with code! ID: %u, player GUID: %u", action, player->GetGUID());
+              break;
+          }
+          if (selectedCommand.charges > 0) {
+              player->azthPlayer->decreaseSmartStoneCommandCharges(selectedCommand.id);
+          }
+          player->CLOSE_GOSSIP_MENU();
+      }
+  }
+
+  bool isFloatNumber(const std::string& string) {
+      std::string::const_iterator it = string.begin();
+      bool decimalPoint = false;
+      int minSize = 0;
+      if (string.size()>0 && (string[0] == '-' || string[0] == '+')) {
+          it++;
+          minSize++;
+      }
+      while (it != string.end()) {
+          if (*it == '.') {
+              if (!decimalPoint) decimalPoint = true;
+              else break;
+          }
+          else if (!isdigit(*it) && ((*it != 'f') || it + 1 != string.end() || !decimalPoint)) {
+              break;
+          }
+          ++it;
+      }
+      return string.size()>minSize && it == string.end();
+  }
+
 };
 
 void SmartStone::loadCommands() {

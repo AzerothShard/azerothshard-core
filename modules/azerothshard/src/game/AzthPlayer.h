@@ -5,6 +5,8 @@
 #include "Config.h"
 #include "Define.h"
 #include <UnorderedMap.h>
+#include "game/CustomRates.h"
+#include "game/AzthSharedDefines.h"
 
 struct SmartStoneCommand;
 
@@ -74,6 +76,8 @@ public:
   void loadTimeWalkingFromDB();
   uint32 GetTimeWalkingLevel() const;
   void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool giveLevel=true);
+  bool AzthMaxPlayerSkill();
+  bool AzthSelfChangeXp(float rate);
 
 private:
   Player *player;
