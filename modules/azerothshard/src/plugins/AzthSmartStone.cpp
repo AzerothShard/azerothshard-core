@@ -30,8 +30,10 @@ public:
     if (parent == 1) {
       // black market teleport id 1
       SmartStoneCommand teleport = sSmartStone->getCommandById(1);
-      player->ADD_GOSSIP_ITEM(teleport.icon, teleport.text, GOSSIP_SENDER_MAIN,
-                              teleport.id);
+      if (!player->azthPlayer->isInBlackMarket())
+          player->ADD_GOSSIP_ITEM(teleport.icon, teleport.text, GOSSIP_SENDER_MAIN,teleport.id);
+      else
+          player->ADD_GOSSIP_ITEM(teleport.icon, "Riportami indietro", GOSSIP_SENDER_MAIN, teleport.id);
 
       // menu character (rename, change faction, etc) id 4
       SmartStoneCommand characterMenu = sSmartStone->getCommandById(4);
@@ -134,8 +136,21 @@ public:
 
       case 1: // black market teleport
       {
-        if (!player->IsInCombat())
-          player->TeleportTo(1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
+          if (!player->IsInCombat() && !player->azthPlayer->isInBlackMarket())
+          {
+              float mapid = player->GetMapId();
+              std::vector<float> pos = { mapid, player->GetPositionX(), player->GetPositionY() , player->GetPositionZ() };
+              player->azthPlayer->setLastPositionInfo(pos);
+
+              player->TeleportTo(1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
+          }
+          if (!player->IsInCombat() && player->azthPlayer->isInBlackMarket())
+          {
+              std::vector<float> pos = player->azthPlayer->getLastPositionInfo();
+
+              player->TeleportTo(pos[0], pos[1], pos[2], pos[3], 0.174f, 0);
+          }
+
       } break;
 
       case 2: // change faction

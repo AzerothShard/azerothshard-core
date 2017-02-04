@@ -605,6 +605,37 @@ bool AzthPlayer::AzthSelfChangeXp(float rate)
     else
         ch->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to %.2f.", player->azthPlayer->GetPlayerQuestRate());
     return true;
-}
+};
+
+std::vector<float> AzthPlayer::getLastPositionInfo()
+{
+    return lastPositionInfo;
+};
+
+void AzthPlayer::setLastPositionInfo(std::vector<float> posInfo)
+{
+    lastPositionInfo = posInfo;
+};
+
+bool AzthPlayer::isInBlackMarket()
+{
+    std::vector<float> pos = {player->GetPositionX(), player->GetPositionY() , player->GetPositionZ() };
+    // (1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
+    if (player->GetMapId() != 1)
+        return false;
+
+    if (pos[0] < 4700.f || pos[0] > 4950.f)
+        return false;
+
+    if (pos[1] < -2100.f || pos[1] > -1750.f)
+        return false;
+
+    if (pos[2] < 1000.f || pos[2] > 1120.f)
+        return false;
+
+    return true;
+
+
+};
 
 AzthPlayer::~AzthPlayer() {}

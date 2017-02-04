@@ -34,6 +34,10 @@ public:
     void OnLogin(Player* player) override {
         // do it again for crossfaction system
         player->setFactionForRace(player->getRace());
+
+        //set last known position to black market
+        std::vector<float> pos = { 1.f, 4818.27f, -1971.3f, 1069.75f };
+        player->azthPlayer->setLastPositionInfo(pos);
     }
 
     void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override {

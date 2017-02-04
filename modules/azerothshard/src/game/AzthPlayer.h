@@ -78,6 +78,9 @@ public:
   void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool giveLevel=true);
   bool AzthMaxPlayerSkill();
   bool AzthSelfChangeXp(float rate);
+  std::vector<float> getLastPositionInfo();
+  void setLastPositionInfo(std::vector<float> posInfo);
+  bool isInBlackMarket();
 
 private:
   Player *player;
@@ -85,6 +88,7 @@ private:
   uint32 arena3v3Info[7]; // ARENA_TEAM_END
   float playerQuestRate, maxQuestRate;
   std::vector<SmartStonePlayerCommand> smartStoneCommands;
+  std::vector<float> lastPositionInfo;
 };
 
 #endif /* AZTHPLAYER_H */
