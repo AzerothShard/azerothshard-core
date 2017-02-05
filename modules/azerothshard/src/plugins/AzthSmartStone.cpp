@@ -27,7 +27,8 @@ public:
     player->ADD_GOSSIP_ITEM(0, "Benvenuto nella tua SmartStone!",
                             GOSSIP_SENDER_MAIN, 99999);
 
-    if (parent == 1) {
+    if (parent == 1) // not-to-buy commands for the main menu
+    {
       // black market teleport id 1
       SmartStoneCommand teleport = sSmartStone->getCommandById(1);
       if (!player->azthPlayer->isInBlackMarket())
@@ -44,6 +45,17 @@ public:
       SmartStoneCommand passiveMenu = sSmartStone->getCommandById(9);
       player->ADD_GOSSIP_ITEM(passiveMenu.icon, passiveMenu.text,
                               GOSSIP_SENDER_MAIN, passiveMenu.id);
+    }
+
+    if (parent == 4) // not-to-buy commands for the characters menu
+    {
+        // max skill command
+        SmartStoneCommand maxSkill = sSmartStone->getCommandById(10);
+        player->ADD_GOSSIP_ITEM(maxSkill.icon, maxSkill.text, GOSSIP_SENDER_MAIN, maxSkill.id);
+
+        // azth xp command
+        SmartStoneCommand azthXp = sSmartStone->getCommandById(11);
+        player->ADD_GOSSIP_ITEM(azthXp.icon, azthXp.text, GOSSIP_SENDER_MAIN, azthXp.id);
     }
 
     std::vector<SmartStonePlayerCommand> playerCommands =
@@ -222,7 +234,7 @@ public:
       SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
 
       // scripted action
-      if (selectedCommand.type == DO_SCRIPTED_ACTION || action == 2000) // azeroth store
+      if (selectedCommand.type == DO_SCRIPTED_ACTION_WITH_CODE || action == 2000) // azeroth store
       {
           switch (action) {
           case 2000: // store

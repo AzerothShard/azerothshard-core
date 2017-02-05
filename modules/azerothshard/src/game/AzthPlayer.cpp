@@ -585,8 +585,8 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
 bool AzthPlayer::AzthSelfChangeXp(float rate)
 {
 
-    if (!player || !player->GetSession())
-        return false;
+    //if (!player || !player->GetSession())
+    //    return false;
 
     ChatHandler* ch = new ChatHandler(player->GetSession());
 

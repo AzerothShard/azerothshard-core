@@ -39,8 +39,9 @@ struct SmartStonePlayerCommand
 
 enum MenuType {
     DO_SCRIPTED_ACTION = 1,
-    OPEN_CHILD = 2
-    // DO_DB_ACTION=3 [TO IMPLEMENT]
+    OPEN_CHILD = 2,
+    DO_SCRIPTED_ACTION_WITH_CODE = 3
+    // DO_DB_ACTION=4 [TO IMPLEMENT]
 };
 
 class SmartStone
