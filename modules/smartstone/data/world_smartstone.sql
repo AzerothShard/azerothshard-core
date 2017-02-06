@@ -148,8 +148,3 @@ INSERT INTO playercreateinfo_item (race, class, itemid, amount) VALUES
 (11,8,32547,1),
 (11,9,32547,1),
 (11,11,32547,1);
-
--- new commands
-DELETE FROM smartstone_commands WHERE id IN(10,11);
-INSERT INTO smartstone_commands VALUES (10, "Max Skill", NULL,9, 2, 1, 0, -1, 0, "Max Skill Command");
-INSERT INTO smartstone_commands VALUES (11, "Change exp", NULL,4, 2, 3, 0, -1, 0, "Azth xp command");

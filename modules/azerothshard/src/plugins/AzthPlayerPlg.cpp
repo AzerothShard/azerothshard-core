@@ -36,8 +36,12 @@ public:
         player->setFactionForRace(player->getRace());
 
         //set last known position to black market
-        std::vector<float> pos = { 1.f, 4818.27f, -1971.3f, 1069.75f };
+        std::vector<float> pos = player->azthPlayer->getLastPositionInfoFromDB();
         player->azthPlayer->setLastPositionInfo(pos);
+    }
+
+    void OnLogout(Player* player) override {
+        player->azthPlayer->saveLastPositionInfoToDB(player->azthPlayer->getLastPositionInfo());
     }
 
     void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override {

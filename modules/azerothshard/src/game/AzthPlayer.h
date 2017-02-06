@@ -81,6 +81,8 @@ public:
   std::vector<float> getLastPositionInfo();
   void setLastPositionInfo(std::vector<float> posInfo);
   bool isInBlackMarket();
+  std::vector<float> getLastPositionInfoFromDB();
+  void saveLastPositionInfoToDB(std::vector<float> posInfo);
 
 private:
   Player *player;

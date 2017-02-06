@@ -617,6 +617,32 @@ void AzthPlayer::setLastPositionInfo(std::vector<float> posInfo)
     lastPositionInfo = posInfo;
 };
 
+std::vector<float> AzthPlayer::getLastPositionInfoFromDB()
+{
+    std::vector<float> lastPos;
+    QueryResult ssCommandsResult = CharacterDatabase.PQuery(
+        "SELECT mapId, posX, posY, posZ FROM character_saved_position WHERE type = 1 AND charGuid = %u LIMIT 1;", player->GetGUIDLow());
+
+    if (ssCommandsResult) 
+    {
+        lastPos.push_back((*ssCommandsResult)[0].GetFloat());
+        lastPos.push_back((*ssCommandsResult)[1].GetFloat());
+        lastPos.push_back((*ssCommandsResult)[2].GetFloat());
+        lastPos.push_back((*ssCommandsResult)[3].GetFloat());
+    }
+    else
+    {
+        lastPos = { 1.f, 4818.27f, -1971.3f, 1069.75f }; //black market position
+    }
+    return lastPos;
+};
+
+void AzthPlayer::saveLastPositionInfoToDB(std::vector<float> posInfo)
+{
+    QueryResult ssCommandsResult = CharacterDatabase.PQuery(
+        "REPLACE INTO character_saved_position VALUES (%u, 1, %f, %f, %f, %f);", player->GetGUIDLow(), posInfo[1], posInfo[2], posInfo[3], posInfo[0]);
+};
+
 bool AzthPlayer::isInBlackMarket()
 {
     std::vector<float> pos = {player->GetPositionX(), player->GetPositionY() , player->GetPositionZ() };

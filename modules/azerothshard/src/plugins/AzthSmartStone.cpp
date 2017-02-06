@@ -47,7 +47,7 @@ public:
                               GOSSIP_SENDER_MAIN, passiveMenu.id);
     }
 
-    if (parent == 4) // not-to-buy commands for the characters menu
+    if (parent == 2) // not-to-buy commands for the characters menu
     {
         // max skill command
         SmartStoneCommand maxSkill = sSmartStone->getCommandById(10);
@@ -55,7 +55,7 @@ public:
 
         // azth xp command
         SmartStoneCommand azthXp = sSmartStone->getCommandById(11);
-        player->ADD_GOSSIP_ITEM(azthXp.icon, azthXp.text, GOSSIP_SENDER_MAIN, azthXp.id);
+        player->ADD_GOSSIP_ITEM_EXTENDED(azthXp.icon, azthXp.text, GOSSIP_SENDER_MAIN, azthXp.id, "Scrivi il valore desiderato.", 0, true);
     }
 
     std::vector<SmartStonePlayerCommand> playerCommands =
@@ -264,6 +264,10 @@ public:
                   float exp = atof(code);
                   player->azthPlayer->AzthSelfChangeXp(exp);
               }
+              else
+              {
+                  ChatHandler(player->GetSession()).PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Invalid rate specified!");
+              }
               break;
 
           case 99999:
@@ -288,7 +292,7 @@ public:
           minSize++;
       }
       while (it != string.end()) {
-          if (*it == '.') {
+          if (*it == '.' || *it == ',') {
               if (!decimalPoint) decimalPoint = true;
               else break;
           }

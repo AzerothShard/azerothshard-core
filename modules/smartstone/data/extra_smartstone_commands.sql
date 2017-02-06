@@ -25,3 +25,8 @@ INSERT INTO `smartstone_commands` (id, `text`, item, icon, parent_menu, `type`, 
 (7, "Herbalism", 987894, 0, 3, 1, 0, -1, 0, "bonus loot herbalism"),
 (8, "Mining", 987895, 0, 3, 1, 0, -1, 0, "bonus loot mining"),
 (9, "Bonus passivi", NULL, 1, 1, 2, 3, -1, 0, "submenu for passive bonuses");
+
+-- new commands
+DELETE FROM smartstone_commands WHERE id IN(10,11);
+INSERT INTO smartstone_commands VALUES (10, "Max Skill", NULL,9, 2, 1, 0, -1, 0, "Max Skill Command");
+INSERT INTO smartstone_commands VALUES (11, "Modifica xp rate", NULL,4, 2, 3, 0, -1, 0, "Azth xp command");
