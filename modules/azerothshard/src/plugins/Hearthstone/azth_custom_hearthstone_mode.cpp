@@ -397,20 +397,32 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        uint16 gossip;
-        gossip = 32001;
-        if (creature->GetResistance(SPELL_SCHOOL_HOLY) != 0)
-            gossip = creature->GetResistance(SPELL_SCHOOL_HOLY);
+        std::vector<HearthstoneVendor> vendors = sHearthstoneMode->hsVendors;
+        int pos = 0;
+        for (int i = 0; i < vendors.size(); i++)
+        {
+            HearthstoneVendor temp = vendors.at(i);
+            if (temp.id == creature->GetEntry())
+                pos = i;
+        }
 
-        uint32 rep = player->GetReputation(AZTH_REPUTATION_ID);
-        if (creature->IsVendor() && rep >= creature->GetResistance(SPELL_SCHOOL_FIRE) && (player->GetReputationRank(AZTH_REPUTATION_ID) >= 3))
+        if (pos == 0)
+            return false;
+
+        HearthstoneVendor vendor = vendors.at(pos);
+
+        uint16 gossip;
+
+        uint32 rep = player->GetReputation(vendor.reputationId);
+
+        if (creature->IsVendor() && rep >= vendor.repValue && (player->GetReputationRank(vendor.reputationId) >= 3))
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-        if (player->GetReputation(AZTH_REPUTATION_ID) < creature->GetResistance(SPELL_SCHOOL_FIRE))
-            player->SEND_GOSSIP_MENU(32002, creature->GetGUID());
+        if (rep < vendor.repValue)
+            player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
         else
-            player->SEND_GOSSIP_MENU(gossip, creature->GetGUID());
-
+            player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
+        
         return true;
     }
 };
@@ -644,14 +656,11 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
 
 void HearthstoneMode::loadHearthstone()
 {
-    // initialize count and array
     uint32 count = 0;
     sHearthstoneMode->hsAchievementTable.clear();
 
-    // run query
     QueryResult hsAchiResult = ExtraDatabase.PQuery("SELECT data0, data1, creature, type FROM hearthstone_criteria_credits");
 
-    // store result in vector of hs achievement struct
     if (hsAchiResult)
     {
         do
@@ -662,12 +671,11 @@ void HearthstoneMode::loadHearthstone()
             ha.creature = (*hsAchiResult)[2].GetUInt32();
             ha.type = (*hsAchiResult)[3].GetUInt32();
 
-            sHearthstoneMode->hsAchievementTable.push_back(ha); // push the newly created element in the list
+            sHearthstoneMode->hsAchievementTable.push_back(ha);
             count++;
         } while (hsAchiResult->NextRow());
     }
 
-    // show log of loaded achievements at startup
     sLog->outString("Hearthstone Mode: loaded %u achievement definitions", count);
 
     int itemCount = 0;
@@ -717,8 +725,32 @@ void HearthstoneMode::loadHearthstone()
             } while (hsQuestResult->NextRow());
         }
     
-    // show log of loaded achievements at startup
     sLog->outString("Hearthstone Mode: loaded %u quests", questCount);
+
+
+    uint32 vendorCount = 0;
+    sHearthstoneMode->hsVendors.clear();
+
+    QueryResult hsVendorResult = ExtraDatabase.PQuery("SELECT vendorId, reputation, `value`, gossipSatisfied, gossipUnsatisfied FROM reputation_vendor");
+
+    if (hsVendorResult)
+    {
+        do
+        {
+            HearthstoneVendor hv = {};
+            hv.id = (*hsVendorResult)[0].GetUInt32();
+            hv.reputationId = (*hsVendorResult)[1].GetUInt32();
+            hv.repValue = (*hsVendorResult)[2].GetUInt32();
+            hv.gossipOk = (*hsVendorResult)[3].GetUInt32();
+            hv.gossipNope = (*hsVendorResult)[4].GetUInt32();
+
+            sHearthstoneMode->hsVendors.push_back(hv); // push the newly created element in the list
+
+            vendorCount++;
+        } while (hsVendorResult->NextRow());
+    }
+
+    sLog->outString("Hearthstone Mode: loaded %u vendors", vendorCount);
 }
 
 void AddSC_hearthstone()

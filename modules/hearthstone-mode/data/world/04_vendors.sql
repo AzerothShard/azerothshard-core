@@ -1,7 +1,7 @@
 DELETE FROM npc_text WHERE ID IN (32001, 32002);
 INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
 (32001, "Qui si paga in Marks of Azeroth!", 0, 0, 0),
-(32002, "Ti serve più reputazione!", 0, 0, 0);
+(32010, "Ti serve più reputazione!", 0, 0, 0);
 
 -- Quartermaster Ozorg (Dk start set vendor)
 -- FRIENDLY
@@ -10,7 +10,7 @@ INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entr
 (100100, 0, 0, 0, 0, 0, 16214, 0, 0, 0, 'Quartermaster Ozorg', 'Acherus Quartermaster', '', 0, 72, 72, 1, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 33555202, 2048, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 4, 1, 1, 0, 0, 1, 0, 128, '', 12340);
 
 -- requires friendly with azerothshard (3000 rep)
-UPDATE creature_template SET resistance2 = 3000, `npcflag` = 129, `unit_flags` = 768, `type_flags` = 134217728, `flags_extra` = 2, scriptname = "npc_azth_vendor", `type` = 6  WHERE entry = 100100; 
+UPDATE creature_template SET `npcflag` = 129, `unit_flags` = 768, `type_flags` = 134217728, `flags_extra` = 2, scriptname = "npc_azth_vendor", `type` = 6  WHERE entry = 100100; 
 
 DELETE FROM npc_vendor WHERE entry = 100100;
 INSERT INTO npc_vendor (entry, item, extendedcost) VALUES 
@@ -47,9 +47,6 @@ INSERT INTO npc_vendor (entry, item, extendedcost) VALUES
 (100100, 34661, 3023), -- weapon
 (100100, 38147, 3020); -- ring 
 
--- gossip id inside resistance1 to send the vendor with the gossip
-UPDATE creature_template SET resistance1 = 32000, gossip_menu_id = 32001 WHERE entry = 100100;
-
 DELETE FROM npc_text WHERE ID = 32000;
 INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
 (32000, "Se tu vuoi comprare, tu dare me Marks of Azeroth!", 0, 0, 0);
@@ -62,8 +59,7 @@ DELETE FROM `creature_template` WHERE (entry = 100101);
 INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `BaseAttackTime`, `RangeAttackTime`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `Health_mod`, `Mana_mod`, `Armor_mod`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES
 (100101, 0, 0, 0, 0, 0, 10478, 0, 0, 0, 'Lord Raymond George', 'The Argent Dawn', '', 0, 72, 72, 1, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 33555202, 2048, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 4, 1, 1, 0, 0, 1, 0, 128, '', 12340);
 
--- requires friendly with azerothshard (3000 rep)
-UPDATE creature_template SET resistance2 = 6000, `npcflag` = 129, `unit_flags` = 768, `type_flags` = 134217728, `flags_extra` = 2, scriptname = "npc_azth_vendor", `type` = 6  WHERE entry = 100101; 
+UPDATE creature_template SET `npcflag` = 129, `unit_flags` = 768, `type_flags` = 134217728, `flags_extra` = 2, scriptname = "npc_azth_vendor", `type` = 6  WHERE entry = 100101; 
 
 DELETE FROM npc_vendor WHERE entry = 100101;
 INSERT INTO npc_vendor (entry, item, extendedcost) VALUES 
@@ -96,9 +92,6 @@ INSERT INTO npc_vendor (entry, item, extendedcost) VALUES
 (100101, 22375, 3021),
 (100101, 22376, 3021);
 
--- gossip id inside resistance1 to send the vendor with the gossip
-UPDATE creature_template SET resistance1 = 32002, gossip_menu_id = 32001 WHERE entry = 100101;
-
 DELETE FROM npc_text WHERE ID = 32002;
 INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
 (32002, "Salve, $N. Sei qui per aiutare gli Argent Dawn? I tuoi Marks of Azeroth saranno estremamente utili per le nostre spese...", 0, 0, 0);
@@ -109,8 +102,7 @@ DELETE FROM `creature_template` WHERE (entry = 100102);
 INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `BaseAttackTime`, `RangeAttackTime`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `Health_mod`, `Mana_mod`, `Armor_mod`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES
 (100102, 0, 0, 0, 0, 0, 3709, 0, 0, 0, 'Arsenio', '', '', 0, 80, 80, 1, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 33555202, 2048, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 4, 1, 1, 0, 0, 1, 0, 128, '', 12340);
 
--- requires neutral with azerothshard (0 rep)
-UPDATE creature_template SET resistance2 = 0, `npcflag` = 129, `unit_flags` = 768, `type_flags` = 134217728, 
+UPDATE creature_template SET `npcflag` = 129, `unit_flags` = 768, `type_flags` = 134217728, 
 `flags_extra` = 2, scriptname = "npc_azth_vendor", `type` = 6 WHERE entry = 100102; 
 
 DELETE FROM npc_vendor WHERE entry = 100102;
@@ -153,9 +145,6 @@ INSERT INTO npc_vendor (entry, item, extendedcost) VALUES
 (100102,'48716', 3023),
 (100102,'48718', 3023),
 (100102,'50255', 3023);
-
--- gossip id inside resistance1 to send the vendor with the gossip
-UPDATE creature_template SET resistance1 = 32003, gossip_menu_id = 32001 WHERE entry = 100102;
 
 DELETE FROM npc_text WHERE ID = 32003;
 INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
