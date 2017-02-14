@@ -380,26 +380,19 @@ public:
                 plr = pInstance->instance->GetPlayers().begin()->GetSource();
 
             // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
-            uint32 f = 0;
             std::vector<Player*> list = pInstance->instance->GetPlayerListExceptGMs();
-            if (!list.size() == 0)
-            {
-                for (int i = 0; i < list.size(); i++)
-                {
-                    Player* p = list[i];
-                    if (!p)
-                        return;
 
-                    if (f == 0)
-                    {
-                        f = p->GetTeamId(true);
-                    }
-                    else
-                    {
-                        if (p->GetTeamId(true) != f)
-                            return;
-                    }
-                }
+            if (list.size() == 0)
+                return;
+
+            for (int i = 0; i < list.size(); i++)
+            {
+                Player* p = list[i];
+                if (!p)
+                    return;
+
+                if (plr->GetTeamId(true) != p->GetTeamId(true))
+                    return;
             }
 
 

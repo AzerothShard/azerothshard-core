@@ -1015,27 +1015,24 @@ public:
                 return;
 
             // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
-            uint32 f = 0;
             std::vector<Player*> list = pInstance->instance->GetPlayerListExceptGMs();
-            if (!list.size() == 0)
-            {
-                for (int i = 0; i < list.size(); i++)
-                {
-                    Player* p = list[i];
-                    if (!p)
-                        return;
+            sLog->outString("list size: %u", list.size());
+            if (list.size() == 0)
+                return;
 
-                    if (f == 0)
-                    {
-                        f = p->GetTeamId(true);
-                    }
-                    else
-                    {
-                        if (p->GetTeamId(true) != f)
-                            return;
-                    }
-                }
+            for (int i = 0; i < list.size(); i++)
+            {
+                Player* p = list[i];
+                if (!p)
+                    return;
+
+                sLog->outString("id1: %u, id2: %u", plr->GetTeamId(true), p->GetTeamId(true));
+
+                if (plr->GetTeamId(true) != p->GetTeamId(true))
+                    return;
             }
+
+            sLog->outString("ouch");
 
             // remove loot for the other faction (items are invisible for players, done in conditions), so corpse can be skinned
             for( std::vector<LootItem>::iterator itr = me->loot.items.begin(); itr != me->loot.items.end(); ++itr )

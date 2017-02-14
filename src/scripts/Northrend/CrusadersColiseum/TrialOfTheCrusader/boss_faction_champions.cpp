@@ -2446,26 +2446,19 @@ public:
 
         // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
         InstanceScript* pInstance = go->GetInstanceScript();
-        uint32 f = 0;
         std::vector<Player*> list = pInstance->instance->GetPlayerListExceptGMs();
-        if (!list.size() == 0)
-        {
-            for (int i = 0; i < list.size(); i++)
-            {
-                Player* p = list[i];
-                if (!p)
-                    return false;
 
-                if (f == 0)
-                {
-                    f = p->GetTeamId(true);
-                }
-                else
-                {
-                    if (p->GetTeamId(true) != f)
-                        return false;
-                }
-            }
+        if (list.size() == 0)
+            return;
+
+        for (int i = 0; i < list.size(); i++)
+        {
+            Player* p = list[i];
+            if (!p)
+                return;
+
+            if (plr->GetTeamId(true) != p->GetTeamId(true))
+                return;
         }
 
         uint8 invalidCount = 0;
