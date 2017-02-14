@@ -2291,6 +2291,29 @@ uint32 Map::GetPlayersCountExceptGMs() const
     return count;
 }
 
+std::vector<Player*> Map::GetPlayerList() const
+{
+    uint32 count = 0;
+    std::vector<Player*> players;
+
+    for (MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+        players.push_back(itr->GetSource());
+
+    return players;
+}
+
+std::vector<Player*> Map::GetPlayerListExceptGMs() const
+{
+    uint32 count = 0;
+    std::vector<Player*> players;
+
+    for (MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+        if (!itr->GetSource()->IsGameMaster())
+            players.push_back(itr->GetSource());
+
+    return players;
+}
+
 void Map::SendToPlayers(WorldPacket const* data) const
 { 
     for (MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
