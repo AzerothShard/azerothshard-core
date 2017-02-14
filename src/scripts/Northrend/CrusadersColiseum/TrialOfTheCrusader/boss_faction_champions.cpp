@@ -2444,6 +2444,28 @@ public:
         if (!go->loot.items.size())
             return false;
 
+        // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
+        InstanceScript* pInstance = go->GetInstanceScript();
+        uint32 f = 0;
+        if (!pInstance->instance->GetPlayers().isEmpty())
+        {
+            for (MapRefManager::const_iterator itr = pInstance->instance->GetPlayers().begin(); itr != pInstance->instance->GetPlayers().end(); itr++)
+            {
+                if (!(*itr).GetSource())
+                    return;
+
+                if (f == 0)
+                {
+                    f = (*itr).GetSource()->GetTeamId(true);
+                }
+                else
+                {
+                    if ((*itr).GetSource()->GetTeamId(true) != f)
+                        return;
+                }
+            }
+        }
+
         uint8 invalidCount = 0;
         for( std::vector<LootItem>::iterator itr = go->loot.items.begin(); itr != go->loot.items.end(); ++itr )
             if( ItemTemplate const *iProto = sObjectMgr->GetItemTemplate((*itr).itemid) )

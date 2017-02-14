@@ -379,6 +379,28 @@ public:
             if( !pInstance->instance->GetPlayers().isEmpty() )
                 plr = pInstance->instance->GetPlayers().begin()->GetSource();
 
+            // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
+            uint32 f = 0;
+            if (!pInstance->instance->GetPlayers().isEmpty())
+            {
+                for (MapRefManager::const_iterator itr = pInstance->instance->GetPlayers().begin(); itr != pInstance->instance->GetPlayers().end(); itr++)
+                {
+                    if (!(*itr).GetSource())
+                        return;
+
+                    if (f == 0)
+                    {
+                        f = (*itr).GetSource()->GetTeamId(true);
+                    }
+                    else
+                    {
+                        if ((*itr).GetSource()->GetTeamId(true) != f)
+                            return;
+                    }
+                }
+            }
+
+
             if( !plr )
                 return;
 

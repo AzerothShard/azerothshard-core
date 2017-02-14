@@ -1014,6 +1014,27 @@ public:
             if( !plr )
                 return;
 
+            // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
+            uint32 f = 0;
+            if (!pInstance->instance->GetPlayers().isEmpty())
+            {
+                for (MapRefManager::const_iterator itr = pInstance->instance->GetPlayers().begin(); itr != pInstance->instance->GetPlayers().end(); itr++)
+                {
+                    if (!(*itr).GetSource())
+                        return;
+
+                    if (f == 0)
+                    {
+                        f = (*itr).GetSource()->GetTeamId(true);
+                    }
+                    else
+                    {
+                        if ((*itr).GetSource()->GetTeamId(true) != f)
+                            return;
+                    }
+                }
+            }
+
             // remove loot for the other faction (items are invisible for players, done in conditions), so corpse can be skinned
             for( std::vector<LootItem>::iterator itr = me->loot.items.begin(); itr != me->loot.items.end(); ++itr )
                 if( ItemTemplate const *iProto = sObjectMgr->GetItemTemplate((*itr).itemid) )
