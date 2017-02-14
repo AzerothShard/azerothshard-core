@@ -2449,16 +2449,16 @@ public:
         std::vector<Player*> list = pInstance->instance->GetPlayerListExceptGMs();
 
         if (list.size() == 0)
-            return;
+            return false;
 
         for (int i = 0; i < list.size(); i++)
         {
             Player* p = list[i];
             if (!p)
-                return;
+                return false;
 
             if (plr->GetTeamId(true) != p->GetTeamId(true))
-                return;
+                return false;
         }
 
         uint8 invalidCount = 0;
