@@ -195,7 +195,7 @@ class ArenaTeam
 
     //AZTH
     public:
-        void ArenaTeam::saveSoloDB();
+        void saveSoloDB();
         void CreateTempForSolo3v3(Player * plr[], uint8 team);
         uint32 GetAverageMMR();
 };
