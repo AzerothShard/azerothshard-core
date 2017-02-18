@@ -74,6 +74,8 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         GuildHouseMap::iterator itr = GH_map.find(guild_id);
         if (itr == GH_map.end())
             return true;
+
+        sLog->outDetail("Guild %u sold guild house %u! ", guild_id, itr->second.Id);
         QueryResult result = ExtraDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
         RemoveGuildHouseAdd(itr->second.Id);
         GH_map.erase(guild_id);
@@ -115,6 +117,7 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         GuildHouse NewGH(guild_id, id, x, y, z, map, minguildsize, price, add);
         GH_map[guild_id] = NewGH;
 
+        sLog->outDetail("Guild %u bought guild house %u! ", guild_id, newid);
         result = ExtraDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
         AddGuildHouseAdd(newid, add, guild_id);
     }

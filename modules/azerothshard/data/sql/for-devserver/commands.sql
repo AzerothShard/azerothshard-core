@@ -88,6 +88,7 @@ UPDATE command SET security=0 WHERE name='character titles';
 UPDATE command SET security=0 WHERE name='modify speed all';
 UPDATE command SET security=0 WHERE name='modify';
 UPDATE command SET security=0 WHERE name='appear';
+UPDATE command SET security=0 WHERE name='npc info';
 UPDATE command SET security=0 WHERE name='npc say';
 UPDATE command SET security=0 WHERE name='npc follow stop';
 UPDATE command SET security=0 WHERE name='npc follow';
