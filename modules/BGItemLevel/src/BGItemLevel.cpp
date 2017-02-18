@@ -232,27 +232,17 @@ public:
     
     void OnBeforeUpdateArenaPoints(ArenaTeam* at, std::map<uint32, uint32> &ap)
     {
-        for (ArenaTeam::MemberList::const_iterator itr = at->m_membersBegin(); itr != at->m_membersEnd(); ++itr)
-        {
-            uint32 points = ap[GUID_LOPART(itr->Guid)];
-            uint8 minGames = 10;
+        if(sASeasonMgr->IsEnabled())
+            for (ArenaTeam::MemberList::const_iterator itr = at->m_membersBegin(); itr != at->m_membersEnd(); ++itr)
+            {
+                uint32 points = ap[GUID_LOPART(itr->Guid)];
 
-            if (points == 0)
-                continue;
+                if (points == 0)
+                    continue;
 
-            // assume you've done at least a win to get the basic bonus
-            uint32 weekWins = at->GetStats().WeekWins ? at->GetStats().WeekWins : 1;
-
-            float modifier = float(at->GetStats().WeekWins * 100 / minGames) / 100;
-
-            if (modifier < 0.1)
-                modifier = 0.1; // 10% as min value
-            else if (modifier > 2) // max value
-                modifier = 2;
-
-            // sorry about multiple floating, just to be sure :P
-            ap[GUID_LOPART(itr->Guid)] = float(points * modifier);
-        }
+                // double arena points on standard weeks
+                ap[GUID_LOPART(itr->Guid)] = float(points * 2);
+            }
     }
 };
 
