@@ -12313,6 +12313,11 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
         if (proto->RequiredSpell != 0 && !HasSpell(proto->RequiredSpell))
             return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
 
+
+        //[AZTH]
+        if (azthPlayer->hasGear())
+            return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+        
         //[AZTH] if you are a timewalker you can equip all items
         // because you are an 80 with "fake low level"
         if (azthPlayer->GetTimeWalkingLevel() == 0) {

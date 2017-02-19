@@ -98,7 +98,7 @@ public:
         if (action == 9) //exit from this mode
         {
             uint32 INVENTORY_END = 18;
-            for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX < INVENTORY_END; INVENTORY_INDEX++)
+            for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
             {
                 Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
                 if (item != nullptr)
@@ -140,7 +140,7 @@ public:
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         MailDraft* draft = new MailDraft("Item rimossi", "");
         bool hasItems=false;
-        for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX < INVENTORY_END; INVENTORY_INDEX++)
+        for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
         {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
             if (item != nullptr)
@@ -273,6 +273,7 @@ public:
             Item* item = player->EquipNewItem(SLOT_TABARD, set.GetTabard(), true);
             setEnchantAndSocket(player, item);
         }
+        
     }
 
     void setEnchantAndSocket(Player* player, Item* item)
@@ -344,7 +345,7 @@ public:
             if (player->azthPlayer->hasGear())
             {
                 uint32 INVENTORY_END = 18;
-                for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX < INVENTORY_END; INVENTORY_INDEX++)
+                for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
                 {
                     Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
                     if (item != nullptr)

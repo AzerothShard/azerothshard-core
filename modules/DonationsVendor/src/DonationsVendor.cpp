@@ -12,33 +12,24 @@ public:
     loadItemVendor() : WorldScript("loadItemVendor") {}
     void OnStartup()
     {
-        QueryResult partialItemListQuery = WorldDatabase.PQuery("SELECT entry, name FROM item_template;"); //retrieve all items from db
+        QueryResult partialItemListQuery = WorldDatabase.PQuery("SELECT a.entry,a.name,b.ExtendedCost FROM item_template AS a LEFT JOIN npc_vendor AS b ON b.entry = %d AND a.entry=b.item;", NPC_DONATIONS_VENDOR_ID ); //retrieve all items from db
         Field* partialItemListField = partialItemListQuery->Fetch();
-        uint32 extCost;
         bool canBeBought;
 
         do {
             uint32 id = partialItemListField[0].GetUInt32();
             string name = partialItemListField[1].GetString();
+            uint32 extCost = partialItemListField[2].GetUInt32();
             QueryResult itemToSellQuery = WorldDatabase.PQuery("SELECT ExtendedCost FROM npc_vendor WHERE entry=%d AND item =%d;", NPC_DONATIONS_VENDOR_ID, id); //if result is empty, item cannot be purchased
             
             ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(id);
             if (!_proto)
                 return;
-
-            if (itemToSellQuery)
-            {
-                Field* itemToSellField = itemToSellQuery->Fetch();
-                extCost = itemToSellField[0].GetUInt32();
-                canBeBought = true;
-            }
-            else
-            {
-                extCost = 0;
-                canBeBought = false;
-            }
+    
+            canBeBought = extCost > 0 ? true : false;
 
             ItemToSellList.push_back(ItemToSell(id, name, extCost, canBeBought)); //push data into ItemToSellList list
+
         } while (partialItemListQuery->NextRow());
     }
 };

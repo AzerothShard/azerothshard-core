@@ -152,7 +152,7 @@ public:
     string incompatibleItems[18];
     bool incompatible = false;
 
-    for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX < INVENTORY_END; INVENTORY_INDEX++)
+    for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
     {
       Item* itemToCheck = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
       if (itemToCheck != nullptr)
