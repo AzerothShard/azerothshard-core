@@ -238,9 +238,9 @@ public:
             setEnchantAndSocket(player, item);
         }
 
-        if (set.GetTrinket1() != 0)
+        if (set.GetTrinket2() != 0)
         {
-            Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket1(), true);
+            Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket2(), true);
             setEnchantAndSocket(player, item);
         }
 
