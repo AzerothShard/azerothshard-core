@@ -10,4 +10,4 @@ elseif ( MINGW )
   )
 endif()
 
-install(FILES "${CMAKE_DUELRESET_DIR}/conf/3v3_soloq.conf.dist" DESTINATION ${CONF_DIR})
+install(FILES "${CMAKE_3V3SOLOQ_DIR}/conf/3v3_soloq.conf.dist" DESTINATION ${CONF_DIR})
