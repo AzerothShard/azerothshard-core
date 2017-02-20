@@ -1175,6 +1175,7 @@ bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
                         if ((*itr)->teamId != TEAM_ALLIANCE) // move to other team
                         {
                             (*itr)->teamId = TEAM_ALLIANCE;
+                            (*itr)->_groupType = BG_QUEUE_PREMADE_ALLIANCE;
                             m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].push_front((*itr));
                             itr = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].erase(itr);
                             return CheckSolo3v3Arena(bracket_id);
@@ -1190,6 +1191,7 @@ bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
                         if ((*itr)->teamId != TEAM_HORDE) // move to other team
                         {
                             (*itr)->teamId = TEAM_HORDE;
+                            (*itr)->_groupType = BG_QUEUE_PREMADE_HORDE;
                             m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].push_front((*itr));
                             itr = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr);
                             return CheckSolo3v3Arena(bracket_id);
