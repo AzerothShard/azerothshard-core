@@ -823,7 +823,7 @@ void Spell::SelectSpellTargets()
                 if (m_auraScaleMask && ihit->effectMask == m_auraScaleMask)
                 {
                     // Do not check for selfcast
-                    if (!ihit->scaleAura && ihit->targetGUID != m_caster->GetGUID())
+                    if (!ihit->scaleAura /*[AZTH] && ihit->targetGUID != m_caster->GetGUID()*/)
                     {
                          m_UniqueTargetInfo.erase(ihit++);
                          continue;
@@ -2102,7 +2102,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
         {
             ihit->effectMask |= effectMask;             // Immune effects removed from mask
             ihit->scaleAura = false;
-            if (m_auraScaleMask && ihit->effectMask == m_auraScaleMask && m_caster != target)
+            if (m_auraScaleMask && ihit->effectMask == m_auraScaleMask /*[AZTH] && m_caster != target*/)
             {
                 SpellInfo const* auraSpell = m_spellInfo->GetFirstRankSpell();
                 if (uint32(target->getLevel() + 10) >= auraSpell->SpellLevel)
@@ -2123,7 +2123,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     targetInfo.damage     = 0;
     targetInfo.crit       = false;
     targetInfo.scaleAura  = false;
-    if (m_auraScaleMask && targetInfo.effectMask == m_auraScaleMask && m_caster != target)
+    if (m_auraScaleMask && targetInfo.effectMask == m_auraScaleMask /*[AZTH] && m_caster != target*/)
     {
         SpellInfo const* auraSpell = m_spellInfo->GetFirstRankSpell();
         if (uint32(target->getLevel() + 10) >= auraSpell->SpellLevel)
