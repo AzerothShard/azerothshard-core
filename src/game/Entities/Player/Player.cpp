@@ -8155,7 +8155,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     }
 
     // Add armor bonus from ArmorDamageModifier if > 0
-    if (proto->ArmorDamageModifier > 0)
+    if (proto->ArmorDamageModifier > 0 /*[AZTH] */ && azthPlayer->GetTimeWalkingLevel() == 0) // [/AZTH] armor modifier doesn't scale, so we need to deactivate
         HandleStatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(proto->ArmorDamageModifier), apply);
 
     if (proto->Block)
