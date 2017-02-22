@@ -104,9 +104,9 @@ public:
     bool OnGossipHello(Player* player, Creature* creature)
     {
         if (player->getLevel() >= 80) {
-            player->ADD_GOSSIP_ITEM(0, "Raid con bonus", GOSSIP_SENDER_MAIN, 4);
-            player->ADD_GOSSIP_ITEM(0, "Raid standard", GOSSIP_SENDER_MAIN, 5);
-            player->ADD_GOSSIP_ITEM_EXTENDED(0, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Fase Attuale ( Bonus )", GOSSIP_SENDER_MAIN, 4);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
         }
 
         if (player->azthPlayer->GetTimeWalkingLevel() > 0)
@@ -166,7 +166,7 @@ public:
             {
                 if (it->second.GetBonus() == 1)
                 {
-                    player->ADD_GOSSIP_ITEM(0, "|cFFf91616Bonus: " + it->second.GetName()+"|r", GOSSIP_SENDER_MAIN, 10000+it->second.GetLevel());   
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|cff00ff00|TInterface/ICONS/INV_Misc_Coin_01:30|t|rBonus: " + it->second.GetName()+"|r", GOSSIP_SENDER_MAIN, 10000+it->second.GetLevel());   
                 }
             }
             player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_BONUS, creature->GetGUID());
@@ -194,7 +194,7 @@ public:
 
                 if (std::find(expList.begin(), expList.end(), it->second.GetExp()) == expList.end()) {
                     expList.push_back(it->second.GetExp());
-                    player->ADD_GOSSIP_ITEM(0, exp, GOSSIP_SENDER_MAIN, it->second.GetExp()); // go to phase menu
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, exp, GOSSIP_SENDER_MAIN, it->second.GetExp()); // go to phase menu
                 }
             }
             player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_EXP, creature->GetGUID());
@@ -212,7 +212,7 @@ public:
                         phaseList.push_back(it->second.GetPhase());
                         std::stringstream s;
                         s << "Fase " << it->second.GetPhase();
-                        player->ADD_GOSSIP_ITEM(0, s.str().c_str(), GOSSIP_SENDER_MAIN, 1000 + it->second.GetPhase());
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, s.str().c_str(), GOSSIP_SENDER_MAIN, 1000 + it->second.GetPhase());
                     }
                 }
             }
