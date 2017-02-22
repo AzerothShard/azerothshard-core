@@ -26,8 +26,8 @@ public:
         Field* tournament_tempGear_Field = tournament_tempGear_table->Fetch();
         do
         {
-            //                                    season*10000                                  class*100                                           spec
-            tournamentTempGearList[tournament_tempGear_Field[0].GetUInt32() * 10000 + tournament_tempGear_Field[1].GetUInt32() * 100 + tournament_tempGear_Field[2].GetUInt32()] = AzthGearScaling(tournament_tempGear_Field[0].GetUInt32(), tournament_tempGear_Field[1].GetUInt32(), tournament_tempGear_Field[2].GetUInt32(), tournament_tempGear_Field[3].GetString().c_str(), tournament_tempGear_Field[4].GetUInt32(), tournament_tempGear_Field[5].GetUInt32(), tournament_tempGear_Field[6].GetUInt32(), tournament_tempGear_Field[7].GetUInt32(), tournament_tempGear_Field[8].GetUInt32(), tournament_tempGear_Field[9].GetUInt32(), tournament_tempGear_Field[10].GetUInt32(), tournament_tempGear_Field[11].GetUInt32(), tournament_tempGear_Field[12].GetUInt32(), tournament_tempGear_Field[13].GetUInt32(), tournament_tempGear_Field[14].GetUInt32(), tournament_tempGear_Field[15].GetUInt32(), tournament_tempGear_Field[16].GetUInt32(), tournament_tempGear_Field[17].GetUInt32(), tournament_tempGear_Field[18].GetUInt32(), tournament_tempGear_Field[19].GetUInt32(), tournament_tempGear_Field[20].GetUInt32(), tournament_tempGear_Field[21].GetUInt32(), tournament_tempGear_Field[22].GetUInt32());
+            //                                    season*10000                                  class*100                                           spec                                                        season                               class                                           spec                                 name                                                   head                                       neck                                      shoulders                                   body                                 chest                                         waist                                  legs                                       feet                                        wrists                                    wrists_h                                   hands                                       finger1                                finger1_h                                    finger2                                      finger2_h                                  trinket1                                  trinket1_h                               trinket2                                    trinket2_h                              back                                             mainHand                                    offhand                                   ranged                                  tabard
+            tournamentTempGearList[tournament_tempGear_Field[0].GetUInt32() * 10000 + tournament_tempGear_Field[1].GetUInt32() * 100 + tournament_tempGear_Field[2].GetUInt32()] = AzthGearScaling(tournament_tempGear_Field[0].GetUInt32(), tournament_tempGear_Field[1].GetUInt32(), tournament_tempGear_Field[2].GetUInt32(), tournament_tempGear_Field[3].GetString().c_str(), tournament_tempGear_Field[4].GetUInt32(), tournament_tempGear_Field[5].GetUInt32(), tournament_tempGear_Field[6].GetUInt32(), tournament_tempGear_Field[7].GetUInt32(), tournament_tempGear_Field[8].GetUInt32(), tournament_tempGear_Field[9].GetUInt32(), tournament_tempGear_Field[10].GetUInt32(), tournament_tempGear_Field[11].GetUInt32(), tournament_tempGear_Field[12].GetUInt32(), tournament_tempGear_Field[13].GetUInt32(), tournament_tempGear_Field[14].GetUInt32(), tournament_tempGear_Field[15].GetUInt32(), tournament_tempGear_Field[16].GetUInt32(), tournament_tempGear_Field[17].GetUInt32(), tournament_tempGear_Field[18].GetUInt32(), tournament_tempGear_Field[19].GetUInt32(), tournament_tempGear_Field[20].GetUInt32(), tournament_tempGear_Field[21].GetUInt32(), tournament_tempGear_Field[22].GetUInt32(), tournament_tempGear_Field[23].GetUInt32(), tournament_tempGear_Field[24].GetUInt32(), tournament_tempGear_Field[25].GetUInt32(), tournament_tempGear_Field[26].GetUInt32(), tournament_tempGear_Field[27].GetUInt32());
         } while (tournament_tempGear_table->NextRow());
 
         sAzthGearScaling->SetGearScalingList(tournamentTempGearList);
@@ -208,10 +208,26 @@ public:
             setEnchantAndSocket(player, item);
         }
 
-        if (set.GetWrists() != 0)
+        if (set.GetWrists() != 0) //ally or horde
         {
-            Item* item = player->EquipNewItem(SLOT_WRISTS, set.GetWrists(), true);
-            setEnchantAndSocket(player, item);
+            if (set.GetWrists_h() != 0)
+            {
+                if (player->GetTeamId() == TEAM_ALLIANCE)
+                {
+                    Item* item = player->EquipNewItem(SLOT_WRISTS, set.GetWrists(), true);
+                    setEnchantAndSocket(player, item);
+                }
+                else
+                {
+                    Item* item = player->EquipNewItem(SLOT_WRISTS, set.GetWrists_h(), true);
+                    setEnchantAndSocket(player, item);
+                }
+            }
+            else
+            {
+                Item* item = player->EquipNewItem(SLOT_WRISTS, set.GetWrists(), true);
+                setEnchantAndSocket(player, item);
+            }
         }
 
         if (set.GetHands() != 0)
@@ -220,28 +236,92 @@ public:
             setEnchantAndSocket(player, item);
         }
 
-        if (set.GetFinger1() != 0)
+        if (set.GetFinger1() != 0) //ally or horde
         {
-            Item* item = player->EquipNewItem(SLOT_FINGER1, set.GetFinger1(), true);
-            setEnchantAndSocket(player, item);
+            if (set.GetFinger1_h() != 0)
+            {
+                if (player->GetTeamId() == TEAM_ALLIANCE)
+                {
+                    Item* item = player->EquipNewItem(SLOT_FINGER1, set.GetFinger1(), true);
+                    setEnchantAndSocket(player, item);
+                }
+                else
+                {
+                    Item* item = player->EquipNewItem(SLOT_FINGER1, set.GetFinger1_h(), true);
+                    setEnchantAndSocket(player, item);
+                }
+            }
+            else
+            {
+                Item* item = player->EquipNewItem(SLOT_FINGER1, set.GetFinger1(), true);
+                setEnchantAndSocket(player, item);
+            }
         }
 
-        if (set.GetFinger2() != 0)
+        if (set.GetFinger2() != 0) //ally or horde
         {
-            Item* item = player->EquipNewItem(SLOT_FINGER2, set.GetFinger2(), true);
-            setEnchantAndSocket(player, item);
+            if (set.GetFinger2_h() != 0)
+            {
+                if (player->GetTeamId() == TEAM_ALLIANCE)
+                {
+                    Item* item = player->EquipNewItem(SLOT_FINGER2, set.GetFinger2(), true);
+                    setEnchantAndSocket(player, item);
+                }
+                else
+                {
+                    Item* item = player->EquipNewItem(SLOT_FINGER2, set.GetFinger2_h(), true);
+                    setEnchantAndSocket(player, item);
+                }
+            }
+            else
+            {
+                Item* item = player->EquipNewItem(SLOT_FINGER2, set.GetFinger2(), true);
+                setEnchantAndSocket(player, item);
+            }
         }
 
-        if (set.GetTrinket1() != 0)
+        if (set.GetTrinket1() != 0) //ally or horde
         {
-            Item* item = player->EquipNewItem(SLOT_TRINKET1, set.GetTrinket1(), true);
-            setEnchantAndSocket(player, item);
+            if (set.GetTrinket1_h() != 0)
+            {
+                if (player->GetTeamId() == TEAM_ALLIANCE)
+                {
+                    Item* item = player->EquipNewItem(SLOT_TRINKET1, set.GetTrinket1(), true);
+                    setEnchantAndSocket(player, item);
+                }
+                else
+                {
+                    Item* item = player->EquipNewItem(SLOT_TRINKET1, set.GetTrinket1_h(), true);
+                    setEnchantAndSocket(player, item);
+                }
+            }
+            else
+            {
+                Item* item = player->EquipNewItem(SLOT_TRINKET1, set.GetTrinket1(), true);
+                setEnchantAndSocket(player, item);
+            }
         }
 
-        if (set.GetTrinket2() != 0)
+        if (set.GetTrinket2() != 0) //ally or horde
         {
-            Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket2(), true);
-            setEnchantAndSocket(player, item);
+            if (set.GetTrinket2_h() != 0)
+            {
+                if (player->GetTeamId() == TEAM_ALLIANCE)
+                {
+                    Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket2(), true);
+                    setEnchantAndSocket(player, item);
+                }
+                else
+                {
+                    Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket2_h(), true);
+                    setEnchantAndSocket(player, item);
+                }
+            }
+            else
+            {
+                Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket2(), true);
+                setEnchantAndSocket(player, item);
+            }
         }
 
         if (set.GetBack() != 0)
