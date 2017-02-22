@@ -76,6 +76,7 @@
 #include "ScriptMgr.h"
 
 #include "AzthUtils.h"
+#include "../../BGItemLevel/src/ArenaSeason.h"
 
 #define ZONE_UPDATE_INTERVAL (2*IN_MILLISECONDS)
 
@@ -12318,6 +12319,12 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
         // are equipping something, it won't be equipped
         if (azthPlayer->hasGear() && proto->InventoryType>0)
             return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+
+        //if player is in bg or arena and tournament is enabled check for item level 
+        //if it is > of the maximum level doesnt allow the equipment
+        if((InBattleground() || InArena()) && sASeasonMgr->IsEnabled())
+            if(proto->ItemLevel > sASeasonMgr->GetItemLevel())
+                return EQUIP_ERR_CANT_DO_RIGHT_NOW;
         
         //[AZTH] if you are a timewalker you can equip all items
         // because you are an 80 with "fake low level"

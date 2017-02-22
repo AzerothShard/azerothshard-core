@@ -291,6 +291,8 @@ private:
 
 		sBattlegroundMgr->ScheduleArenaQueueUpdate(arenatype, bgQueueTypeId, bracketEntry->GetBracketId());
 
+        sScriptMgr->OnPlayerJoinArena(player);
+
 		return true;
 	}
 
