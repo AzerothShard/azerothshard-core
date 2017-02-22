@@ -93,13 +93,13 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
         if (pProto->Class == ITEM_CLASS_ARMOR) {
             switch (pProto->SubClass) {
             case ITEM_SUBCLASS_ARMOR_CLOTH :
-                return 1 + 32;
+                return 16 + 32; //return 1 + 32;
             case ITEM_SUBCLASS_ARMOR_LEATHER :
-                return 1 + 64;
+                return 16 + 64; //return 1 + 64;
             case ITEM_SUBCLASS_ARMOR_MAIL :
-                return 1 + 128;
+                return 16 + 128; //return 1 + 128;
             case ITEM_SUBCLASS_ARMOR_PLATE :
-                return 1 + 256;
+                return 16 + 128; //return 1 + 256;
             }
         }
 
@@ -110,13 +110,13 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     if (pProto->InventoryType == INVTYPE_CHEST || pProto->InventoryType == INVTYPE_ROBE) {
         switch (pProto->SubClass) {
         case ITEM_SUBCLASS_ARMOR_CLOTH:
-            return 8 + 1048576;
+            return 16 + 1048576; //return 8 + 1048576;
         case ITEM_SUBCLASS_ARMOR_LEATHER:
-            return 8 + 2097152;
+            return 16 + 2097152; //return 8 + 2097152;
         case ITEM_SUBCLASS_ARMOR_MAIL :
-            return 8 + 4194304;
+            return 16 + 4194304; // return 8 + 4194304;
         case ITEM_SUBCLASS_ARMOR_PLATE:
-            return 8 + 8388608;
+            return 16 + 8388608;  //return 8 + 8388608;
         }
         
         return 0;
@@ -125,15 +125,15 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     // WEAPONS 
     if (pProto->InventoryType == INVTYPE_2HWEAPON) {
         if (pProto->Class == ITEM_CLASS_WEAPON && pProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF ) {
-            return 8 + 4096 + 32768;
+            return 16 + 4096 + 32768; // return 8 + 4096 + 32768;
         } else {
-            return 8 + 1024;
+            return 16 + 1024; //return 8 + 1024;
         }
     }
 
     if (pProto->InventoryType == INVTYPE_WEAPON || pProto->InventoryType == INVTYPE_WEAPONMAINHAND
         || pProto->InventoryType == INVTYPE_WEAPONOFFHAND) {
-        return 4 + 512; // should be 4 ?
+        return 16 + 512; //return 4 + 512; // should be 4 ?
     }
 
     // RANGED
@@ -151,36 +151,40 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
 
    
     if (pProto->InventoryType == INVTYPE_FINGER)
-        return 262144;
+        return 16; // return 262144;
     
     
     if (pProto->InventoryType == INVTYPE_NECK)
-        return 262144;
+        return 16; //return 262144;
     
     //
     // special unknown cases
     //
+
+    if (pProto->InventoryType == INVTYPE_HOLDABLE || pProto->InventoryType == INVTYPE_RELIC) {
+        return 16; //return 4 + 512;
+    }
     
     // CLOAK
     if (pProto->InventoryType == INVTYPE_CLOAK) {
-        return 4 + 524288;
+        return 16 + 524288; //return 4 + 524288;
     }
     
     // ARMOR
     if (pProto->InventoryType == INVTYPE_SHIELD) {
-        return 4 + 8388608;
+        return 16 + 8388608; // return 4 + 8388608;
     }
     
     if (pProto->Class == ITEM_CLASS_ARMOR) {
         switch (pProto->SubClass) {
         case ITEM_SUBCLASS_ARMOR_CLOTH:
-            return 4 + 1048576;
+            return 16 + 1048576; // return 4 + 1048576;
         case ITEM_SUBCLASS_ARMOR_LEATHER:
-            return 4 + 2097152;
+            return 16 + 2097152; //return 4 + 2097152;
         case ITEM_SUBCLASS_ARMOR_MAIL :
-            return 4 + 4194304;
+            return 16 + 4194304; //return 4 + 4194304;
         case ITEM_SUBCLASS_ARMOR_PLATE:
-            return 4 + 8388608;
+            return 16 + 8388608; //return 4 + 8388608;
         }
     }
 
