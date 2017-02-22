@@ -12314,8 +12314,9 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
             return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
 
 
-        //[AZTH]
-        if (azthPlayer->hasGear())
+        //[AZTH] if you have the pvp set and you
+        // are equipping something, it won't be equipped
+        if (azthPlayer->hasGear() && proto->InventoryType>0)
             return EQUIP_ERR_CANT_DO_RIGHT_NOW;
         
         //[AZTH] if you are a timewalker you can equip all items
@@ -17903,7 +17904,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     InitRunes();
 
     //[AZTH]
-    azthPlayer->loadTimeWalkingFromDB();
+    azthPlayer->loadAzthPlayerFromDB();
 
     // make sure the unit is considered out of combat for proper loading
     ClearInCombat();
@@ -18363,7 +18364,26 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
                     else if (IsEquipmentPos(INVENTORY_SLOT_BAG_0, slot))
                     {
                         uint16 dest;
-                        err = CanEquipItem(slot, dest, item, false, false);
+                        
+                        if (azthPlayer->hasGear()) { /*[AZTH] pvp set */
+                            ItemTemplate const* pProto = item->GetTemplate();
+                            if (pProto)
+                            {
+                                uint8 eslot = FindEquipSlot(pProto, slot, false);
+                                if (eslot == NULL_SLOT)
+                                    err = EQUIP_ERR_ITEM_CANT_BE_EQUIPPED;
+
+                                dest = ((INVENTORY_SLOT_BAG_0 << 8) | eslot);
+                            }
+                            else {
+                                err = EQUIP_ERR_ITEM_NOT_FOUND;
+                            }
+                            //[/AZTH]
+                        }
+                        else {
+                            err = CanEquipItem(slot, dest, item, false, false);
+                        }
+
                         if (err == EQUIP_ERR_OK)
                             QuickEquipItem(dest, item);
                     }

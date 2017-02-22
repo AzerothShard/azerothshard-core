@@ -330,16 +330,12 @@ class tournamentPlayer : public PlayerScript
 {
 public:
     tournamentPlayer() : PlayerScript("tournamentPlayer") {}
-    void OnLogin(Player* player) override
-    {
-        QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("SELECT id,season,spec FROM azth_tournamentset_active WHERE id = %d;"), player->GetGUID());
-
-        if (PVPSetCharactersActive_table)
-            player->azthPlayer->SetTempGear(true);
-    }
 
     void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override
     {
+        if (newZone == newArea)
+            return;
+
         if (!player->IsGameMaster() && (!player->InBattleground() || !player->InArena()))
         {
             if (player->azthPlayer->hasGear())

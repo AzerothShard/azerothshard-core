@@ -10,9 +10,8 @@
 #include "Unit.h"
 #include "Pet.h"
 
-//[TIMEWALKING]
 
-void AzthPlayer::loadTimeWalkingFromDB() {
+void AzthPlayer::loadAzthPlayerFromDB() {
     QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("SELECT id,level FROM timewalking_characters_active WHERE id = %d;"), player->GetGUID());
     //clean player to avoid problems
     //player->azthPlayer->SetTimeWalkingLevel(NULL);
@@ -22,7 +21,15 @@ void AzthPlayer::loadTimeWalkingFromDB() {
 
         player->azthPlayer->SetTimeWalkingLevel(timewalkingCharactersActive_field[1].GetUInt32());
     }
+
+    // load pvp set if any
+    QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("SELECT id,season,spec FROM azth_tournamentset_active WHERE id = %d;"), player->GetGUID());
+
+    if (PVPSetCharactersActive_table)
+        player->azthPlayer->SetTempGear(true);
 }
+
+//[TIMEWALKING]
 
 uint32 AzthPlayer::GetTimeWalkingLevel() const
 {
