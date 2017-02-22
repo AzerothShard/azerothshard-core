@@ -1,4 +1,6 @@
 #include "Common.h"
+#include "Define.h"
+#include "Config.h"
 
 class Season
 {

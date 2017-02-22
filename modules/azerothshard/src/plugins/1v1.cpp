@@ -98,6 +98,9 @@
          player->GetSession()->SendPacket(&data);
 
          sBattlegroundMgr->ScheduleArenaQueueUpdate(matchmakerRating, bgQueueTypeId, bracketEntry->GetBracketId());
+
+         sScriptMgr->OnPlayerJoinArena(player);
+
          return true;
      }
 
