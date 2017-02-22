@@ -901,9 +901,11 @@ void ArenaTeam::UpdateArenaPointsHelper(std::map<uint32, uint32>& playerPoints)
 
 void ArenaTeam::SaveToDB()
 {
+    //[AZTH]
     if (TeamId >= 0xFFF00000)
     {
         saveSoloDB();
+        return;
     }
 
     // Save team and member stats to db
@@ -1004,7 +1006,7 @@ void ArenaTeam::saveSoloDB() {
         // Find real arena team for player
         for (UNORDERED_MAP<uint32, ArenaTeam*>::iterator itrMgr = sArenaTeamMgr->GetArenaTeamMapBegin(); itrMgr != sArenaTeamMgr->GetArenaTeamMapEnd(); itrMgr++)
         {
-            if (itrMgr->first < 0xFFF00000 && itrMgr->second->CaptainGuid == itr->Guid && itrMgr->second->Type == ARENA_TEAM_5v5)
+            if (itrMgr->first < 0xFFF00000 && itrMgr->second->CaptainGuid == itr->Guid && itrMgr->second->Type == ARENA_TEAM_SOLO_3v3)
             {
                 plrArenaTeam = itrMgr->second; // found!
                 break;
@@ -1059,6 +1061,7 @@ void ArenaTeam::saveSoloDB() {
         }
 
         plrArenaTeam->NotifyStatsChanged();
+        plrArenaTeam->SaveToDB();
     }
 }
 

@@ -17,6 +17,7 @@
 ArenaTeamMgr::ArenaTeamMgr()
 {
     NextArenaTeamId = 1;
+    NextTempArenaTeamId = 0xFFF00000; // [AZTH]
     LastArenaLogId = 0;
 }
 
