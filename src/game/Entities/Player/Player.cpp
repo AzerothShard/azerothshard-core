@@ -12336,7 +12336,10 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
         //[AZTH] if you have the pvp set and you
         // are equipping something, it won't be equipped
         if (azthPlayer->hasGear() && proto->InventoryType>0)
-            return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+        {
+            if(proto->InventoryType != INVTYPE_AMMO)
+                return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+        }
 
         //if player is in bg or arena and tournament is enabled check for item level 
         //if it is > of the maximum level doesnt allow the equipment
