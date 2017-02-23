@@ -1,4 +1,4 @@
-DELETE FROM `reputation_vendor` WHERE vendorId IN (100002, 100003, 100004, 100005, 100006, 100100, 100101, 100102);
+DELETE FROM `reputation_vendor` WHERE vendorId IN (100002, 100003, 100004, 100005, 100006, 100100, 100101, 100102, 100103);
 INSERT INTO `reputation_vendor` (vendorId, reputation, `value`, gossipSatisfied, gossipUnsatisfied) VALUES
 (100002, 948, 0, 32001, 32010),
 (100003, 948, 3000, 32001, 32010),

@@ -35,7 +35,7 @@ struct HearthstoneQuest
 struct HearthstoneVendor
 {
     uint32 id;
-    uint32 reputationId;
+    int32 reputationId;
     int32 repValue;
     uint32 gossipOk;
     uint32 gossipNope;

@@ -6,6 +6,8 @@
 // arising from the use of this software.
 
 #include "azth_custom_hearthstone_mode.h"
+#include <iostream>
+#include <cstdlib> // now using C++ header
 
 // old
 void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue)
@@ -412,15 +414,60 @@ public:
         HearthstoneVendor vendor = vendors.at(pos);
 
         uint16 gossip;
+        
+        if (vendor.reputationId < 0)
+        {
+            int16 bracket = vendor.reputationId * -1;
+            int32 rating = player->GetArenaPersonalRating(ArenaTeam::GetSlotByType(bracket));
+            
+            if (!creature->IsVendor() || rating < vendor.repValue) {
+                stringstream ss;
+                ss << vendor.repValue;
+                
+                std::string str="Hai bisogno di "+ss.str()+" personal rating ";
+                
+                switch(bracket) {
+                    case 1:
+                        str+" 1v1";
+                    break;
+                    case 2:
+                        str+" 2v2";
+                    break;
+                    case 3:
+                        str+" 3v3";
+                    break;
+                    case 4:
+                        str+" 3v3 Solo Queue";
+                    break;
+                    case 5:
+                        str+" 5v5";
+                    break;
+                }
 
-        uint32 rep = player->GetReputation(vendor.reputationId);
-
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str, GOSSIP_SENDER_MAIN, 0);
+                player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
+            } else {
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+                player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
+            }
+            return true;
+        }
+        
+        // REPUTATION VENDOR
+        int32 rep = player->GetReputation(vendor.reputationId);
+            
         if (creature->IsVendor() && rep >= vendor.repValue && (player->GetReputationRank(vendor.reputationId) >= 3))
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-        if (rep < vendor.repValue)
+        if (rep < vendor.repValue) {
+            stringstream ss;
+            ss << vendor.repValue; 
+            std::string str="Hai bisogno di "+ss.str()+" reputazione con AzerothShard.";
+
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str, GOSSIP_SENDER_MAIN, 0);
+            
             player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
-        else
+        } else
             player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
         
         return true;
@@ -739,8 +786,8 @@ void HearthstoneMode::loadHearthstone()
         {
             HearthstoneVendor hv = {};
             hv.id = (*hsVendorResult)[0].GetUInt32();
-            hv.reputationId = (*hsVendorResult)[1].GetUInt32();
-            hv.repValue = (*hsVendorResult)[2].GetUInt32();
+            hv.reputationId = (*hsVendorResult)[1].GetInt32();
+            hv.repValue = (*hsVendorResult)[2].GetInt32();
             hv.gossipOk = (*hsVendorResult)[3].GetUInt32();
             hv.gossipNope = (*hsVendorResult)[4].GetUInt32();
 

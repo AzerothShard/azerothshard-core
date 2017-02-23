@@ -1,4 +1,4 @@
-DELETE FROM npc_text WHERE ID IN (32001, 32002);
+DELETE FROM npc_text WHERE ID IN (32001, 32010);
 INSERT INTO npc_text (ID, text0_0, text0_1, lang0, em0_0) VALUES 
 (32001, "Qui si paga in Marks of Azeroth!", 0, 0, 0),
 (32010, "Ti serve più reputazione!", 0, 0, 0);
