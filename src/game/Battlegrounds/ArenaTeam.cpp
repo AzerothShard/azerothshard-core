@@ -643,7 +643,7 @@ uint32 ArenaTeam::GetPoints(uint32 memberRating)
         points *= 0.88f;
 //[AZTH]
     else if (Type == ARENA_TEAM_1v1) // Custom 1v1 Arena Rated
-        points *= sConfigMgr->GetFloatDefault("Azth.Rate.Arena1v1", 0.20f);
+        points *= sConfigMgr->GetFloatDefault("Azth.Rate.Arena1v1", 0.40f);
     else if (Type == ARENA_TEAM_SOLO_3v3) // Custom 3v3 Arena Rated
         points *= sConfigMgr->GetFloatDefault("Solo.3v3.ArenaPointsMulti", 0.88f);
 //[/AZTH]
