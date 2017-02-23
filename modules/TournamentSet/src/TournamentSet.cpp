@@ -140,7 +140,7 @@ public:
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         MailDraft* draft = new MailDraft("Item rimossi", "");
         bool hasItems=false;
-        for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
+        for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= 8; INVENTORY_INDEX++)
         {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
             if (item != nullptr)
@@ -153,9 +153,29 @@ public:
             }
         }
         if (hasItems)
-            draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+            draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED, 0, 2000);
         
         delete draft;
+        
+        draft = new MailDraft("Item rimossi", "");
+        hasItems=false;
+        for (uint32 INVENTORY_INDEX = 9; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
+        {
+            Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
+            if (item != nullptr)
+            {
+                player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
+                item->DeleteFromInventoryDB(trans);                   // deletes item from character's inventory
+                item->SaveToDB(trans);
+                draft->AddItem(item);
+                hasItems=true;
+            }
+        }
+        if (hasItems)
+            draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED, 0, 2000);
+        
+        delete draft;
+        
 
         CharacterDatabase.CommitTransaction(trans);
 
