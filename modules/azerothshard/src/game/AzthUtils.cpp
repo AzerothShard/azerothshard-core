@@ -125,24 +125,24 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     // WEAPONS 
     if (pProto->InventoryType == INVTYPE_2HWEAPON) {
         if (pProto->Class == ITEM_CLASS_WEAPON && pProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF ) {
-            return 16 + 4096 + 32768; // return 8 + 4096 + 32768;
+            return 16; // + 4096 + 32768; // return 8 + 4096 + 32768;
         } else {
-            return 16 + 1024; //return 8 + 1024;
+            return 16; // + 1024; //return 8 + 1024;
         }
     }
 
     if (pProto->InventoryType == INVTYPE_WEAPON || pProto->InventoryType == INVTYPE_WEAPONMAINHAND
         || pProto->InventoryType == INVTYPE_WEAPONOFFHAND) {
-        return 16 + 512; //return 4 + 512; // should be 4 ?
+        return 16; //+ 512; //return 4 + 512; // should be 4 ?
     }
 
     // RANGED
     if (pProto->InventoryType == INVTYPE_RANGED || pProto->InventoryType == INVTYPE_AMMO || pProto->InventoryType == INVTYPE_THROWN)
-        return 16 + 8192; // should be 16 ?
+        return 16 //+ 8192; // should be 16 ?
         
     // WANDS
     if (pProto->InventoryType == INVTYPE_RANGEDRIGHT)
-        return 16 + 16384; // should be 16 ?
+        return 16 //+ 16384; // should be 16 ?
 
 
     if (pProto->InventoryType == INVTYPE_TRINKET) {

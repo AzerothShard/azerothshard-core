@@ -413,10 +413,17 @@ public:
 
     void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override
     {
-        if (newZone == newArea)
-            return;
-
-        if (!player->IsGameMaster() && (!player->InBattleground() || !player->InArena()))
+        if (player->GetSession()->PlayerLoading())
+            return; // do not remove set during login
+        
+        uint32 zone;
+        uint32 area;
+        player->GetBaseMap()->GetZoneAndAreaId(zone, area, player->GetEntryPoint().GetPositionX(), player->GetEntryPoint().GetPositionY(), player->GetEntryPoint().GetPositionZ());
+        if (newArea == area)
+            return; // do not remove set if we're leaving BG/Arena
+        
+        
+        if (!player->IsGameMaster() && !player->InBattleground() && !player->InArena())
         {
             if (player->azthPlayer->hasGear())
             {
