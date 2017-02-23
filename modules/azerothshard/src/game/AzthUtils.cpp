@@ -138,11 +138,11 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
 
     // RANGED
     if (pProto->InventoryType == INVTYPE_RANGED || pProto->InventoryType == INVTYPE_AMMO || pProto->InventoryType == INVTYPE_THROWN)
-        return 16 //+ 8192; // should be 16 ?
+        return 16; //+ 8192; // should be 16 ?
         
     // WANDS
     if (pProto->InventoryType == INVTYPE_RANGEDRIGHT)
-        return 16 //+ 16384; // should be 16 ?
+        return 16; //+ 16384; // should be 16 ?
 
 
     if (pProto->InventoryType == INVTYPE_TRINKET) {
