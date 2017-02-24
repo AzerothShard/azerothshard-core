@@ -285,11 +285,12 @@ public:
                 }
             }
 
-            if (level <= achi.GetLevel())
+            if (level <= achi.GetLevel()) {
                 count *= 2;
 
-            if (hasBonus)
-                count *= 3;
+                if (hasBonus)
+                    count *= 3;
+            }
 
             if (_proto->IsCurrencyToken())
                 player->AddItem(reward, count);
