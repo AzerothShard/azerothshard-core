@@ -11303,8 +11303,16 @@ float Unit::SpellPctHealingModsDone(Unit* victim, SpellInfo const* spellProto, D
 
     // Healing done percent
     AuraEffectList const& mHealingDonePct = GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
-    for (AuraEffectList::const_iterator i = mHealingDonePct.begin(); i != mHealingDonePct.end(); ++i)
+    for (AuraEffectList::const_iterator i = mHealingDonePct.begin(); i != mHealingDonePct.end(); ++i) {
+        //[AZTH] Timewalking scaled healing spells shouldn't have the 
+        // percent reduction of tw table, but we can apply a minor modifier
+        if ((*i)->GetId() == 909092 && spellProto->BaseLevel <= (getLevel()+10)) {
+            AddPct(DoneTotalMod, -14);
+            continue;
+        }
+        
         AddPct(DoneTotalMod, (*i)->GetAmount());
+    }
 
     // done scripted mod (take it from owner)
     Unit* owner = GetOwner() ? GetOwner() : this;
