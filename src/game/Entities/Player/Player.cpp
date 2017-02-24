@@ -12525,7 +12525,7 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
         // pussywizard: obtaining blue or better items saves to db
         if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item))
             if (pProto->Quality >= ITEM_QUALITY_RARE)
-                AdditionalSavingAddMask(ADDITIONAL_SAVING_INVENTORY_AND_GOLD);
+                    AdditionalSavingAddMask(ADDITIONAL_SAVING_INVENTORY_AND_GOLD);
 
         ItemAddedQuestCheck(item, count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item, count);
@@ -12694,13 +12694,16 @@ Item* Player::EquipNewItem(uint16 pos, uint32 item, bool update)
 {
     if (Item* pItem = Item::CreateItem(item, 1, this))
     {
-        // pussywizard: obtaining blue or better items saves to db
-        if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item))
-            if (pProto->Quality >= ITEM_QUALITY_RARE)
-                AdditionalSavingAddMask(ADDITIONAL_SAVING_INVENTORY_AND_GOLD);
+        if (!azthPlayer->hasGear()) //AZTH dosnt save items if they are temp item for tournament
+        {
+            // pussywizard: obtaining blue or better items saves to db
+            if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item))
+                if (pProto->Quality >= ITEM_QUALITY_RARE)
+                    AdditionalSavingAddMask(ADDITIONAL_SAVING_INVENTORY_AND_GOLD);
 
-        ItemAddedQuestCheck(item, 1);
-        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item, 1);
+            ItemAddedQuestCheck(item, 1);
+            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item, 1);
+        }
         return EquipItem(pos, pItem, update);
     }
 
