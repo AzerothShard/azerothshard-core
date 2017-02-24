@@ -88,8 +88,8 @@ public:
             uint32 season = action / 10000;
             uint32 spec = action - (season * 10000) - (player->getClass()*100);
             AzthGearScaling set = sAzthGearScaling->GetGearScalingList()[action];
-            equipSet(set, player);
             player->azthPlayer->SetTempGear(true);
+            equipSet(set, player);
             QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_tournamentset_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
             player->SaveToDB(false, false);
             player->PlayerTalkClass->SendCloseGossip();
