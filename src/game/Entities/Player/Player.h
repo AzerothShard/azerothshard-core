@@ -2471,6 +2471,7 @@ class Player : public Unit, public GridObject<Player>
         void SendMovieStart(uint32 MovieId);
 
         //[AZTH]
+        uint16 GetMaxSkillValueForLevel() const;
         void CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality);
         void InitWowarmoryFeeds();
         //[/AZTH]

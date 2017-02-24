@@ -6606,11 +6606,6 @@ uint16 Player::GetSkillValue(uint32 skill) const
     uint32 bonus = GetUInt32Value(PLAYER_SKILL_BONUS_INDEX(itr->second.pos));
 
     int32 result = int32(SKILL_VALUE(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos))));
-    
-    //[AZTH] Hack for timewalking
-    if (this->azthPlayer->GetTimeWalkingLevel()>0)
-        result = GetMaxSkillValueForLevel();
-    
     result += SKILL_TEMP_BONUS(bonus);
     result += SKILL_PERM_BONUS(bonus);
     return result < 0 ? 0 : result;
@@ -6631,7 +6626,7 @@ uint16 Player::GetMaxSkillValue(uint32 skill) const
     
     //[AZTH] Hack for timewalking
     if (this->azthPlayer->GetTimeWalkingLevel()>0)
-        result = GetMaxSkillValueForLevel();
+        result = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
     
     result += SKILL_TEMP_BONUS(bonus);
     result += SKILL_PERM_BONUS(bonus);
@@ -6649,7 +6644,7 @@ uint16 Player::GetPureMaxSkillValue(uint32 skill) const
     
     //[AZTH] Hack for timewalking
     if (this->azthPlayer->GetTimeWalkingLevel()>0)
-        return GetMaxSkillValueForLevel();
+        return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
 
     return SKILL_MAX(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos)));
 }
@@ -6676,10 +6671,6 @@ uint16 Player::GetPureSkillValue(uint32 skill) const
     SkillStatusMap::const_iterator itr = mSkillStatus.find(skill);
     if (itr == mSkillStatus.end() || itr->second.uState == SKILL_DELETED)
         return 0;
-    
-    //[AZTH] Hack for timewalking
-    if (this->azthPlayer->GetTimeWalkingLevel()>0)
-        return GetMaxSkillValueForLevel();
 
     return SKILL_VALUE(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos)));
 }
@@ -27235,6 +27226,14 @@ void Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 }
 
 //[AZTH]
+
+uint16 Player::GetMaxSkillValueForLevel() const {
+    if (this->azthPlayer->GetTimeWalkingLevel()>0)
+        return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
+    
+    return Unit::GetMaxSkillValueForLevel();
+}
+
 void Player::UpdateKnownTitles()
 {
     uint32 new_title = 0;
