@@ -12326,7 +12326,7 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
 
         //[AZTH] if you have the pvp set and you
         // are equipping something, it won't be equipped
-        if (azthPlayer->hasGear() && proto->InventoryType>0)
+        if (!GetSession()->PlayerLoading() && azthPlayer->hasGear() && proto->InventoryType>0)
         {
             if(proto->InventoryType != INVTYPE_AMMO)
                 return EQUIP_ERR_CANT_DO_RIGHT_NOW;
