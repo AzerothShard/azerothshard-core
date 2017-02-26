@@ -25,7 +25,7 @@ public:
     
     void OnLevelChanged(Player* player, uint8 oldLevel) override
     {
-        if (oldLevel == 9)
+        if (oldLevel == 9 && player->azthPlayer->GetTimeWalkingLevel() == 0)
         {
             sWorld->SendGameMail(player, "Well done!", "You reached level 10, a small present for you!", 10 * GOLD);
         }
