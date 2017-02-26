@@ -1,4 +1,6 @@
 #include "AzthUtils.h"
+#include "AzthLevelStat.h"
+#include "Pet.h"
 
 
 
@@ -11,23 +13,87 @@ AzthUtils::~AzthUtils()
 {
 }
 
+uint32 AzthUtils::selectCorrectSpellRank(uint8 level, uint32 spellId) {
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+
+    for (SpellInfo const* nextSpellInfo = spellInfo; nextSpellInfo != NULL; nextSpellInfo = nextSpellInfo->GetPrevRankSpell())
+    {
+        if ((nextSpellInfo->SpellLevel == 0 && uint32(level) >= nextSpellInfo->BaseLevel) || uint32(level) >= nextSpellInfo->SpellLevel)
+                return nextSpellInfo->Id;
+    }
+
+    return 0;
+}
+
+uint32 AzthUtils::selectSpellForTW(Player* player, uint32 spellId) {
+    if (player->azthPlayer->GetTimeWalkingLevel() > 0) {
+        uint32 spell=this->selectCorrectSpellRank(player->getLevel(), spellId);
+        if (spell)
+            return spell;
+    }
+
+    return spellId;
+}
 
 void AzthUtils::removeTimewalkingAura(Unit *unit) {
     for (Unit::AuraApplicationMap::iterator iter = unit->GetAppliedAuras().begin(); iter != unit->GetAppliedAuras().end();)
     {
         AuraApplication const* aurApp = iter->second;
         Aura const* aura = aurApp->GetBase();
-        if (!aura->IsPassive()                               // don't remove passive auras
-            && (aurApp->IsPositive() || unit->IsPet() || !aura->GetSpellInfo()->HasAttribute(SPELL_ATTR3_DEATH_PERSISTENT))) // not negative death persistent auras
+
+        // we remove/apply them in another place
+        if (aura->GetSpellInfo()->Id >= TIMEWALKING_AURA_MOD_HEALING && aura->GetSpellInfo()->Id <= TIMEWALKING_AURA_VISIBLE) {
+            ++iter;
+            continue;
+        }
+
+        if (aurApp->IsPositive() || unit->IsPet() || !aura->GetSpellInfo()->HasAttribute(SPELL_ATTR3_DEATH_PERSISTENT)) // not negative death persistent auras
         {
             unit->RemoveAura(iter);
         }
         // xinef: special marker, 95% sure
         else if (aura->GetSpellInfo()->HasAttribute(SPELL_ATTR5_REMOVE_ON_ARENA_ENTER))
             unit->RemoveAura(iter);
-        else
+        else {
             ++iter;
+        }
     }
+
+    if (unit->GetTypeId() == TYPEID_PLAYER) {
+        Player *pl = (Player*)unit;
+
+        std::list<uint32> spells;
+        for (PlayerSpellMap::iterator itr = pl->GetSpellMap().begin(); itr != pl->GetSpellMap().end();) {
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+            if (spellInfo->IsPassive() && spellInfo->IsPositive()) {
+                spells.push_back(itr->first);
+            }
+            ++itr;
+        }
+
+        for (std::list<uint32>::const_iterator iterator = spells.begin(), end = spells.end(); iterator != end; ++iterator) {
+            pl->RemoveAurasDueToSpell((*iterator));
+            pl->CastSpell(pl, (*iterator), true);
+        }
+    }
+    else if (unit->IsPet()) {
+        Pet *pet = (Pet*)unit;
+
+        std::list<uint32> spells;
+        for (PetSpellMap::iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end();) {
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+            if (spellInfo->IsPassive() && spellInfo->IsPositive()) {
+                spells.push_back(itr->first);
+            }
+            ++itr;
+        }
+
+        for (std::list<uint32>::const_iterator iterator = spells.begin(), end = spells.end(); iterator != end; ++iterator) {
+            pet->RemoveAurasDueToSpell((*iterator));
+            pet->CastSpell(pet, (*iterator), true);
+        }
+    }
+
 }
 
 uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
@@ -60,7 +126,7 @@ uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
         //    return 80;
         
         // 130 - 284
-        return 80;
+        return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
     }
 
     return pProto->RequiredLevel;
@@ -68,12 +134,13 @@ uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
 
 float AzthUtils::getCustomMultiplier(ItemTemplate const * pProto,uint32 multiplier) {
     uint32 req=getCalcReqLevel(pProto);
-    if (req >= 80) {
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    if (req >= maxLevel) {
         return multiplier;
     }
     else {
         // ex: 131 ( boost ) / ( 80 - 60 )
-        return ( (float)multiplier / float( 80 - req ) ) * 6;
+        return ( (float)multiplier / float( maxLevel - req ) ) * 6;
     }
 }
 

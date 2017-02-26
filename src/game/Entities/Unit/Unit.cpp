@@ -52,6 +52,8 @@
 #include "ArenaSpectator.h"
 #include "DynamicVisibility.h"
 #include "AccountMgr.h"
+//[AZTH]
+#include "AzthLevelStat.h"
 
 #include <math.h>
 
@@ -10321,6 +10323,26 @@ float Unit::SpellPctDamageModsDone(Unit* victim, SpellInfo const* spellProto, Da
         if (!spellProto->ValidateAttribute6SpellDamageMods(this, *i, damagetype == DOT))
             continue;
 
+        //[AZTH] Timewalking scaled healing spells shouldn't have the 
+        // percent reduction of tw table, but we can apply a minor modifier
+        if ((*i)->GetId() == TIMEWALKING_AURA_MOD_DAMAGESPELL && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= (getLevel() + 10))
+            || spellProto->SpellLevel <= (getLevel() + 10))) {
+            uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
+            int32 reduction = -(spellLevel > getLevel() ? spellLevel - getLevel() : 0);
+            //  replicate conditions below
+            if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
+            {
+                if ((*i)->GetSpellInfo()->EquippedItemClass == -1)
+                    AddPct(DoneTotalMod, reduction);
+                else if (!(*i)->GetSpellInfo()->HasAttribute(SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK) && ((*i)->GetSpellInfo()->EquippedItemSubClassMask == 0))
+                    AddPct(DoneTotalMod, reduction);
+                else if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()))
+                    AddPct(DoneTotalMod, reduction);
+            }
+            continue;
+        }
+        //[/AZTH]
+
         if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
         {
             if ((*i)->GetSpellInfo()->EquippedItemClass == -1)
@@ -11306,8 +11328,12 @@ float Unit::SpellPctHealingModsDone(Unit* victim, SpellInfo const* spellProto, D
     for (AuraEffectList::const_iterator i = mHealingDonePct.begin(); i != mHealingDonePct.end(); ++i) {
         //[AZTH] Timewalking scaled healing spells shouldn't have the 
         // percent reduction of tw table, but we can apply a minor modifier
-        if ((*i)->GetId() == 909092 && spellProto->BaseLevel <= (getLevel()+10)) {
-            AddPct(DoneTotalMod, -14);
+        if ((*i)->GetId() == TIMEWALKING_AURA_MOD_HEALING && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= (getLevel()+10)) 
+            || spellProto->SpellLevel <= (getLevel() + 10))) {
+            uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
+            uint32 mod = spellLevel > getLevel() ? spellLevel - getLevel() : 0;
+
+            AddPct(DoneTotalMod, -(mod));
             continue;
         }
         

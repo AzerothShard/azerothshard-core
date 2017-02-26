@@ -125,12 +125,13 @@ public:
 
     void setTimeWalking(Player* player,uint32 level)
     {
+        player->azthPlayer->SetTimeWalkingLevel(level);
+
         sAzthUtils->removeTimewalkingAura(player);
         if (player->GetPet() != NULL) {
             sAzthUtils->removeTimewalkingAura(player->GetPet());
         }
 
-        player->azthPlayer->SetTimeWalkingLevel(level);
         player->SaveToDB(false, false);
     }
 

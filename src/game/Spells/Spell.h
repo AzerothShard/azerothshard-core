@@ -230,6 +230,9 @@ class Spell
     friend void Unit::SetCurrentCastedSpell(Spell* pSpell);
     friend class SpellScript;
     public:
+        //[AZTH]
+        Spell *m_twOriginalSpell;
+        //[/AZTH]
 
         void EffectNULL(SpellEffIndex effIndex);
         void EffectUnused(SpellEffIndex effIndex);

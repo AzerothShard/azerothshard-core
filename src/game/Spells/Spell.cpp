@@ -531,6 +531,10 @@ m_spellInfo(sSpellMgr->GetSpellForDifficultyFromSpell(info, caster)),
 m_caster((info->HasAttribute(SPELL_ATTR6_CAST_BY_CHARMER) && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
 , m_spellValue(new SpellValue(m_spellInfo))
 {
+    //[AZTH]
+    m_twOriginalSpell = NULL;
+    //[/AZTH]
+
     m_customError = SPELL_CUSTOM_ERROR_NONE;
     m_skipCheck = skipCheck;
     m_selfContainer = NULL;
@@ -647,6 +651,10 @@ m_caster((info->HasAttribute(SPELL_ATTR6_CAST_BY_CHARMER) && caster->GetCharmerO
 
 Spell::~Spell()
 {
+    //[AZTH]
+    delete m_twOriginalSpell;
+    //[/AZTH]
+
     // unload scripts
     while (!m_loadedScripts.empty())
     {
@@ -3067,7 +3075,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
 
     //[/AZTH]
     // Fill aura scaling information
-    if ((m_caster->isType(TYPEMASK_PLAYER) && ((Player*)m_caster)->azthPlayer->GetTimeWalkingLevel() > 0) || //[AZTH] timewalking scale everything!!!
+    if (//(m_caster->isType(TYPEMASK_PLAYER) && ((Player*)m_caster)->azthPlayer->GetTimeWalkingLevel() > 0) || //[AZTH] timewalking scale everything!!!
         m_caster->IsTotem() || (m_caster->IsControlledByPlayer() && !m_spellInfo->IsPassive() && m_spellInfo->SpellLevel && !m_spellInfo->IsChanneled() && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_SCALING)))
     {
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -3746,6 +3754,10 @@ void Spell::SendSpellCooldown()
                     WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 4 + 4);
                     data << uint64(m_caster->GetGUID());
                     data << uint8(SPELL_COOLDOWN_FLAG_INCLUDE_GCD);
+                    //[AZTH] Timewalking
+                    if (m_twOriginalSpell)
+                        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
+                    else
                     data << uint32(m_spellInfo->Id);
                     data << uint32(m_spellInfo->RecoveryTime);
                     player->SendDirectMessage(&data);
@@ -4140,6 +4152,10 @@ void Spell::SendSpellStart()
 
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
+    //[AZTH]
+    if (m_twOriginalSpell)
+        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
+    else
     data << uint32(m_spellInfo->Id);                        // spellId
     data << uint32(castFlags);                              // cast flags
     data << int32(m_timer);                                 // delay?
@@ -4213,6 +4229,10 @@ void Spell::SendSpellGo()
 
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
+    //[AZTH]
+    if (m_twOriginalSpell)
+        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
+    else
     data << uint32(m_spellInfo->Id);                        // spellId
     data << uint32(castFlags);                              // cast flags
     data << uint32(World::GetGameTimeMS());                 // timestamp
@@ -4408,6 +4428,10 @@ void Spell::SendLogExecute()
 
     data.append(m_caster->GetPackGUID());
 
+    //[AZTH]
+    if (m_twOriginalSpell)
+        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
+    else
     data << uint32(m_spellInfo->Id);
 
     uint8 effCount = 0;
@@ -4508,6 +4532,10 @@ void Spell::SendInterrupted(uint8 result)
     WorldPacket data(SMSG_SPELL_FAILURE, (8+1+4+1));
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);
+    //[AZTH]
+    if (m_twOriginalSpell)
+        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
+    else
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
     m_caster->SendMessageToSet(&data, true);
@@ -4515,6 +4543,10 @@ void Spell::SendInterrupted(uint8 result)
     data.Initialize(SMSG_SPELL_FAILED_OTHER, (8+1+4+1));
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);
+    //[AZTH]
+    if (m_twOriginalSpell)
+        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
+    else
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
     m_caster->SendMessageToSet(&data, true);
@@ -4544,6 +4576,11 @@ void Spell::SendChannelStart(uint32 duration)
 
     WorldPacket data(MSG_CHANNEL_START, (8+4+4));
     data.append(m_caster->GetPackGUID());
+
+    //[AZTH]
+    if (m_twOriginalSpell)
+        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
+    else
     data << uint32(m_spellInfo->Id);
     data << uint32(duration);
 
@@ -4556,6 +4593,10 @@ void Spell::SendChannelStart(uint32 duration)
     if (channelTarget)
         m_caster->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, channelTarget);
 
+    //[AZTH]
+    if (m_twOriginalSpell) {
+        m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, m_twOriginalSpell->GetSpellInfo()->Id);
+    } else //[/AZTH]
     m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, m_spellInfo->Id);
 }
 

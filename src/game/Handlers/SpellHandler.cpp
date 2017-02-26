@@ -22,6 +22,8 @@
 #include "GameObjectAI.h"
 #include "SpellAuraEffects.h"
 #include "Player.h"
+//[AZTH]
+#include "AzthUtils.h"
 
 void WorldSession::HandleClientCastFlags(WorldPacket& recvPacket, uint8 castFlags, SpellCastTargets& targets)
 {
@@ -331,6 +333,11 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     uint8  castCount, castFlags;
     recvPacket >> castCount >> spellId >> castFlags;
 
+    //[AZTH] Timewalking
+    uint32 oldSpellId = spellId;
+    spellId = sAzthUtils->selectSpellForTW(_player, spellId);
+    //[/AZTH]
+
     ;//sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got cast spell packet, castCount: %u, spellId: %u, castFlags: %u, data length = %u", castCount, spellId, castFlags, (uint32)recvPacket.size());
 
     // ignore for remote control state (for player case)
@@ -429,6 +436,16 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
+
+    //[AZTH] Timewalking: we must send a spell cast result on prev spell
+    // to avoid bad visual effect in spell bar
+    if (oldSpellId != spellId) {
+        SpellInfo const* oldSpellInfo = sSpellMgr->GetSpellInfo(oldSpellId);
+        Spell* oldSpell = new Spell(mover, oldSpellInfo, TRIGGERED_NONE, 0, false);
+        spell->m_twOriginalSpell = oldSpell;
+    }
+    //[/AZTH]
+
     spell->m_cast_count = castCount;                       // set count of casts
     spell->prepare(&targets);
 }

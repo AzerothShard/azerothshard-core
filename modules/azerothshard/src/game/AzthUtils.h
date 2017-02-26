@@ -19,6 +19,10 @@ public:
     AzthUtils();
     ~AzthUtils();
 
+    uint32 selectCorrectSpellRank(uint8 level, uint32 spellId);
+
+    uint32 selectSpellForTW(Player* player, uint32 spellId);
+
     void removeTimewalkingAura(Unit * unit);
 
     float getCustomMultiplier(ItemTemplate const * pProto, uint32 multiplier);

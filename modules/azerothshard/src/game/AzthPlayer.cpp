@@ -13,8 +13,6 @@
 
 void AzthPlayer::loadAzthPlayerFromDB() {
     QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("SELECT id,level FROM timewalking_characters_active WHERE id = %d;"), player->GetGUID());
-    //clean player to avoid problems
-    //player->azthPlayer->SetTimeWalkingLevel(NULL);
     if (timewalkingCharactersActive_table) //if is in timewalking mode apply debuff
     {
         Field* timewalkingCharactersActive_field = timewalkingCharactersActive_table->Fetch();
@@ -39,9 +37,6 @@ uint32 AzthPlayer::GetTimeWalkingLevel() const
 void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
 {
     timeWalkingLevel = itsTimeWalkingLevel;
-
-    if (!giveLevel)
-        return;
  
     Player* player = this->player;
     //apply debuf/buff section (spell) and enable timewalking mode
@@ -49,9 +44,9 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
     {
         AzthLevelStat stats = sAzthLevelStat->GetLevelStatList()[timeWalkingLevel * 10000 + player->getRace() * 100 + player->getClass()];
 
-        
-        //->GiveLevel(timeWalkingLevel);
-        player->GiveLevel(timeWalkingLevel);
+        if (player->getLevel() != timeWalkingLevel || giveLevel)
+            player->GiveLevel(timeWalkingLevel);
+
         player->SetUInt32Value(PLAYER_XP, 0);
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
         player->SetAuraStack(TIMEWALKING_AURA_MOD_HEALING, player, stats.GetHealPct());
@@ -62,10 +57,14 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
     else
     {
 
-        player->GiveLevel(80);
-        if (player->GetPet()) {
-            player->GetPet()->GivePetLevel(80);
+        if (player->getLevel() != timeWalkingLevel || giveLevel) {
+            player->GiveLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+
+            if (player->GetPet()) {
+                player->GetPet()->GivePetLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+            }
         }
+
         player->SetUInt32Value(PLAYER_XP, 0);
         player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
         player->RemoveAura(TIMEWALKING_AURA_MOD_HEALING);
