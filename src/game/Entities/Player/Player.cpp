@@ -11841,6 +11841,14 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
         ItemTemplate const* pProto = pItem->GetTemplate();
         if (pProto)
         {
+            //[AZTH] if you have the pvp set and you
+            // are equipping something, it won't be equipped
+            if (!GetSession()->PlayerLoading() && azthPlayer->hasGear() && pProto->InventoryType>0)
+            {
+                if(pProto->InventoryType != INVTYPE_AMMO)
+                    return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+            }
+            
             // item used
             if (pItem->m_lootGenerated)
                 return EQUIP_ERR_ALREADY_LOOTED;
@@ -12322,15 +12330,6 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
 
         if (proto->RequiredSpell != 0 && !HasSpell(proto->RequiredSpell))
             return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
-
-
-        //[AZTH] if you have the pvp set and you
-        // are equipping something, it won't be equipped
-        if (!GetSession()->PlayerLoading() && azthPlayer->hasGear() && proto->InventoryType>0)
-        {
-            if(proto->InventoryType != INVTYPE_AMMO)
-                return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-        }
 
         //if player is in bg or arena and tournament is enabled check for item level 
         //if it is > of the maximum level doesnt allow the equipment
