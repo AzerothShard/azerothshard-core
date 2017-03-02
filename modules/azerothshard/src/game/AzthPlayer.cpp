@@ -73,8 +73,6 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
 
         QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());
     }
-
-    //
 }
 //[/TIMEWALKING]
 

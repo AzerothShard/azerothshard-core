@@ -7955,15 +7955,19 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
                     continue;
 
                 statType = proto->ItemStat[i].ItemStatType;
+                uint32 posVal = proto->ItemStat[i].ItemStatValue < 0 ? -(proto->ItemStat[i].ItemStatValue) : proto->ItemStat[i].ItemStatValue;
 
                 // hack for items that don't have a required level
                 ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(sAzthUtils->getCalcReqLevel(proto));
 
                 float mulMax = sAzthUtils->getCustomMultiplier(proto, (float)maxSSV->getssdMultiplier(azthScalingStatValue));
-                uint32 modifier = ( mulMax / (float)proto->ItemStat[i].ItemStatValue) * 10000;
+                uint32 modifier = ( mulMax / (float)posVal) * 10000;
 
                 float mul = sAzthUtils->getCustomMultiplier(proto, (float)ssv->getssdMultiplier(azthScalingStatValue));
                 val = (mul * modifier) / 10000;
+                
+                if (proto->ItemStat[i].ItemStatValue < 0)
+                    val*=-1;
             }
         }
         else
@@ -8527,6 +8531,16 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 
 void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item* item, ItemTemplate const* proto)
 {
+    // [AZTH] Timewalking
+    if (item) {
+        uint32 req=sAzthUtils->getCalcReqLevel(proto);
+        if (req > this->getLevel()) {
+            return;
+        }
+    } else if (azthPlayer->GetTimeWalkingLevel() > 0) {
+        return;
+    }
+    
     // Can do effect if any damage done to target
     if (procVictim & PROC_FLAG_TAKEN_DAMAGE)
         //if (damageInfo->procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE)

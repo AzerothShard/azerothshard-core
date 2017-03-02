@@ -335,7 +335,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     //[AZTH] Timewalking
     uint32 oldSpellId = spellId;
-    spellId = sAzthUtils->selectSpellForTW(_player, spellId);
     //[/AZTH]
 
     ;//sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got cast spell packet, castCount: %u, spellId: %u, castFlags: %u, data length = %u", castCount, spellId, castFlags, (uint32)recvPacket.size());
@@ -396,6 +395,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             return;
         }
     }
+    
+    spellId = sAzthUtils->selectSpellForTW(_player, spellId);
+    if (oldSpellId!=spellId)
+        spellInfo = sSpellMgr->GetSpellInfo(spellId);
 
     // Client is resending autoshot cast opcode when other spell is casted during shoot rotation
     // Skip it to prevent "interrupt" message

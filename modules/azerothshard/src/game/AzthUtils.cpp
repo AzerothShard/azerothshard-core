@@ -36,6 +36,9 @@ uint32 AzthUtils::selectSpellForTW(Player* player, uint32 spellId) {
 }
 
 void AzthUtils::removeTimewalkingAura(Unit *unit) {
+    
+    std::list<uint32> spells;
+
     for (Unit::AuraApplicationMap::iterator iter = unit->GetAppliedAuras().begin(); iter != unit->GetAppliedAuras().end();)
     {
         AuraApplication const* aurApp = iter->second;
@@ -62,7 +65,19 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
     if (unit->GetTypeId() == TYPEID_PLAYER) {
         Player *pl = (Player*)unit;
 
-        std::list<uint32> spells;
+        // xinef: add talent auras
+        for (PlayerTalentMap::const_iterator itr = pl->GetTalentMap().begin(); itr != pl->GetTalentMap().end(); ++itr)
+        {
+            if (itr->second->State == PLAYERSPELL_REMOVED)
+                continue;
+
+            // xinef: talent not in new spec
+            if (!(itr->second->specMask & pl->GetActiveSpecMask()))
+                continue;
+
+            spells.push_back(itr->first);
+        }
+
         for (PlayerSpellMap::iterator itr = pl->GetSpellMap().begin(); itr != pl->GetSpellMap().end();) {
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
             if (spellInfo->IsPassive() && spellInfo->IsPositive()) {
@@ -71,15 +86,50 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
             ++itr;
         }
 
+        for (uint8 i = 0; i < MAX_GLYPH_SLOT_INDEX; ++i)
+        {
+            if (uint32 glyph = pl->GetGlyph(i))
+            {
+                if (GlyphPropertiesEntry const* glyphEntry = sGlyphPropertiesStore.LookupEntry(glyph))
+                {
+                    if (GlyphSlotEntry const* glyphSlotEntry = sGlyphSlotStore.LookupEntry(pl->GetGlyphSlot(i)))
+                    {
+                        const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(glyphEntry->SpellId);
+                        if (glyphEntry->TypeFlags == glyphSlotEntry->TypeFlags)
+                        {
+                            if (!spellInfo->Stances)
+                                spells.push_back(glyphEntry->SpellId);
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
         for (std::list<uint32>::const_iterator iterator = spells.begin(), end = spells.end(); iterator != end; ++iterator) {
             pl->RemoveAurasDueToSpell((*iterator));
-            pl->CastSpell(pl, (*iterator), true);
+            const SpellInfo *spellInfo = sSpellMgr->GetSpellInfo((*iterator));
+
+            if (spellInfo->IsPassive() || (spellInfo->HasAttribute(SPELL_ATTR0_HIDDEN_CLIENTSIDE) && spellInfo->Stances))
+            {
+                if (pl->IsNeedCastPassiveSpellAtLearn(spellInfo))
+                    pl->CastSpell(pl, (*iterator), true);
+            }
+            // pussywizard: cast and return, learnt spells will update profession count, etc.
+            else if (spellInfo->HasEffect(SPELL_EFFECT_SKILL_STEP))
+            {
+                pl->CastSpell(pl, (*iterator), true);
+            }
         }
+
+        pl->_ApplyAllLevelScaleItemMods(false);
+        pl->_ApplyAllLevelScaleItemMods(true);
+        
+        pl->InitStatsForLevel(true);
     }
     else if (unit->IsPet()) {
         Pet *pet = (Pet*)unit;
 
-        std::list<uint32> spells;
         for (PetSpellMap::iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end();) {
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
             if (spellInfo->IsPassive() && spellInfo->IsPositive()) {
@@ -103,22 +153,22 @@ uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
             return pProto->ItemLevel;
         
         // classic epic
-        if (pProto->ItemLevel > 60 && pProto->ItemLevel <= pProto->ItemLevel <= 92 && pProto->Quality >= ITEM_QUALITY_EPIC) {
+        if (pProto->ItemLevel > 60 && pProto->ItemLevel <= 92 && pProto->Quality >= ITEM_QUALITY_EPIC) {
             return 60;
         }
         
         // tbc low level items
-        if (pProto->ItemLevel > 81 && pProto->ItemLevel <= pProto->ItemLevel <= 92) {
+        if (pProto->ItemLevel > 81 && pProto->ItemLevel <= 92) {
             return 60;
         }
         
         // tbc rare and lower
-        if (pProto->ItemLevel > 92 && pProto->ItemLevel <= pProto->ItemLevel <= 115) {
+        if (pProto->ItemLevel > 92 && pProto->ItemLevel <= 115) {
             return ((pProto->ItemLevel) - 92 / 2 ) +1;
         }
             
         // tbc epic
-        if (pProto->ItemLevel > 115 && pProto->ItemLevel <= pProto->ItemLevel <= 164 && pProto->Quality >= ITEM_QUALITY_EPIC) {
+        if (pProto->ItemLevel > 115 && pProto->ItemLevel <= 164 && pProto->Quality >= ITEM_QUALITY_EPIC) {
             return ((pProto->ItemLevel) - 130 / 3 ) + 1;
         }
         
