@@ -164,12 +164,14 @@ uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
         
         // tbc rare and lower
         if (pProto->ItemLevel > 92 && pProto->ItemLevel <= 115) {
-            return ((pProto->ItemLevel) - 92 / 2 ) +1;
+            uint32 req = ((pProto->ItemLevel - 92) / 2) + 61;
+            return req > 70 ? 70 : req;
         }
             
         // tbc epic
         if (pProto->ItemLevel > 115 && pProto->ItemLevel <= 164 && pProto->Quality >= ITEM_QUALITY_EPIC) {
-            return ((pProto->ItemLevel) - 130 / 3 ) + 1;
+            uint32 req = ((pProto->ItemLevel - 115) / 4) + 61;
+            return req > 70 ? 70 : req;
         }
         
         //if (pProto->ItemLevel > 130 && pProto->ItemLevel <= 284)
@@ -178,6 +180,9 @@ uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
         // 130 - 284
         return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
     }
+
+    if (pProto->RequiredLevel == 0)
+        return 1;
 
     return pProto->RequiredLevel;
 }

@@ -7959,15 +7959,19 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
                 // hack for items that don't have a required level
                 ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(sAzthUtils->getCalcReqLevel(proto));
+                if (maxSSV) {
+                    float mulMax = sAzthUtils->getCustomMultiplier(proto, (float)maxSSV->getssdMultiplier(azthScalingStatValue));
+                    uint32 modifier = (mulMax / (float)posVal) * 10000;
 
-                float mulMax = sAzthUtils->getCustomMultiplier(proto, (float)maxSSV->getssdMultiplier(azthScalingStatValue));
-                uint32 modifier = ( mulMax / (float)posVal) * 10000;
+                    float mul = sAzthUtils->getCustomMultiplier(proto, (float)ssv->getssdMultiplier(azthScalingStatValue));
+                    val = (mul * modifier) / 10000;
 
-                float mul = sAzthUtils->getCustomMultiplier(proto, (float)ssv->getssdMultiplier(azthScalingStatValue));
-                val = (mul * modifier) / 10000;
-                
-                if (proto->ItemStat[i].ItemStatValue < 0)
-                    val*=-1;
+                    if (proto->ItemStat[i].ItemStatValue < 0)
+                        val *= -1;
+                }
+                else {
+                    val = proto->ItemStat[i].ItemStatValue;
+                }
             }
         }
         else
