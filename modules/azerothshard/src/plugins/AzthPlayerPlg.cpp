@@ -130,12 +130,6 @@ public:
     {
         long price = 0;
 
-        VendorItemData const* vItems = pVendor->GetVendorItems();
-        if (!vItems || vItems->Empty())
-        {
-            return;
-        }
-
         if (crItem->ExtendedCost)
         {
             if (crItem->ExtendedCost <= 2997)
