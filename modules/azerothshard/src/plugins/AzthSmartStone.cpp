@@ -189,13 +189,17 @@ public:
       } break;
 
       case 6: // jukebox
+      {
           if (player->FindNearestCreature(300205, 20.f, true) != NULL)
               return;
-        player->SummonCreature(300205, player->GetPositionX(),
-                               player->GetPositionY(), player->GetPositionZ(),
-                               player->GetOrientation(),
-                               TEMPSUMMON_TIMED_DESPAWN, 600 * 1000, 0);
-        break;
+          TempSummon* jukebox_summon = player->SummonCreature(300205, player->GetPositionX(),
+              player->GetPositionY(), player->GetPositionZ(),
+              player->GetOrientation(),
+              TEMPSUMMON_TIMED_DESPAWN, 600 * 1000, 0);
+          Map* playerMap = player->GetMap();
+          Creature* jukebox = playerMap->GetCreature(jukebox_summon->GetGUID());
+          jukebox->GetMotionMaster()->MoveFollow(player, 2, 2);
+      } break;
 
       case 10: // maxskill
           player->azthPlayer->AzthMaxPlayerSkill();

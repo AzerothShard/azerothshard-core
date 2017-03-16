@@ -88,3 +88,6 @@ local.properties
 
 #[AZTH]
 !modules/azerothshard
+
+build/*
+build
