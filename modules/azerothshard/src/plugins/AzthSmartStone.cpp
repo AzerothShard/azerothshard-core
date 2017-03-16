@@ -15,6 +15,9 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 
+#include "MapManager.h"
+#include "Map.h"
+
 uint32 parent = 1;
 
 class azth_smart_stone : public ItemScript {
@@ -160,7 +163,21 @@ public:
           {
               std::vector<float> pos = player->azthPlayer->getLastPositionInfo();
 
-              player->TeleportTo(pos[0], pos[1], pos[2], pos[3], 0.174f, 0);
+              Map *m = sMapMgr->FindBaseMap(pos[0]);
+
+              if (m && m->IsDungeon()) {
+
+                  // pos[0] is the map
+                  WorldSafeLocsEntry const* ClosestGrave = sObjectMgr->GetClosestGraveyard(pos[1], pos[2], pos[3], pos[0], TEAM_NEUTRAL);
+
+                  if (ClosestGrave)
+                  {
+                      player->TeleportTo(ClosestGrave->map_id, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, player->GetOrientation());
+                  }
+              }
+              else {
+                  player->TeleportTo(pos[0], pos[1], pos[2], pos[3], 0.174f, 0);
+              }
           }
 
       } break;
