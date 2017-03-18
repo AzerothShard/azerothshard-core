@@ -12,7 +12,8 @@ modules/drassil/joiner
 !modules/acore
 !modules/worldengine
 
-build*/
+build/*
+build
 
 #
 #Generic
