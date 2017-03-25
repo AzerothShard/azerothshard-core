@@ -35,7 +35,7 @@
 
 //[AZTH]
 #include "ArenaTeamMgr.h"
-#include "../npc_solo3v3/src/npc_solo3v3.h"
+#include "npc_solo3v3.h"
 //[/AZTH]
 
 namespace Trinity

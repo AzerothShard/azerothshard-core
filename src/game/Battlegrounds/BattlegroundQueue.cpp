@@ -18,7 +18,7 @@
 #include "Channel.h"
 
 //[AZTH]
-#include "../npc_solo3v3/src/npc_solo3v3.h"
+#include "npc_solo3v3.h"
 
 /*********************************************************/
 /***            BATTLEGROUND QUEUE SYSTEM              ***/

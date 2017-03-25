@@ -75,7 +75,6 @@
 #include "WhoListCache.h"
 #include "AsyncAuctionListing.h"
 #include "SavingSystem.h"
-#include "AnticheatMgr.h" //[AZTH]
 #include "GuildHouse.h" //[AZTH]
 #include "Teleport.h" //[AZTH]
 #include "azth_custom_hearthstone_mode.h" //[AZTH]
@@ -1241,13 +1240,6 @@ void World::LoadConfigSettings(bool reload)
 
     // Dungeon finder
     m_int_configs[CONFIG_LFG_OPTIONSMASK] = sConfigMgr->GetIntDefault("DungeonFinder.OptionsMask", 3);
-
-    //[AZTH] ANTICHEAT
-    m_bool_configs[CONFIG_ANTICHEAT_ENABLE] = sConfigMgr->GetBoolDefault("Anticheat.Enable", true);
-    m_int_configs[CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION] = sConfigMgr->GetIntDefault("Anticheat.ReportsForIngameWarnings", 70);
-    m_int_configs[CONFIG_ANTICHEAT_DETECTIONS_ENABLED] = sConfigMgr->GetIntDefault("Anticheat.DetectionsEnabled", 31);
-    m_int_configs[CONFIG_ANTICHEAT_MAX_REPORTS_FOR_DAILY_REPORT] = sConfigMgr->GetIntDefault("Anticheat.MaxReportsForDailyReport", 70);
-    //[AZTH]
 
     // [AZTH]
     m_int_configs[CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SECURITY] = sConfigMgr->GetIntDefault("Player.customXP.security", 0);
@@ -2946,7 +2938,6 @@ void World::ResetDailyQuests()
 
     // change available dailies
     sPoolMgr->ChangeDailyQuests();
-    sAnticheatMgr->ResetDailyReportStates(); //[AZTH]
 }
 
 void World::LoadDBAllowedSecurityLevel()

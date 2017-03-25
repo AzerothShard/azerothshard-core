@@ -5,8 +5,8 @@
 #include "Config.h"
 #include "Define.h"
 #include <UnorderedMap.h>
-#include "game/CustomRates.h"
-#include "game/AzthSharedDefines.h"
+#include "CustomRates.h"
+#include "AzthSharedDefines.h"
 
 struct SmartStoneCommand;
 

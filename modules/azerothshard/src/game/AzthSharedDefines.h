@@ -1,6 +1,6 @@
 #ifndef SHAREDDEFINES_H
 #define SHAREDDEFINES_H
-
+/*
 enum AzthRbac {
     RBAC_PERM_COMMAND_QUESTCOMPLETER = 1000,
     RBAC_PERM_COMMAND_AZTH = 1001,
@@ -8,6 +8,7 @@ enum AzthRbac {
     RBAC_PERM_COMMAND_AZTH_XP = 1003,
     RBAC_PERM_PVP_CUSTOM = 1004 // Arena Spectator ADDON commands
 };
+ */
 
 enum SkillSpells {
     ONE_HAND_AXES = 196,

@@ -1,3 +1,7 @@
-AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/TimeWalking.cpp")
-AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/raid.cpp")
-AC_ADD_SCRIPT_LOADER("TimeWalking" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")
+CU_SET_PATH("CMAKE_MOD_TIMEWALKING_DIR" "${CMAKE_CURRENT_LIST_DIR}")
+
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/scripts/TimeWalking.cpp")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/scripts/raid.cpp")
+AC_ADD_SCRIPT_LOADER("TimeWalking" "${CMAKE_CURRENT_LIST_DIR}/src/scripts/loader.h")
+
+CU_ADD_HOOK(BEFORE_GAME_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/src/cmake/before_game.cmake")

@@ -77,16 +77,5 @@ local.properties
 #
 # ==================
 
-#[AZTH]
-!modules/azerothshard
-!modules/BGItemLevel
-!modules/Jukebox
-!modules/smartstoneLootModifier
-!modules/smartstone
-!modules/hearthstone-mode
-!modules/DonationsVendor
-!modules/TimeWalking
-!modules/TournamentSet
-!modules/AzerothTournament
-!modules/npc_solo3v3
-!modules/dbc_tools
+#[AZTH] include all modules
+!modules/*

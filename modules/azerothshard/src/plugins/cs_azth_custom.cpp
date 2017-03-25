@@ -27,8 +27,8 @@
 #include "Player.h"
 #include "Pet.h"
 #include "ReputationMgr.h"
-#include "game/CustomRates.h"
-#include "game/AzthSharedDefines.h"
+#include "CustomRates.h"
+#include "AzthSharedDefines.h"
  
  class azth_commandscript : public CommandScript {
  public:

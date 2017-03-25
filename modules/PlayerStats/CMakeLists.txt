@@ -1,0 +1,6 @@
+CU_SET_PATH("CMAKE_MOD_PLAYERSTATS_DIR" "${CMAKE_CURRENT_LIST_DIR}")
+
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/scripts/PStatsScripts.cpp")
+AC_ADD_SCRIPT_LOADER("PlayerStats" "${CMAKE_CURRENT_LIST_DIR}/src/scripts/pstats_loader.h")
+
+CU_ADD_HOOK(BEFORE_GAME_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/src/cmake/before_game.cmake")

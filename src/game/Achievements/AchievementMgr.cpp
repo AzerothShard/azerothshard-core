@@ -30,7 +30,7 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "Hearthstone/azth_custom_hearthstone_mode.h" //[AZTH]
+#include "azth_custom_hearthstone_mode.h" //[AZTH]
 
 namespace Trinity
 {

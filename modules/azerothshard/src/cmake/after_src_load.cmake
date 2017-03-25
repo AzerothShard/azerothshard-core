@@ -1,5 +1,6 @@
 include_directories(
   ${CMAKE_BINARY_DIR}
+  ${game_INCLUDE_DIRS}
   ${CMAKE_SOURCE_DIR}/modules/worldengine/deps/recastnavigation/Detour
   ${CMAKE_SOURCE_DIR}/modules/worldengine/deps/recastnavigation/Recast
   ${CMAKE_SOURCE_DIR}/modules/worldengine/deps/g3dlite/include

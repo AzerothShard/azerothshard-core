@@ -23,7 +23,6 @@
 #include "ArenaSpectator.h"
 #include "Chat.h"
 #include "BattlegroundMgr.h"
-#include "AnticheatMgr.h" //[AZTH]
 #include "ScriptMgr.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
@@ -399,11 +398,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recvData)
     // Dont allow to turn on walking if charming other player
     if (mover->GetGUID() != _player->GetGUID())
         movementInfo.flags &= ~MOVEMENTFLAG_WALKING;
-	
-	// [AZTH] Anticheat
-    if (plrMover)
-        sAnticheatMgr->StartHackDetection(plrMover, movementInfo, opcode);
-	// [/AZTH]
 
     uint32 mstime = World::GetGameTimeMS();
     /*----------------------*/
