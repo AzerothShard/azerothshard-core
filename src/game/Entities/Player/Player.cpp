@@ -17942,8 +17942,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     InitTaxiNodesForLevel();
     InitRunes();
 
-    //[AZTH]
-    azthPlayer->loadAzthPlayerFromDB();
 
     // make sure the unit is considered out of combat for proper loading
     ClearInCombat();
