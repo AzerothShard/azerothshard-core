@@ -57,7 +57,7 @@ public:
 
 
     //check if today is saturday and is not the same saturday of today
-    if (now->tm_wday == 6 && day != lastChangeDay)
+    /*if (now->tm_wday == 6 && day != lastChangeDay)
     {
             if (enable)
             {
@@ -70,7 +70,7 @@ public:
                 QueryResult setModeEnabled = CharacterDatabase.PQuery("UPDATE worldstates SET comment=1 WHERE entry=100000;"); //set arena season to enabled
             }
             QueryResult setLastDate = CharacterDatabase.PQuery("UPDATE worldstates SET value=%u WHERE entry=100000;", t); //set new timestamp
-    }
+    }*/
 
     //TIME FROM DB
     time_t startingDate;
