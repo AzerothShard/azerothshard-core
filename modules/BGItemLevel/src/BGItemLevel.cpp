@@ -9,8 +9,10 @@
 #include "Common.h"
 #include "ArenaTeam.h"
 #include "Group.h"
+#include "Chat.h"
 
-uint32 maxItemLevel;
+
+uint32 defaultMaxItemLevel;
 
 class loadSeason : public WorldScript
 {
@@ -121,7 +123,7 @@ public:
         return; 
     }
 
-    maxItemLevel = sASeasonMgr->GetItemLevel();
+    defaultMaxItemLevel = sASeasonMgr->GetItemLevel();
 
     sLog->outString(">> Season script for PVP loaded, actual item level: %u\n", sASeasonMgr->GetItemLevel());
     sLog->outString();
@@ -157,7 +159,7 @@ public:
       Item* itemToCheck = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
       if (itemToCheck != nullptr)
       {
-        if (itemToCheck->GetTemplate()->ItemLevel > maxItemLevel)
+        if (itemToCheck->GetTemplate()->ItemLevel > sASeasonMgr->GetItemLevel())
         {
           incompatibleItems[counter] = itemToCheck->GetTemplate()->Name1;
           counter++;
@@ -188,7 +190,7 @@ public:
       {
         ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000%s|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", incompatibleItems[i].c_str());
       }
-      ChatHandler(player->GetSession()).PSendSysMessage("L'attuale Season ha livello massimo |cffff0000%d|r", maxItemLevel);
+      ChatHandler(player->GetSession()).PSendSysMessage("L'attuale Season ha livello massimo |cffff0000%d|r", sASeasonMgr->GetItemLevel());
     }
   }
 
@@ -246,9 +248,53 @@ public:
     }
 };
 
+class setMaxItemLevel : public CommandScript
+{
+public:
+    setMaxItemLevel() : CommandScript("setMaxItemLevel") {}
+
+    std::vector<ChatCommand> GetCommands() const override
+    {
+        static std::vector<ChatCommand> commandTable =
+        {
+            { "itemLevel",      SEC_GAMEMASTER,     true,  &HandleSetMaxItemLevelCommand,       "" }
+        };
+
+        return commandTable;
+    }
+
+
+    static bool HandleSetMaxItemLevelCommand(ChatHandler* handler, char const* args)
+    {
+        int itemLevel = atoi(args);
+
+        if (itemLevel < -1 || args == nullptr || args == NULL || strcmp(args, "") == 0)
+        {
+            handler->PSendSysMessage("Parametro non valido");
+            return true;
+        }
+        
+
+        if (itemLevel == -1)
+        {
+            sASeasonMgr->SetItemLevel(defaultMaxItemLevel);
+            handler->PSendSysMessage("L'item level massimo è stato riportato al valore predefinito");
+        }
+        else
+        {
+            sASeasonMgr->SetItemLevel(itemLevel);
+            handler->PSendSysMessage("L'item level massimo è stato cambiato");
+        }
+
+        return true;
+    }
+    
+};
+
 void AddSC_BGItemLevel()
 {
   new checkItemLevel();
   new loadSeason();
   new arenaPointsModifier();
+  new setMaxItemLevel();
 }
