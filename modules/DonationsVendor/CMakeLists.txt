@@ -1,3 +1,4 @@
 AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/DonationsVendor.cpp")
 AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/ItemToSell.cpp")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/ItemInBank.cpp")
 AC_ADD_SCRIPT_LOADER("DonationsVendor" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")
