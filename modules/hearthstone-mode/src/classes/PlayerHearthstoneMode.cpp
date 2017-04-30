@@ -1,8 +1,8 @@
 #include "AzthPlayer.h"
 #include "Player.h"
+#include "Group.h"
 
-// Send a kill credit, skipping the normal checks on raid/battleground and pvp
-// quests.
+// Send a kill credit, skipping the normal checks on raid group.
 void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid) {
   uint16 addkillcount = 1;
   uint32 real_entry = entry;
@@ -28,9 +28,8 @@ void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid) {
       continue;
 
     QuestStatusData &q_status = player->m_QuestStatus[questid];
-    if (q_status.Status == QUEST_STATUS_INCOMPLETE) {
-      if (qInfo->HasSpecialFlag(
-              QUEST_SPECIAL_FLAGS_KILL) /*&& !qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_CAST)*/) {
+    if (q_status.Status == QUEST_STATUS_INCOMPLETE && (qInfo->IsPVPQuest() && (player->GetGroup()->isBFGroup() || player->GetGroup()->isBGGroup()))) {
+      if (qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_KILL) /*&& !qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_CAST)*/) {
         for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
           // skip GO activate objective or none
           if (qInfo->RequiredNpcOrGo[j] <= 0)

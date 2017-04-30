@@ -84,6 +84,7 @@ class HearthstoneMode
         bool PlayerCanUseItem(Item const* item, Player* player, bool classCheck);
         void loadHearthstone();
         std::vector<HearthstoneVendor> hsVendors;
+		int64 getHeartstoneQuestFlag(uint64 id);
 
     private:
         float CHANCES[8] = { 10.f, 30.f, 20.f, 15.f, 5.f, 1.f, 0.5f, 1.f };
