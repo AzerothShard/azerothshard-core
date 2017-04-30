@@ -45,7 +45,7 @@ INSERT INTO creature_template (entry, killcredit1, modelid1, `name`, minlevel, m
 
 -- debug quests
 DELETE FROM quest_template WHERE id >= 110000 AND id <= 110039;
-INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTitle`, `LogDescription`, `QuestDescription`, `EndText`, `RequiredNpcOrGo1`, `RequiredNpcOrGoCount1`, ObjectiveText1) VALUES
+INSERT INTO `quest_template` (`id`, `QuestInfoID`, `QuestSortID`, `Flags`, `LogTitle`, `LogDescription`, `QuestDescription`, `OfferRewardText`, `RequiredNpcOrGo1`, `RequiredNpcOrGoCount1`, ObjectiveText1) VALUES
 ('110000','2','3840','12482','Vinci Alterac Valley','Vinci Alterac Valley','Vinci Alterac Valley','Ritorna da Han\'al','110001','1', "Vinci Alterac Valley"),
 ('110001','2','3840','12482','Vinci Warsong Gulch','Vinci Warsong Gulch','Vinci Warsong Gulch','Ritorna da Han\'al','110002','1', "Vinci Warsong Gulch"),
 (110002, '2','3840','12482', 'Vinci Arathi Basin', 'Vinci Arathi Basin', 'Vinci Arathi Basin', 'Ritorna da Han\'al', 110003, 1, 'Vinci Arathi Basin'),
@@ -88,12 +88,12 @@ INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTit
 (110039, '2','3840','12482', 'Win Duel', 'Win Duel', 'Win Duel', 'Ritorna da Han\'al', 110040, 1, 'Win Duel')
 ;
 
-UPDATE quest_template SET minlevel = 80, maxlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110000 AND id <= 110300;
+UPDATE quest_template SET minlevel = 80, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110000 AND id <= 110300;
 
 
 -- real quests
 DELETE FROM quest_template WHERE id >= 110040 AND id <= 110095;
-INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTitle`, `LogDescription`, `QuestDescription`, `EndText`, `RequiredNpcOrGo1`, `RequiredNpcOrGoCount1`, ObjectiveText1, RewardItem1, RewardAmount1) VALUES
+INSERT INTO `quest_template` (`id`, `QuestInfoID`, `QuestSortID`, `Flags`, `LogTitle`, `LogDescription`, `QuestDescription`, `OfferRewardText`, `RequiredNpcOrGo1`, `RequiredNpcOrGoCount1`, ObjectiveText1, RewardItem1, RewardAmount1) VALUES
 (110040,'2','3840','12482','Vinci 2 Warsong Gulch','Vai, $N, la battaglia di Warsong Gulch ti attende! Da sempre orchi ed elfi della notte si sfidano in quelle terre... Prendi parte al conflitto e torna vittorioso a raccontarmelo!','Vinci Warsong Gulch','Ritorna da Han\'al','110002','2', "Warsong Gulch vinti", 37711, 2),
 (110041,'2','3840','12482','Vinci 4 Warsong Gulch','Vai, $N, la battaglia di Warsong Gulch ti attende! Da sempre orchi ed elfi della notte si sfidano in quelle terre... Prendi parte al conflitto e torna vittorioso a raccontarmelo!','Vinci Warsong Gulch','Ritorna da Han\'al','110002','4', "Warsong Gulch vinti", 37711, 3),
 (110042,'2','3840','12482','Vinci 2 Arathi Basin','Vai, $N, la battaglia di Arathi Basin ti attende! I Forsaken e la Lega di Arathor cercano di accumulare le ricchezze del luogo... aiuta una delle due parti e torna vincitore a raccontarmelo!','Vinci Arathi Basin','Ritorna da Han\'al','110003','2', "Arathi Basin vinti", 37711, 2),
@@ -151,8 +151,8 @@ INSERT INTO `quest_template` (`id`, `QuestType`, `QuestSortID`, `Flags`, `LogTit
 (110094,'2','3840','12482','Ice Barrier indistruttibile','Uccidi 5 Mage','Uccidi 5 Mage','Ritorna da Han\'al','110025','5', "Mage Uccisi", 37711, 2),
 (110095,'2','3840','12482','Ma quanto scappa col Blink?!','Uccidi 10 Mage','Uccidi 10 Mage','Ritorna da Han\'al','110025','10', "Mage Uccisi", 37711, 3);
 
-UPDATE quest_template SET minlevel = 80, maxlevel = 80, questlevel = 80, SpecialFlags = 1, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110040 AND id <= 110095;
-UPDATE quest_template SET method = 0, questTYPE = 41, flags = 4098, RewardFactionID1 = 948, RewardFactionValue1 = 1, RewardFactionOverride1 = 0, unknown0 = 1, QuestSortID = -241 WHERE id >= 110040 AND id <= 110095;
+UPDATE quest_template SET minlevel = 80, questlevel = 80, OfferRewardText = "Bravo, $N", RequestItemsText = "Si, $N?"  WHERE id >= 110040 AND id <= 110095;
+UPDATE quest_template SET  QuestInfoID = 41, flags = 4098, RewardFactionID1 = 948, RewardFactionValue1 = 1, RewardFactionOverride1 = 0, unknown0 = 1, QuestSortID = -241 WHERE id >= 110040 AND id <= 110095;
 
 DELETE FROM creature_questender WHERE id = 100001 AND quest >= 110040 AND quest <= 110095;
 INSERT INTO creature_questender (id, quest) VALUES 
@@ -212,3 +212,5 @@ INSERT INTO creature_questender (id, quest) VALUES
 (100001, 110093),
 (100001, 110094),
 (100001, 110095); 
+
+UPDATE quest_template SET LogDescription = CONCAT(LogDescription, " in Battleground.") WHERE id <= 110095 AND id > 110055;

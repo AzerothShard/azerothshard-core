@@ -1,6 +1,3 @@
-#ifndef DONATIONSVENDOR_H
-#define DONATIONSVENDOR_H
-
 #include "Common.h"
 #include "Define.h"
 
@@ -28,7 +25,8 @@ public:
 
 	ItemToSell();
 	ItemToSell(uint32 id, string name, uint32 extCost, bool canBeBought);
-    void SendListInventoryDonorVendor(WorldSession * session, uint64 vendorGuid, std::vector<ItemToSell> buyableItems);
+    void SendListInventoryDonorVendor(WorldSession * session, uint64 vendorGuid, std::vector<ItemToSell> buyableItems, Player* player);
+    uint32 OwnItem(uint32 characterId, uint32 itemId);
     string CapitalizeFirstLetterEveryWord(string str);
 
 private:
@@ -39,5 +37,3 @@ private:
 };
 
 #define sItemToSell ACE_Singleton<ItemToSell, ACE_Null_Mutex>::instance()
-
-#endif

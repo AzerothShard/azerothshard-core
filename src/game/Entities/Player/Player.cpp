@@ -12919,7 +12919,7 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update, bool swap)
     Item* pItem = GetItemByPos(bag, slot);
     if (pItem)
     {
-        ;//sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "STORAGE: RemoveItem bag = %u, slot = %u, item = %u", bag, slot, pItem->GetEntry());
+        //sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "STORAGE: RemoveItem bag = %u, slot = %u, item = %u", bag, slot, pItem->GetEntry());
 
         RemoveEnchantmentDurations(pItem);
         RemoveItemDurations(pItem);

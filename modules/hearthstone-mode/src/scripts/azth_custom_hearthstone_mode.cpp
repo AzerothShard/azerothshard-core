@@ -701,6 +701,21 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
     }
 }
 
+int64 HearthstoneMode::getHeartstoneQuestFlag(uint64 id)
+{
+	for (std::vector<HearthstoneQuest>::iterator itr = hsPveQuests.begin(); itr != hsPveQuests.end(); itr++)
+	{
+		if ((*itr).id == id)
+			return (*itr).flag;
+	}
+	for (std::vector<HearthstoneQuest>::iterator itr = hsPvpQuests.begin(); itr != hsPvpQuests.end(); itr++)
+	{
+		if ((*itr).id == id)
+			return (*itr).flag;
+	}
+	return -1;
+};
+
 void HearthstoneMode::loadHearthstone()
 {
     uint32 count = 0;

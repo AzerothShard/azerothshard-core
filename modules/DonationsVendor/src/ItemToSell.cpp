@@ -2,6 +2,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
+#include "ItemInBank.h"
 
 
 ItemToSell::ItemToSell()
@@ -62,7 +63,7 @@ void ItemToSell::SetCanBeBought(bool ItsCanBeBought)
     canBeBought = ItsCanBeBought;
 }
 
-void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vendorGuid, std::vector<ItemToSell> allItems) {
+void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vendorGuid, std::vector<ItemToSell> allItems, Player* player) {
 
     uint32 itemCount = allItems.size();
     uint8 count = 0;
@@ -74,9 +75,8 @@ void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vend
     data << uint8(count);
 
     if (itemCount > MAX_VENDOR_ITEMS)
-    {
-        itemCount = MAX_VENDOR_ITEMS;
-    }
+       itemCount = MAX_VENDOR_ITEMS;
+
 
     for (uint32 slot = 0; slot < itemCount; ++slot) {
         ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(allItems[slot].GetId());
@@ -87,7 +87,7 @@ void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vend
             data << uint32(slot + 1); // client expects counting to start at 1
             data << uint32(allItems[slot].GetId());
             data << uint32(_proto->DisplayInfoID);
-            if (allItems[slot].GetCanBeBought())
+            if (allItems[slot].GetCanBeBought() || OwnItem(player->GetGUID(), allItems[slot].GetId()))
                 data << int32(0xFFFFFFFF);
             else
                 data << int32(0);
@@ -109,6 +109,25 @@ void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vend
 
     data.put<uint8>(countPos, count);
     session->SendPacket(&data);
+}
+
+uint32 ItemToSell::OwnItem(uint32 characterGUID, uint32 itemId)
+{
+    vector<ItemInBank> itemInBankList = sItemInBank->GetBankItemsList();
+    uint32 guid = 0;
+    
+    for (std::vector<ItemInBank>::iterator it = itemInBankList.begin(); it != itemInBankList.end(); ++it)
+    {
+        if (guid != 0)
+            break;
+
+        if (it->GetCharacterGUID() == characterGUID && it->GetItemEntry() == itemId)
+        {
+            guid = it->GetItemGUID();
+        }
+    }
+
+    return guid;
 }
 
 string ItemToSell::CapitalizeFirstLetterEveryWord(string str)
