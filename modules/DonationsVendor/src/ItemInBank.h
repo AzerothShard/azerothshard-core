@@ -12,7 +12,7 @@ public:
     vector<ItemInBank> GetBankItemsList() const;
 
 	//SETTERS
-    void ItemInBank::SetBankItemsList(vector<ItemInBank> itemsInBankList);
+    void SetBankItemsList(vector<ItemInBank> itemsInBankList);
 
 	ItemInBank();
 	ItemInBank(uint32 characterGUID, uint32 itemGUID, uint32 itemEntry);

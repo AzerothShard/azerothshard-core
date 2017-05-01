@@ -127,7 +127,7 @@ public:
 
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
 
-            ChatHandler(player->GetSession()).PSendSysMessage("L'item è stato depositato.");//, item->GetTemplate()->Name1);
+            ChatHandler(player->GetSession()).PSendSysMessage("L'item e' stato depositato.");//, item->GetTemplate()->Name1);
         }
 
         // -------->
