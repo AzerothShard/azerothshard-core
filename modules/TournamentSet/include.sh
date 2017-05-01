@@ -1,7 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-JUKEBOX_MODULE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )"
+TOURNAMENTSET_MODULE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )"
 
-DB_WORLD_CUSTOM_PATHS+=(
-    $JUKEBOX_MODULE_PATH"/data/sql/*"
+DB_EXTRA_CUSTOM_PATHS+=(
+    $TOURNAMENTSET_MODULE_PATH"/data/sql/extra/"
+)
+
+DB_CHARACTERS_CUSTOM_PATHS+=(
+    $TOURNAMENTSET_MODULE_PATH"/data/sql/characters/"
 )
