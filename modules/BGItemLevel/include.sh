@@ -1,7 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-ARENA_MODULE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )"
+BGITEMLVL_MODULE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )"
 
 DB_WORLD_CUSTOM_PATHS+=(
-    $ARENA_MODULE_PATH"/data/sql/*"
+    $BGITEMLVL_MODULE_PATH"/data/sql/world/"
+)
+
+DB_CHARACTERS_CUSTOM_PATHS+=(
+    $BGITEMLVL_MODULE_PATH"/data/sql/characters/"
 )
