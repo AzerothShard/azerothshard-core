@@ -12,7 +12,7 @@ public:
     vector<ItemInBank> GetBankItemsList() const;
 
 	//SETTERS
-    void ItemInBank::SetBankItemsList(vector<ItemInBank> itemsInBankList);
+    void SetBankItemsList(vector<ItemInBank> itemsInBankList);
 
 	ItemInBank();
 	ItemInBank(uint32 characterGUID, uint32 itemGUID, uint32 itemEntry);
@@ -28,3 +28,4 @@ private:
 
 std::string GetItemIcon(uint32 entry, uint32 width, uint32 height, int x, int y);
 std::vector<std::string> getCategoryIconAndNameByItemType(uint32 itemType);
+

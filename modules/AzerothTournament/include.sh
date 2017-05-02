@@ -1,13 +1,7 @@
-#AZTHTOURN_PATH_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )"
+#!/usr/bin/env bash
 
-#DB_CHARACTERS_CUSTOM_PATHS+=(
-#	$AZTHTOURN_PATH_ROOT"/data/sql/db-characters/"
-#)
+TOURNAMENT_MODULE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )"
 
-#DB_AUTH_CUSTOM_PATHS+=(
-#	$AZTHTOURN_PATH_ROOT"/data/sql/db-auth/"
-#)
-
-#DB_WORLD_CUSTOM_PATHS+=(
-#	$AZTHTOURN_PATH_ROOT"/data/sql/world/"
-#)
+DB_EXTRA_CUSTOM_PATHS+=(
+    $TOURNAMENT_MODULE_PATH"/data/sql/extra"
+)
