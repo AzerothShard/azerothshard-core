@@ -29,7 +29,6 @@
 #include "ReputationMgr.h"
 #include "CustomRates.h"
 #include "AzthSharedDefines.h"
-#include "RatingBonus.h"
  
  class azth_commandscript : public CommandScript {
  public:
@@ -41,7 +40,6 @@
              { "maxskill", SEC_PLAYER, true , &handleAzthMaxSkill, ""},
              { "xp"      , SEC_PLAYER, false, &handleAzthXP, ""},
              { "smartstone"      , SEC_PLAYER, true, &handleAzthSmartstone, "" },
-			 { "bonus"      , SEC_PLAYER, false, &handleAzthBonus, "" },
          };
 
          static std::vector<ChatCommand> commandTable = {
@@ -291,55 +289,54 @@
          return true;
      }
 
-     static bool handleAzthBonus(ChatHandler* handler, const char* args) {
+     static bool handleAzthXP(ChatHandler* handler, const char* args) {
          Player *me = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+         Player *target = handler->getSelectedPlayer();
+         Player *player = NULL;
 
          if (!me || !me->GetSession())
              return false;
 
-		 // If no arguments provided, show the current bonuses
-		 if (!*args) {
-			 sBonusRating->printBonusesToPlayer(handler, 0);
-			 return true;
-		 }
-
-         // if there are parameters, check if I can use the command
-         if (me->GetSession()->GetSecurity() < sBonusRating->AZTH_RATING_BONUS_SECURITY) {
+         // first, check if I can use the command
+         if (me->GetSession()->GetSecurity() < (int) sWorld->getIntConfig(CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SECURITY)) {
              handler->SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
              handler->SetSentErrorMessage(true);
              return false;
          }
 
-		 char* arg1 = strtok((char*)args, " ");
-		 char* arg2 = strtok(nullptr, " ");
+         // If no arguments provided, show current custom XP rate
+         if (!*args) {
+             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Your current XP rate is %.2f.", me->azthPlayer->GetPlayerQuestRate());
+             return true;
+         }
 
-		 float rate = atof((char *)arg1);
-		 float maxRate = 10; // a soft cap to prevent large abuses
-         if (rate < 1 || rate > maxRate) {
-             handler->PSendSysMessage("|CFF7BBEF7[Rating Bonus]|r: Invalid bonus multiplier specified, must be in interval [1, %.2f].", maxRate);
+         float rate = atof((char *) args);
+         float maxRate = sWorld->getFloatConfig(CONFIG_PLAYER_MAXIMUM_INDIVIDUAL_XP_RATE);
+         if (rate < 0 || rate > maxRate) {
+             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Invalid rate specified, must be in interval [0, %.2f].", maxRate);
              handler->SetSentErrorMessage(true);
              return false;
          }
 
-		 int bracket = atoi((char *)arg2);
-		 if (bracket < 1 || bracket > 5) {
-			 handler->PSendSysMessage("|CFF7BBEF7[Rating Bonus]|r: Invalid bracket specified.");
-			 handler->SetSentErrorMessage(true);
-			 return false;
-		 }
+         // Without target; Set my XP rate
+         if (!target || !target->GetSession())
+             player = me;
+         else {
+             // Have a target AND my security level is higher than target's (I am a GM, he is a player); Set target XP rate
+             if (me->GetSession()->GetSecurity() > target->GetSession()->GetSecurity())
+                 player = target;
+             else
+                 player = me;
+         }
 
-		 if (rate != 1.f)
-		 {
-			 sBonusRating->addBonus(bracket, rate);
-			 handler->PSendSysMessage("|CFF7BBEF7[Rating Bonus]|r: Bonus added! Multiplier: %.2f Bracket: %s", rate, sBonusRating->brackets[bracket - 1]);
-		 }
-		 else
-		 {
-			 sBonusRating->removeBonus(bracket);
-			 handler->PSendSysMessage("|CFF7BBEF7[Rating Bonus]|r: Bonus removed from bracket %d!", bracket);
-		 }
+         CustomRates::SaveXpRateToDB(player, rate);
 
+         player->azthPlayer->SetPlayerQuestRate(rate);
 
+         if (me->azthPlayer->GetPlayerQuestRate() == 0.0f)
+             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to 0. You won't gain any experience from now on.");
+         else
+             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to %.2f.", me->azthPlayer->GetPlayerQuestRate());
          return true;
      }
 
@@ -362,58 +359,9 @@
 
          return true;
      }
-
-	 static bool handleAzthXP(ChatHandler* handler, const char* args) {
-		 Player *me = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
-		 Player *target = handler->getSelectedPlayer();
-		 Player *player = NULL;
-
-		 if (!me || !me->GetSession())
-			 return false;
-
-		 // first, check if I can use the command
-		 if (me->GetSession()->GetSecurity() < (int)sWorld->getIntConfig(CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SECURITY)) {
-			 handler->SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
-			 handler->SetSentErrorMessage(true);
-			 return false;
-		 }
-
-		 // If no arguments provided, show current custom XP rate
-		 if (!*args) {
-			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Your current XP rate is %.2f.", me->azthPlayer->GetPlayerQuestRate());
-			 return true;
-		 }
-
-		 float rate = atof((char *)args);
-		 float maxRate = sWorld->getFloatConfig(CONFIG_PLAYER_MAXIMUM_INDIVIDUAL_XP_RATE);
-		 if (rate < 0 || rate > maxRate) {
-			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Invalid rate specified, must be in interval [0, %.2f].", maxRate);
-			 handler->SetSentErrorMessage(true);
-			 return false;
-		 }
-
-		 // Without target; Set my XP rate
-		 if (!target || !target->GetSession())
-			 player = me;
-		 else {
-			 // Have a target AND my security level is higher than target's (I am a GM, he is a player); Set target XP rate
-			 if (me->GetSession()->GetSecurity() > target->GetSession()->GetSecurity())
-				 player = target;
-			 else
-				 player = me;
-		 }
-
-		 CustomRates::SaveXpRateToDB(player, rate);
-
-		 player->azthPlayer->SetPlayerQuestRate(rate);
-
-		 if (me->azthPlayer->GetPlayerQuestRate() == 0.0f)
-			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to 0. You won't gain any experience from now on.");
-		 else
-			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to %.2f.", me->azthPlayer->GetPlayerQuestRate());
-		 return true;
-	 }
  };
+
+
 
  void AddSC_azth_commandscript() {
      new azth_commandscript();

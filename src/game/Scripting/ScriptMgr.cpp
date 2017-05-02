@@ -1581,11 +1581,6 @@ void ScriptMgr::OnAfterArenaRatingCalculation(Battleground *const bg, int32 &win
     FOREACH_SCRIPT(FormulaScript)->OnAfterArenaRatingCalculation(bg, winnerMatchmakerChange, loserMatchmakerChange, winnerChange, loserChange);
 }
 
-void ScriptMgr::OnBeforeUpdatingPersonalRating(int32 &mod, uint32 type)
-{
-	FOREACH_SCRIPT(FormulaScript)->OnBeforeUpdatingPersonalRating(mod, type);
-}
-
 AllMapScript::AllMapScript(const char* name)
     : ScriptObject(name)
 {

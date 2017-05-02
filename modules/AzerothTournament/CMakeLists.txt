@@ -1,6 +1,5 @@
-CU_SET_PATH("CMAKE_MOD_AZTOURNAMENT_DIR" "${CMAKE_CURRENT_LIST_DIR}")
 
-AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/scripts/RatingBonus.cpp")
-AC_ADD_SCRIPT_LOADER("AzTournament" "${CMAKE_CURRENT_LIST_DIR}/src/scripts/loader.h")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/RatingBonus.cpp")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/RatingBonus.h")
 
-CU_ADD_HOOK(BEFORE_GAME_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/src/cmake/before_game.cmake")
+AC_ADD_SCRIPT_LOADER("AzTournament" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")

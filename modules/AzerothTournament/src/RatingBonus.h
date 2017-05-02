@@ -6,19 +6,20 @@
 
 struct Bonus
 {
+    uint32 id;
     uint32 type;
-    float multiplier;
+    uint32 weekDay;
+    uint32 startHour;
+    uint32 endHour;
+    int32 multiplier;
 };
 
 class BonusRating
 {
     public:
+        void loadBonuses();
         std::vector<Bonus> getRatingBonuses();
-		void addBonus(int bracket, float multiplier);
-		void removeBonus(int bracket);
-		void printBonusesToPlayer(ChatHandler * handler, int bracket);
-		int AZTH_RATING_BONUS_SECURITY = 2;
-		const char* brackets[5] = { "1v1: ", "2v2: ", "3v3: ", "3v3 solo: ", "5v5: " };
+        std::vector<Bonus> getCurrentBonuses();
 
     private:
         std::vector<Bonus> bonuses;

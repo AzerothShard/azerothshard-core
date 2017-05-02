@@ -290,9 +290,6 @@ class FormulaScript : public ScriptObject
 
         // Called after calculating arena rating changes
         virtual void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange) { };
-
-		// Called before modifying a player's personal rating
-		virtual void OnBeforeUpdatingPersonalRating(int32 &mod, uint32 type) { };
 };
 
 template<class TMap> class MapScript : public UpdatableScript<TMap>
@@ -1063,8 +1060,6 @@ class ScriptMgr
         void OnGainCalculation(uint32& gain, Player* player, Unit* unit);
         void OnGroupRateCalculation(float& rate, uint32 count, bool isRaid);
         void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange);
-		void OnBeforeUpdatingPersonalRating(int32 &mod, uint32 type);
-
 
     public: /* MapScript */
 
