@@ -8,6 +8,8 @@
 std::vector<ItemToSell> ItemToSellList;
 std::vector<ItemInBank> ItemInBankList;
 
+std::map<uint32, std::map<uint32, std::string>> itemTypePositions;
+
 class loadItemVendor : public WorldScript
 {
 public:
@@ -70,9 +72,9 @@ public:
         //                              icon            text                           sender      action   popup message    money  code
         if (!player->azthPlayer->GetTimeWalkingLevel() > 0 || !player->azthPlayer->hasGear())
         {
-            player->ADD_GOSSIP_ITEM(0, "Deposita item", GOSSIP_SENDER_MAIN, 300);
+            player->ADD_GOSSIP_ITEM(0, "Deposita item", GOSSIP_SENDER_MAIN, 501);
         }
-        player->ADD_GOSSIP_ITEM_EXTENDED(0, "Inserisci gli item da cercare qui", GOSSIP_SENDER_MAIN, 1, "Inserisci nome item", 0, true);
+        player->ADD_GOSSIP_ITEM_EXTENDED(0, "Inserisci gli item da cercare qui", GOSSIP_SENDER_MAIN, 500, "Inserisci nome item", 0, true);
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
         return true;
     }
@@ -84,22 +86,54 @@ public:
         player->PlayerTalkClass->ClearMenus();
 
         uint32 INVENTORY_ITEMS = 254;
-        if (action == 300)
+        if (action == 501)
         {
             for (uint32 position = 0; position < INVENTORY_ITEMS; position++)
             {
                 Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
+
                 if (item != NULL)
                 {
-                    string itemName = item->GetTemplate()->Name1;
-                    player->ADD_GOSSIP_ITEM(0, /*"Deposita " + */itemName, GOSSIP_SENDER_MAIN, position);
+                    uint32 inventoryType = item->GetTemplate()->InventoryType;
+
+                    std::vector<std::string> category = getCategoryIconAndNameByItemType(inventoryType); //is an array check iteminbank.h
+                    std::string categoryName = category[0];
+                    std::string categoryIcon = category[1];
+
+                    std::map<uint32, std::string> categoryNames;
+
+                    if (categoryNames[inventoryType].length() == 0)
+                    {
+                        categoryNames[inventoryType] = categoryName; //save categories to check if already exists during for loop
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_MAIN, (1000+inventoryType));
+                    }
+
+                    itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
                 }
             }
             player->SEND_GOSSIP_MENU(2, creature->GetGUID());
         }
-        // --------->
-        // <---- second step
-        else
+        else if (action >= 1000)
+        {
+            uint32 inventoryType = action - 1000;
+
+            for (std::map<uint32, std::map<uint32, std::string>>::iterator it = itemTypePositions.begin(); it != itemTypePositions.end(); ++it)
+            {
+                if (it->first == inventoryType)
+                {
+                    for (std::map<uint32, std::string>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+                    {
+                        uint32 itemPosition = it2->first;
+                        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, itemPosition);
+                        std::string itemName = it2->second;
+                        std::string itemIcon = GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, itemIcon + itemName, GOSSIP_SENDER_MAIN, itemPosition);
+                    }
+                }
+            }
+            player->SEND_GOSSIP_MENU(25, creature->GetGUID());
+        }
+        else if(action < 1000)
         {
             uint32 slot = action;
 
@@ -129,6 +163,7 @@ public:
 
             ChatHandler(player->GetSession()).PSendSysMessage("L'item è stato depositato.");//, item->GetTemplate()->Name1);
         }
+       
 
         // -------->
 
@@ -140,7 +175,7 @@ public:
     {
         
         player->PlayerTalkClass->ClearMenus();
-        if (action == 1)
+        if (action == 500)
         {
             std::vector<ItemToSell> allItems;
             std::vector<ItemToSell> NotBuyableItems;

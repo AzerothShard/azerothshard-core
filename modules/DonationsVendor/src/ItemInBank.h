@@ -25,3 +25,6 @@ private:
 };
 
 #define sItemInBank ACE_Singleton<ItemInBank, ACE_Null_Mutex>::instance()
+
+std::string GetItemIcon(uint32 entry, uint32 width, uint32 height, int x, int y);
+std::vector<std::string> getCategoryIconAndNameByItemType(uint32 itemType);
