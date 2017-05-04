@@ -86,33 +86,44 @@ public:
         // <---- first step 
         player->PlayerTalkClass->ClearMenus();
 
-        uint32 INVENTORY_ITEMS = 254;
+        //[0,18] [23,38]  [118,135]
+
+        /*uint32 EQUIPPED_ITEMS_SLOT_END = 18; //0-18
+        uint32 BACKPACK_SLOT_START = 23;
+        uint32 BACKPACK_SLOT_END = 38;
+        uint32 CURRENCIES_SLOT_START = 118;
+        uint32 CURRENCIES_SLOT_END = 135;*/
+        uint32 SLOT_END = 135;
+
         if (action == 501 && sender == GOSSIP_SENDER_MAIN)
         {
             std::map<uint32, std::string> categoryNames;
 
-            for (uint32 position = 0; position < INVENTORY_ITEMS; position++)
+            for (uint32 position = 0; position < SLOT_END; position++)
             {
-                Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
-                uint32 counter = 0;
-
-                if (item != NULL)
+                if (position < 18 || (position >= 23 && position <= 38) || (position >= 118 && position <= 135))
                 {
-                    uint32 inventoryType = item->GetTemplate()->InventoryType;
+                    Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
+                    uint32 counter = 0;
 
-                    std::vector<std::string> category = getCategoryIconAndNameByItemType(inventoryType); //is an array check iteminbank.h
-                    std::string categoryName = category[0];
-                    std::string categoryIcon = category[1];
-
-
-                    if (categoryNames[inventoryType].length() == 0 && counter < 26)
+                    if (item != NULL)
                     {
-                        categoryNames[inventoryType] = categoryName;
-                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
-                        counter++;
-                    }
+                        uint32 inventoryType = item->GetTemplate()->InventoryType;
 
-                    itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
+                        std::vector<std::string> category = getCategoryIconAndNameByItemType(inventoryType); //is an array check iteminbank.h
+                        std::string categoryName = category[0];
+                        std::string categoryIcon = category[1];
+
+
+                        if (categoryNames[inventoryType].length() == 0 && counter < 26)
+                        {
+                            categoryNames[inventoryType] = categoryName;
+                            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
+                            counter++;
+                        }
+
+                        itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
+                    }
                 }
             }
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", GOSSIP_SENDER_MAIN, action);
@@ -134,10 +145,13 @@ public:
                         {
                             uint32 itemPosition = it2->first;
                             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, itemPosition);
-                            std::string itemName = it2->second;
-                            std::string itemIcon = GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
-                            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, itemIcon + itemName, GOSSIP_SENDER_SEC_BANK, itemPosition);
-                            counter++;
+                            if (item != NULL)
+                            {
+                                std::string itemName = it2->second;
+                                std::string itemIcon = GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
+                                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, itemIcon + itemName, GOSSIP_SENDER_SEC_BANK, itemPosition);
+                                counter++;
+                            }
                         }
                         
                     }
@@ -154,6 +168,8 @@ public:
             uint32 slot = action;
 
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+
+            uint32 inventoryType = item->GetTemplate()->InventoryType;
 
             if (sItemToSell->OwnItem(player->GetGUID(), item->GetEntry()))
             {
@@ -177,7 +193,10 @@ public:
 
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
 
-            ChatHandler(player->GetSession()).PSendSysMessage("L'item è stato depositato.");//, item->GetTemplate()->Name1);
+            ChatHandler(player->GetSession()).PSendSysMessage("Item depositato.");//, item->GetTemplate()->Name1);
+
+            OnGossipSelect(player, creature, GOSSIP_SENDER_INFO, inventoryType);
+            //send menu again
         }
         else if (action == 300) // go to main menu
         {
