@@ -101,7 +101,7 @@ public:
 
             for (uint32 position = 0; position < SLOT_END; position++)
             {
-                if (position < 18 || (position >= 23 && position <= 38) || (position >= 118 && position <= 135))
+                if (position <= 18 || (position >= 23 && position <= 38) || (position >= 118 && position <= 135))
                 {
                     Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
                     uint32 counter = 0;
