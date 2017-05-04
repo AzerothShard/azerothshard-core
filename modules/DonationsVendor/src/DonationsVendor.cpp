@@ -70,7 +70,7 @@ public:
     bool OnGossipHello(Player* player, Creature* creature)
     {
         //                              icon            text                           sender      action   popup message    money  code
-        if (!player->azthPlayer->GetTimeWalkingLevel() > 0 || !player->azthPlayer->hasGear())
+        if (!player->azthPlayer->GetTimeWalkingLevel() > 0 && !player->azthPlayer->hasGear())
         {
             player->ADD_GOSSIP_ITEM(0, "Deposita item", GOSSIP_SENDER_MAIN, 501);
         }
@@ -80,14 +80,17 @@ public:
     }
 
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action) override
     {
+      
         // <---- first step 
         player->PlayerTalkClass->ClearMenus();
 
         uint32 INVENTORY_ITEMS = 254;
-        if (action == 501)
+        if (action == 501 && sender == GOSSIP_SENDER_MAIN)
         {
+            std::map<uint32, std::string> categoryNames;
+
             for (uint32 position = 0; position < INVENTORY_ITEMS; position++)
             {
                 Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
@@ -100,22 +103,24 @@ public:
                     std::string categoryName = category[0];
                     std::string categoryIcon = category[1];
 
-                    std::map<uint32, std::string> categoryNames;
 
                     if (categoryNames[inventoryType].length() == 0)
                     {
-                        categoryNames[inventoryType] = categoryName; //save categories to check if already exists during for loop
-                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_MAIN, (1000+inventoryType));
+                        categoryNames[inventoryType] = categoryName;
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
                     }
 
                     itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
                 }
             }
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", GOSSIP_SENDER_MAIN, action);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", GOSSIP_SENDER_MAIN, 300);
             player->SEND_GOSSIP_MENU(2, creature->GetGUID());
         }
-        else if (action >= 1000)
+        else if (sender == GOSSIP_SENDER_INFO)
         {
-            uint32 inventoryType = action - 1000;
+            uint32 inventoryType = action;
+            uint32 counter = 0;
 
             for (std::map<uint32, std::map<uint32, std::string>>::iterator it = itemTypePositions.begin(); it != itemTypePositions.end(); ++it)
             {
@@ -123,18 +128,27 @@ public:
                 {
                     for (std::map<uint32, std::string>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
                     {
-                        uint32 itemPosition = it2->first;
-                        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, itemPosition);
-                        std::string itemName = it2->second;
-                        std::string itemIcon = GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
-                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, itemIcon + itemName, GOSSIP_SENDER_MAIN, itemPosition);
+                        if (counter < 28)
+                        {
+                            uint32 itemPosition = it2->first;
+                            Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, itemPosition);
+                            std::string itemName = it2->second;
+                            std::string itemIcon = GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
+                            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, itemIcon + itemName, GOSSIP_SENDER_SEC_BANK, itemPosition);
+                            counter++;
+                        }
+                        
                     }
                 }
             }
-            player->SEND_GOSSIP_MENU(25, creature->GetGUID());
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", GOSSIP_SENDER_INFO, action);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", GOSSIP_SENDER_MAIN, 301);
+            player->SEND_GOSSIP_MENU(10, creature->GetGUID());
         }
-        else if(action < 1000)
+        else if (sender == GOSSIP_SENDER_SEC_BANK)
         {
+            //player->PlayerTalkClass->SendCloseGossip();
+
             uint32 slot = action;
 
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
@@ -147,10 +161,10 @@ public:
 
             //instant remove
             player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, slot, true);
-           
+
             //delete from inventory
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
-            item->DeleteFromInventoryDB(trans); 
+            item->DeleteFromInventoryDB(trans);
             item->SaveToDB(trans);
             CharacterDatabase.CommitTransaction(trans);
 
@@ -161,10 +175,17 @@ public:
 
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
 
-            ChatHandler(player->GetSession()).PSendSysMessage("L'item e' stato depositato.");//, item->GetTemplate()->Name1);
+            ChatHandler(player->GetSession()).PSendSysMessage("L'item è stato depositato.");//, item->GetTemplate()->Name1);
         }
-       
-
+        else if (action == 300) // go to main menu
+        {
+            OnGossipHello(player, creature);
+        }
+        else if (action == 301) // go to categories menu
+        {
+            OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, 501);
+        }
+        
         // -------->
 
         return true;
@@ -175,7 +196,7 @@ public:
     {
         
         player->PlayerTalkClass->ClearMenus();
-        if (action == 500)
+        if (action == 500 && sender == GOSSIP_SENDER_MAIN)
         {
             std::vector<ItemToSell> allItems;
             std::vector<ItemToSell> NotBuyableItems;
