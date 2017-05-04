@@ -847,12 +847,16 @@ void ArenaTeam::MemberWon(Player* player, uint32 againstMatchmakerRating, int32 
         {
             // update personal rating
             int32 mod = GetRatingMod(itr->PersonalRating, againstMatchmakerRating, true);
+			sLog->outString("MOD BEFORE: %d", mod);
+			sScriptMgr->OnBeforeUpdatingPersonalRating(mod, GetType()); // AZTH
+			sLog->outString("MOD AFTER: %d", mod);
             itr->ModifyPersonalRating(player, mod, GetType());
 
             // update matchmaker rating (pussywizard: but don't allow it to go over team rating)
             if (itr->MatchMakerRating < Stats.Rating)
             {
                 mod = std::min(MatchmakerRatingChange, Stats.Rating - itr->MatchMakerRating);
+				sScriptMgr->OnBeforeUpdatingPersonalRating(mod, GetType()); // AZTH
                 itr->ModifyMatchmakerRating(mod, GetSlot());
             }
 
