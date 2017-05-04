@@ -94,6 +94,7 @@ public:
             for (uint32 position = 0; position < INVENTORY_ITEMS; position++)
             {
                 Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
+                uint32 counter = 0;
 
                 if (item != NULL)
                 {
@@ -104,10 +105,11 @@ public:
                     std::string categoryIcon = category[1];
 
 
-                    if (categoryNames[inventoryType].length() == 0)
+                    if (categoryNames[inventoryType].length() == 0 && counter < 26)
                     {
                         categoryNames[inventoryType] = categoryName;
                         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
+                        counter++;
                     }
 
                     itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
@@ -128,7 +130,7 @@ public:
                 {
                     for (std::map<uint32, std::string>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
                     {
-                        if (counter < 28)
+                        if (counter < 26)
                         {
                             uint32 itemPosition = it2->first;
                             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, itemPosition);
