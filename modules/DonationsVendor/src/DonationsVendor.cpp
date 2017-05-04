@@ -93,38 +93,36 @@ public:
         uint32 BACKPACK_SLOT_END = 38;
         uint32 CURRENCIES_SLOT_START = 118;
         uint32 CURRENCIES_SLOT_END = 135;*/
-        uint32 SLOT_END = 135;
+        uint32 SLOT_END = 38;
 
         if (action == 501 && sender == GOSSIP_SENDER_MAIN)
         {
             std::map<uint32, std::string> categoryNames;
 
-            for (uint32 position = 0; position < SLOT_END; position++)
+            for (uint32 position = 23; position < SLOT_END; position++)
             {
-                if (position <= 18 || (position >= 23 && position <= 38) || (position >= 118 && position <= 135))
-                {
-                    Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
-                    uint32 counter = 0;
+				Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
+				uint32 counter = 0;
 
-                    if (item != NULL)
-                    {
-                        uint32 inventoryType = item->GetTemplate()->InventoryType;
+				if (item != NULL)
+				{
+					uint32 inventoryType = item->GetTemplate()->InventoryType;
 
-                        std::vector<std::string> category = getCategoryIconAndNameByItemType(inventoryType); //is an array check iteminbank.h
-                        std::string categoryName = category[0];
-                        std::string categoryIcon = category[1];
+					std::vector<std::string> category = getCategoryIconAndNameByItemType(inventoryType); //is an array check iteminbank.h
+					std::string categoryName = category[0];
+					std::string categoryIcon = category[1];
 
 
-                        if (categoryNames[inventoryType].length() == 0 && counter < 26)
-                        {
-                            categoryNames[inventoryType] = categoryName;
-                            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
-                            counter++;
-                        }
+					if (categoryNames[inventoryType].length() == 0 && counter < 26)
+					{
+						categoryNames[inventoryType] = categoryName;
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
+						counter++;
+					}
 
-                        itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
-                    }
-                }
+					itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
+				}
+                
             }
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", GOSSIP_SENDER_MAIN, action);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", GOSSIP_SENDER_MAIN, 300);
