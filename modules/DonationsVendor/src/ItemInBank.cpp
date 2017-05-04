@@ -63,7 +63,7 @@ std::vector<std::string> getCategoryIconAndNameByItemType(uint32 itemType)
     std::string INVTYPE_WEAPON_STRING = "Weapons";
     std::string INVTYPE_SHIELD_STRING = "Shields";
     std::string INVTYPE_RANGED_STRING = "Ranged";
-    std::string INVTYPE_CLOAK_STRING = "Cloacks";
+    std::string INVTYPE_CLOAK_STRING = "Cloaks";
     std::string INVTYPE_2HWEAPON_STRING = "2H Weapons";
     std::string INVTYPE_BAG_STRING = "Bags";
     std::string INVTYPE_TABARD_STRING = "Tabards";
