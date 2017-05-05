@@ -28,7 +28,7 @@ void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid) {
       continue;
 
     QuestStatusData &q_status = player->m_QuestStatus[questid];
-    if (q_status.Status == QUEST_STATUS_INCOMPLETE && (qInfo->IsPVPQuest() && (player->GetGroup()->isBFGroup() || player->GetGroup()->isBGGroup()))) {
+    if (q_status.Status == QUEST_STATUS_INCOMPLETE && (qInfo->IsPVPQuest() && (!player->GetGroup() || (player->GetGroup()->isBFGroup() || player->GetGroup()->isBGGroup())))) {
       if (qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_KILL) /*&& !qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_CAST)*/) {
         for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
           // skip GO activate objective or none
