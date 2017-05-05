@@ -313,6 +313,13 @@
 		 char* arg1 = strtok((char*)args, " ");
 		 char* arg2 = strtok(nullptr, " ");
 
+		 if (!arg1 || !arg2)
+		 {
+			 handler->PSendSysMessage("|CFF7BBEF7[Rating Bonus]|r: Invalid parameters.");
+			 handler->SetSentErrorMessage(true);
+			 return false;
+		 }
+
 		 float rate = atof((char *)arg1);
 		 float maxRate = 10; // a soft cap to prevent large abuses
          if (rate < 1 || rate > maxRate) {
