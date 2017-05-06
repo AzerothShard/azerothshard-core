@@ -39,6 +39,7 @@ struct HearthstoneVendor
     int32 repValue;
     uint32 gossipOk;
     uint32 gossipNope;
+    bool pvpVendor;
 };
 
 enum bitmasksHs

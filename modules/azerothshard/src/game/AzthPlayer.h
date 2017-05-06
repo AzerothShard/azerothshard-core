@@ -95,6 +95,8 @@ public:
   void SetBankItemsList(ItemInBankMap itemsInBankList);
   ItemInBankMap & GetBankItemsList();
 
+  bool isPvP();
+
 private:
   Player *player;
   uint32 arena1v1Info[7]; // ARENA_TEAM_END
