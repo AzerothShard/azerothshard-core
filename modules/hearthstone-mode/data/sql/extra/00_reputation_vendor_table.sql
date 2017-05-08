@@ -7,3 +7,7 @@ CREATE TABLE `reputation_vendor`(
   `gossipUnsatisfied` INT(10) NOT NULL COMMENT 'gossip id when not enough reputation',
   PRIMARY KEY (`vendorId`)
 );
+
+-- vendor pvp only
+ALTER TABLE `reputation_vendor`
+	ADD COLUMN `PvPVendor` INT(1) NOT NULL DEFAULT '0' AFTER `gossipUnsatisfied`;
