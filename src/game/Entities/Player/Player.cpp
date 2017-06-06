@@ -3073,7 +3073,9 @@ void Player::SetGameMaster(bool on)
         UpdateArea(m_areaUpdateId);
 
         getHostileRefManager().setOnlineOfflineState(true);
-        m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+        //[AZTH] xeela
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_MODERATOR);
+        //[/AZTH]
     }
 
     UpdateObjectVisibility();
@@ -3093,7 +3095,9 @@ void Player::SetGMVisible(bool on)
         SetAcceptWhispers(false);
         SetGameMaster(true);
 
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
+        //[AZTH] xeela
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_MODERATOR);
+        //[/AZTH]
     }
 }
 
