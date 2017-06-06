@@ -23,6 +23,8 @@ UPDATE `item_template` SET `AllowableRace` = '-1' WHERE `entry` = '42124';
 UPDATE `item_template` SET `AllowableRace` = '-1' WHERE `entry` = '42126';
 UPDATE `item_template` SET `AllowableRace` = '-1' WHERE `entry` = '51377';
 UPDATE `item_template` SET `AllowableRace` = '-1' WHERE `entry` = '51378';
+UPDATE `item_template` SET `BuyCount` = '20' WHERE `entry` = '19997';
+UPDATE `item_template` SET `BuyCount` = '20' WHERE `entry` = '20390';
 UPDATE `item_template` SET `BuyPrice` = '1000000', `AllowableRace` = '-1' WHERE `entry` = '42122';
 UPDATE `item_template` SET `BuyPrice` = '1000000', `AllowableRace` = '-1' WHERE `entry` = '42123';
 UPDATE `item_template` SET `BuyPrice` = '1000000' WHERE `entry` = '40784';

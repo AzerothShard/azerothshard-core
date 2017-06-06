@@ -3,7 +3,6 @@ UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '11871';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '17178';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '17299';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '2113';
-UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '2252';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '27209';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '2996';
 UPDATE `creature_template` SET `faction` = '35' WHERE `entry` = '30110';
