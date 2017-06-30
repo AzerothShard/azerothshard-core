@@ -326,7 +326,7 @@ public:
             }
             i = i + 1;
         }
-        if (player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false) && PveMaxCheck < MAX_PVE_QUEST_NUMBER)
+        if (questPve && player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false) && PveMaxCheck < MAX_PVE_QUEST_NUMBER)
         {
             bitmask = bitmask | BITMASK_PVE;
         }
@@ -343,7 +343,7 @@ public:
             }
             i = i + 1;
         }
-        if (player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false) && PvpMaxCheck < MAX_PVP_QUEST_NUMBER)
+        if (questPvp && player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false) && PvpMaxCheck < MAX_PVP_QUEST_NUMBER)
         {
             bitmask = bitmask | BITMASK_PVP;
         }
