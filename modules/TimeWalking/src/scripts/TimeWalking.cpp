@@ -24,6 +24,7 @@ enum npc_timewalking_enum
     TIMEWALKING_GOSSIP_NPC_TEXT_PHASE = 50103,
     TIMEWALKING_GOSSIP_NPC_TEXT_RAID = 50104,
     TIMEWALKING_GOSSIP_NPC_TEXT_ALREADYAPPLIED = 50105,
+	TIMEWALKING_GOSSIP_NPC_TEXT_ACTIVELFG = 50106
 };
 
 class loadTimeWalkingRaid : public WorldScript
@@ -103,6 +104,12 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
+		if (player->isUsingLfg())
+		{
+			player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_ACTIVELFG, creature->GetGUID());
+			return true;
+		}
+
         if (player->getLevel() >= 80) {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Fase Attuale ( Bonus )", GOSSIP_SENDER_MAIN, 4);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
