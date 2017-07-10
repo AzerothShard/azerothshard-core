@@ -1190,10 +1190,20 @@ class spell_halion_twilight_realm : public SpellScriptLoader
                 GetTarget()->m_Events.AddEvent(new SendEncounterUnit(GetTarget()->ToPlayer()), GetTarget()->m_Events.CalculateTime(500));
             }
 
+			void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*handle*/)
+			{
+				Unit* target = GetTarget();
+				if (!target)
+					return;
+
+				target->SetPhaseMask(1, true);
+			}
+
             void Register()
             {
                 AfterEffectApply += AuraEffectApplyFn(spell_halion_twilight_realm_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PHASE, AURA_EFFECT_HANDLE_REAL);
-            }
+				AfterEffectRemove += AuraEffectRemoveFn(spell_halion_twilight_realm_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PHASE, AURA_EFFECT_HANDLE_REAL);
+			}
         };
 
         AuraScript* GetAuraScript() const
