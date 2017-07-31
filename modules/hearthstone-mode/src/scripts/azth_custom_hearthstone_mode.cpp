@@ -412,14 +412,15 @@ public:
         if (pos == 0)
             return false;
         
-        if (creature.pvpVendor && !player->azthPlayer->isPvP() && !player->IsGameMaster())
+        HearthstoneVendor vendor = vendors.at(pos);
+        
+        if (vendor.pvpVendor && !player->azthPlayer->isPvP() && !player->IsGameMaster())
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,  "Devi essere un player Full PvP per accedere a questo vendor.", GOSSIP_SENDER_MAIN, 0);
             player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
             return true;
         }
 
-        HearthstoneVendor vendor = vendors.at(pos);
 
         uint16 gossip;
         
