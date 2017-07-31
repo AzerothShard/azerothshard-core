@@ -30,6 +30,8 @@ public:
     uint32 getCalcReqLevel(ItemTemplate const* pProto);
 
     uint32 calculateItemScalingValue(ItemTemplate const* pProto,Player *pl = NULL);
+    
+    void learnClassSpells(Player* player, bool new_level);
 };
 
 #define sAzthUtils ACE_Singleton<AzthUtils, ACE_Null_Mutex>::instance()

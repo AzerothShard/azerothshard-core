@@ -84,6 +84,9 @@ public:
   std::vector<float> getLastPositionInfoFromDB();
   void saveLastPositionInfoToDB(std::vector<float> posInfo);
 
+  bool isPvP();
+  void loadPvPInfo();
+
 private:
   Player *player;
   uint32 arena1v1Info[7]; // ARENA_TEAM_END
@@ -91,6 +94,7 @@ private:
   float playerQuestRate, maxQuestRate;
   std::vector<SmartStonePlayerCommand> smartStoneCommands;
   std::vector<float> lastPositionInfo;
+  bool m_isPvP;
 };
 
 #endif /* AZTHPLAYER_H */

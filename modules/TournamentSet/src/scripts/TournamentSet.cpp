@@ -88,7 +88,9 @@ public:
             uint32 season = action / 10000;
             uint32 spec = action - (season * 10000) - (player->getClass()*100);
             AzthGearScaling set = sAzthGearScaling->GetGearScalingList()[action];
-            player->azthPlayer->SetTempGear(true);
+            if (!player->azthPlayer->isPvP()) {
+                player->azthPlayer->SetTempGear(true);
+            }
             equipSet(set, player);
             QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_tournamentset_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
             player->SaveToDB(false, false);
@@ -143,7 +145,18 @@ public:
         for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= 8; INVENTORY_INDEX++)
         {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
-            if (item != nullptr)
+            
+            if (item == nullptr)
+                continue;
+            
+            ItemPosCountVec off_dest;
+            uint8 off_msg = player->CanStoreItem(NULL_BAG, NULL_SLOT, off_dest, item, false);
+            if (off_msg == EQUIP_ERR_OK)
+            {
+                player->RemoveItem(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND, true);
+                player->StoreItem(off_dest, item, true);
+            }
+            else
             {
                 player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                 item->DeleteFromInventoryDB(trans);                   // deletes item from character's inventory
@@ -162,7 +175,18 @@ public:
         for (uint32 INVENTORY_INDEX = 9; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
         {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
-            if (item != nullptr)
+            
+            if (item == nullptr)
+                continue;
+            
+            ItemPosCountVec off_dest;
+            uint8 off_msg = player->CanStoreItem(NULL_BAG, NULL_SLOT, off_dest, item, false);
+            if (off_msg == EQUIP_ERR_OK)
+            {
+                player->RemoveItem(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND, true);
+                player->StoreItem(off_dest, item, true);
+            }
+            else
             {
                 player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                 item->DeleteFromInventoryDB(trans);                   // deletes item from character's inventory
@@ -171,6 +195,7 @@ public:
                 hasItems=true;
             }
         }
+
         if (hasItems)
             draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED, 0, 2000);
         

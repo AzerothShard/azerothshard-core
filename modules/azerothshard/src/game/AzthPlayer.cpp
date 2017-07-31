@@ -7,7 +7,7 @@
 #include "Unit.h"
 #include "Pet.h"
 #include "Player.h"
-
+#include "AccountMgr.h"
 
 
 AzthPlayer::AzthPlayer(Player *origin) {
@@ -91,3 +91,4 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
     target->UpdateSkillsToMaxSkillsForLevel();
     return true;
 }
+

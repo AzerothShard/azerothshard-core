@@ -8,6 +8,7 @@
 #include "azth_custom_hearthstone_mode.h"
 #include <iostream>
 #include <cstdlib> // now using C++ header
+#include "AzthPlayer.h"
 
 // old
 void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue)
@@ -410,6 +411,13 @@ public:
 
         if (pos == 0)
             return false;
+        
+        if (creature.pvpVendor && !player->azthPlayer->isPvP() && !player->IsGameMaster())
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,  "Devi essere un player Full PvP per accedere a questo vendor.", GOSSIP_SENDER_MAIN, 0);
+            player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
+            return true;
+        }
 
         HearthstoneVendor vendor = vendors.at(pos);
 
@@ -455,19 +463,20 @@ public:
         
         // REPUTATION VENDOR
         int32 rep = player->GetReputation(vendor.reputationId);
-            
+
         if (creature->IsVendor() && rep >= vendor.repValue && (player->GetReputationRank(vendor.reputationId) >= 3))
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
         if (rep < vendor.repValue) {
             stringstream ss;
-            ss << vendor.repValue; 
-            std::string str="Hai bisogno di "+ss.str()+" reputazione con AzerothShard.";
+            ss << vendor.repValue;
+            std::string str = "Hai bisogno di " + ss.str() + " reputazione con AzerothShard.";
 
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str, GOSSIP_SENDER_MAIN, 0);
-            
+
             player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
-        } else
+        }
+        else
             player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
         
         return true;
@@ -793,7 +802,7 @@ void HearthstoneMode::loadHearthstone()
     uint32 vendorCount = 0;
     sHearthstoneMode->hsVendors.clear();
 
-    QueryResult hsVendorResult = ExtraDatabase.PQuery("SELECT vendorId, reputation, `value`, gossipSatisfied, gossipUnsatisfied FROM reputation_vendor");
+    QueryResult hsVendorResult = ExtraDatabase.PQuery("SELECT vendorId, reputation, `value`, gossipSatisfied, gossipUnsatisfied, PvPVendor FROM reputation_vendor");
 
     if (hsVendorResult)
     {
@@ -804,7 +813,8 @@ void HearthstoneMode::loadHearthstone()
             hv.reputationId = (*hsVendorResult)[1].GetInt32();
             hv.repValue = (*hsVendorResult)[2].GetInt32();
             hv.gossipOk = (*hsVendorResult)[3].GetUInt32();
-            hv.gossipNope = (*hsVendorResult)[4].GetUInt32();
+            hv.gossipNope = (*hsVendorResult)[4].GetUInt32();            
+            ((*hsVendorResult)[5].GetUInt32() == 1) ? (hv.pvpVendor = true) : (hv.pvpVendor = false); //if == 1 ->pvp vendor || else-> non pvp vendor
 
             sHearthstoneMode->hsVendors.push_back(hv); // push the newly created element in the list
 
