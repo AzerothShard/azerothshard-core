@@ -1,6 +1,6 @@
 -- TIER 3 QUESTS
 -- DRUID
-UPDATE quest_template SET RequiredClasses = 1024 WHERE `id` BETWEEN 9086 AND 9093;
+UPDATE quest_template_addon SET AllowableClasses = 1024 WHERE `id` BETWEEN 9086 AND 9093;
 DELETE FROM disables WHERE entry BETWEEN 9086 AND 9093;
 DELETE FROM creature_questender WHERE quest BETWEEN 9086 AND 9093;
 DELETE FROM creature_queststarter WHERE quest BETWEEN 9086 AND 9093;
@@ -24,7 +24,7 @@ INSERT INTO creature_queststarter (id, quest) VALUES
 (16135, 9093);
 
 -- HUNTER
-UPDATE quest_template SET RequiredClasses = 4 WHERE id BETWEEN 9054 AND 9061;
+UPDATE quest_template_addon SET AllowableClasses = 4 WHERE id BETWEEN 9054 AND 9061;
 DELETE FROM disables WHERE entry BETWEEN 9054 AND 9061;
 DELETE FROM creature_questender WHERE quest BETWEEN 9054 AND 9061;
 DELETE FROM creature_queststarter WHERE quest BETWEEN 9054 AND 9061;
@@ -48,7 +48,7 @@ INSERT INTO creature_queststarter (id, quest) VALUES
 (16132, 9061);
 
 -- MAGE
-UPDATE quest_template SET RequiredClasses = 128 WHERE id BETWEEN 9095 AND 9102;
+UPDATE quest_template_addon SET AllowableClasses = 128 WHERE id BETWEEN 9095 AND 9102;
 DELETE FROM disables WHERE entry BETWEEN 9095 AND 9102;
 DELETE FROM creature_questender WHERE quest BETWEEN 9095 AND 9102;
 DELETE FROM creature_queststarter WHERE quest BETWEEN 9095 AND 9102;
@@ -72,7 +72,7 @@ INSERT INTO creature_queststarter (id, quest) VALUES
 (16116, 9102);
 
 -- PALADIN
-UPDATE quest_template SET RequiredClasses = 2 WHERE id BETWEEN 9043 AND 9050;
+UPDATE quest_template_addon SET AllowableClasses = 2 WHERE id BETWEEN 9043 AND 9050;
 DELETE FROM disables WHERE entry BETWEEN 9043 AND 9050;
 DELETE FROM creature_questender WHERE quest BETWEEN 9043 AND 9050;
 DELETE FROM creature_queststarter WHERE quest BETWEEN 9043 AND 9050;
@@ -96,7 +96,7 @@ INSERT INTO creature_queststarter (id, quest) VALUES
 (16115, 9050);
 
 -- PRIEST
-UPDATE quest_template SET RequiredClasses = 16 WHERE id BETWEEN 9111 AND 9118;
+UPDATE quest_template_addon SET AllowableClasses = 16 WHERE id BETWEEN 9111 AND 9118;
 DELETE FROM disables WHERE entry BETWEEN 9111 AND 9118;
 DELETE FROM creature_questender WHERE quest BETWEEN 9111 AND 9118;
 DELETE FROM creature_queststarter WHERE quest BETWEEN 9111 AND 9118;
@@ -120,7 +120,7 @@ INSERT INTO creature_queststarter (id, quest) VALUES
 (16113, 9050);
 
 -- ROGUE
-UPDATE quest_template SET RequiredClasses = 8 WHERE id BETWEEN 9077 AND 9084;
+UPDATE quest_template_addon SET AllowableClasses = 8 WHERE id BETWEEN 9077 AND 9084;
 DELETE FROM disables WHERE entry BETWEEN 9077 AND 9084;
 DELETE FROM creature_questender WHERE quest BETWEEN 9077 AND 9084;
 DELETE FROM creature_queststarter WHERE quest BETWEEN 9077 AND 9084;
@@ -144,7 +144,7 @@ INSERT INTO creature_queststarter (id, quest) VALUES
 (16131, 9084);
 
 -- SHAMAN
-UPDATE quest_template SET RequiredClasses = 64 WHERE id BETWEEN 9068 AND 9075;
+UPDATE quest_template_addon SET AllowableClasses = 64 WHERE id BETWEEN 9068 AND 9075;
 DELETE FROM disables WHERE entry BETWEEN 9068 AND 9075;
 DELETE FROM creature_questender WHERE quest BETWEEN 9068 AND 9075;
 DELETE FROM creature_queststarter WHERE quest BETWEEN 9068 AND 9075;
@@ -168,7 +168,7 @@ INSERT INTO creature_queststarter (id, quest) VALUES
 (16134, 9075);
 
 -- WARLOCK
-UPDATE quest_template SET RequiredClasses = 256 WHERE id BETWEEN 9103 AND 9110;
+UPDATE quest_template_addon SET AllowableClasses = 256 WHERE id BETWEEN 9103 AND 9110;
 DELETE FROM disables WHERE entry BETWEEN 9103 AND 9110;
 DELETE FROM creature_questender WHERE quest BETWEEN 9103 AND 9110;
 DELETE FROM creature_queststarter WHERE quest BETWEEN 9103 AND 9110;
@@ -192,7 +192,7 @@ INSERT INTO creature_queststarter (id, quest) VALUES
 (16133, 9110);
 
 -- WARRIOR
-UPDATE quest_template SET RequiredClasses = 1 WHERE id = 9034 OR id BETWEEN 9036 AND 9042;
+UPDATE quest_template_addon SET AllowableClasses = 1 WHERE id = 9034 OR id BETWEEN 9036 AND 9042;
 DELETE FROM disables WHERE entry = 9034 OR entry BETWEEN 9036 AND 9042;
 DELETE FROM creature_questender WHERE quest = 9034 OR quest BETWEEN 9036 AND 9042;
 DELETE FROM creature_queststarter WHERE quest = 9034 OR quest BETWEEN 9036 AND 9042;
