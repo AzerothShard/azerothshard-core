@@ -18,19 +18,16 @@
 #include "MapManager.h"
 #include "Map.h"
 
-uint32 parent = 1;
-
 class azth_smart_stone : public ItemScript {
 public:
+    
+    uint32 parent = 1;
 
     azth_smart_stone() : ItemScript("azth_smart_stone") {
     }
 
     bool OnUse(Player *player, Item *item, SpellCastTargets const &targets) {
         player->PlayerTalkClass->ClearMenus();
-
-        player->ADD_GOSSIP_ITEM(0, "Benvenuto nella tua SmartStone!",
-                GOSSIP_SENDER_MAIN, 99999);
 
         if (parent == 1) // not-to-buy commands for the main menu
         {
