@@ -18,6 +18,15 @@ AzthPlayer::AzthPlayer(Player *origin) {
 
 AzthPlayer::~AzthPlayer() {}
 
+void AzthPlayer::setCustLang(AzthCustomLangs code) {
+    this->custLang = code;
+}
+
+AzthCustomLangs AzthPlayer::getCustLang()
+{
+    return this->custLang;
+}
+
 bool AzthPlayer::AzthMaxPlayerSkill() {
 
     Player* target = player;

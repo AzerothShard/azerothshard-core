@@ -12,11 +12,23 @@
 #include "AzthGroupMgr.h"
 #include "AzthPlayer.h"
 #include "azth_custom_hearthstone_mode.h"
+#include "AccountDatabase.h"
 
 class AzthPlayerPlg : public PlayerScript{
 public:
 
     AzthPlayerPlg() : PlayerScript("AzthPlayerPlg") { }
+    
+    void OnCreate(Player *pl) override {
+        uint32 accId = pl->GetSession()->GetAccountId();
+        //                                                    0
+        QueryResult res = AccountDatabase.PQuery("SELECT custom_lang FROM azth_account_info WHERE id = '%d';", accId);
+
+        if (res != nullptr && res->GetRowCount() > 0) {
+            Field* info = res->Fetch();
+            info[0].getUint8();
+        }
+    }
     
     void OnLevelChanged(Player* player, uint8 oldLevel) override
     {
@@ -27,7 +39,7 @@ public:
     }
 
     // logger for custom extended costs
-    void OnAfterStoreOrEquipNewItem(Player* player, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore) override
+    void OnBeforeStoreOrEquipNewItem(Player* player, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore) override
     {
         long price = 0;
 
@@ -56,7 +68,7 @@ public:
 
         uint32 guid = pVendor ? pVendor->GetEntry() : 0;
 
-        ExtraDatabase.PQuery("INSERT INTO `buy_log` (`playerGuid`, `item`, `vendor`, `price`) VALUES (%u, %u, %u, %ld);",
+        CharacterDatabase.PQuery("INSERT INTO `azth_buy_log` (`playerGuid`, `item`, `vendor`, `price`) VALUES (%u, %u, %u, %ld);",
             player->GetGUIDLow(), item, guid, price);
     }
 

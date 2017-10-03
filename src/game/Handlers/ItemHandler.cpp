@@ -673,6 +673,15 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
     Item* pItem = _player->GetItemByGuid(itemguid);
     if (pItem)
     {
+        
+        //[AZTH] prevent sell azth special items
+        if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1))
+        {
+            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid, 0);
+            return;
+        }
+        //[/AZTH]
+        
         // prevent sell not owner item
         if (_player->GetGUID() != pItem->GetOwnerGUID())
         {

@@ -14,16 +14,117 @@
 #include "Spell.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
-
 #include "MapManager.h"
 #include "Map.h"
+
+#include "Apps/Apps.h"
 
 class azth_smart_stone : public ItemScript {
 public:
     
     uint32 parent = 1;
+    SmartStoneApps *apps;
 
     azth_smart_stone() : ItemScript("azth_smart_stone") {
+        apps = new SmartStoneApps();
+    }
+    
+    
+    void OnGossipSelect(Player *player, Item *item, uint32 sender,
+            uint32 action) override {
+        player->PlayerTalkClass->ClearMenus();
+
+        // back to main menu command
+        if (action == 2001) {
+            parent = 1;
+            player->CLOSE_GOSSIP_MENU();
+            OnUse(player, item, SpellCastTargets());
+        }
+
+        SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
+
+        // scripted action
+        if (selectedCommand.type == DO_SCRIPTED_ACTION ||
+                action == 2000) // azeroth store
+        {
+            switch (action) {
+                case 2000: // store
+                    //sSmartStone->SmartStoneSendListInventory(player->GetSession());
+                break;
+                case 1: // black market teleport
+                    apps->blackMarketTeleport(player);
+                break;
+
+                case 2: // change faction
+                    apps->changeFaction(player);
+                break;
+
+                case 3: // rename
+                    apps->rename(player);
+                break;
+
+                case 5: // change race
+                    apps->changeRace(player);
+                break;
+
+                case 6: // jukebox
+                    apps->jukebox(player);
+                break;
+
+                case 10: // maxskill
+                    apps->maxSkill(player);
+                break;
+
+                case 99999:
+                    break;
+                default:
+                    sLog->outError("Smartstone: unhandled command! ID: %u, player GUID: %u",
+                            action, player->GetGUID());
+                    break;
+            }
+            if (selectedCommand.charges > 0) {
+                player->azthPlayer->decreaseSmartStoneCommandCharges(
+                        selectedCommand.id);
+            }
+            player->CLOSE_GOSSIP_MENU();
+            // return;
+        }
+
+        // open child
+        if (selectedCommand.type == OPEN_CHILD) {
+            parent = selectedCommand.action;
+            player->CLOSE_GOSSIP_MENU();
+            OnUse(player, item, SpellCastTargets());
+        }
+    }
+
+    void OnGossipSelectCode(Player* player, Item* item, uint32 sender, uint32 action, const char* code) override {
+        player->PlayerTalkClass->ClearMenus();
+
+        SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
+
+        // scripted action
+        if (selectedCommand.type == DO_SCRIPTED_ACTION_WITH_CODE || action == 2000) // azeroth store
+        {
+            switch (action) {
+                case 2000: // store
+                    break;
+
+                case 11: //change exp
+                    apps->changeExp(player, code);
+                break;
+
+                case 99999:
+                    break;
+                default:
+                    sLog->outError("Smartstone: unhandled command with code! ID: %u, player GUID: %u", action, player->GetGUID());
+                    break;
+            }
+            if (selectedCommand.charges > 0) {
+                player->azthPlayer->decreaseSmartStoneCommandCharges(selectedCommand.id);
+            }
+            player->CLOSE_GOSSIP_MENU();
+        }
     }
 
     bool OnUse(Player *player, Item *item, SpellCastTargets const &targets) {
@@ -120,201 +221,6 @@ public:
         parent = 1;
         return true;
     }
-
-    void OnGossipSelect(Player *player, Item *item, uint32 sender,
-            uint32 action) override {
-        player->PlayerTalkClass->ClearMenus();
-
-        // back to main menu command
-        if (action == 2001) {
-            parent = 1;
-            player->CLOSE_GOSSIP_MENU();
-            OnUse(player, item, SpellCastTargets());
-        }
-
-        SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
-
-        // scripted action
-        if (selectedCommand.type == DO_SCRIPTED_ACTION ||
-                action == 2000) // azeroth store
-        {
-            switch (action) {
-                case 2000: // store
-                    //sSmartStone->SmartStoneSendListInventory(player->GetSession());
-                    break;
-
-                case 1: // black market teleport
-                {
-                    if (!player->IsInCombat() && !player->azthPlayer->isInBlackMarket()) {
-                        float mapid = player->GetMapId();
-                        std::vector<float> pos = {mapid, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()};
-                        player->azthPlayer->setLastPositionInfo(pos);
-
-                        player->TeleportTo(1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
-                    }
-                    if (!player->IsInCombat() && player->azthPlayer->isInBlackMarket()) {
-                        std::vector<float> pos = player->azthPlayer->getLastPositionInfo();
-
-                        Map *m = sMapMgr->FindBaseMap(pos[0]);
-
-                        if (m && m->IsDungeon()) {
-
-                            // pos[0] is the map
-                            WorldSafeLocsEntry const* ClosestGrave = sObjectMgr->GetClosestGraveyard(pos[1], pos[2], pos[3], pos[0], TEAM_NEUTRAL);
-
-                            if (ClosestGrave) {
-                                player->TeleportTo(ClosestGrave->map_id, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, player->GetOrientation());
-                            }
-                        } else {
-                            player->TeleportTo(pos[0], pos[1], pos[2], pos[3], 0.174f, 0);
-                        }
-                    }
-
-                }
-                break;
-
-                case 2: // change faction
-                {
-                    player->SetAtLoginFlag(AT_LOGIN_CHANGE_FACTION);
-                    ChatHandler(player->GetSession())
-                            .SendSysMessage("Rilogga per cambiare fazione!");
-                }
-                break;
-
-                case 3: // rename
-                {
-                    player->SetAtLoginFlag(AT_LOGIN_RENAME);
-                    ChatHandler(player->GetSession()).SendSysMessage("Rilogga per cambiare "
-                            "nome! Attento, gli "
-                            "addon sono settati "
-                            "in base al nome!");
-                }
-                break;
-
-                case 5: // change race
-                {
-                    player->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
-                    ChatHandler(player->GetSession())
-                            .SendSysMessage("Rilogga per cambiare razza!");
-                }
-                break;
-
-                case 6: // jukebox
-                {
-                    if (player->FindNearestCreature(300205, 20.f, true) != NULL)
-                        return;
-                    TempSummon* jukebox_summon = player->SummonCreature(300205, player->GetPositionX(),
-                            player->GetPositionY(), player->GetPositionZ(),
-                            player->GetOrientation(),
-                            TEMPSUMMON_TIMED_DESPAWN, 600 * 1000, 0);
-                    Map* playerMap = player->GetMap();
-                    Creature* jukebox = playerMap->GetCreature(jukebox_summon->GetGUID());
-                    jukebox->GetMotionMaster()->MoveFollow(player, 2, 2);
-                }
-                break;
-
-                case 10: // maxskill
-                    player->azthPlayer->AzthMaxPlayerSkill();
-                    break;
-
-                case 11: //change exp, done at selectcode
-                    break;
-
-                case 99999:
-                    break;
-                default:
-                    sLog->outError("Smartstone: unhandled command! ID: %u, player GUID: %u",
-                            action, player->GetGUID());
-                    break;
-            }
-            if (selectedCommand.charges > 0) {
-                player->azthPlayer->decreaseSmartStoneCommandCharges(
-                        selectedCommand.id);
-            }
-            player->CLOSE_GOSSIP_MENU();
-            // return;
-        }
-
-        // open child
-        if (selectedCommand.type == OPEN_CHILD) {
-            parent = selectedCommand.action;
-            player->CLOSE_GOSSIP_MENU();
-            OnUse(player, item, SpellCastTargets());
-        }
-    }
-
-    void OnGossipSelectCode(Player* player, Item* item, uint32 sender, uint32 action, const char* code) override {
-        player->PlayerTalkClass->ClearMenus();
-
-        SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
-
-        // scripted action
-        if (selectedCommand.type == DO_SCRIPTED_ACTION_WITH_CODE || action == 2000) // azeroth store
-        {
-            switch (action) {
-                case 2000: // store
-                    break;
-
-                case 1: // black market teleport
-                    break;
-
-                case 2: // change faction
-                    break;
-
-                case 3: // rename
-                    break;
-
-                case 5: // change race
-                    break;
-
-                case 6: // jukebox
-                    break;
-
-                case 10: // maxskill
-                    break;
-
-                case 11: //change exp
-                    if (isFloatNumber(code)) {
-                        float exp = atof(code);
-                        player->azthPlayer->AzthSelfChangeXp(exp);
-                    } else {
-                        ChatHandler(player->GetSession()).PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Invalid rate specified!");
-                    }
-                    break;
-
-                case 99999:
-                    break;
-                default:
-                    sLog->outError("Smartstone: unhandled command with code! ID: %u, player GUID: %u", action, player->GetGUID());
-                    break;
-            }
-            if (selectedCommand.charges > 0) {
-                player->azthPlayer->decreaseSmartStoneCommandCharges(selectedCommand.id);
-            }
-            player->CLOSE_GOSSIP_MENU();
-        }
-    }
-
-    bool isFloatNumber(const std::string& string) {
-        std::string::const_iterator it = string.begin();
-        bool decimalPoint = false;
-        int minSize = 0;
-        if (string.size() > 0 && (string[0] == '-' || string[0] == '+')) {
-            it++;
-            minSize++;
-        }
-        while (it != string.end()) {
-            if (*it == '.' || *it == ',') {
-                if (!decimalPoint) decimalPoint = true;
-                else break;
-            } else if (!isdigit(*it) && ((*it != 'f') || it + 1 != string.end() || !decimalPoint)) {
-                break;
-            }
-            ++it;
-        }
-        return string.size() > minSize && it == string.end();
-    }
-
 };
 
 void SmartStone::loadCommands() {

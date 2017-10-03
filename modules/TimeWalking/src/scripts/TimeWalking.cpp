@@ -325,7 +325,7 @@ public:
     }
     
     void OnLoadFromDB(Player *player) override {
-        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("SELECT id,level FROM timewalking_characters_active WHERE id = %d;"), player->GetGUID());
+        QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("SELECT id,level FROM azth_timewalking_characters_active WHERE id = %d;"), player->GetGUID());
         if (timewalkingCharactersActive_table) //if is in timewalking mode apply debuff
         {
             Field* timewalkingCharactersActive_field = timewalkingCharactersActive_table->Fetch();

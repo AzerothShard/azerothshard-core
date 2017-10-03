@@ -8,7 +8,7 @@
 #include "AzthGearScalingSocket.h"
 
 std::map<uint32, AzthGearScaling> tournamentTempGearList;
-std::map<uint32, AzthGearScalingSocket> tournamentTempGearSocketList;
+std::map<uint64, AzthGearScalingSocket> tournamentTempGearSocketList;
 
 class loadTournamentSet : public WorldScript
 {
@@ -34,7 +34,7 @@ public:
 
         //-------------------------------------------------------------------------------
 
-        QueryResult tournament_socketEnchants_table = ExtraDatabase.PQuery("SELECT itemId,socket1,socket2,socket3,enchant FROM tournament_socket_enchants");
+        QueryResult tournament_socketEnchants_table = ExtraDatabase.PQuery("SELECT itemId,class,spec,socket1,socket2,socket3,enchant FROM tournament_socket_enchants");
         if (!tournament_socketEnchants_table)
         {
             sLog->outString(">> Loaded 0 tournament Gear Socket for Tournament Set. DB table `tournament_socket_enchants` is empty.\n");
@@ -45,7 +45,15 @@ public:
             Field* tournament_socketEnchants_Field = tournament_socketEnchants_table->Fetch();
             do
             {
-                tournamentTempGearSocketList[tournament_socketEnchants_Field[0].GetUInt32()] = AzthGearScalingSocket(tournament_socketEnchants_Field[0].GetUInt32(), tournament_socketEnchants_Field[1].GetUInt32(), tournament_socketEnchants_Field[2].GetUInt32(), tournament_socketEnchants_Field[3].GetUInt32(), tournament_socketEnchants_Field[4].GetUInt32());
+                //                                  entry*10000                                             class*100                                                spec 
+                tournamentTempGearSocketList[tournament_socketEnchants_Field[0].GetUInt32() * 10000 + tournament_socketEnchants_Field[1].GetUInt32() * 100 + tournament_socketEnchants_Field[2].GetUInt32()] = AzthGearScalingSocket(
+                    tournament_socketEnchants_Field[0].GetUInt32(), // entry
+                    tournament_socketEnchants_Field[1].GetUInt8(), // class
+                    tournament_socketEnchants_Field[2].GetUInt8(), // spec
+                    tournament_socketEnchants_Field[3].GetUInt32(), // socket1
+                    tournament_socketEnchants_Field[4].GetUInt32(), // socket2
+                    tournament_socketEnchants_Field[5].GetUInt32(), // socket3
+                    tournament_socketEnchants_Field[6].GetUInt32()); // enchant
             } while (tournament_socketEnchants_table->NextRow());
 
             sAzthGearScalingSocket->SetGearScalingSocketList(tournamentTempGearSocketList);
@@ -65,13 +73,18 @@ public:
             if (!player->azthPlayer->hasGear())
             {
                 string str = "Gli item attualmente equippati saranno mandati alla mail, vuoi proseguire?";
-                player->ADD_GOSSIP_ITEM_EXTENDED(0, "Deadly", GOSSIP_SENDER_MAIN, 5, str, 0, false);
-                player->ADD_GOSSIP_ITEM_EXTENDED(0, "Furious", GOSSIP_SENDER_MAIN, 6, str, 0, false);
-                player->ADD_GOSSIP_ITEM_EXTENDED(0, "Relentless", GOSSIP_SENDER_MAIN, 7, str, 0, false);
+                player->ADD_GOSSIP_ITEM_EXTENDED(1, "Set PvP: Deadly", GOSSIP_SENDER_MAIN, 5, str, 0, false);
+                player->ADD_GOSSIP_ITEM_EXTENDED(1, "Set PvP: Furious", GOSSIP_SENDER_MAIN, 6, str, 0, false);
+                player->ADD_GOSSIP_ITEM_EXTENDED(1, "Set PvP: Relentless", GOSSIP_SENDER_MAIN, 7, str, 0, false);
                 //player->ADD_GOSSIP_ITEM_EXTENDED(0, "Wrathful", GOSSIP_SENDER_MAIN, 8, str.c_str(), 0, false);
             }
             else
                 player->ADD_GOSSIP_ITEM(0, "Rimuovi il set PVP", GOSSIP_SENDER_MAIN, 9);
+        }
+
+        if (player->azthPlayer->isPvP()) {
+            player->ADD_GOSSIP_ITEM(8, "Gratis: Ripara tutti gli items", GOSSIP_SENDER_MAIN, 20);
+            player->ADD_GOSSIP_ITEM_EXTENDED(3, "Gratis: Resetta i talenti", GOSSIP_SENDER_MAIN, 21, "Vuoi davvero resettare tutti i talenti?", 0, false);
         }
 
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
@@ -82,6 +95,18 @@ public:
     {
         if (action >= 4 && action <= 8) // deadly = 5, furious = 6, relentless = 7, wrathful = 8 -> go to select spec menu
             selectSpec(player, creature, action);
+        
+        if (action == 20 && player->azthPlayer->isPvP()) {
+            player->DurabilityRepairAll(false,0,false);
+            player->PlayerTalkClass->SendCloseGossip();
+        }
+        
+        if (action == 21 && player->azthPlayer->isPvP()) {
+            player->resetTalents(true);
+            player->SendTalentsInfoData(false);
+            creature->CastSpell(player, 14867, true);                  //spell: "Untalent Visual Effect"
+            player->PlayerTalkClass->SendCloseGossip();
+        }
 
         if (action >= 10000) //spec selected -> equip new gear
         {
@@ -90,10 +115,11 @@ public:
             AzthGearScaling set = sAzthGearScaling->GetGearScalingList()[action];
             if (!player->azthPlayer->isPvP()) {
                 player->azthPlayer->SetTempGear(true);
+                QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_tournamentset_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
+                player->SaveToDB(false, false);
             }
-            equipSet(set, player);
-            QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_tournamentset_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
-            player->SaveToDB(false, false);
+
+            equipSet(set, player, spec);
             player->PlayerTalkClass->SendCloseGossip();
         }
 
@@ -128,13 +154,13 @@ public:
             if (it->second.GetClass() == player->getClass() && it->second.GetSeason() == season)
             {
                 //season*10000 + class*100 + spec
-                player->ADD_GOSSIP_ITEM(0, it->second.GetName().c_str(), GOSSIP_SENDER_MAIN, season * 10000 + it->second.GetClass() * 100 + it->second.GetSpec());
+                player->ADD_GOSSIP_ITEM(8, it->second.GetName().c_str(), GOSSIP_SENDER_MAIN, season * 10000 + it->second.GetClass() * 100 + it->second.GetSpec());
             }
         }
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
     }
 
-    void equipSet(AzthGearScaling set, Player* player)
+    void equipSet(AzthGearScaling set, Player* player, uint32 spec)
     {
         uint32 INVENTORY_END = 18;
 
@@ -142,6 +168,7 @@ public:
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         MailDraft* draft = new MailDraft("Item rimossi", "");
         bool hasItems=false;
+        // first 9 slots (ugly workaround)
         for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= 8; INVENTORY_INDEX++)
         {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
@@ -150,21 +177,24 @@ public:
                 continue;
             
             ItemPosCountVec off_dest;
-            uint8 off_msg = player->CanStoreItem(NULL_BAG, NULL_SLOT, off_dest, item, false);
+            InventoryResult off_msg = player->CanUnequipItem(off_dest, false);
             if (off_msg == EQUIP_ERR_OK)
             {
-                player->RemoveItem(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND, true);
+                player->RemoveItem(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                 player->StoreItem(off_dest, item, true);
             }
-            else
+            else if (off_msg == EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS)
             {
                 player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                 item->DeleteFromInventoryDB(trans);                   // deletes item from character's inventory
                 item->SaveToDB(trans);
                 draft->AddItem(item);
                 hasItems=true;
+            } else {
+                
             }
         }
+
         if (hasItems)
             draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED, 0, 2000);
         
@@ -172,6 +202,7 @@ public:
         
         draft = new MailDraft("Item rimossi", "");
         hasItems=false;
+        // next 9 slots (ugly workaround)
         for (uint32 INVENTORY_INDEX = 9; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
         {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
@@ -183,7 +214,7 @@ public:
             uint8 off_msg = player->CanStoreItem(NULL_BAG, NULL_SLOT, off_dest, item, false);
             if (off_msg == EQUIP_ERR_OK)
             {
-                player->RemoveItem(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND, true);
+                player->RemoveItem(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                 player->StoreItem(off_dest, item, true);
             }
             else
@@ -208,49 +239,49 @@ public:
         if (set.GetHead() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_HEAD, set.GetHead(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetNeck() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_NECK, set.GetNeck(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetShoulders() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_SHOULDERS, set.GetShoulders(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetBody() != 0)
         {
             Item* item = player->EquipNewItem(EQUIPMENT_SLOT_BODY, set.GetBody(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetChest() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_CHEST, set.GetChest(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetWaist() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_WAIST, set.GetWaist(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetLegs() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_LEGS, set.GetLegs(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetFeet() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_FEET, set.GetFeet(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetWrists() != 0) //ally or horde
@@ -260,25 +291,25 @@ public:
                 if (player->GetTeamId() == TEAM_ALLIANCE)
                 {
                     Item* item = player->EquipNewItem(SLOT_WRISTS, set.GetWrists(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
                 else
                 {
                     Item* item = player->EquipNewItem(SLOT_WRISTS, set.GetWrists_h(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
             }
             else
             {
                 Item* item = player->EquipNewItem(SLOT_WRISTS, set.GetWrists(), true);
-                setEnchantAndSocket(player, item);
+                setEnchantAndSocket(player, item, spec);
             }
         }
 
         if (set.GetHands() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_HANDS, set.GetHands(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetFinger1() != 0) //ally or horde
@@ -288,18 +319,18 @@ public:
                 if (player->GetTeamId() == TEAM_ALLIANCE)
                 {
                     Item* item = player->EquipNewItem(SLOT_FINGER1, set.GetFinger1(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
                 else
                 {
                     Item* item = player->EquipNewItem(SLOT_FINGER1, set.GetFinger1_h(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
             }
             else
             {
                 Item* item = player->EquipNewItem(SLOT_FINGER1, set.GetFinger1(), true);
-                setEnchantAndSocket(player, item);
+                setEnchantAndSocket(player, item, spec);
             }
         }
 
@@ -310,18 +341,18 @@ public:
                 if (player->GetTeamId() == TEAM_ALLIANCE)
                 {
                     Item* item = player->EquipNewItem(SLOT_FINGER2, set.GetFinger2(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
                 else
                 {
                     Item* item = player->EquipNewItem(SLOT_FINGER2, set.GetFinger2_h(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
             }
             else
             {
                 Item* item = player->EquipNewItem(SLOT_FINGER2, set.GetFinger2(), true);
-                setEnchantAndSocket(player, item);
+                setEnchantAndSocket(player, item, spec);
             }
         }
 
@@ -332,18 +363,18 @@ public:
                 if (player->GetTeamId() == TEAM_ALLIANCE)
                 {
                     Item* item = player->EquipNewItem(SLOT_TRINKET1, set.GetTrinket1(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
                 else
                 {
                     Item* item = player->EquipNewItem(SLOT_TRINKET1, set.GetTrinket1_h(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
             }
             else
             {
                 Item* item = player->EquipNewItem(SLOT_TRINKET1, set.GetTrinket1(), true);
-                setEnchantAndSocket(player, item);
+                setEnchantAndSocket(player, item, spec);
             }
         }
 
@@ -354,100 +385,107 @@ public:
                 if (player->GetTeamId() == TEAM_ALLIANCE)
                 {
                     Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket2(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
                 else
                 {
                     Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket2_h(), true);
-                    setEnchantAndSocket(player, item);
+                    setEnchantAndSocket(player, item, spec);
                 }
             }
             else
             {
                 Item* item = player->EquipNewItem(SLOT_TRINKET2, set.GetTrinket2(), true);
-                setEnchantAndSocket(player, item);
+                setEnchantAndSocket(player, item, spec);
             }
         }
 
         if (set.GetBack() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_BACK, set.GetBack(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetMainHand() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_MAIN_HAND, set.GetMainHand(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetOffHand() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_OFF_HAND, set.GetOffHand(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetRanged() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_RANGED, set.GetRanged(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
 
         if (set.GetTabard() != 0)
         {
             Item* item = player->EquipNewItem(SLOT_TABARD, set.GetTabard(), true);
-            setEnchantAndSocket(player, item);
+            setEnchantAndSocket(player, item, spec);
         }
         
     }
 
-    void setEnchantAndSocket(Player* player, Item* item)
+    void setEnchantAndSocket(Player* player, Item* item, uint32 spec)
     {
-        item->GetEntry();
-        map<uint32, AzthGearScalingSocket> AllItemsSockets = sAzthGearScalingSocket->GetGearScalingSocketList();
-        map<uint32, AzthGearScalingSocket>::iterator iter = AllItemsSockets.find(item->GetEntry());
-        if (iter == AllItemsSockets.end())
+        uint32 entry = item->GetEntry();
+        uint32 id = (entry * 10000) + (player->getClass()*100) + spec;
+
+        item->SetBinding(true);
+        item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1, true); // special flag
+
+        map<uint64, AzthGearScalingSocket> AllItemsSockets = sAzthGearScalingSocket->GetGearScalingSocketList();
+        map<uint64, AzthGearScalingSocket>::iterator iter = AllItemsSockets.find(id);
+        if (iter != AllItemsSockets.end()) //items has at least 1 socket or 1 enchant
         {
-            //items doesnt have socket nor enchant
-            return;
-        }
-
-        AzthGearScalingSocket socketList = AllItemsSockets[item->GetEntry()];
+            AzthGearScalingSocket socketList = AllItemsSockets[id];
 
 
-        std::vector<uint32> gems;
-        gems.push_back(socketList.GetSocket1());
-        gems.push_back(socketList.GetSocket2());
-        gems.push_back(socketList.GetSocket3());
+            std::vector<uint32> gems;
+            gems.push_back(socketList.GetSocket1());
+            gems.push_back(socketList.GetSocket2());
+            gems.push_back(socketList.GetSocket3());
 
-        //add socket to item
-        for (uint32 i = 0; i < gems.size(); i++)
-        {
-            if (gems[i] != 0)
+            //add socket to item
+            for (uint32 i = 0; i < gems.size(); i++)
             {
-                ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(gems[i]);
-                GemPropertiesEntry const* gemProperty = sGemPropertiesStore.LookupEntry(_proto->GemProperties);
-                item->SetEnchantment((EnchantmentSlot)(SOCK_ENCHANTMENT_SLOT + i), gemProperty->spellitemenchantement, 0, 0, player->GetGUID());
+                if (gems[i] != 0)
+                {
+                    ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(gems[i]);
+                    GemPropertiesEntry const* gemProperty = sGemPropertiesStore.LookupEntry(_proto->GemProperties);
+                    item->SetEnchantment((EnchantmentSlot)(SOCK_ENCHANTMENT_SLOT + i), gemProperty->spellitemenchantement, 0, 0, player->GetGUID());
+                }
+            }
+
+            //set enchant to item
+            if (socketList.GetEnchant() != 0)
+            {
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(socketList.GetEnchant());
+                for (uint32 i = 0; i < 3; i++)
+                {
+                    uint32 enchant_id = spellInfo->Effects[i].MiscValue;
+                    if (!enchant_id)
+                        continue;
+
+                    SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                    if (!pEnchant)
+                        continue;
+
+                    item->SetEnchantment(PERM_ENCHANTMENT_SLOT, enchant_id, 0, 0, player->GetGUID());
+                }
             }
         }
-
-        //set enchant to item
-        if (socketList.GetEnchant() != 0)
-        {
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(socketList.GetEnchant());
-            for (uint32 i = 0; i < 3; i++)
-            {
-                uint32 enchant_id = spellInfo->Effects[i].MiscValue;
-                if (!enchant_id)
-                    return;
-
-                SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                if (!pEnchant)
-                    return;
-
-                item->SetEnchantment(PERM_ENCHANTMENT_SLOT, enchant_id, 0, 0, player->GetGUID());
-            }
-        }
+        
+        // if we want immediately save
+        //SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        //item->SaveToDB(trans);
+        //CharacterDatabase.CommitTransaction(trans);
     }
 };
 
@@ -468,6 +506,9 @@ public:
     {
         if (player->GetSession()->PlayerLoading())
             return; // do not remove set during login
+            
+        if (player->azthPlayer->isPvP())
+            return; // do not remove set for pvp players
         
         uint32 zone;
         uint32 area;

@@ -310,7 +310,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
         ChatHandler(player->GetSession())
                 .SendSysMessage("Hai sbloccato una nuova app per la tua SmartStone!");
 
-        sScriptMgr->OnAfterStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, creature, crItem, false);
+        sScriptMgr->OnBeforeStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, creature, crItem, false);
     }
 
     // return crItem->maxcount != 0;

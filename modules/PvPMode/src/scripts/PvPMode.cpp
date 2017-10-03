@@ -1,11 +1,10 @@
 #include "ScriptMgr.h"
 #include "Player.h"
 #include "LFG.h"
+#include "azth_custom_hearthstone_mode.h"
 #include "AzthUtils.h"
 #include "AzthPlayer.h"
 #include "MapManager.h"
-
-std::map<uint32, bool> playerIds;
 
 class PvPMode : public GlobalScript
 {
@@ -22,7 +21,7 @@ public:
 
     void OnAfterInitializeLockedDungeons(Player* player)
     {
-        if ((player->GetMap()->IsDungeon() || player->GetMap()->IsRaidOrHeroicDungeon()) && player->azthPlayer->isPvP())
+        if ((player->GetMap()->IsDungeon() && !player->GetMap()->IsBattlegroundOrArena()) && player->azthPlayer->isPvP())
         {
             player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);
             ChatHandler(player->GetSession()).PSendSysMessage("Stai usando un personaggio Full-PvP, non puoi partecipare a raid/dungeons.");
@@ -47,12 +46,14 @@ public:
             startLoc.m_positionX = 4718.45;
             startLoc.m_positionY = -1974.84;
             startLoc.m_positionZ = 1086.91;
-            startLoc.m_orientation = 0.19;
+            startLoc.m_orientation = 3.19;
             startLoc.m_mapId  = 1;
 
             player->Relocate(&startLoc);
             player->ResetMap();
             player->SetMap(sMapMgr->CreateMap(1, player));
+            
+            CharacterDatabase.PQuery("REPLACE INTO azth_pvp_characters (id,isPvP) VALUES(%d, 1)", player->GetGUIDLow());
             
             player->SaveToDB(false,false);
         }
@@ -62,7 +63,8 @@ public:
     {
         if (player->azthPlayer->isPvP())
         {
-            playerIds[player->GetGUID()] = true;
+            // restore at first login flag for now, to be used inside OnLogin function
+            player->SetAtLoginFlag(AT_LOGIN_FIRST);
         }
     }
 
@@ -70,76 +72,117 @@ public:
     {
         player->azthPlayer->loadPvPInfo();
         
-        if (playerIds[player->GetGUID()])
-        {
-            // delevel + levelup to fix achievements 
-            player->GiveLevel(79);
-            player->GiveLevel(80); 
-
-            player->InitTalentForLevel();
-            player->learnDefaultSpells();
-            player->SetUInt32Value(PLAYER_XP, 0);
-            sAzthUtils->learnClassSpells(player, false);
-            
-            // riding + flying
-            player->learnSpell(34091); // artisan riding
-            player->learnSpell(54197); // coldweather flying
-            
-            player->learnSpell(41514); // flying mount, netherdrake
-            player->learnSpell(54753); // ground mount, bear
-            
-            
-            // explore all zones
-            for (uint8 i = 0; i<PLAYER_EXPLORED_ZONES_SIZE; i++)
-                player->SetFlag(PLAYER_EXPLORED_ZONES_1 + i, 0xFFFFFFFF);
-            
-            player->UpdateSkillsToMaxSkillsForLevel(); // set all skills
-            
-            player->StoreNewItemInBestSlots(23162, 8);
-            
-            for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++)
+        if (player->azthPlayer->isPvP()){
+            if (player->HasAtLoginFlag(AT_LOGIN_FIRST))
             {
-                if (Item* pItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                // delevel + levelup to fix achievements 
+                player->GiveLevel(79);
+                player->GiveLevel(80); 
+                
+                player->SetHonorPoints(500);
+
+                player->InitTalentForLevel();
+                player->learnDefaultSpells();
+                player->SetUInt32Value(PLAYER_XP, 0);
+                sAzthUtils->learnClassSpells(player, false);
+                
+                // riding + flying
+                player->learnSpell(34091); // artisan riding
+                player->learnSpell(54197); // coldweather flying
+                
+                player->learnSpell(41514); // flying mount, netherdrake
+                player->learnSpell(54753); // ground mount, bear
+                
+                
+                // explore all zones
+                for (uint8 i = 0; i<PLAYER_EXPLORED_ZONES_SIZE; i++)
+                    player->SetFlag(PLAYER_EXPLORED_ZONES_1 + i, 0xFFFFFFFF);
+                
+                player->UpdateSkillsToMaxSkillsForLevel(); // set all skills
+                
+                player->StoreNewItemInBestSlots(23162, 8);
+                
+                player->RemoveAtLoginFlag(AT_LOGIN_FIRST);
+                
+                for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++)
                 {
-                    uint16 eDest;
-                    // equip offhand weapon/shield if it attempt equipped before main-hand weapon
-                    InventoryResult msg = player->CanEquipItem(NULL_SLOT, eDest, pItem, false);
-                    if (msg == EQUIP_ERR_OK)
+                    if (Item* pItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
                     {
-                        player->RemoveItem(INVENTORY_SLOT_BAG_0, i, true);
-                        player->EquipItem(eDest, pItem, true);
-                    }
-                    // move other items to more appropriate slots (ammo not equipped in special bag)
-                    else
-                    {
-                        ItemPosCountVec sDest;
-                        msg = player->CanStoreItem(NULL_BAG, NULL_SLOT, sDest, pItem, false);
+                        uint16 eDest;
+                        // equip offhand weapon/shield if it attempt equipped before main-hand weapon
+                        InventoryResult msg = player->CanEquipItem(NULL_SLOT, eDest, pItem, false);
                         if (msg == EQUIP_ERR_OK)
                         {
                             player->RemoveItem(INVENTORY_SLOT_BAG_0, i, true);
-                            pItem = player->StoreItem(sDest, pItem, true);
+                            player->EquipItem(eDest, pItem, true);
                         }
+                        // move other items to more appropriate slots (ammo not equipped in special bag)
+                        else
+                        {
+                            ItemPosCountVec sDest;
+                            msg = player->CanStoreItem(NULL_BAG, NULL_SLOT, sDest, pItem, false);
+                            if (msg == EQUIP_ERR_OK)
+                            {
+                                player->RemoveItem(INVENTORY_SLOT_BAG_0, i, true);
+                                pItem = player->StoreItem(sDest, pItem, true);
+                            }
 
-                        // if  this is ammo then use it
-                        msg = player->CanUseAmmo(pItem->GetEntry());
-                        if (msg == EQUIP_ERR_OK)
-                            player->SetAmmo(pItem->GetEntry());
+                            // if  this is ammo then use it
+                            msg = player->CanUseAmmo(pItem->GetEntry());
+                            if (msg == EQUIP_ERR_OK)
+                                player->SetAmmo(pItem->GetEntry());
+                        }
                     }
                 }
+                
+                
+                //player->TeleportTo(1, 4718.45, -1974.84, 1086.91, 0.19); //teleport to black market
+                player->SaveToDB(false, false);
             }
-            
-            
-            player->TeleportTo(1, 4718.45, -1974.84, 1086.91, 0.19); //teleport to black market
-            playerIds.erase(player->GetGUID());
-            player->SaveToDB(false, false);
-        }
-        
-        if (player->azthPlayer->isPvP()){
+
+
             player->SetTaxiCheater(true); // must be set at each login
         }
     }
+    
+    // logger for custom extended costs
+    void OnAfterStoreOrEquipNewItem(Player* player, uint32 vendorslot, Item* item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore) override
+    {
+        if (!player->azthPlayer->isPvP())
+            return;
+        
+        if (pVendor->GetScriptName() == "npc_azth_vendor") {
+            
+            std::vector<HearthstoneVendor> vendors = sHearthstoneMode->hsVendors;
+            int pos = 0;
+            for (int i = 0; i < vendors.size(); i++)
+            {
+                HearthstoneVendor temp = vendors.at(i);
+                if (temp.id == pVendor->GetEntry())
+                    pos = i;
+            }
 
-
+            if (pos == 0)
+                return;
+            
+            HearthstoneVendor vendor = vendors.at(pos);
+            
+            if (vendor.pvpVendor) {
+                item->SetBinding(true);
+                item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1, true);
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                item->SaveToDB(trans);
+                CharacterDatabase.CommitTransaction(trans);
+            }
+        }
+    }
+    
+    void OnBeforeDurabilityRepair(Player * player, uint64 npcGUID, uint64 itemGUID, float & discountMod, uint8 guildbank) override {
+        if (!player->azthPlayer->isPvP())
+            return;
+        
+        discountMod = 0.f;
+    }
 };
 
 

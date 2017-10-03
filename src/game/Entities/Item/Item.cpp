@@ -433,7 +433,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
 
     SetUInt32Value(ITEM_FIELD_FLAGS, fields[5].GetUInt32());
     // Remove bind flag for items vs NO_BIND set
-    if (IsSoulBound() && proto->Bonding == NO_BIND)
+    if (IsSoulBound() && proto->Bonding == NO_BIND /*[AZTH] force soulbound using an unknown flag as workaround */ && !HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1) /*[/AZTH]*/)
     {
         ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, false);
         need_save = true;

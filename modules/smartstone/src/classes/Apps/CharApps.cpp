@@ -1,0 +1,34 @@
+#include "Apps.h"
+
+void SmartStoneApps::changeExp(Player *player, const char* code) {
+    if (isFloatNumber(code)) {
+        float exp = atof(code);
+        player->azthPlayer->AzthSelfChangeXp(exp);
+    } else {
+        ChatHandler(player->GetSession()).PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Invalid rate specified!");
+    }
+}
+
+void SmartStoneApps::maxSkill(Player *player) {
+    player->azthPlayer->AzthMaxPlayerSkill();   
+}
+
+void SmartStoneApps::changeRace(Player *player) {
+    player->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
+    ChatHandler(player->GetSession())
+            .SendSysMessage("Rilogga per cambiare razza!");
+}
+
+void SmartStoneApps::changeFaction(Player *player) {
+    player->SetAtLoginFlag(AT_LOGIN_CHANGE_FACTION);
+    ChatHandler(player->GetSession())
+            .SendSysMessage("Rilogga per cambiare fazione!");
+}
+
+void SmartStoneApps::rename(Player *player) {
+    player->SetAtLoginFlag(AT_LOGIN_RENAME);
+    ChatHandler(player->GetSession()).SendSysMessage("Rilogga per cambiare "
+            "nome! Attento, gli "
+            "addon sono settati "
+            "in base al nome!");
+}

@@ -26,7 +26,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
         player->SetAuraStack(TIMEWALKING_AURA_MOD_HEALING, player, stats.GetHealPct());
         player->SetAuraStack(TIMEWALKING_AURA_MOD_DAMAGESPELL, player, stats.GetDamPct());
         player->AddAura(TIMEWALKING_AURA_VISIBLE, player);
-        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("INSERT IGNORE INTO timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
+        QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
     }
     else
     {
@@ -45,6 +45,6 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
         player->RemoveAura(TIMEWALKING_AURA_MOD_DAMAGESPELL);
         player->RemoveAura(TIMEWALKING_AURA_VISIBLE);
 
-        QueryResult timewalkingCharactersActive_table = ExtraDatabase.PQuery(("DELETE FROM timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());
+        QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());
     }
 }

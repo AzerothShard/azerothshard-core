@@ -12,6 +12,7 @@
 #include "ArenaTeamMgr.h"
 #include "Player.h"
 #include "WorldSession.h"
+#include "BattlegroundMgr.h"
 #include "Opcodes.h"
 #include <Config.h>
 
@@ -99,8 +100,10 @@ void ArenaTeam::CreateTempForSolo3v3(Player* plr[], uint8 team)
     Stats.Rating = 0;
     Stats.WeekWins = 0;
     Stats.SeasonWins = 0;
+    
+    uint32 MinPlayersPerTeam = sBattlegroundMgr->isArenaTesting() ? 1 : 3;
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < MinPlayersPerTeam; i++)
     {
         ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(plr[i]->GetArenaTeamId(GetSlotByType(ARENA_TEAM_SOLO_3v3)));
 

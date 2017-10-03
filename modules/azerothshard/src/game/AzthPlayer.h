@@ -14,6 +14,11 @@ class CrossFaction;
 class Player;
 class SmartStone;
 
+enum AzthCustomLangs {
+    AZTH_LOC_IT = 0,
+    AZTH_LOC_EN = 1,
+};
+
 class AzthPlayer {
     uint32 timeWalkingLevel = 0;
     bool PVPTempGear = false;
@@ -86,6 +91,8 @@ public:
 
   bool isPvP();
   void loadPvPInfo();
+  AzthCustomLangs getCustLang();
+  void setCustLang(AzthCustomLangs code);
 
 private:
   Player *player;
@@ -95,6 +102,7 @@ private:
   std::vector<SmartStonePlayerCommand> smartStoneCommands;
   std::vector<float> lastPositionInfo;
   bool m_isPvP;
+  uint8 customLang;
 };
 
 #endif /* AZTHPLAYER_H */

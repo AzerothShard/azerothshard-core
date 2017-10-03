@@ -390,12 +390,14 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
-        player->PlayerTalkClass->ClearMenus();
-
-        if (action == GOSSIP_ACTION_TRADE)
+        if (action == 50000) {
+            player->PlayerTalkClass->ClearMenus();
             sHearthstoneMode->AzthSendListInventory(creature->GetGUID(), player->GetSession(), 100000);
+            return true;
+        }
 
-        return true;
+        return false; // execute default gossipselect
+
     }
 
     bool OnGossipHello(Player* player, Creature* creature)
@@ -416,8 +418,20 @@ public:
         
         if (vendor.pvpVendor && !player->azthPlayer->isPvP() && !player->IsGameMaster())
         {
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,  "Devi essere un player Full PvP per accedere a questo vendor.", GOSSIP_SENDER_MAIN, 0);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,  "Non sei un player Full PvP! Non posso mostrarti nulla!", GOSSIP_SENDER_MAIN, 0);
             player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
+            return true;
+        }
+        
+        // if reputation id = 0 then show the gossip as normal
+        if (vendor.reputationId == 0) {
+            if (vendor.gossipOk > 0) {
+                player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
+            } else {
+                // if not gossip set, then send the default
+                return false;
+            }
+
             return true;
         }
 
@@ -456,17 +470,20 @@ public:
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str, GOSSIP_SENDER_MAIN, 0);
                 player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
             } else {
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
-                player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
+                if (vendor.gossipOk > 0) {
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, 50000);
+                    player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
+                } else {
+                    // if not gossip set, then send the default
+                    return false;
+                }
             }
             return true;
         }
         
         // REPUTATION VENDOR
         int32 rep = player->GetReputation(vendor.reputationId);
-
-        if (creature->IsVendor() && rep >= vendor.repValue && (player->GetReputationRank(vendor.reputationId) >= 3))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+            
 
         if (rep < vendor.repValue) {
             stringstream ss;
@@ -477,8 +494,15 @@ public:
 
             player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
         }
-        else
-            player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
+        else {
+            if (vendor.gossipOk > 0 && creature->IsVendor()) {
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+                player->SEND_GOSSIP_MENU(vendor.gossipOk, creature->GetGUID());
+            } else {
+                // if not gossip set, then send the default
+                return false;
+            }
+        }
         
         return true;
     }
