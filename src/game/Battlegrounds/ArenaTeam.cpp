@@ -1087,7 +1087,7 @@ uint32 ArenaTeam::GetAverageMMR()
     for (MemberList::const_iterator itr = Members.begin(); itr != Members.end(); ++itr)
     {
         matchMakerRating += itr->MatchMakerRating;
-        playerDivider;
+        playerDivider++;
     }
 
     //x/0 = crash

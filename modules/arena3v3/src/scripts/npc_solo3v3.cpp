@@ -278,7 +278,7 @@ private:
 
 			// get the team rating for queueing
 			arenaRating = at->GetRating();
-			matchmakerRating = at->GetAverageMMR(NULL);
+			matchmakerRating = at->GetAverageMMR();
 			// the arenateam id must match for everyone in the group
 
 			if (arenaRating <= 0)
