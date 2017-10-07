@@ -89,8 +89,8 @@ public:
                 azthAchievement_field[0].GetUInt32(), azthAchievement_field[1].GetUInt32(), azthAchievement_field[2].GetUInt32(), azthAchievement_field[3].GetUInt32(), azthAchievement_field[4].GetUInt32(), azthAchievement_field[5].GetUInt32(),
                 // levelMax                                 levelMin                                    level                              originalPoints                        Name                              Description
                 azthAchievement_field[6].GetUInt32(), azthAchievement_field[7].GetUInt32(), azthAchievement_field[8].GetUInt32(), azthAchievement_field[9].GetUInt32(), azthAchievement_field[10].GetString(), azthAchievement_field[11].GetString(),
-                //reward                                        rewardCount
-                azthAchievement_field[12].GetUInt32(), azthAchievement_field[13].GetUInt32());
+                //reward                                        rewardCount                             killcredit
+                azthAchievement_field[12].GetUInt32(), azthAchievement_field[13].GetUInt32(), azthAchievement_field[13].GetUInt32());
         } while (azthAchievement_table->NextRow());
 
         sAzthAchievement->SetAchievementList(azthAchievementList);
@@ -272,12 +272,11 @@ public:
 
         uint32 count = achi.GetRewardCount();
         uint32 reward = achi.GetReward();
-
-        if (!reward || !count)
-            return;
+        uint32 killCredit = achi.GetKillCredit();
 
         uint32 level = player->azthPlayer->getGroupLevel() > 0 ? player->azthPlayer->getGroupLevel() : player->getLevel();
 
+        // to achieve it you must be in range
         if (achi.GetLevelMin() <= level && achi.GetLevelMax() >= level) {
             ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(reward);
             if (!_proto)
@@ -293,16 +292,19 @@ public:
                 }
             }
 
-            if (level <= achi.GetLevel()) {
-                count *= 2;
+            if (_proto->IsCurrencyToken()) {
+                // if bonus is active then you'll get x2 tokens
+                // moreover if you have the level <= of suggested
+                // then you'll get x6 tokens instead
+                if (hasBonus) {
+                    count *= 2;
 
-                if (hasBonus)
-                    count *= 3;
-            }
-
-            if (_proto->IsCurrencyToken())
+                    if (level <= achi.GetLevel())
+                        count *= 3;
+                }
+                
                 player->AddItem(reward, count);
-            else {
+            } else {
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 MailDraft* draft = new MailDraft(_proto->Name1, "");
                 
@@ -319,6 +321,10 @@ public:
                 draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
                 CharacterDatabase.CommitTransaction(trans);
                 ChatHandler(player->GetSession()).PSendSysMessage("Complimenti! |cffff0000  %s x%d|r ti è stato inviato via mail", _proto->Name1.c_str(), count);
+            }
+
+            if (killCredit) {
+                player->azthPlayer->ForceKilledMonsterCredit(killCredit, NULL); // send credit 
             }
         }
 
