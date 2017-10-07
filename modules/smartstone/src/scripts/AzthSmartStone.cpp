@@ -19,6 +19,41 @@
 
 #include "Apps/Apps.h"
 
+enum SmartStoneCommands {
+    SMRTST_BLACK_MARKET=1,
+    SMRTST_CHANGE_FACTION=2,
+    SMRTST_RENAME=3,
+    SMRTST_CHAR_MENU=4,
+    SMRTST_CHANGE_RACE=5,
+    SMRTST_JUKEBOX=6,
+    SMRTST_HERBALISM_BONUS=7,
+    SMRTST_MINING_BONUS=8,
+    SMRTST_BONUS_MENU=9,
+    SMRTST_MAX_SKILL=10,
+    SMRTST_XP_CHANGE=11,
+    SMRTST_RESET_AURAS=12,
+    SMRTST_SHOP_MENU=2000, //unused
+    SMRTST_BACK_MENU=2001,
+};
+
+std::string SmartStoneCommand::getText(Player *pl) {
+        AzthCustomLangs loc = AZTH_LOC_IT;
+
+        if (pl)
+            loc = pl->azthPlayer->getCustLang();
+        
+        switch(loc) {
+            case AZTH_LOC_IT:
+                return text_it;
+            break;
+            case AZTH_LOC_EN:
+                return text_def;
+            break;
+        }
+        
+        return text_def;
+}
+
 class azth_smart_stone : public ItemScript {
 public:
     
@@ -48,31 +83,35 @@ public:
                 action == 2000) // azeroth store
         {
             switch (action) {
-                case 2000: // store
+                case SMRTST_SHOP_MENU: // store
                     //sSmartStone->SmartStoneSendListInventory(player->GetSession());
                 break;
-                case 1: // black market teleport
+                case SMRTST_BLACK_MARKET: // black market teleport
                     apps->blackMarketTeleport(player);
                 break;
 
-                case 2: // change faction
+                case SMRTST_CHANGE_FACTION: // change faction
                     apps->changeFaction(player);
                 break;
 
-                case 3: // rename
+                case SMRTST_RENAME: // rename
                     apps->rename(player);
                 break;
 
-                case 5: // change race
+                case SMRTST_CHANGE_RACE: // change race
                     apps->changeRace(player);
                 break;
 
-                case 6: // jukebox
+                case SMRTST_JUKEBOX: // jukebox
                     apps->jukebox(player);
                 break;
 
-                case 10: // maxskill
+                case SMRTST_MAX_SKILL: // maxskill
                     apps->maxSkill(player);
+                break;
+                
+                case SMRTST_RESET_AURAS:
+                    apps->resetAuras(player);
                 break;
 
                 case 99999:
@@ -107,10 +146,7 @@ public:
         if (selectedCommand.type == DO_SCRIPTED_ACTION_WITH_CODE || action == 2000) // azeroth store
         {
             switch (action) {
-                case 2000: // store
-                    break;
-
-                case 11: //change exp
+                case SMRTST_XP_CHANGE: //change exp
                     apps->changeExp(player, code);
                 break;
 
@@ -135,18 +171,18 @@ public:
             // black market teleport id 1
             SmartStoneCommand teleport = sSmartStone->getCommandById(1);
             if (!player->azthPlayer->isInBlackMarket())
-                player->ADD_GOSSIP_ITEM(teleport.icon, teleport.text, GOSSIP_SENDER_MAIN, teleport.id);
+                player->ADD_GOSSIP_ITEM(teleport.icon, teleport.getText(player), GOSSIP_SENDER_MAIN, teleport.id);
             else
                 player->ADD_GOSSIP_ITEM(teleport.icon, "Riportami indietro", GOSSIP_SENDER_MAIN, teleport.id);
 
             // menu character (rename, change faction, etc) id 4
             SmartStoneCommand characterMenu = sSmartStone->getCommandById(4);
-            player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.text,
+            player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.getText(player),
                     GOSSIP_SENDER_MAIN, characterMenu.id);
 
             // menu passive bonus id 9
             SmartStoneCommand passiveMenu = sSmartStone->getCommandById(9);
-            player->ADD_GOSSIP_ITEM(passiveMenu.icon, passiveMenu.text,
+            player->ADD_GOSSIP_ITEM(passiveMenu.icon, passiveMenu.getText(player),
                     GOSSIP_SENDER_MAIN, passiveMenu.id);
         }
 
@@ -154,11 +190,11 @@ public:
         {
             // max skill command
             SmartStoneCommand maxSkill = sSmartStone->getCommandById(10);
-            player->ADD_GOSSIP_ITEM(maxSkill.icon, maxSkill.text, GOSSIP_SENDER_MAIN, maxSkill.id);
+            player->ADD_GOSSIP_ITEM(maxSkill.icon, maxSkill.getText(player), GOSSIP_SENDER_MAIN, maxSkill.id);
 
             // azth xp command
             SmartStoneCommand azthXp = sSmartStone->getCommandById(11);
-            player->ADD_GOSSIP_ITEM_EXTENDED(azthXp.icon, azthXp.text, GOSSIP_SENDER_MAIN, azthXp.id, "Scrivi il valore desiderato.", 0, true);
+            player->ADD_GOSSIP_ITEM_EXTENDED(azthXp.icon, azthXp.getText(player), GOSSIP_SENDER_MAIN, azthXp.id, "Scrivi il valore desiderato.", 0, true);
         }
 
         std::vector<SmartStonePlayerCommand> playerCommands =
@@ -177,7 +213,7 @@ public:
                 continue;
             }
 
-            std::string text = command.text;
+            std::string text = command.getText(player);
 
             if (playerCommands[i].charges != -1)
                 text = text + " (" + std::to_string(playerCommands[i].charges) + ")";
@@ -229,21 +265,22 @@ void SmartStone::loadCommands() {
     // sHearthstoneMode->hsAchievementTable.clear();
 
     QueryResult ssCommandsResult = ExtraDatabase.PQuery(
-            "SELECT id, text, item, icon, parent_menu, type, action, charges, "
+            "SELECT id, text_def, text_it, item, icon, parent_menu, type, action, charges, "
             "duration FROM smartstone_commands");
 
     if (ssCommandsResult) {
         do {
             SmartStoneCommand command = {};
             command.id = (*ssCommandsResult)[0].GetUInt32();
-            command.text = (*ssCommandsResult)[1].GetString();
-            command.item = (*ssCommandsResult)[2].GetUInt32();
-            command.icon = (*ssCommandsResult)[3].GetUInt32();
-            command.parent_menu = (*ssCommandsResult)[4].GetUInt32();
-            command.type = (*ssCommandsResult)[5].GetUInt32();
-            command.action = (*ssCommandsResult)[6].GetUInt32();
-            command.charges = (*ssCommandsResult)[7].GetInt32();
-            command.duration = (*ssCommandsResult)[8].GetUInt64();
+            command.text_def = (*ssCommandsResult)[1].GetString();
+            command.text_it = (*ssCommandsResult)[2].GetString();
+            command.item = (*ssCommandsResult)[3].GetUInt32();
+            command.icon = (*ssCommandsResult)[4].GetUInt32();
+            command.parent_menu = (*ssCommandsResult)[5].GetUInt32();
+            command.type = (*ssCommandsResult)[6].GetUInt32();
+            command.action = (*ssCommandsResult)[7].GetUInt32();
+            command.charges = (*ssCommandsResult)[8].GetInt32();
+            command.duration = (*ssCommandsResult)[9].GetUInt64();
 
             ssCommands2.push_back(command);
 
@@ -276,7 +313,7 @@ SmartStoneCommand SmartStone::getCommandByItem(uint32 item) {
 };
 
 bool SmartStone::isNullCommand(SmartStoneCommand command) {
-    return (command.id == 0 && command.text == "" && command.item == 0 &&
+    return (command.id == 0 && command.text_def == "" && command.item == 0 &&
             command.icon == 0 && command.parent_menu == 0 &&
             command.type == 0 && command.action == 0);
 };

@@ -26,6 +26,7 @@
 
 //[AZTH]
 #include "npc_solo3v3.h"
+#include "ArenaSeason.h"
 
 void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket & recvData)
 {
@@ -154,6 +155,11 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
                  _player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) ||
                  _player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5)) // can't be already queued for arenas
             err = ERR_BATTLEGROUND_QUEUED_FOR_RATED;
+        //[AZTH]
+        else if (!sASeasonMgr->canJoinArenaOrBg(_player))
+            err = ERR_BATTLEGROUND_NONE;
+        //[/AZTH]
+        
 
         if (err <= 0)
         {
@@ -676,6 +682,11 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
     // check if player can queue:
     if (!asGroup)
     {
+        //[AZTH]
+        if (!sASeasonMgr->canJoinArenaOrBg(_player))
+            err = ERR_BATTLEGROUND_NONE;
+        //[/AZTH]
+        
         if (GetPlayer()->InBattleground()) // currently in battleground
             err = ERR_BATTLEGROUND_NOT_IN_BATTLEGROUND;
         else if (GetPlayer()->isUsingLfg()) // using lfg system

@@ -3,8 +3,11 @@
 
 #include "Define.h"
 #include "Common.h"
+#include "AzthLanguage.h"
+#include "AzthSharedDefines.h"
 
 class WorldSession;
+class Player;
 
 struct SmartStoneCommand
 {
@@ -15,7 +18,8 @@ struct SmartStoneCommand
     }
 
     uint32 id;
-    std::string text;
+    std::string text_def;
+    std::string text_it;
     uint32 item;
     uint32 icon;
     uint32 parent_menu;
@@ -23,6 +27,8 @@ struct SmartStoneCommand
     uint32 action;
     int32 charges;
     uint64 duration;
+    
+    std::string getText(Player *pl = nullptr);
 };
 
 struct SmartStonePlayerCommand
@@ -50,7 +56,7 @@ public:
 
     int SMARTSTONE_VENDOR_ENTRY = 170000;
 
-    const SmartStoneCommand nullCommand = SmartStoneCommand{ 0, "", 0, 0, 0, 0, 0 };
+    const SmartStoneCommand nullCommand = SmartStoneCommand{ 0, "", "", 0, 0, 0, 0, 0 };
 
     std::vector<SmartStoneCommand> ssCommands2;
 

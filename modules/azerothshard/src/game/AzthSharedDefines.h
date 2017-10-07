@@ -27,5 +27,10 @@ enum SkillSpells {
     FIST_WEAPONS = 15590
 };
 
+enum AzthCustomLangs {
+    AZTH_LOC_IT = 0,
+    AZTH_LOC_EN = 1,
+};
+
 #endif /* SHAREDDEFINES_H */
 

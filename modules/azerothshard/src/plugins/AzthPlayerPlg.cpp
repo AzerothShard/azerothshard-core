@@ -12,21 +12,20 @@
 #include "AzthGroupMgr.h"
 #include "AzthPlayer.h"
 #include "azth_custom_hearthstone_mode.h"
-#include "AccountDatabase.h"
 
 class AzthPlayerPlg : public PlayerScript{
 public:
 
     AzthPlayerPlg() : PlayerScript("AzthPlayerPlg") { }
     
-    void OnCreate(Player *pl) override {
+    void OnLogin(Player *pl) override {
         uint32 accId = pl->GetSession()->GetAccountId();
         //                                                    0
-        QueryResult res = AccountDatabase.PQuery("SELECT custom_lang FROM azth_account_info WHERE id = '%d';", accId);
+        QueryResult res = LoginDatabase.PQuery("SELECT custom_lang FROM azth_account_info WHERE id = '%d';", accId);
 
         if (res != nullptr && res->GetRowCount() > 0) {
             Field* info = res->Fetch();
-            info[0].getUint8();
+            pl->azthPlayer->setCustLang(AzthCustomLangs(info[0].GetUInt8()));
         }
     }
     

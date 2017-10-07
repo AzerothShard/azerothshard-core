@@ -64,7 +64,7 @@ public:
         if (player->azthPlayer->isPvP())
         {
             // restore at first login flag for now, to be used inside OnLogin function
-            player->SetAtLoginFlag(AT_LOGIN_FIRST);
+            //player->SetAtLoginFlag(AT_LOGIN_FIRST);
         }
     }
 
@@ -73,7 +73,7 @@ public:
         player->azthPlayer->loadPvPInfo();
         
         if (player->azthPlayer->isPvP()){
-            if (player->HasAtLoginFlag(AT_LOGIN_FIRST))
+            if (!player->HasAchieved(13))//if (player->HasAtLoginFlag(AT_LOGIN_FIRST))
             {
                 // delevel + levelup to fix achievements 
                 player->GiveLevel(79);
@@ -133,6 +133,12 @@ public:
                                 player->SetAmmo(pItem->GetEntry());
                         }
                     }
+                }
+                
+                player->SetHealth(player->GetMaxHealth());
+                if (player->getPowerType() == POWER_MANA || player->getClass() == CLASS_DRUID)
+                {
+                    player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
                 }
                 
                 

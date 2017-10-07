@@ -8,6 +8,8 @@
 #include "Language.h"
 #include "npc_solo3v3.h"
 #include "BattlegroundQueue.h"
+//[AZTH]
+#include "ArenaSeason.h"
 
 
 class npc_solo3v3 : public CreatureScript
@@ -226,6 +228,11 @@ private:
 		// ignore if we already in BG or BG queue
 		if (player->InBattleground() || player->InBattlegroundQueue())
 			return false;
+        
+        //[AZTH]
+        if (!sASeasonMgr->canJoinArenaOrBg(player))
+            return false;
+        //[/AZTH]
 
 		//check existance
 		Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA);
@@ -392,7 +399,8 @@ public:
     void OnBeforeConfigLoad(bool reload) override
     {
         if (!reload) {
-            std::string cfg_file = "3v3_soloq.conf";
+            std::string conf_path = _CONF_DIR;
+            std::string cfg_file = conf_path + "/3v3_soloq.conf";
             std::string cfg_def_file = cfg_file +".dist";
 
             sConfigMgr->LoadMore(cfg_def_file.c_str());

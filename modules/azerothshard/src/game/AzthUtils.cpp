@@ -8,97 +8,101 @@
 
 AzthUtils::AzthUtils()
 {
+    for (ObjectMgr::CharacterConversionMap::iterator i = sObjectMgr->FactionChangeItems.begin(); i != sObjectMgr->FactionChangeItems.end(); ++i)
+        this->FactionChangeItemsHorde[i->second] = i->first;
 }
 
 AzthUtils::~AzthUtils()
 {
 }
 
-void AzthUtils::learnClassSpells(Player* player, bool new_level)
-{
-     uint32 temp[] = {
-        64380, 23885, 23880, 44461, 25346, 10274, 10273, 8418,
-        8419, 7270, 7269, 7268, 54648, 12536, 24530, 70909,
-        12494, 57933, 24224, 27095, 27096, 27097, 27099, 32841,
-        56131, 56160, 56161, 48153, 34754, 64844, 64904, 48085,
-        33110, 48084, 28276, 27874,     27873, 7001, 49821, 53022,
-        47757, 47750, 47758, 47666, 53001, 52983, 52998, 52986,
-        52987, 52999, 52984, 53002, 53003, 53000, 52988, 52985,
-        42208, 42209, 42210, 42211, 42212, 42213, 42198, 42937,
-        42938, 12484, 12485, 12486, 44461, 55361, 55362, 34913,
-        43043, 43044, 38703, 38700, 27076, 42844, 42845, 64891,
-        25912, 25914, 25911, 25913, 25902, 25903, 27175, 27176,
-        33073, 33074, 48822, 48820, 48823, 48821, 20154, 25997,
-        20467, 20425, 67, 26017, 34471, 53254, 13812, 14314,
-        14315, 27026, 49064, 49065, 60202, 60210, 13797, 14298,
-        14299, 14300, 14301, 27024, 49053, 49054, 52399, 1742,
-        24453, 53548, 53562, 52016, 26064, 35346, 57386, 57389,
-        57390, 57391, 57392, 57393, 55509, 35886, 43339, 45297,
-        45298, 45299, 45300, 45301, 45302, 49268, 49269, 8349,
-        8502, 8503, 11306, 11307, 25535, 25537, 61650, 61654,
-        63685, 45284, 45286, 45287, 45288, 45289, 45290, 45291,
-        45292, 45293, 45294, 45295, 45296, 49239, 49240, 26364,
-        26365, 26366, 26367, 26369, 26370, 26363, 26371, 26372,
-        49278, 49279, 32176, 32175, 21169, 47206, 27285, 47833,
-        47836, 42223, 42224, 42225, 42226, 42218, 47817, 47818,
-        42231, 42232, 42233, 42230, 48466, 44203, 44205, 44206,
-        44207, 44208, 48444, 48445, 33891, 52374, 57532, 59921,
-        52372, 49142, 52375, 47633, 47632, 52373, 50536, 27214,
-        47822, 11682, 11681, 5857, 1010, 24907, 24905, 53227,
-        61391, 61390, 61388, 61387, 64801, 5421, 9635, 1178,
-        20186, 20185, 20184, 20187, 25899, 24406, 50581, 30708
-                                };
+void AzthUtils::loadClassSpells() {
+    QueryResult res = WorldDatabase.PQuery("SELECT racemask, classmask, Spell FROM playercreateinfo_spell_custom;");
 
-    std::vector<uint32> ignoreSpells = std::vector<uint32> (temp, temp + sizeof(temp)/sizeof(temp[0]));
+    if (!res)
+    {
+        return;
+    }
 
+    
+    do
+    {
+        Field* fields = res->Fetch();
+        uint32 raceMask = fields[0].GetUInt32();
+        uint32 classMask = fields[1].GetUInt32();
+        uint32 spellId = fields[2].GetUInt32();
+
+        if (raceMask != 0 && !(raceMask & RACEMASK_ALL_PLAYABLE))
+        {
+            sLog->outErrorDb("Wrong race mask %u in `playercreateinfo_spell_custom` table, ignoring.", raceMask);
+            continue;
+        }
+
+        if (classMask != 0 && !(classMask & CLASSMASK_ALL_PLAYABLE))
+        {
+            sLog->outErrorDb("Wrong class mask %u in `playercreateinfo_spell_custom` table, ignoring.", classMask);
+            continue;
+        }
         
+        
+        for (uint32 raceIndex = RACE_HUMAN; raceIndex < MAX_RACES; ++raceIndex)
+        {
+            if (raceMask == 0 || ((1 << (raceIndex - 1)) & raceMask))
+            {
+                for (uint32 classIndex = CLASS_WARRIOR; classIndex < MAX_CLASSES; ++classIndex)
+                {
+                    if (classMask == 0 || ((1 << (classIndex - 1)) & classMask))
+                    {
+                        startSpells[raceIndex][classIndex].push_back(spellId);
+                    }
+                }
+            }
+        }
+    } while (res->NextRow());
+}
+
+void AzthUtils::learnClassSpells(Player* player, bool new_level)
+{       
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(player->getClass());
     if (!classEntry)
         return;
     uint32 family = classEntry->spellfamily;
+    
+    std::list<uint32> spells=startSpells[player->getRace(true)][player->getClass()];
 
-    for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
+    for (std::list<uint32>::iterator it = spells.begin(); it != spells.end(); ++it)
     {
-        SkillLineAbilityEntry const* entry = sSkillLineAbilityStore.LookupEntry(i);
-        if (!entry)
+        uint32 s = *it;
+        if (!s)
             continue;
 
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(entry->spellId);
-        if (!spellInfo)
-            continue;
-
-        // skip server-side/triggered spells
-        if (spellInfo->SpellLevel == 0)
-            continue;
-
-        bool ignored = false;
-        for (std::vector<uint32>::const_iterator itr = ignoreSpells.begin(); itr != ignoreSpells.end(); ++itr)
-        if (spellInfo->Id == (*itr)) {
-            ignored = true;
-            break;
-        }
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(s);
         
-        if (ignored)
-            continue;
+        do {
         
-        // skip wrong class/race skills
-        if (!player->IsSpellFitByClassAndRace(spellInfo->Id))
-            continue;
+            if (!spellInfo)
+                continue;
+            
+            // skip wrong class/race skills
+            //if (!player->IsSpellFitByClassAndRace(spellInfo->Id))
+            //    continue;
 
-        // skip other spell families
-        if (spellInfo->SpellFamilyName != family)
-            continue;
+            // skip other spell families
+            //if (spellInfo->SpellFamilyName != family)
+            //    continue;
 
-        // skip spells with first rank learned as talent (and all talents then also)
-        uint32 firstRank = sSpellMgr->GetFirstSpellInChain(spellInfo->Id);
-        if (GetTalentSpellCost(firstRank) > 0)
-            continue;
+            // skip spells with first rank learned as talent (and all talents then also)
+            uint32 firstRank = sSpellMgr->GetFirstSpellInChain(spellInfo->Id);
+            if (GetTalentSpellCost(firstRank) > 0)
+                continue;
 
-        // skip broken spells
-        if (!SpellMgr::IsSpellValid(spellInfo))
-            continue;
+            // skip broken spells
+            if (!SpellMgr::IsSpellValid(spellInfo))
+                continue;
 
-        player->learnSpell(spellInfo->Id);
+            player->learnSpell(spellInfo->Id);
+
+        } while((spellInfo = spellInfo->GetPrevRankSpell())); // learn prev ranks
     }
 }
 

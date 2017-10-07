@@ -32,6 +32,13 @@ public:
     uint32 calculateItemScalingValue(ItemTemplate const* pProto,Player *pl = NULL);
     
     void learnClassSpells(Player* player, bool new_level);
+    
+    void loadClassSpells();
+    
+    // horde version of objectmgr factionchangeitems map
+    ObjectMgr::CharacterConversionMap FactionChangeItemsHorde;
+    
+    std::list<uint32> startSpells[MAX_RACES][MAX_CLASSES];
 };
 
 #define sAzthUtils ACE_Singleton<AzthUtils, ACE_Null_Mutex>::instance()

@@ -10,6 +10,8 @@
 #include "Player.h"
 #include "Creature.h"
 #include "ScriptedGossip.h"
+//[AZTH]
+#include "ArenaSeason.h"
 
 #define ARENA_1V1_MIN_LEVEL 80 // min level to create an arenateam
 #define ARENA_1V1_COST 40 * 10000 // costs for create a team: 40 gold
@@ -35,6 +37,11 @@
          // ignore if we already in BG or BG queue
          if (player->InBattleground())
              return false;
+         
+        //[AZTH]
+        if (!sASeasonMgr->canJoinArenaOrBg(player))
+            return false;
+        //[/AZTH]
 
          //check existance
          Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA);

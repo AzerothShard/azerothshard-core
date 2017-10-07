@@ -443,7 +443,7 @@ public:
             int16 bracket = vendor.reputationId * -1;
             int32 rating = player->GetArenaPersonalRating(ArenaTeam::GetSlotByType(bracket));
             
-            if (!creature->IsVendor() || rating < vendor.repValue) {
+            if (!player->IsGameMaster() && (!creature->IsVendor() || rating < vendor.repValue)) {
                 stringstream ss;
                 ss << vendor.repValue;
                 
@@ -485,7 +485,7 @@ public:
         int32 rep = player->GetReputation(vendor.reputationId);
             
 
-        if (rep < vendor.repValue) {
+        if (!player->IsGameMaster() && rep < vendor.repValue) {
             stringstream ss;
             ss << vendor.repValue;
             std::string str = "Hai bisogno di " + ss.str() + " reputazione con AzerothShard.";

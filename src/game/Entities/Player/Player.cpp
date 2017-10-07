@@ -76,7 +76,7 @@
 #include "ScriptMgr.h"
 
 #include "AzthUtils.h"
-#include "../../BGItemLevel/src/ArenaSeason.h"
+#include "ArenaSeason.h"
 
 #define ZONE_UPDATE_INTERVAL (2*IN_MILLISECONDS)
 
@@ -11970,14 +11970,16 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
         ItemTemplate const* pProto = pItem->GetTemplate();
         if (pProto)
         {
-            //[AZTH] if you have the pvp set and you
+            //[AZTH] if you have the pvp set or not valid item for this season and you
             // are equipping something, it won't be equipped
-            if (!GetSession()->PlayerLoading() && azthPlayer->hasGear() && pProto->InventoryType>0)
+            if (!GetSession()->PlayerLoading() && pProto->InventoryType>0
+                && (azthPlayer->hasGear() || (sASeasonMgr->IsEnabled() && !sASeasonMgr->checkItem(pProto, this)) ))
             {
                 if(pProto->InventoryType != INVTYPE_AMMO)
                     return EQUIP_ERR_CANT_DO_RIGHT_NOW;
             }
-            
+            //[/AZTH]
+
             // item used
             if (pItem->m_lootGenerated)
                 return EQUIP_ERR_ALREADY_LOOTED;

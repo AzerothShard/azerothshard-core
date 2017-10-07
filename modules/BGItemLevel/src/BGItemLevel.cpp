@@ -136,42 +136,14 @@ public:
   checkItemLevel() : PlayerScript("checkItemLevel") {}
 
   //Check not compatible items
-  void checkPlayerItem(Player* player, bool inBattleground)
-  {
-
-    if (!sASeasonMgr->IsEnabled())
-    {
-        return; //SYSTEM DISABLED
-    }
-
-    if (player->IsGameMaster())
-    {
-        return;
-    }
-
-    uint32 INVENTORY_END = 18;
-    uint32 counter = 0;
-    string incompatibleItems[18];
-    bool incompatible = false;
-
-    for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
-    {
-      Item* itemToCheck = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
-      if (itemToCheck != nullptr)
-      {
-        if (itemToCheck->GetTemplate()->ItemLevel > sASeasonMgr->GetItemLevel())
-        {
-          incompatibleItems[counter] = itemToCheck->GetTemplate()->Name1;
-          counter++;
-          incompatible = true;
-        }
-      }
-    }
-    
-    if (incompatible)
+  void checkPlayerItems(Player* player, bool inBattleground)
+  {   
+    if (!sASeasonMgr->canJoinArenaOrBg(player))
     {
       if (!inBattleground)
       {
+          /*// we hope it will never happen, since we don't allow it
+          // it can cause a crash (to investigate why)
           for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)
           {
               if (BattlegroundQueueTypeId q = player->GetBattlegroundQueueTypeId(qslot))
@@ -180,30 +152,25 @@ public:
                   queue.RemovePlayer(player->GetGUID(), false, qslot);
                   player->RemoveBattlegroundQueueId(q);
               }
-          }
+          }*/
       }
       else
       {
         player->LeaveBattleground(); //works also with arena
       }
-      for (uint32 i = 0; i < counter; i++)
-      {
-        ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000%s|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", incompatibleItems[i].c_str());
-      }
-      ChatHandler(player->GetSession()).PSendSysMessage("L'attuale Season ha livello massimo |cffff0000%d|r", sASeasonMgr->GetItemLevel());
     }
   }
 
   //Check if a player join (queue) battleground with not compatible items
   void OnPlayerJoinBG(Player* player)
   {
-    checkPlayerItem(player, false);
+    //checkPlayerItems(player, false);
   }
 
   //Check if a player join (queue) arena with not compatible items
   void OnPlayerJoinArena(Player* player)
   {
-    checkPlayerItem(player, false);
+    //checkPlayerItems(player, false);
   }
 
   //Check if a player is just entered in battleground/arena with not compatible items
@@ -211,7 +178,7 @@ public:
   {
     if (player->InBattleground() || player->InArena())
     {
-      checkPlayerItem(player, true);
+      checkPlayerItems(player, true);
     }
   }
 
@@ -220,7 +187,7 @@ public:
   {
     if (player->InBattleground() || player->InArena())
     {
-      checkPlayerItem(player, true);
+      checkPlayerItems(player, true);
     }
   }
 };

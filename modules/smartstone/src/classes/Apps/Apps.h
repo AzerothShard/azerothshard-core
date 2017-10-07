@@ -4,6 +4,7 @@
 #include "Define.h"
 #include "Common.h"
 #include "Player.h"
+#include "AzthLanguage.h"
 
 class SmartStoneApps
 {
@@ -21,6 +22,7 @@ public:
     void changeFaction(Player *player);
     void rename(Player *player);
     void changeExp(Player *player, const char* code);
+    void resetAuras(Player *player);
     
     /*
      * Misc

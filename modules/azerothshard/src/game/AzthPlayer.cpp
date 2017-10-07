@@ -13,18 +13,19 @@
 AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
   player = origin;
+  customLang = AZTH_LOC_IT;
 }
 
 
 AzthPlayer::~AzthPlayer() {}
 
 void AzthPlayer::setCustLang(AzthCustomLangs code) {
-    this->custLang = code;
+    this->customLang = code;
 }
 
 AzthCustomLangs AzthPlayer::getCustLang()
 {
-    return this->custLang;
+    return this->customLang;
 }
 
 bool AzthPlayer::AzthMaxPlayerSkill() {
