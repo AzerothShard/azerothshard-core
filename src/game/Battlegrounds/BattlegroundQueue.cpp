@@ -397,8 +397,8 @@ void BattlegroundQueue::FillPlayersToBG(const int32 aliFree, const int32 hordeFr
     if (!sBattlegroundMgr->isTesting())
         if(m_bgTypeId != BATTLEGROUND_RB) //[AZTH]
         {
-            if (aliFree > hordeFree && m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE].empty() ||
-                hordeFree > aliFree && m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].empty())
+            if ((aliFree > hordeFree && m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE].empty()) ||
+                (hordeFree > aliFree && m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].empty()))
                 return;
         }
 
@@ -483,8 +483,8 @@ void BattlegroundQueue::FillPlayersToBGWithSpecific(const int32 aliFree, const i
     if (!sBattlegroundMgr->isTesting())
         if (m_bgTypeId != BATTLEGROUND_RB)
         {
-            if (m_QueuedGroups[thisBracketId][BG_QUEUE_NORMAL_ALLIANCE].empty() && specificQueue->m_QueuedGroups[specificBracketId][BG_QUEUE_NORMAL_ALLIANCE].empty() ||
-                m_QueuedGroups[thisBracketId][BG_QUEUE_NORMAL_HORDE].empty() && specificQueue->m_QueuedGroups[specificBracketId][BG_QUEUE_NORMAL_HORDE].empty())
+            if ((m_QueuedGroups[thisBracketId][BG_QUEUE_NORMAL_ALLIANCE].empty() && specificQueue->m_QueuedGroups[specificBracketId][BG_QUEUE_NORMAL_ALLIANCE].empty()) ||
+                (m_QueuedGroups[thisBracketId][BG_QUEUE_NORMAL_HORDE].empty() && specificQueue->m_QueuedGroups[specificBracketId][BG_QUEUE_NORMAL_HORDE].empty()))
                 return;
         }
 
@@ -1110,8 +1110,6 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     // player logged off, so he is no longer in queue
     if (!player)
         return true;
-
-    Battleground* bg = sBattlegroundMgr->GetBattleground(m_BgInstanceGUID);
 
     // battleground can be already deleted, bg may be NULL!
 
