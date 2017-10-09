@@ -15,6 +15,8 @@
 #include "DBCEnums.h"
 #include "DBCStores.h"
 
+#include "AzthFirstKills.h" //[AZTH]
+
 typedef std::list<AchievementCriteriaEntry const*> AchievementCriteriaEntryList;
 typedef std::list<AchievementEntry const*>         AchievementEntryList;
 
@@ -350,7 +352,10 @@ class AchievementGlobalMgr
 
         bool IsRealmCompleted(AchievementEntry const* achievement) const
         {
-            return m_allCompletedAchievements.find(achievement->ID) != m_allCompletedAchievements.end();
+            //[AZTH] original
+            //return m_allCompletedAchievements.find(achievement->ID) != m_allCompletedAchievements.end();
+            //[AZTH] mod:
+            return sAzthFirstKills->isRealmCompleted(achievement,m_allCompletedAchievements.find(achievement->ID) != m_allCompletedAchievements.end());
         }
 
         void SetRealmCompleted(AchievementEntry const* achievement)

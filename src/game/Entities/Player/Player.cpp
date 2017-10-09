@@ -17607,7 +17607,7 @@ void Player::_LoadArenaTeamInfo()
 {
     memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32) * MAX_ARENA_SLOT * ARENA_TEAM_END);
 
-    for (uint8 slot = 0; slot <= 3 /*[AZTH] 1v1 slot*/; ++slot)
+    for (uint8 slot = 0; slot <= 4 /*[AZTH] 2 -> 4 for 1v1 & 3v3soloq slots*/; ++slot)
         if (uint32 arenaTeamId = Player::GetArenaTeamIdFromStorage(GetGUIDLow(), slot))
         {
             ArenaTeam* arenaTeam = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);

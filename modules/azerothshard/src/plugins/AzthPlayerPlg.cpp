@@ -27,6 +27,28 @@ public:
             Field* info = res->Fetch();
             pl->azthPlayer->setCustLang(AzthCustomLangs(info[0].GetUInt8()));
         }
+        
+        
+        //------------------------------AZTH BANK ITEMS----------------------------------------------
+
+
+        QueryResult itemInBankQuery = CharacterDatabase.PQuery("SELECT item,itemEntry FROM azth_items_bank where guid = %u", pl->GetGUIDLow()); //retrieve all items from db
+
+        if (itemInBankQuery)
+        {
+            Field* itemInBankField = itemInBankQuery->Fetch();
+
+            do {
+                uint32 itemGUID = itemInBankField[0].GetUInt32();
+                uint32 itemEntry = itemInBankField[1].GetUInt32();
+
+                //aggiungere check da altra tabella per controllare se lo possedeva
+
+                pl->azthPlayer->AddBankItem(itemEntry, itemGUID);
+
+            } while (itemInBankQuery->NextRow());
+
+        }
     }
     
     void OnLevelChanged(Player* player, uint8 oldLevel) override

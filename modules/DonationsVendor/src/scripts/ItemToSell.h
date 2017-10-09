@@ -2,6 +2,9 @@
 #include "Define.h"
 #include <ace/Singleton.h>
 #include "WorldSession.h"
+#include "Player.h"
+
+class Player;
 
 enum npc_donationsVendor_enum
 {
@@ -28,7 +31,7 @@ public:
 	ItemToSell();
 	ItemToSell(uint32 id, string name, uint32 extCost, bool canBeBought);
     void SendListInventoryDonorVendor(WorldSession * session, uint64 vendorGuid, std::vector<ItemToSell> buyableItems, Player* player);
-    uint32 OwnItem(uint32 characterId, uint32 itemId);
+    uint32 OwnItem(Player *player, uint32 itemId);
     string CapitalizeFirstLetterEveryWord(string str);
 
 private:

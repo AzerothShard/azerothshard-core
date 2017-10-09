@@ -2,14 +2,18 @@
 #include "Player.h"
 #include "Item.h"
 #include "ConditionMgr.h"
-#include "ItemInBank.h"
 #include "ItemToSell.h"
 #include "ScriptedGossip.h"
+#include "GossipDef.h"
+#include "AzthLanguage.h"
+#include "AzthUtils.h"
 
 std::vector<ItemToSell> ItemToSellList;
-std::vector<ItemInBank> ItemInBankList;
 
 std::map<uint32, std::map<uint32, std::string>> itemTypePositions;
+
+#define AZTH_ITEMBANK_START_ACTION 100000
+#define AZTH_ITEMBANK_RANGE 150
 
 class loadItemVendor : public WorldScript
 {
@@ -36,29 +40,6 @@ public:
             ItemToSellList.push_back(ItemToSell(id, name, extCost, canBeBought)); //push data into ItemToSellList list
 
         } while (partialItemListQuery->NextRow());
-        
-        //----------------------------------------------------------------------------
-
-        QueryResult itemInBankQuery = CharacterDatabase.PQuery("SELECT * FROM azth_items_bank"); //retrieve all items from db
-
-        if (itemInBankQuery)
-        {
-            Field* itemInBankField = itemInBankQuery->Fetch();
-
-            do {
-                uint32 characterGUID = itemInBankField[0].GetUInt32();
-                uint32 itemGUID = itemInBankField[1].GetUInt32();
-                uint32 itemEntry = itemInBankField[2].GetUInt32();
-
-                //aggiungere check da altra tabella per controllare se lo possedeva
-
-                ItemInBankList.push_back(ItemInBank(characterGUID, itemGUID, itemEntry));
-
-            } while (partialItemListQuery->NextRow());
-
-        }
-        
-        sItemInBank->SetBankItemsList(ItemInBankList);
     }
 };
 
@@ -73,9 +54,15 @@ public:
         //                              icon            text                           sender      action   popup message    money  code
         if (!(player->azthPlayer->GetTimeWalkingLevel() > 0) && !player->azthPlayer->hasGear())
         {
-            player->ADD_GOSSIP_ITEM(0, "Deposita item", GOSSIP_SENDER_MAIN, 501);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Deposita item", GOSSIP_SENDER_MAIN, 501);
         }
-        player->ADD_GOSSIP_ITEM_EXTENDED(0, "Inserisci gli item da cercare qui", GOSSIP_SENDER_MAIN, 500, "Inserisci nome item", 0, true);
+        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Inserisci gli item da cercare qui", GOSSIP_SENDER_MAIN, 500, "Inserisci nome item", 0, true);
+        
+        // from 1 to 150
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, sAzthLang->getf(AZTH_LANG_SHOW_BANK_ITEMS,player,1,150), GOSSIP_SENDER_MAIN, AZTH_ITEMBANK_START_ACTION);
+        // from 150 to 300
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, sAzthLang->getf(AZTH_LANG_SHOW_BANK_ITEMS,player,150,300), GOSSIP_SENDER_MAIN, AZTH_ITEMBANK_START_ACTION + (AZTH_ITEMBANK_RANGE*1));
+        
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
         return true;
     }
@@ -109,7 +96,7 @@ public:
 				{
 					uint32 inventoryType = item->GetTemplate()->InventoryType;
 
-					std::vector<std::string> category = getCategoryIconAndNameByItemType(inventoryType); //is an array check iteminbank.h
+					std::vector<std::string> category = getCategoryIconAndNameByItemType(inventoryType);
 					std::string categoryName = category[0];
 					std::string categoryIcon = category[1];
 
@@ -168,14 +155,23 @@ public:
 
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
 
+            if (item->GetCount() > 1)
+            {
+                ChatHandler(player->GetSession()).PSendSysMessage("Non possono essere depositati item raggruppati in un unico slot (stacked).");
+                return true;
+            }
+
             uint32 inventoryType = item->GetTemplate()->InventoryType;
 
-            if (sItemToSell->OwnItem(player->GetGUID(), item->GetEntry()))
+            if (sItemToSell->OwnItem(player, item->GetEntry()))
             {
                 return true;
                 //player already deposited this item
             }
 
+            //add item to list of owned items
+            player->azthPlayer->AddBankItem(item->GetEntry(), item->GetGUID());
+            
             //instant remove
             player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, slot, true);
 
@@ -184,11 +180,6 @@ public:
             item->DeleteFromInventoryDB(trans);
             item->SaveToDB(trans);
             CharacterDatabase.CommitTransaction(trans);
-
-            //add item to list of owned items
-            vector<ItemInBank> bankItemList = sItemInBank->GetBankItemsList();
-            bankItemList.push_back(ItemInBank(player->GetGUID(), item->GetGUID(), item->GetEntry()));
-            sItemInBank->SetBankItemsList(bankItemList); //update list
 
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
 
@@ -204,10 +195,51 @@ public:
         else if (action == 301) // go to categories menu
         {
             OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, 501);
+        } else if (action >= 100000) {
+            return _showBank(creature, player, uint32(action - AZTH_ITEMBANK_START_ACTION));
         }
         
         // -------->
 
+        return true;
+    }
+    
+    bool _showBank(Creature *creature, Player *player, uint32 offset) {
+        player->PlayerTalkClass->ClearMenus();
+        
+        std::vector<ItemToSell> allItems;
+        uint32 counter=offset;
+        
+        if (!player->azthPlayer->GetBankItemsList().empty()) {
+            AzthPlayer::ItemInBankMap::iterator iterator = player->azthPlayer->GetBankItemsList().begin();
+            if (player->azthPlayer->GetBankItemsList().size() > std::size_t(offset)) {
+                if (offset>0)
+                    std::advance(iterator, offset);
+
+                for(; iterator != player->azthPlayer->GetBankItemsList().end(); iterator++) {
+                    if (counter>= AZTH_ITEMBANK_RANGE+offset)
+                        break;
+                    
+                    ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(iterator->first);
+                    if (!_proto)
+                        continue;
+                    
+                    counter++;
+                    
+                    allItems.push_back(ItemToSell(iterator->first, _proto->Name1.c_str(), 0, true));            
+                }
+            }
+        }
+
+        if (allItems.empty())
+        {
+            player->SEND_GOSSIP_MENU(NO_ITEM_FOUND, creature->GetGUID());
+        }
+        else
+        {
+            sItemToSell->SendListInventoryDonorVendor(player->GetSession(), creature->GetGUID(), allItems, player);
+        }
+        
         return true;
     }
 
@@ -218,10 +250,32 @@ public:
         player->PlayerTalkClass->ClearMenus();
         if (action == 500 && sender == GOSSIP_SENDER_MAIN)
         {
-            std::vector<ItemToSell> allItems;
-            std::vector<ItemToSell> NotBuyableItems;
-            for (uint32 i = 0; i < ItemToSellList.size(); i++)
+            std::vector<ItemToSell> allItems = ItemToSellList;
+            std::vector<ItemToSell> buyAbleItems;
+            std::vector<ItemToSell> notBuyAbleItems;
+
+            // get own items
+            if (!player->azthPlayer->GetBankItemsList().empty()) {
+                for(AzthPlayer::ItemInBankMap::iterator iterator = player->azthPlayer->GetBankItemsList().begin(); iterator != player->azthPlayer->GetBankItemsList().end(); iterator++) {
+                    ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(iterator->first);
+                    if (!_proto)
+                        continue;
+                    
+                    allItems.push_back(ItemToSell(iterator->first, _proto->Name1.c_str(), 0, true));            
+                }
+            }
+            
+            uint32 counter=0;
+            
+            // this loop search through the allItems for a compatible item name
+            // but also create two lists:
+            // buyableitems (to show first)
+            // notbuyableitems (to show as latest)
+            for (uint32 i = 0; i < allItems.size(); i++)
             {
+                if (counter>=AZTH_ITEMBANK_RANGE)
+                    break;
+                
                 string completeString = ItemToSellList[i].GetName();
                 string partialString = code;
                 string partialStringFirstLetterUpper = sItemToSell->CapitalizeFirstLetterEveryWord(code);
@@ -229,16 +283,19 @@ public:
                 {
                     if (ItemToSellList[i].GetCanBeBought())
                     {
-                        allItems.push_back(ItemToSell(ItemToSellList[i].GetId(), ItemToSellList[i].GetName(), ItemToSellList[i].GetExtCost(), ItemToSellList[i].GetCanBeBought()));
+                        buyAbleItems.push_back(ItemToSellList[i]);
                     }
                     else
                     {
-                        NotBuyableItems.push_back(ItemToSell(ItemToSellList[i].GetId(), ItemToSellList[i].GetName(), ItemToSellList[i].GetExtCost(), ItemToSellList[i].GetCanBeBought()));
+                        notBuyAbleItems.push_back(ItemToSellList[i]);
                     }
+                    
+                    counter++;
                 }
             }
-
-            allItems.insert(allItems.end(), NotBuyableItems.begin(), NotBuyableItems.end());
+            
+            std::vector<ItemToSell> toSell = buyAbleItems;
+            toSell.insert(buyAbleItems.end(), notBuyAbleItems.begin(), notBuyAbleItems.end());
 
             if (allItems.size() == 0)
             {
@@ -246,7 +303,7 @@ public:
             }
             else
             {
-                sItemToSell->SendListInventoryDonorVendor(player->GetSession(), creature->GetGUID(), allItems, player);
+                sItemToSell->SendListInventoryDonorVendor(player->GetSession(), creature->GetGUID(), toSell, player);
             }
         }
         return true;
@@ -264,7 +321,7 @@ public:
 
         if (vendor->GetScriptName() == "DonatorVendor")
         {
-            uint32 guid = sItemToSell->OwnItem(player->GetGUID(), itemEntry);
+            uint32 guid = sItemToSell->OwnItem(player, itemEntry);
 
             if (guid != 0)
             {
@@ -283,28 +340,23 @@ public:
 
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-                if (player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, pItem, false) == EQUIP_ERR_OK)
+                if (player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, pItem, false) == EQUIP_ERR_OK) {
                     player->MoveItemToInventory(dest, pItem, true, false);
-                else
-                    sLog->outError("player can't take item back: %u", pItem->GetGUIDLow());
+                    
+                    player->SaveInventoryAndGoldToDB(trans);
+                    CharacterDatabase.CommitTransaction(trans);
 
-                player->SaveInventoryAndGoldToDB(trans);
-                CharacterDatabase.CommitTransaction(trans);
+                    CharacterDatabase.PQuery("DELETE FROM `azth_items_bank` WHERE `guid`=%d AND `itemEntry`=%d;", player->GetGUID(), itemEntry);
 
-                CharacterDatabase.PQuery("DELETE FROM `azth_items_bank` WHERE `guid`=%d AND `itemEntry`=%d;", player->GetGUID(), itemEntry);
-
-                vector<ItemInBank> itemInBankList = sItemInBank->GetBankItemsList();
-
-                for (std::vector<ItemInBank>::iterator it = itemInBankList.begin(); it != itemInBankList.end(); ++it)
-                {
-                    if (it->GetCharacterGUID() == player->GetGUID() && it->GetItemEntry() == itemEntry)
-                    {
-                        itemInBankList.erase(it);
-                        break;
-                    }
+                    player->azthPlayer->DelBankItem(itemEntry);
+                    
+                    ChatHandler(player->GetSession()).PSendSysMessage("Item recuperato.");
+                    player->PlayerTalkClass->SendCloseGossip();
                 }
-
-                sItemInBank->SetBankItemsList(itemInBankList);
+                else {
+                    ChatHandler(player->GetSession()).PSendSysMessage("Item non recuperato, unique? borse piene?");
+                    sLog->outError("player can't take item back: %u", pItem->GetGUIDLow());
+                }
 
             }
         }

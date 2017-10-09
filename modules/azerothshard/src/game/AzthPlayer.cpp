@@ -14,10 +14,18 @@ AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
   player = origin;
   customLang = AZTH_LOC_IT;
+  std::fill_n(arena1v1Info, 100, 0);
+  std::fill_n(arena3v3Info, 100, 0);
+  
+  m_itemsInBank = ItemInBankMap();
+  m_completed_achievement_map = CompletedAchievementMap();
+  m_completed_criteria_map = CompletedCriteriaMap();
 }
 
 
-AzthPlayer::~AzthPlayer() {}
+AzthPlayer::~AzthPlayer() {
+
+}
 
 void AzthPlayer::setCustLang(AzthCustomLangs code) {
     this->customLang = code;
@@ -102,3 +110,16 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
     return true;
 }
 
+void AzthPlayer::AddBankItem(uint32 itemEntry, uint32 itemGuid)
+{
+    m_itemsInBank[itemEntry] = itemGuid;
+}
+
+void AzthPlayer::DelBankItem(uint32 itemEntry) {
+    m_itemsInBank.erase(itemEntry);
+}
+
+AzthPlayer::ItemInBankMap & AzthPlayer::GetBankItemsList()
+{
+    return m_itemsInBank;
+}

@@ -2,7 +2,6 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
-#include "ItemInBank.h"
 #include "Creature.h"
 #include "ObjectMgr.h"
 #include "Player.h"
@@ -91,7 +90,7 @@ void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vend
             data << uint32(slot + 1); // client expects counting to start at 1
             data << uint32(allItems[slot].GetId());
             data << uint32(_proto->DisplayInfoID);
-            if (allItems[slot].GetCanBeBought() || OwnItem(player->GetGUID(), allItems[slot].GetId()))
+            if (allItems[slot].GetCanBeBought() || OwnItem(player, allItems[slot].GetId()))
                 data << int32(0xFFFFFFFF);
             else
                 data << int32(0);
@@ -115,20 +114,14 @@ void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vend
     session->SendPacket(&data);
 }
 
-uint32 ItemToSell::OwnItem(uint32 characterGUID, uint32 itemId)
+uint32 ItemToSell::OwnItem(Player *player, uint32 itemId)
 {
-    vector<ItemInBank> itemInBankList = sItemInBank->GetBankItemsList();
     uint32 guid = 0;
-    
-    for (std::vector<ItemInBank>::iterator it = itemInBankList.begin(); it != itemInBankList.end(); ++it)
-    {
-        if (guid != 0)
-            break;
 
-        if (it->GetCharacterGUID() == characterGUID && it->GetItemEntry() == itemId)
-        {
-            guid = it->GetItemGUID();
-        }
+    if (!player->azthPlayer->GetBankItemsList().empty()) {
+        auto item=player->azthPlayer->GetBankItemsList().find(itemId);
+        if (item != player->azthPlayer->GetBankItemsList().end())
+            guid = item->second;
     }
 
     return guid;

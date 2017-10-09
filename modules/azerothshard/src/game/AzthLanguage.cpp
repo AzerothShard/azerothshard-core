@@ -1,6 +1,7 @@
 #include "AzthLanguage.h"
 #include "AzthPlayer.h"
 #include "Player.h"
+#include "SharedDefines.h"
 
 class Player;
 
@@ -16,6 +17,7 @@ AzthLangString::~AzthLangString()
 
 AzthLang::AzthLang()
 {
+    strings = UNORDERED_MAP<uint32, AzthLangString*>();
 }
 
 AzthLang::~AzthLang()
@@ -37,6 +39,9 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_RESET_AURAS_ADVICE,
               "Reset aura can only be used while in rest state and not in combat! Go to an Inn",
               "Il comando reset aura può essere utilizzato solo mentre si è in rest e non in combat. Recati in una locanda.");
+    this->add(AZTH_LANG_SHOW_BANK_ITEMS,
+              "Show my deposited items (from %u to %u)",
+              "Mostra gli items depositati (da %u a %u");
 }
 
 void AzthLang::add(uint32 strId, std::string const def, std::string const it)
@@ -62,4 +67,17 @@ const char * AzthLang::get(uint32 strId,Player *pl) {
     }
 
     return "Unknown Azth string";
+}
+
+const char * AzthLang::getf(uint32 strId, Player *pl, ...) {
+    const char *format = get(strId, pl);
+    va_list ap;
+    char str [2048];
+    va_start(ap, pl);
+    vsnprintf(str, 2048, format, ap);
+    va_end(ap); 
+    
+    char *ret=str;
+    
+    return ret;
 }

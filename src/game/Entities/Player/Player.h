@@ -1922,12 +1922,12 @@ class Player : public Unit, public GridObject<Player>
         void SetArenaTeamInfoField(uint8 slot, ArenaTeamInfoType type, uint32 value)
         {
 // [AZTH] avoid higher slots to be set in datafield
-            if (slot >= ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)) {
+            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)) {
                 azthPlayer->setArena1v1Info(type, value);
                 return;
             }
 
-            if (slot >= ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)) {
+            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)) {
                 azthPlayer->setArena3v3Info(type, value);
                 return;
             }

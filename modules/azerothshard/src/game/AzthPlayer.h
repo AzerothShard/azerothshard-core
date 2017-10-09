@@ -55,6 +55,8 @@ public:
   typedef UNORDERED_MAP<uint16 /*critId*/, AzthAchiData /*data*/>
       CompletedCriteriaMap;
   CompletedCriteriaMap m_completed_criteria_map;
+  
+  typedef std::map<uint32 /*entry*/, uint32 /*guid*/> ItemInBankMap;
 
   uint32 instanceID;
 
@@ -88,6 +90,11 @@ public:
   void loadPvPInfo();
   AzthCustomLangs getCustLang();
   void setCustLang(AzthCustomLangs code);
+  
+  void AddBankItem(uint32 itemEntry, uint32 itemGuid);
+  void DelBankItem(uint32 itemEntry);
+  void SetBankItemsList(ItemInBankMap itemsInBankList);
+  ItemInBankMap & GetBankItemsList();
 
 private:
   Player *player;
@@ -98,6 +105,8 @@ private:
   std::vector<float> lastPositionInfo;
   bool m_isPvP;
   AzthCustomLangs customLang;
+
+  ItemInBankMap  m_itemsInBank;
 };
 
 #endif /* AZTHPLAYER_H */
