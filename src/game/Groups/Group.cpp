@@ -31,6 +31,7 @@
 #include "UpdateFieldFlags.h"
 // [AZTH]
 #include "AzthGroupMgr.h"
+#include "ArenaSeason.h"
 
 Roll::Roll(uint64 _guid, LootItem const& li) : itemGUID(_guid), itemid(li.itemid),
 itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix), itemCount(li.count),
@@ -1843,6 +1844,11 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next(), ++memberscount)
     {
         Player* member = itr->GetSource();
+        
+        //[AZTH]
+        if (!sASeasonMgr->canJoinArenaOrBg(member))
+            return ERR_BATTLEGROUND_JOIN_FAILED;
+        //[/AZTH]
 
         // don't let join with offline members
         if (!member)
