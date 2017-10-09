@@ -18,6 +18,9 @@
 #include "Chat.h"
 #include "AnticheatMgr.h"
 #include "Configuration/Config.h"
+#include "Player.h"
+
+class Player;
 
 class anticheat_commandscript : public CommandScript
 {
@@ -215,7 +218,7 @@ public:
         return true;
     }
 
-    static bool HandleAntiCheatHandleCommand(ChatHandler* handler, const char* args)
+    static bool HandleAntiCheatHandleCommand(ChatHandler* handler, const char* /*args*/)
     {
        /* std::string strCommand;
 

@@ -2,6 +2,9 @@
 #include "AnticheatMgr.h"
 #include "Object.h"
 #include "AccountMgr.h"
+#include "Player.h"
+
+class Player;
 
 int64 resetTime = 0;
 int64 lastIterationPlayer = sWorld->GetUptime() + 30;//TODO: change 30 secs static to a configurable option
@@ -32,14 +35,14 @@ public:
 		: WorldScript("AnticheatWorldScript")
 	{
 	}
-	void OnUpdate(uint32 diff) override
+	void OnUpdate(uint32 /*diff*/) override
 	{
 		if (sWorld->GetGameTime() > resetTime)
 		{
 			sLog->outString( "Anticheat: Resetting daily report states.");
 			sAnticheatMgr->ResetDailyReportStates();
 			UpdateReportResetTime();
-			sLog->outString( "Anticheat: Next daily report reset: %u", resetTime);
+			sLog->outString( "Anticheat: Next daily report reset: %" PRId64 , resetTime);
 		}
 		if (sWorld->GetUptime() > lastIterationPlayer)
 		{
@@ -66,7 +69,7 @@ public:
 		}
 		/* end from skeleton module */
 	}
-	void OnAfterConfigLoad(bool reload) override
+	void OnAfterConfigLoad(bool /*reload*/) override
 	{
 		sLog->outString("AnticheatModule Loaded.");
 	}

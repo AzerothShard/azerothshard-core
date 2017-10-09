@@ -17,6 +17,8 @@
 #include "MapManager.h"
 #include "Player.h"
 #include "Configuration/Config.h"
+#include "Opcodes.h"
+
 #define CLIMB_ANGLE 1.9f
 
 AnticheatMgr::AnticheatMgr()
@@ -81,7 +83,6 @@ void AnticheatMgr::FlyHackDetection(Player* player, MovementInfo  movementInfo)
     if (!sConfigMgr->GetBoolDefault("Anticheat.DetectFlyHack", true))
         return;
 
-    uint32 key = player->GetGUIDLow();
     if (player->HasAuraType(SPELL_AURA_FLY) || player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || player->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED))//overkill but wth
         return;
 	/*Thanks to @LilleCarl for info to check extra flag*/
