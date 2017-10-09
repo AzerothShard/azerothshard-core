@@ -583,7 +583,7 @@ class npc_guild_master : public CreatureScript
                         i = strcmp(CODE_SELL, sCode);
 
                 } 
-				catch(char *str) {
+				catch(char* /*str*/) {
 					//TC_LOG_DEBUG("guildhouses",str);
 				}
 

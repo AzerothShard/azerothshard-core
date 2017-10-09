@@ -43,10 +43,10 @@ public:
             player->SetLevel(80);
 
             WorldLocation startLoc;
-            startLoc.m_positionX = 4718.45;
-            startLoc.m_positionY = -1974.84;
-            startLoc.m_positionZ = 1086.91;
-            startLoc.m_orientation = 3.19;
+            startLoc.m_positionX = 4718.45f;
+            startLoc.m_positionY = -1974.84f;
+            startLoc.m_positionZ = 1086.91f;
+            startLoc.m_orientation = 3.19f;
             startLoc.m_mapId  = 1;
 
             player->Relocate(&startLoc);

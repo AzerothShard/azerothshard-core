@@ -10373,8 +10373,8 @@ float Unit::SpellPctDamageModsDone(Unit* victim, SpellInfo const* spellProto, Da
 
         //[AZTH] Timewalking scaled healing spells shouldn't have the 
         // percent reduction of tw table, but we can apply a minor modifier
-        if ((*i)->GetId() == TIMEWALKING_AURA_MOD_DAMAGESPELL && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= (getLevel() + 10))
-            || spellProto->SpellLevel <= (getLevel() + 10))) {
+        if ((*i)->GetId() == TIMEWALKING_AURA_MOD_DAMAGESPELL && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= uint32(getLevel() + 10))
+            || spellProto->SpellLevel <= uint32(getLevel() + 10))) {
             uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
             int32 reduction = -(spellLevel > getLevel() ? spellLevel - getLevel() : 0);
             //  replicate conditions below
@@ -11378,10 +11378,10 @@ float Unit::SpellPctHealingModsDone(Unit* victim, SpellInfo const* spellProto, D
     for (AuraEffectList::const_iterator i = mHealingDonePct.begin(); i != mHealingDonePct.end(); ++i) {
         //[AZTH] Timewalking scaled healing spells shouldn't have the 
         // percent reduction of tw table, but we can apply a minor modifier
-        if ((*i)->GetId() == TIMEWALKING_AURA_MOD_HEALING && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= (getLevel()+10)) 
-            || spellProto->SpellLevel <= (getLevel() + 10))) {
+        if ((*i)->GetId() == TIMEWALKING_AURA_MOD_HEALING && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= uint32(getLevel()+10))
+            || spellProto->SpellLevel <= uint32(getLevel() + 10))) {
             uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
-            uint32 mod = spellLevel > getLevel() ? spellLevel - getLevel() : 0;
+            int32 mod = spellLevel > getLevel() ? spellLevel - getLevel() : 0;
 
             AddPct(DoneTotalMod, -(mod));
             continue;
