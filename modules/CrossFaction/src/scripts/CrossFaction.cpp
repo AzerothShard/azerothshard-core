@@ -97,7 +97,7 @@ void CrossFaction::SetFakeRaceAndMorph(Player* player)
                 break;
             default:
                 m_FakeRace[player->GetGUID()] = player->GetTeamId(true) == TEAM_ALLIANCE ? RACE_ORC : RACE_HUMAN;
-                m_FakeRace[player->GetGUID()] = player->GetTeamId(true) == TEAM_ALLIANCE ? FAKE_M_ORC : FAKE_M_HUMAN;
+                m_FakeMorph[player->GetGUID()] = player->GetTeamId(true) == TEAM_ALLIANCE ? FAKE_M_ORC : FAKE_M_HUMAN;
                 break;
         }
     }
@@ -204,7 +204,7 @@ void CrossFaction::UpdatePlayerTeam(Group* group, uint64 guid, bool reset /* = f
 
             SetMorph(player, false); // reset morph if not in bg
 
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "reset morph for player", player->GetGUIDLow());
+            sLog->outDebug(LOG_FILTER_CROSSFACTION, "reset morph for player %u", player->GetGUIDLow());
 
             // standard group
             uint64 leaderGuid = group ? group->GetLeaderGUID() : player->GetGUID();
@@ -392,7 +392,7 @@ public:
     }
 
     // This script is called at the end of the leader change function - m_leader has already been set, we can use the group already (not the guids)
-    void OnChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid) override
+    void OnChangeLeader(Group* group, uint64 newLeaderGuid, uint64  /*oldLeaderGuid*/) override
     {
         sCrossFaction->UpdateGroupLeaderMap(newLeaderGuid);
 
@@ -438,7 +438,7 @@ public:
     CrossFactionPlayer() : PlayerScript("CrossFactionPlayer") { }
 
     // Called when a player switches to a new zone
-    void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override
+    void OnUpdateZone(Player* player, uint32  /*newZone*/, uint32  /*newArea*/) override
     {
         //sCrossFaction->UpdatePlayerTeam(player->GetGroup(), player->GetGUID());
         
@@ -484,7 +484,7 @@ public:
     {
         if (player && bg)
         {
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "adding player %u to bg", player->GetGUID());
+            sLog->outDebug(LOG_FILTER_CROSSFACTION, "adding player %lu to bg", player->GetGUID());
 
             sCrossFaction->SetFakeRaceAndMorph(player); // set (re-set) fake race information
             sCrossFaction->SetResetCache(player->GetGUID(), true);
@@ -497,7 +497,7 @@ public:
     {
         if (player && bg)
         {
-            sLog->outDebug(LOG_FILTER_CROSSFACTION, "removing player %u from bg", player->GetGUID());
+            sLog->outDebug(LOG_FILTER_CROSSFACTION, "removing player %lu from bg", player->GetGUID());
             sCrossFaction->UpdatePlayerTeam(player->GetGroup(), player->GetGUID(), true);
             sCrossFaction->SetMorph(player, false); // force reset any morph, then forget players in BG.
             sCrossFaction->DoForgetPlayersInBG(bg, player);

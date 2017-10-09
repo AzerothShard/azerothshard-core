@@ -11,7 +11,7 @@ class PvPMode : public GlobalScript
 public:
     PvPMode() : GlobalScript("PvPMode") {}
 
-    void OnInitializeLockedDungeons(Player* player, uint8& level, uint32& lockData)
+    void OnInitializeLockedDungeons(Player* player, uint8&  /*level*/, uint32& lockData)
     {
         if (player->azthPlayer->isPvP())
         {
@@ -152,7 +152,7 @@ public:
     }
     
     // logger for custom extended costs
-    void OnAfterStoreOrEquipNewItem(Player* player, uint32 vendorslot, Item* item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore) override
+    void OnAfterStoreOrEquipNewItem(Player* player, uint32  /*vendorslot*/, Item* item, uint8  /*count*/, uint8  /*bag*/, uint8  /*slot*/, ItemTemplate const*  /*pProto*/, Creature* pVendor, VendorItem const*  /*crItem*/, bool  /*bStore*/) override
     {
         if (!player->azthPlayer->isPvP())
             return;
@@ -161,7 +161,7 @@ public:
             
             std::vector<HearthstoneVendor> vendors = sHearthstoneMode->hsVendors;
             int pos = 0;
-            for (int i = 0; i < vendors.size(); i++)
+            for (std::size_t i = 0; i < vendors.size(); i++)
             {
                 HearthstoneVendor temp = vendors.at(i);
                 if (temp.id == pVendor->GetEntry())
@@ -183,7 +183,7 @@ public:
         }
     }
     
-    void OnBeforeDurabilityRepair(Player * player, uint64 npcGUID, uint64 itemGUID, float & discountMod, uint8 guildbank) override {
+    void OnBeforeDurabilityRepair(Player * player, uint64  /*npcGUID*/, uint64  /*itemGUID*/, float & discountMod, uint8  /*guildbank*/) override {
         if (!player->azthPlayer->isPvP())
             return;
         

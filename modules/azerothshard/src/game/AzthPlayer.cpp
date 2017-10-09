@@ -44,7 +44,7 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
         GUNS, DAGGERS, WANDS, CROSSBOWS, FIST_WEAPONS };
 
     std::list<SkillSpells> learnList;
-    for (int s = 0; s<sizeof(spells); s++) {
+    for (std::size_t s = 0; s<sizeof(spells); s++) {
         SkillSpells spell = spells[s];
         switch (target->getClass()) {
         case CLASS_WARRIOR:

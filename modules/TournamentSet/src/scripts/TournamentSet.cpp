@@ -8,6 +8,7 @@
 #include "AzthGearScaling.h"
 #include "AzthGearScalingSocket.h"
 #include "AzthLanguage.h"
+#include "ScriptedGossip.h"
 
 std::map<uint32, AzthGearScaling> tournamentTempGearList;
 std::map<uint64, AzthGearScalingSocket> tournamentTempGearSocketList;
@@ -99,7 +100,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32  /*sender*/, uint32 action)
     {
         if (action >= 4 && action <= 8) // deadly = 5, furious = 6, relentless = 7, wrathful = 8 -> go to select spec menu
             selectSpec(player, creature, action);
@@ -220,7 +221,7 @@ public:
             if (msg != EQUIP_ERR_OK)
             {
                 player->SendEquipError(msg, pItem, NULL);
-                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_PVP_NPC_CANNOT_EQUIP));
+                ChatHandler(player->GetSession()).PSendSysMessage("%s", sAzthLang->get(AZTH_LANG_PVP_NPC_CANNOT_EQUIP));
                 return;
             }
         }
@@ -421,7 +422,7 @@ public:
             player->azthPlayer->SetTempGear(true);
     }
 
-    void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override
+    void OnUpdateZone(Player* player, uint32  /*newZone*/, uint32 newArea) override
     {
         if (player->GetSession()->PlayerLoading())
             return; // do not remove set during login

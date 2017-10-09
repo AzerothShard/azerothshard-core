@@ -103,7 +103,7 @@ void ArenaTeam::CreateTempForSolo3v3(Player* plr[], uint8 team)
     
     uint32 MinPlayersPerTeam = sBattlegroundMgr->isArenaTesting() ? 1 : 3;
 
-    for (int i = 0; i < MinPlayersPerTeam; i++)
+    for (uint32 i = 0; i < MinPlayersPerTeam; i++)
     {
         ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(plr[i]->GetArenaTeamId(GetSlotByType(ARENA_TEAM_SOLO_3v3)));
 

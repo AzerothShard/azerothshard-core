@@ -22,7 +22,7 @@
 nsNpcTel::VCatDest nsNpcTel::TabCatDest;
 
 
-const uint32 PAGE::operator [] (Player * const player) const
+uint32 PAGE::operator [] (Player * const player) const
 {
     for (VInst_t i(0); i < m_TabInstance.size(); ++i)
     {
@@ -151,6 +151,8 @@ bool TELE::IsAllowedToTeleport(Player * const player) const
 
       case FLAG_PLAYER:
         return player->GetGUID() == m_data0;
+      default:
+        return true;
     }
 
     sLog->outDebug(LOG_FILTER_TSCR, "Invalid flag (category: %u). Important problem...", GetCatID());
@@ -284,6 +286,8 @@ bool nsNpcTel::IsValidData(const uint32 &cat,   const Flag &flag,
             return true;
         sLog->outDebug(LOG_FILTER_TSCR, "Invalid data0 (PlayerGuid) (category: %u).", cat);
         return false;
+      default:
+            return false;
     }
 
     //sLog->outDebug(LOG_FILTER_TSCR, "Invalid flag (category: %u).", cat);

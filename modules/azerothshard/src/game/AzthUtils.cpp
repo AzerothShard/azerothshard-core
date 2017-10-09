@@ -61,13 +61,12 @@ void AzthUtils::loadClassSpells() {
     } while (res->NextRow());
 }
 
-void AzthUtils::learnClassSpells(Player* player, bool new_level)
+void AzthUtils::learnClassSpells(Player* player, bool /*new_level*/)
 {       
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(player->getClass());
     if (!classEntry)
         return;
-    uint32 family = classEntry->spellfamily;
-    
+
     std::list<uint32> spells=startSpells[player->getRace(true)][player->getClass()];
 
     for (std::list<uint32>::iterator it = spells.begin(); it != spells.end(); ++it)

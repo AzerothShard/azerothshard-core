@@ -4,6 +4,7 @@
 #include "ConditionMgr.h"
 #include "ItemInBank.h"
 #include "ItemToSell.h"
+#include "ScriptedGossip.h"
 
 std::vector<ItemToSell> ItemToSellList;
 std::vector<ItemInBank> ItemInBankList;
@@ -67,10 +68,10 @@ class DonatorVendor : public CreatureScript
 public:
     DonatorVendor() : CreatureScript("DonatorVendor") {}
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         //                              icon            text                           sender      action   popup message    money  code
-        if (!player->azthPlayer->GetTimeWalkingLevel() > 0 && !player->azthPlayer->hasGear())
+        if (!(player->azthPlayer->GetTimeWalkingLevel() > 0) && !player->azthPlayer->hasGear())
         {
             player->ADD_GOSSIP_ITEM(0, "Deposita item", GOSSIP_SENDER_MAIN, 501);
         }
@@ -211,7 +212,7 @@ public:
     }
 
 
-    bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code)
+    bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code) override
     {
         
         player->PlayerTalkClass->ClearMenus();
@@ -257,7 +258,7 @@ class DonatorVendorPlayer : public PlayerScript
 public:
     DonatorVendorPlayer() : PlayerScript("DonatorVendorPlayer") {}
 
-    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &itemEntry /*itemEntry*/, uint8 count, uint8 bag, uint8 slot)
+    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 /*vendorslot*/, uint32 &itemEntry /*itemEntry*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/)
     {
         Creature *vendor = player->GetMap()->GetCreature(vendorguid);
 

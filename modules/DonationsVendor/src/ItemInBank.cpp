@@ -2,7 +2,9 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
-
+#include "ItemPrototype.h"
+#include "ObjectMgr.h"
+#include "DBCStores.h"
 
 ItemInBank::ItemInBank()
 {

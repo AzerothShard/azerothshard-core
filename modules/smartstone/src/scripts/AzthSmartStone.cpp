@@ -65,7 +65,7 @@ public:
     }
     
     
-    void OnGossipSelect(Player *player, Item *item, uint32 sender,
+    void OnGossipSelect(Player *player, Item *item, uint32  /*sender*/,
             uint32 action) override {
         player->PlayerTalkClass->ClearMenus();
 
@@ -117,7 +117,7 @@ public:
                 case 99999:
                     break;
                 default:
-                    sLog->outError("Smartstone: unhandled command! ID: %u, player GUID: %u",
+                    sLog->outError("Smartstone: unhandled command! ID: %u, player GUID: %lu",
                             action, player->GetGUID());
                     break;
             }
@@ -137,7 +137,7 @@ public:
         }
     }
 
-    void OnGossipSelectCode(Player* player, Item* item, uint32 sender, uint32 action, const char* code) override {
+    void OnGossipSelectCode(Player* player, Item*  /*item*/, uint32  /*sender*/, uint32 action, const char* code) override {
         player->PlayerTalkClass->ClearMenus();
 
         SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
@@ -153,7 +153,7 @@ public:
                 case 99999:
                     break;
                 default:
-                    sLog->outError("Smartstone: unhandled command with code! ID: %u, player GUID: %u", action, player->GetGUID());
+                    sLog->outError("Smartstone: unhandled command with code! ID: %u, player GUID: %lu", action, player->GetGUID());
                     break;
             }
             if (selectedCommand.charges > 0) {
@@ -163,7 +163,7 @@ public:
         }
     }
 
-    bool OnUse(Player *player, Item *item, SpellCastTargets const &targets) {
+    bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
         player->PlayerTalkClass->ClearMenus();
 
         if (parent == 1) // not-to-buy commands for the main menu
@@ -206,7 +206,7 @@ public:
                     sSmartStone->getCommandById(playerCommands[i].id);
 
             // if expired or no charges
-            if ((playerCommands[i].duration <= time(NULL) &&
+            if ((playerCommands[i].duration <= uint32(time(NULL)) &&
                     playerCommands[i].duration != 0) ||
                     playerCommands[i].charges == 0) {
                 player->azthPlayer->removeSmartStoneCommand(playerCommands[i], true);
@@ -232,12 +232,13 @@ public:
                 }
             }
 
-            if (!command.id == 0 && command.parent_menu == parent)
+            if (command.id != 0 && command.parent_menu == parent) {
                 if (command.type != 3) {
                     player->ADD_GOSSIP_ITEM(command.icon, text, GOSSIP_SENDER_MAIN, command.id);
                 } else {
                     player->ADD_GOSSIP_ITEM_EXTENDED(command.icon, text, GOSSIP_SENDER_MAIN, command.id, "Scrivi il valore desiderato.", 0, true);
                 }
+            }
         }
 
         // acquista app
@@ -333,7 +334,7 @@ public:
     azth_smartstone_world() : WorldScript("azth_smartstone_world") {
     }
 
-    void OnAfterConfigLoad(bool reload) override {
+    void OnAfterConfigLoad(bool  /*reload*/) override {
         sSmartStone->loadCommands();
     }
 };
@@ -369,7 +370,7 @@ public:
         player->azthPlayer->saveLastPositionInfoToDB(player->azthPlayer->getLastPositionInfo());
     }
 
-    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot) override {
+    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8  /*bag*/, uint8 /*slot*/) override {
         if (!sSmartStone->isNullCommand(sSmartStone->getCommandByItem(item))) {
             player->azthPlayer->BuySmartStoneCommand(vendorguid, vendorslot, item, count, NULL_BAG, NULL_SLOT);
             item = 0;

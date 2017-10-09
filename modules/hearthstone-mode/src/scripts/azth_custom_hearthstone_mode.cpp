@@ -11,7 +11,7 @@
 #include "AzthPlayer.h"
 
 // old
-void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 extendedCostStartValue)
+void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 /*extendedCostStartValue*/)
 {
     ;//sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_LIST_INVENTORY");
 
@@ -126,7 +126,7 @@ bool HearthstoneMode::isInArray(int val)
 int HearthstoneMode::getQuality()
 {
     double c = rand_chance();
-    float chance = (float)c;
+    //float chance = (float)c;
     float i = CHANCES[0];
     int quality = 0;
 
@@ -254,7 +254,7 @@ public:
     uint32 pvpId = 0;
     npc_han_al() : CreatureScript("npc_han_al") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+    bool OnGossipSelect(Player* player, Creature*  /*creature*/, uint32 /*sender*/, uint32 action) override
     {
         if (pveId == 0 && pvpId == 0)
             return false;
@@ -316,9 +316,9 @@ public:
         pvpId = sHearthstoneMode->hsPvpQuests.at(rand() % (sHearthstoneMode->hsPvpQuests.size() - 1)).id;
         Quest const * questPvp = sObjectMgr->GetQuestTemplate(pvpId);
 
-#pragma region "Pve Quest Check"
+//"Pve Quest Check"
         int PveMaxCheck = 0;
-        int i = 0;
+        std::size_t i = 0;
         while (i <= (sHearthstoneMode->hsPveQuests.size() - 1) && PveMaxCheck <= MAX_PVE_QUEST_NUMBER)
         {
             if (player->GetQuestStatus(sHearthstoneMode->hsPveQuests.at(i).id) != QUEST_STATUS_NONE)
@@ -331,9 +331,9 @@ public:
         {
             bitmask = bitmask | BITMASK_PVE;
         }
-#pragma endregion
+//endcheck
 
-#pragma region "Pvp Quest Check"
+//"Pvp Quest Check"
         int PvpMaxCheck = 0;
         i = 0;
         while (i <= (sHearthstoneMode->hsPvpQuests.size() - 1) && PvpMaxCheck <= MAX_PVE_QUEST_NUMBER) // NEED PVP MAX?
@@ -348,7 +348,7 @@ public:
         {
             bitmask = bitmask | BITMASK_PVP;
         }
-#pragma endregion
+//endcheck
 
         if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
         {
@@ -375,7 +375,7 @@ public:
         return true;
     }
 
-    bool OnQuestComplete(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
+    bool OnQuestComplete(Player*  /*pPlayer*/, Creature*  /*pCreature*/, Quest const*  /*pQuest*/) override
     {
         return true;
     }
@@ -404,7 +404,7 @@ public:
     {
         std::vector<HearthstoneVendor> vendors = sHearthstoneMode->hsVendors;
         int pos = 0;
-        for (int i = 0; i < vendors.size(); i++)
+        for (std::size_t i = 0; i < vendors.size(); i++)
         {
             HearthstoneVendor temp = vendors.at(i);
             if (temp.id == creature->GetEntry())
@@ -435,8 +435,6 @@ public:
             return true;
         }
 
-
-        uint16 gossip;
         
         if (vendor.reputationId < 0)
         {
@@ -714,12 +712,14 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
     // iterate through the loaded achievemements available
     for (std::vector<HearthstoneAchievement>::iterator itr = hsAchievementTable.begin(); itr != hsAchievementTable.end(); itr++)
     {
-        if ((*itr).type == achievementType) // match the type
-            if ((*itr).data0 == returnData0(criteria) && criteria->timerStartEvent == 0) // match criteria
+        if ((*itr).type == achievementType) { // match the type
+            int data=returnData0(criteria);
+            if (data > 0 && (*itr).data0 == uint32(returnData0(criteria)) && criteria->timerStartEvent == 0) // match criteria
             {
                 entry = (*itr).creature; // set credit
                 break;
             }
+        }
     }
     
 
@@ -731,7 +731,7 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
 
     if (entry != 0 && std::find(hsCheckList.begin(), hsCheckList.end(), entry) == hsCheckList.end()) {
         hsCheckList.push_back(entry);
-        player->azthPlayer->ForceKilledMonsterCredit(entry, NULL); // send credit   
+        player->azthPlayer->ForceKilledMonsterCredit(entry, 0); // send credit   
     }
 }
 

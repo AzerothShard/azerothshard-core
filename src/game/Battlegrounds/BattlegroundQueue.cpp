@@ -321,8 +321,10 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool sentToBg, uint32 playerQu
 
     // announce to world if arena team left queue for rated match, show only once
     if (groupInfo->ArenaType && groupInfo->IsRated && groupInfo->Players.empty() && sWorld->getBoolConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE))
-        if (ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(groupInfo->ArenaTeamId))
-			sWorld->SendWorldText(LANG_AZTH_NO_INFO_ARENA_EXITED, groupInfo->ArenaType, groupInfo->ArenaType); //[AZTH]
+        //[AZTH] removed team name and changed string id
+        if (/*ArenaTeam* team = */sArenaTeamMgr->GetArenaTeamById(groupInfo->ArenaTeamId))
+            sWorld->SendWorldText(LANG_AZTH_NO_INFO_ARENA_EXITED, groupInfo->ArenaType, groupInfo->ArenaType);
+        //[/AZTH]
 
     // if player leaves queue and he is invited to a rated arena match, then count it as he lost
     if (groupInfo->IsInvitedToBGInstanceGUID && groupInfo->IsRated && !sentToBg)
@@ -1110,6 +1112,8 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     // player logged off, so he is no longer in queue
     if (!player)
         return true;
+    
+    Battleground* bg = sBattlegroundMgr->GetBattleground(m_BgInstanceGUID);
 
     Battleground* bg = sBattlegroundMgr->GetBattleground(m_BgInstanceGUID);
 
@@ -1180,7 +1184,7 @@ bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
 
                 Solo3v3TalentCat plrCat = GetTalentCatForSolo3v3(plr); // get talent cat
 
-                if (filterTalents && soloTeam[TEAM_ALLIANCE][plrCat] == false // is slot free in alliance team?
+                if ((filterTalents && soloTeam[TEAM_ALLIANCE][plrCat] == false) // is slot free in alliance team?
                     || (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() != MinPlayersPerTeam))
                 {
                     if (m_SelectionPools[TEAM_ALLIANCE].AddGroup((*itr), MinPlayersPerTeam)) // added successfully?
@@ -1197,7 +1201,7 @@ bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
                         }
                     }
                 }
-                else if (filterTalents && soloTeam[TEAM_HORDE][plrCat] == false || !filterTalents) // nope? and in horde team?
+                else if ((filterTalents && soloTeam[TEAM_HORDE][plrCat] == false) || !filterTalents) // nope? and in horde team?
                 {
                     if (m_SelectionPools[TEAM_HORDE].AddGroup((*itr), MinPlayersPerTeam))
                     {
@@ -1217,7 +1221,7 @@ bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
         }
     }
 
-    int countAll = 0;
+    uint32 countAll = 0;
     for (int i = 0; i < BG_TEAMS_COUNT; i++)
     {
         for (int j = 0; j < MAX_TALENT_CAT; j++)

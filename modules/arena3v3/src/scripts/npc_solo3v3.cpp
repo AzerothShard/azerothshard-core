@@ -8,6 +8,7 @@
 #include "Language.h"
 #include "npc_solo3v3.h"
 #include "BattlegroundQueue.h"
+#include "ScriptedGossip.h"
 //[AZTH]
 #include "ArenaSeason.h"
 
@@ -50,7 +51,7 @@ public:
 		if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO))
 			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Leave Solo queue", GOSSIP_SENDER_MAIN, 3, "Are you sure you want to remove the solo queue?", 0, false);
 
-		if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)) == NULL)
+		if (!player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)))
 			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t  Create new Solo arena team", GOSSIP_SENDER_MAIN, 1, "Create new solo arena team?", sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1), false);
 		else
 		{
@@ -87,15 +88,17 @@ public:
 		{
 			if (sConfigMgr->GetIntDefault("Solo.3v3.MinLevel", 80) <= player->getLevel())
 			{
-				if (player->GetMoney() >= sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1) && CreateArenateam(player, me))
+                int cost=sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1);
+				if (cost > 0 && player->GetMoney() >= uint32(cost) && CreateArenateam(player, me))
 					player->ModifyMoney(sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1) * -1);
 			}
 			else
 			{
 				ChatHandler(player->GetSession()).PSendSysMessage("You need level %u+ to create an arena team.", sConfigMgr->GetIntDefault("Solo.3v3.MinLevel", 80));
-				player->CLOSE_GOSSIP_MENU();
-				return true;
 			}
+			
+            player->CLOSE_GOSSIP_MENU();
+            return true;
 		}
 		break;
 
@@ -142,7 +145,7 @@ public:
                 s << "\nWeek Games: " << at->GetStats().WeekGames;
                 s << "\nWeek Wins: " << at->GetStats().WeekWins;
 
-                ChatHandler(player->GetSession()).PSendSysMessage(s.str().c_str());
+                ChatHandler(player->GetSession()).PSendSysMessage("%s", s.str().c_str());
             }
             return true;
         }
@@ -220,7 +223,6 @@ private:
 		if (sConfigMgr->GetIntDefault("Solo.3v3.MinLevel",80) > player->getLevel())
 			return false;
 
-		uint64 guid = player->GetGUID();
 		uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3);
 		uint32 arenaRating = 0;
 		uint32 matchmakerRating = 0;
@@ -238,7 +240,7 @@ private:
 		Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA);
 		if (!bg)
 		{
-			sLog->outError("Arena", "Battleground: template bg (all arenas) not found");
+			sLog->outError("Battleground: template bg (all arenas) not found");
 			return false;
 		};
 
@@ -253,8 +255,6 @@ private:
 		PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), player->getLevel());
 		if (!bracketEntry)
 			return false;
-
-		GroupJoinBattlegroundResult err = ERR_GROUP_JOIN_BATTLEGROUND_FAIL;
 
 		// check if already in queue
 		if (player->GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
@@ -374,7 +374,6 @@ private:
 					if ((*itr)->IsInvitedToBGInstanceGUID) // Skip when invited
 						continue;
 
-                    GroupQueueInfo* groupQueue = (*itr);
                     std::set<uint64> *players = &(*itr)->Players;
                     for (std::set<uint64>::iterator it = players->begin(); it != players->end(); it++)
                     {

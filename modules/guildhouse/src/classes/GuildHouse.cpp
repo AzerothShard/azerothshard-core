@@ -48,8 +48,6 @@ bool GuildHouseObject::CheckGuildID(uint32 guild_id)
 {
     if (!guild_id)
         return false;
-
-    Guild* guild = sGuildMgr->GetGuildById(guild_id);  
     
     if (!guild_id)
     {
@@ -328,7 +326,7 @@ void GuildHouseObject::LoadGuildHouse()
     while (result->NextRow());
 
 
-    sLog->outDetail("Loaded  %u Guildhouses", GH_map.size());
+    sLog->outDetail("Loaded  %lu Guildhouses", GH_map.size());
 }
 
 void GuildHouseObject::LoadGuildHouseAdd()
@@ -380,7 +378,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
     } 
     while (result->NextRow());
 
-    sLog->outDetail("Loaded  %u Guildhouse objects", GH_AddHouse.size());
+    sLog->outDetail("Loaded  %lu Guildhouse objects", GH_AddHouse.size());
 }
 
 uint32 GuildHouseObject::GetGuildByGuardID(uint32 guid)

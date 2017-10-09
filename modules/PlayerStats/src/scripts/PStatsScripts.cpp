@@ -34,7 +34,7 @@ public:
     PlayerStats() : PlayerScript("PlayerStats") {
     }
 
-    void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) override {
+    void OnUpdateZone(Player* player, uint32  /*newZone*/, uint32  /*newArea*/) override {
         uint16 levelPlayer = player->getLevel();
 
         Map* map = player->FindMap();

@@ -125,7 +125,7 @@ namespace nsNpcTel
         Page(void) { m_TabInstance.clear(); }
 
         Instance &   operator () (Player * const player);
-        const uint32 operator [] (Player * const player) const;
+        uint32 operator [] (Player * const player) const;
 
 
       private:

@@ -23,11 +23,10 @@
      npc_1v1arena() : CreatureScript("npc_1v1arena") {
      }
 
-     bool JoinQueueArena(Player* player, Creature* me) {
+     bool JoinQueueArena(Player* player, Creature* /*me*/) {
          if (ARENA_1V1_MIN_LEVEL > player->getLevel())
              return false;
 
-         uint64 guid = player->GetGUID();
          uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
          uint8 arenatype = ARENA_TYPE_1v1;
          uint32 arenaRating = 0;
@@ -60,8 +59,6 @@
          PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), player->getLevel());
          if (!bracketEntry)
              return false;
-
-         GroupJoinBattlegroundResult err = ERR_GROUP_JOIN_BATTLEGROUND_FAIL;
 
          // check if already in queue
          if (player->GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
@@ -111,7 +108,7 @@
          return true;
      }
 
-     bool CreateArenateam(Player* player, Creature* me) {
+     bool CreateArenateam(Player* player, Creature* /*me*/) {
          uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
 
          // Check if player is already in an arena team
@@ -155,7 +152,7 @@
      }
 
      bool OnGossipHello(Player* player, Creature* me) {
-         if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)) == NULL)
+         if (!player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)))
              player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Create 1v1 Rated Arena Team", GOSSIP_SENDER_MAIN, 1, "Create 1v1 arena team?", ARENA_1V1_COST, false);
          else {
              if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_1v1))
@@ -224,7 +221,7 @@
                      s << "\nWeek Games: " << at->GetStats().WeekGames;
                      s << "\nWeek Wins: " << at->GetStats().WeekWins;
 
-                     ChatHandler(player->GetSession()).PSendSysMessage(s.str().c_str());
+                     ChatHandler(player->GetSession()).PSendSysMessage("%s",s.str().c_str());
                  }
              }
                  break;

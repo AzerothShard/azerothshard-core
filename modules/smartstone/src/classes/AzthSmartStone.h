@@ -56,7 +56,7 @@ public:
 
     int SMARTSTONE_VENDOR_ENTRY = 170000;
 
-    const SmartStoneCommand nullCommand = SmartStoneCommand{ 0, "", "", 0, 0, 0, 0, 0 };
+    const SmartStoneCommand nullCommand = SmartStoneCommand{ 0, "", "", 0, 0, 0, 0, 0, 0, 0};
 
     std::vector<SmartStoneCommand> ssCommands2;
 

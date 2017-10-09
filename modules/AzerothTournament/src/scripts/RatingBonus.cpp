@@ -11,7 +11,7 @@ public:
 
     RatingBonus() : FormulaScript("RatingBonus") { }
 
-    void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 &loserMatchmakerChange, int32 &winnerChange, int32 &loserChange) override
+    void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 & /*loserMatchmakerChange*/, int32 &winnerChange, int32 & /*loserChange*/) override
     {
         std::vector<Bonus> currBonuses = sBonusRating->getRatingBonuses();
 
@@ -19,7 +19,7 @@ public:
         if (currBonuses.size() == 0)
             return;
 
-        for (int i = 0; i < currBonuses.size(); i++)
+        for (std::size_t i = 0; i < currBonuses.size(); i++)
         {
             if (currBonuses[i].type == bg->GetArenaType())
             {
@@ -29,7 +29,7 @@ public:
         }
     }
 
-	void OnBeforeUpdatingPersonalRating(int32 &mod, uint32 type)
+	void OnBeforeUpdatingPersonalRating(int32 &mod, uint32 type) override
 	{
 		std::vector<Bonus> currBonuses = sBonusRating->getRatingBonuses();
 
@@ -37,7 +37,7 @@ public:
 		if (currBonuses.size() == 0)
 			return;
 
-		for (int i = 0; i < currBonuses.size(); i++)
+		for (std::size_t i = 0; i < currBonuses.size(); i++)
 		{
 			if (currBonuses[i].type == type)
 			{
@@ -48,7 +48,7 @@ public:
 
 };
 
-void BonusRating::addBonus(int bracket, float multiplier)
+void BonusRating::addBonus(uint32 bracket, float multiplier)
 {
 	// remove an existing same-type bonus if any
 	removeBonus(bracket);
@@ -60,9 +60,9 @@ void BonusRating::addBonus(int bracket, float multiplier)
 	bonuses.push_back(bonus);
 }
 
-void BonusRating::removeBonus(int bracket)
+void BonusRating::removeBonus(uint32 bracket)
 {
-	for (int i = 0; i < bonuses.size(); i++)
+	for (std::size_t i = 0; i < bonuses.size(); i++)
 	{
 		if (bonuses[i].type == bracket)
 		{
@@ -72,9 +72,9 @@ void BonusRating::removeBonus(int bracket)
 	}
 }
 
-void BonusRating::printBonusesToPlayer(ChatHandler * handler, int bracket)
+void BonusRating::printBonusesToPlayer(ChatHandler * handler, uint32 bracket)
 {
-	for (int i = 0; i < bonuses.size(); i++)
+	for (std::size_t i = 0; i < bonuses.size(); i++)
 	{
 		if (bonuses[i].type == bracket || bracket == 0)
 		{

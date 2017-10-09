@@ -1,5 +1,7 @@
 #include "Common.h"
 #include "Define.h"
+#include <ace/Singleton.h>
+#include "WorldSession.h"
 
 enum npc_donationsVendor_enum
 {

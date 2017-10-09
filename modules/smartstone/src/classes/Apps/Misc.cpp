@@ -1,5 +1,5 @@
 #include "Apps.h"
-
+#include "MapManager.h"
 
 void SmartStoneApps::blackMarketTeleport(Player *player) {
     if (!player->IsInCombat() && !player->azthPlayer->isInBlackMarket()) {

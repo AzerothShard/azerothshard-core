@@ -5,6 +5,7 @@
 #include "Common.h"
 #include "music.h"
 #include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
 
 std::map<string, std::map<int, music>> musicList;
 std::vector<string> genresName;
@@ -148,7 +149,7 @@ class JukeboxSummon : public ItemScript
 public:
     JukeboxSummon() : ItemScript("JukeboxSummon") {}
 
-    bool OnUse(Player* player, Item* item, SpellCastTargets const& targets)
+    bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& /*targets*/)
     {
         player->SummonCreature(300205, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 10 * 60 * IN_MILLISECONDS);
         return true;

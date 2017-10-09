@@ -1,5 +1,6 @@
 #include "AzthPlayer.h"
 #include "Player.h"
+#include "Opcodes.h"
 
 std::vector<SmartStonePlayerCommand> AzthPlayer::getSmartStoneCommands() {
     return smartStoneCommands;
@@ -27,9 +28,9 @@ void AzthPlayer::addSmartStoneCommand(SmartStonePlayerCommand command, bool quer
 
 // called only at player login
 
-void AzthPlayer::addSmartStoneCommand(uint32 id, bool query, uint64 dateExpired,
+void AzthPlayer::addSmartStoneCommand(uint32 id, bool /*query*/, uint64 dateExpired,
         int32 charges) {
-    if (time(NULL) <= dateExpired)
+    if (uint64(time(NULL)) <= dateExpired)
         return;
 
     SmartStonePlayerCommand command;
@@ -66,7 +67,7 @@ void AzthPlayer::removeSmartStoneCommand(SmartStonePlayerCommand command,
 }
 
 void AzthPlayer::decreaseSmartStoneCommandCharges(uint32 id) {
-    for (int i = 0; i < smartStoneCommands.size(); i++) {
+    for (std::vector<int>::size_type i = 0; i < smartStoneCommands.size(); i++) {
         if (smartStoneCommands[i].id == id) {
             smartStoneCommands[i].charges = smartStoneCommands[i].charges - 1;
             if (smartStoneCommands[i].charges == 0 ||

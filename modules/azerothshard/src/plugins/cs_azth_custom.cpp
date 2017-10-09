@@ -53,7 +53,7 @@
 
      // Based on HandleQuestComplete method of cs_quest.cpp
 
-     static bool HandleQuestCompleterCompHelper(Player* player, uint32 entry, ChatHandler* handler, char const* args, uint8 checked) {
+     static bool HandleQuestCompleterCompHelper(Player* player, uint32 entry, ChatHandler* handler, char const* /*args*/, uint8 checked) {
          if (!player) {
              handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
              handler->SetSentErrorMessage(true);
@@ -94,7 +94,7 @@
              if (creature > 0) {
                  if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creature))
                      for (uint16 z = 0; z < creatureCount; ++z)
-                         player->KilledMonster(creatureInfo, NULL);
+                         player->KilledMonster(creatureInfo, 0);
              } else if (creature < 0)
                  for (uint16 z = 0; z < creatureCount; ++z)
                      player->KillCreditGO(creature);
@@ -214,7 +214,7 @@
          }
      }
 
-     static bool handleAzthMaxSkill(ChatHandler* handler, const char* args) {
+     static bool handleAzthMaxSkill(ChatHandler* handler, const char* /*args*/) {
 
          Player* target = handler->getSelectedPlayerOrSelf();
          if (!target) {
@@ -233,7 +233,7 @@
              GUNS, DAGGERS, WANDS, CROSSBOWS, FIST_WEAPONS};
 
          std::list<SkillSpells> learnList;
-         for (int s=0; s<sizeof(spells); s++) {
+         for (std::size_t s=0; s<sizeof(spells); s++) {
              SkillSpells spell = spells[s];
              switch (target->getClass()) {
                  case CLASS_WARRIOR:
@@ -350,7 +350,7 @@
          return true;
      }
 
-     static bool handleAzthSmartstone(ChatHandler* handler, const char* args)
+     static bool handleAzthSmartstone(ChatHandler* handler, const char* /*args*/)
      {
          Player* player = handler->GetSession()->GetPlayer();
 

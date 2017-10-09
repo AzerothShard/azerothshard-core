@@ -3,7 +3,11 @@
 #include "WorldSession.h"
 #include "Opcodes.h"
 #include "ItemInBank.h"
+#include "Creature.h"
+#include "ObjectMgr.h"
+#include "Player.h"
 
+class Player;
 
 ItemToSell::ItemToSell()
 {
@@ -134,7 +138,7 @@ string ItemToSell::CapitalizeFirstLetterEveryWord(string str)
 {
     bool check;
     check = false;
-    for (int i = 0; i<str.length(); i++)
+    for (std::size_t i = 0; i<str.length(); i++)
     {
         if (check == false && (str.at(i) >= 'a' && str.at(i) <= 'z'))//check if its a new word. 
             str.at(i) = str.at(i) + 'A' - 'a';

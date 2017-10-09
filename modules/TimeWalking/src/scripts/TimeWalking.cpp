@@ -10,6 +10,7 @@
 #include "AzthUtils.h"
 #include "AzthAchievement.h"
 #include "Pet.h"
+#include "ScriptedGossip.h"
 
 typedef std::map<uint32, TwRaid> RaidList;
 RaidList raidList;
@@ -102,7 +103,7 @@ class TimeWalkingGossip : public CreatureScript
 public:
     TimeWalkingGossip() : CreatureScript("TimeWalkingGossip") {}
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
 		if (player->isUsingLfg())
 		{
@@ -142,7 +143,7 @@ public:
         player->SaveToDB(false, false);
     }
 
-    bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code) override
+    bool OnGossipSelectCode(Player* player, Creature*  /*creature*/, uint32 sender, uint32 action, const char* code) override
     {
         player->PlayerTalkClass->ClearMenus();
         
@@ -165,7 +166,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action) override
+    bool OnGossipSelect(Player* player, Creature* creature, uint32  /*sender*/, uint32 action) override
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == 4)
@@ -266,7 +267,7 @@ class timeWalkingPlayer : public PlayerScript
 public:
     timeWalkingPlayer() : PlayerScript("timeWalkingPlayer") {}
 
-    void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria)
+    void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override
     {
         AzthAchievement achi = sAzthAchievement->GetAchievementList()[criteria->ID];
 
@@ -324,7 +325,7 @@ public:
             }
 
             if (killCredit) {
-                player->azthPlayer->ForceKilledMonsterCredit(killCredit, NULL); // send credit 
+                player->azthPlayer->ForceKilledMonsterCredit(killCredit, 0); // send credit 
             }
         }
 
@@ -341,7 +342,7 @@ public:
     }
 
     
-    void OnBeforeInitTalentForLevel(Player* player, uint8& level, uint32& talentPointsForLevel) override
+    void OnBeforeInitTalentForLevel(Player* player, uint8&  /*level*/, uint32& talentPointsForLevel) override
     {
         if (player->azthPlayer->GetTimeWalkingLevel() > 0)
         {

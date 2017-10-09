@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "Define.h"
+#include <ace/Singleton.h>
 
 class ItemInBank
 {

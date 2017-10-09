@@ -38,7 +38,7 @@ public:
     }
 
     // logger for custom extended costs
-    void OnBeforeStoreOrEquipNewItem(Player* player, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore) override
+    void OnBeforeStoreOrEquipNewItem(Player* player, uint32 /*vendorslot*/, uint32 &item, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* pVendor, VendorItem const* crItem, bool /*bStore*/) override
     {
         long price = 0;
 

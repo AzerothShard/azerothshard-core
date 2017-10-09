@@ -3,6 +3,8 @@
 
 #include "InstanceSaveMgr.h"
 
+class InstanceSave;
+
 class AzthInstanceMgr {
     public:
         explicit AzthInstanceMgr(InstanceSave* is);

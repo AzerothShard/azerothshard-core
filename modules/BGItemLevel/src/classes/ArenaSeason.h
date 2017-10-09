@@ -9,13 +9,13 @@ class Season
     friend class ACE_Singleton<Season, ACE_Null_Mutex>;
 public:
     //GETTERS
-    int GetItemLevel() const;
+    uint32 GetItemLevel() const;
     time_t GetStartingDate() const;
     time_t GetEndDate() const;
     bool IsEnabled() const;
 
     //SETTERS
-    void SetItemLevel(int itemLevel);
+    void SetItemLevel(uint32 itemLevel);
     void SetStartingDate(time_t startingDate);
     void SetEndDate(time_t endDate);
     void SetEnabled(bool enable);
@@ -25,13 +25,13 @@ public:
     bool checkItem(ItemTemplate const* proto, Player const* player);
 
     Season();
-    Season(int itemLevel, time_t startingDate, time_t endDate);
+    Season(uint32 itemLevel, time_t startingDate, time_t endDate);
     std::vector<std::string> checkItems(Player *pl);
     bool canJoinArenaOrBg(Player *pl);
 
 private:
     bool enabled;
-    int itemLevel;
+    uint32 itemLevel;
     time_t startingDate;
     time_t endDate;
 };

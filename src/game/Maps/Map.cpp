@@ -2321,7 +2321,6 @@ uint32 Map::GetPlayersCountExceptGMs() const
 
 std::vector<Player*> Map::GetPlayerList() const
 {
-    uint32 count = 0;
     std::vector<Player*> players;
 
     for (MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
@@ -2332,7 +2331,6 @@ std::vector<Player*> Map::GetPlayerList() const
 
 std::vector<Player*> Map::GetPlayerListExceptGMs() const
 {
-    uint32 count = 0;
     std::vector<Player*> players;
 
     for (MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)

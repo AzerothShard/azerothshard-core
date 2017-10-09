@@ -1044,8 +1044,6 @@ void BattlegroundMgr::InviteGroupToBG(GroupQueueInfo* ginfo, Battleground* bg, T
 {
     ASSERT(!ginfo->IsInvitedToBGInstanceGUID);
 
-    bool increaseCountPremade = false; //[AZTH] needed later
-
     // set side if needed
     if (teamId != TEAM_NEUTRAL)
         ginfo->teamId = teamId;

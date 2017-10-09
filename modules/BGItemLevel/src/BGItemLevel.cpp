@@ -34,9 +34,9 @@ public:
     Field* arena_timestamp_table = getLastDate->Fetch();
 
     //get last date of a system change
-    time_t lastChange = time_t(arena_timestamp_table[1].GetUInt32());
-    struct tm * lastChangeDateConverted = localtime(&lastChange);
-    uint32 lastChangeDay = lastChangeDateConverted->tm_mday;
+    //time_t lastChange = time_t(arena_timestamp_table[1].GetUInt32());
+    //struct tm * lastChangeDateConverted = localtime(&lastChange);
+    //uint32 lastChangeDay = lastChangeDateConverted->tm_mday;
 
     bool enable;
 
@@ -162,19 +162,19 @@ public:
   }
 
   //Check if a player join (queue) battleground with not compatible items
-  void OnPlayerJoinBG(Player* player)
+  void OnPlayerJoinBG(Player*  /*player*/)
   {
     //checkPlayerItems(player, false);
   }
 
   //Check if a player join (queue) arena with not compatible items
-  void OnPlayerJoinArena(Player* player)
+  void OnPlayerJoinArena(Player*  /*player*/)
   {
     //checkPlayerItems(player, false);
   }
 
   //Check if a player is just entered in battleground/arena with not compatible items
-  void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea)
+  void OnUpdateZone(Player* player, uint32  /*newZone*/, uint32  /*newArea*/)
   {
     if (player->InBattleground() || player->InArena())
     {
@@ -183,7 +183,7 @@ public:
   }
 
   //Check if a player equip not compatible item during battleground/arena
-  void OnEquip(Player* player, Item* item, uint8 bag, uint8 slot, bool update)
+  void OnEquip(Player* player, Item*  /*item*/, uint8  /*bag*/, uint8  /*slot*/, bool  /*update*/)
   {
     if (player->InBattleground() || player->InArena())
     {

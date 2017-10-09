@@ -705,7 +705,7 @@ class guild_guard : public CreatureScript
         uint32 dist_warning;
 		uint32 guardguild;
 
-        uint32 GetData(uint32 type) const override
+        uint32 GetData(uint32  /*type*/) const override
         {
             if (activate)
                 return 1;
@@ -713,7 +713,7 @@ class guild_guard : public CreatureScript
                 return 0;
         }
 
-		void SetData(uint32 id, uint32 value) 
+		void SetData(uint32  /*id*/, uint32 value) override
         {
             if (value)
                 activate = true;
@@ -721,7 +721,7 @@ class guild_guard : public CreatureScript
                 activate = false;
         }
 
-        void Reset()
+        void Reset() override
         {
             Check_Timer = 1000;
 			guardguild = GHobj.GetGuildByGuardID(me);

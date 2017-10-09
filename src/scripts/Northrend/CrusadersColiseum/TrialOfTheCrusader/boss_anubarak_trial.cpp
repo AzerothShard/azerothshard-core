@@ -385,7 +385,7 @@ public:
             if (list.size() == 0)
                 return;
 
-            for (int i = 0; i < list.size(); i++)
+            for (std::size_t i = 0; i < list.size(); i++)
             {
                 Player* p = list[i];
                 if (!p)

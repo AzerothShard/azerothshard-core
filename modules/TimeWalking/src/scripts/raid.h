@@ -47,4 +47,4 @@ private:
 
 #define sAzthRaid ACE_Singleton<TwRaid, ACE_Null_Mutex>::instance()
 
-#endif AZTH_RAID_H
+#endif

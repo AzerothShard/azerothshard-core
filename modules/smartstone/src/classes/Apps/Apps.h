@@ -51,7 +51,7 @@ public:
             }
             ++it;
         }
-        return string.size() > minSize && it == string.end();
+        return string.size() > (size_t)minSize && it == string.end();
     }
     
 };

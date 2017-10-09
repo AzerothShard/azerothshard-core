@@ -56,4 +56,4 @@ private:
 
 #define sAzthAchievement ACE_Singleton<AzthAchievement, ACE_Null_Mutex>::instance()
 
-#endif AZTH_ACHIEVEMENT_H
+#endif

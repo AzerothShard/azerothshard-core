@@ -7,20 +7,20 @@ Season::Season()
     endDate = time_t(0);
 }
 
-Season::Season(int ItsItemLevel, time_t ItsStartingDate, time_t ItsEndDate)
+Season::Season(uint32 ItsItemLevel, time_t ItsStartingDate, time_t ItsEndDate)
 {
     itemLevel = ItsItemLevel;
     startingDate = ItsStartingDate;
     endDate = ItsEndDate;
 }
 
-int Season::GetItemLevel() const
+uint32 Season::GetItemLevel() const
 {
     return itemLevel;
 }
 
 
-void Season::SetItemLevel(int ItsItemLevel)
+void Season::SetItemLevel(uint32 ItsItemLevel)
 {
     itemLevel = ItsItemLevel;
 }
@@ -84,8 +84,6 @@ std::vector<std::string> Season::checkItems(Player *pl) {
 
     uint32 INVENTORY_END = 18;
     uint32 counter = 0;
-
-    bool incompatible = false;
 
     for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
     {
