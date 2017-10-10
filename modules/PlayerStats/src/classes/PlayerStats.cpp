@@ -4,6 +4,9 @@
 
 uint8 AzthPlayer::getGroupLevel() {
   uint8 groupLevel = 0;
+  
+  if (!player)
+      return groupLevel;
 
   Group *group = player->GetGroup();
   Map *map = player->FindMap();

@@ -62,15 +62,21 @@ public:
     // Following 2 functions store levels in a temporary map
 
     void OnAchiComplete(Player *player, AchievementEntry const* achievement) override {
-        AzthPlayer::AzthAchiData& it = player->azthPlayer->m_completed_achievement_map[achievement->ID];
-        it.level = player->getLevel();
-        it.levelParty = player->azthPlayer->getGroupLevel();
+        AzthPlayer::AzthAchiData it = {
+            player->getLevel(),
+            player->azthPlayer->getGroupLevel()
+        };
+        
+        player->azthPlayer->m_completed_achievement_map[achievement->ID] = it;
     }
 
     void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override {
-        AzthPlayer::AzthAchiData& it = player->azthPlayer->m_completed_criteria_map[criteria->ID];
-        it.level = player->getLevel();
-        it.levelParty = player->azthPlayer->getGroupLevel();
+        AzthPlayer::AzthAchiData it = {
+            player->getLevel(),
+            player->azthPlayer->getGroupLevel()
+        };
+        
+        player->azthPlayer->m_completed_criteria_map[criteria->ID] = it;
     }
 
     // Following 2 functions save our temporary maps inside the db

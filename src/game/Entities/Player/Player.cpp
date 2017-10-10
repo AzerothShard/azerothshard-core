@@ -681,9 +681,6 @@ Player::Player(WorldSession* session) : Unit(true), m_mover(this)
 #pragma warning(default:4355)
 #endif
 
-    //[AZTH] initialization
-    azthPlayer = new AzthPlayer(this);
-
     m_drwGUID = 0;
     m_speakTime = 0;
     m_speakCount = 0;
@@ -938,6 +935,9 @@ Player::Player(WorldSession* session) : Unit(true), m_mover(this)
         m_charmAISpells[i] = 0;
 
     m_applyResilience = true;
+    
+    //[AZTH] initialization
+    azthPlayer = new AzthPlayer(this);
 }
 
 Player::~Player()
