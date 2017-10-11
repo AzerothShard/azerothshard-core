@@ -100,6 +100,8 @@ public:
                 
                 player->UpdateSkillsToMaxSkillsForLevel(); // set all skills
                 
+                player->azthPlayer->AzthMaxPlayerSkill();
+                
                 player->StoreNewItemInBestSlots(23162, 8);
                 
                 player->RemoveAtLoginFlag(AT_LOGIN_FIRST);

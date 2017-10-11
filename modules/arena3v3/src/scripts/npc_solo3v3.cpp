@@ -51,9 +51,14 @@ public:
 		if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO))
 			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Leave Solo queue", GOSSIP_SENDER_MAIN, 3, "Are you sure you want to remove the solo queue?", 0, false);
 
-		if (!player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)))
-			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t  Create new Solo arena team", GOSSIP_SENDER_MAIN, 1, "Create new solo arena team?", sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1), false);
-		else
+		if (!player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3))) {
+			uint32 cost = sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1);
+            
+            if (player->azthPlayer->isPvP())
+                cost=0;
+            
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t  Create new Solo arena team", GOSSIP_SENDER_MAIN, 1, "Create new solo arena team?", cost, false);
+        } else
 		{
 			if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO) == false)
 			{
@@ -89,7 +94,11 @@ public:
 			if (sConfigMgr->GetIntDefault("Solo.3v3.MinLevel", 80) <= player->getLevel())
 			{
                 int cost=sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1);
-				if (cost > 0 && player->GetMoney() >= uint32(cost) && CreateArenateam(player, me))
+                
+                if (player->azthPlayer->isPvP())
+                    cost=0;
+                
+				if (cost >= 0 && player->GetMoney() >= uint32(cost) && CreateArenateam(player, me))
 					player->ModifyMoney(sConfigMgr->GetIntDefault("Solo.3v3.Cost", 1) * -1);
 			}
 			else

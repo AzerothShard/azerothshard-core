@@ -367,7 +367,7 @@ public:
     }
 
     void OnLogout(Player* player) override {
-        player->azthPlayer->saveLastPositionInfoToDB(player->azthPlayer->getLastPositionInfo());
+        player->azthPlayer->saveLastPositionInfoToDB(player, player->azthPlayer->getLastPositionInfo());
     }
 
     void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8  /*bag*/, uint8 /*slot*/) override {

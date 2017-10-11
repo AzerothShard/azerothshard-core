@@ -13,6 +13,7 @@ std::vector<ItemToSell> ItemToSellList;
 std::map<uint32, std::map<uint32, std::string>> itemTypePositions;
 
 #define AZTH_ITEMBANK_START_ACTION 100000
+// same as MAX_VENDOR_ITEMS
 #define AZTH_ITEMBANK_RANGE 150
 
 class loadItemVendor : public WorldScript
@@ -171,12 +172,16 @@ public:
 
             //add item to list of owned items
             player->azthPlayer->AddBankItem(item->GetEntry(), item->GetGUID());
-            
+
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            item->SaveToDB(trans); // if this item has not been saved yet in character inventory
+            CharacterDatabase.CommitTransaction(trans);
+
             //instant remove
             player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, slot, true);
 
             //delete from inventory
-            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            trans = CharacterDatabase.BeginTransaction();
             item->DeleteFromInventoryDB(trans);
             item->SaveToDB(trans);
             CharacterDatabase.CommitTransaction(trans);
@@ -315,7 +320,7 @@ class DonatorVendorPlayer : public PlayerScript
 public:
     DonatorVendorPlayer() : PlayerScript("DonatorVendorPlayer") {}
 
-    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 /*vendorslot*/, uint32 &itemEntry /*itemEntry*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/)
+    void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &itemEntry, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/)
     {
         Creature *vendor = player->GetMap()->GetCreature(vendorguid);
 
@@ -332,32 +337,43 @@ public:
                 Item* pItem = NewItemOrBag(_proto);
 
                 QueryResult selectItemQuery = CharacterDatabase.PQuery("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, playedTime, text, itemEntry FROM item_instance WHERE guid = %d", guid);
-                Field* selectItemField = selectItemQuery->Fetch();
+                if (selectItemQuery) {
+                    Field* selectItemField = selectItemQuery->Fetch();
 
-                pItem->LoadFromDB(guid, player->GetGUID(), selectItemField, itemEntry);
+                    pItem->LoadFromDB(guid, player->GetGUID(), selectItemField, itemEntry);
 
-                ItemPosCountVec dest;
+                    ItemPosCountVec dest;
 
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-                if (player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, pItem, false) == EQUIP_ERR_OK) {
-                    player->MoveItemToInventory(dest, pItem, true, false);
-                    
-                    player->SaveInventoryAndGoldToDB(trans);
-                    CharacterDatabase.CommitTransaction(trans);
+                    if (player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, pItem, false) == EQUIP_ERR_OK) {
+                        player->MoveItemToInventory(dest, pItem, true, false);
+                        
+                        player->SaveInventoryAndGoldToDB(trans);
+                        CharacterDatabase.CommitTransaction(trans);
 
-                    CharacterDatabase.PQuery("DELETE FROM `azth_items_bank` WHERE `guid`=%d AND `itemEntry`=%d;", player->GetGUID(), itemEntry);
+                        CharacterDatabase.PQuery("DELETE FROM `azth_items_bank` WHERE `guid`=%d AND `itemEntry`=%d;", player->GetGUID(), itemEntry);
 
-                    player->azthPlayer->DelBankItem(itemEntry);
-                    
-                    ChatHandler(player->GetSession()).PSendSysMessage("Item recuperato.");
-                    player->PlayerTalkClass->SendCloseGossip();
+                        player->azthPlayer->DelBankItem(itemEntry);
+
+                        WorldPacket data(SMSG_BUY_ITEM, (8 + 4 + 4 + 4));
+                        data << uint64(vendor->GetGUID());
+                        data << uint32(vendorslot + 1);                   // numbered from 1 at client
+                        data << int32(0); // new count
+                        data << uint32(1); // count
+                        player->GetSession()->SendPacket(&data);
+                        player->SendNewItem(pItem, 1, true, false, false);
+                    }
+                    else {
+                        ChatHandler(player->GetSession()).PSendSysMessage("Item non recuperato, unique? borse piene?");
+                        sLog->outError("player can't take item back: %u", pItem->GetGUIDLow());
+                    }
+                } else {
+                    ChatHandler(player->GetSession()).PSendSysMessage("Error: item doesn't exist in database");
+                    sLog->outError("Error: item doesn't exist in database: %u", guid);
                 }
-                else {
-                    ChatHandler(player->GetSession()).PSendSysMessage("Item non recuperato, unique? borse piene?");
-                    sLog->outError("player can't take item back: %u", pItem->GetGUIDLow());
-                }
 
+                itemEntry = 0; // needed to return true from the hook
             }
         }
     }

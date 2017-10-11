@@ -22,11 +22,6 @@ AzthPlayer::AzthPlayer(Player *origin) {
   m_completed_criteria_map = CompletedCriteriaMap();
 }
 
-
-AzthPlayer::~AzthPlayer() {
-
-}
-
 void AzthPlayer::setCustLang(AzthCustomLangs code) {
     this->customLang = code;
 }

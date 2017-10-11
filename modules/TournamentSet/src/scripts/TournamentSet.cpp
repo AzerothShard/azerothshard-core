@@ -198,6 +198,8 @@ public:
         if (!entry)
             return;
         
+        uint32 originalEntry=entry;
+        
         // this change automatically items of all slots depending by team
         // "_h" field instead can be used to differentiate (or deprecated)
         if (player->GetTeamId() == TEAM_HORDE) {
@@ -208,7 +210,7 @@ public:
             }
         } else { // ally
             if (sAzthUtils->FactionChangeItemsHorde.find(entry) != sAzthUtils->FactionChangeItemsHorde.end()) {
-                uint32 ally=sObjectMgr->FactionChangeItems[entry];
+                uint32 ally=sAzthUtils->FactionChangeItemsHorde[entry];
                 if (ally)
                     entry=ally;
             }
@@ -227,7 +229,7 @@ public:
         }
         
         Item* item = player->EquipNewItem(slot, entry, true);
-        setEnchantAndSocket(player, item, spec);
+        setEnchantAndSocket(player, item, originalEntry, spec);
     }
 
     bool equipSet(AzthGearScaling set, Player* player, uint32 spec)
@@ -350,9 +352,8 @@ public:
         return true;
     }
 
-    void setEnchantAndSocket(Player* player, Item* item, uint32 spec)
+    void setEnchantAndSocket(Player* player, Item* item, uint32 entry, uint32 spec)
     {
-        uint32 entry = item->GetEntry();
         uint32 id = (entry * 10000) + (player->getClass()*100) + spec;
 
         item->SetBinding(true);

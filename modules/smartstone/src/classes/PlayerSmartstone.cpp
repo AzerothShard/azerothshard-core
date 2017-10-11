@@ -342,9 +342,9 @@ std::vector<float> AzthPlayer::getLastPositionInfoFromDB() {
     return lastPos;
 };
 
-void AzthPlayer::saveLastPositionInfoToDB(std::vector<float> posInfo) {
+void AzthPlayer::saveLastPositionInfoToDB(Player *pl, std::vector<float> posInfo) {
     QueryResult ssCommandsResult = CharacterDatabase.PQuery(
-            "REPLACE INTO character_saved_position VALUES (%u, 1, %f, %f, %f, %f);", player->GetGUIDLow(), posInfo[1], posInfo[2], posInfo[3], posInfo[0]);
+            "REPLACE INTO character_saved_position VALUES (%u, 1, %f, %f, %f, %f);", pl->GetGUIDLow(), posInfo[1], posInfo[2], posInfo[3], posInfo[0]);
 };
 
 bool AzthPlayer::isInBlackMarket() {
@@ -352,14 +352,17 @@ bool AzthPlayer::isInBlackMarket() {
     // (1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
     if (player->GetMapId() != 1)
         return false;
-
-    if (pos[0] < 4700.f || pos[0] > 4950.f)
+    
+    if (player->GetZoneId() != 616)
         return false;
 
-    if (pos[1] < -2100.f || pos[1] > -1750.f)
+    if (pos[0] < 4500.f || pos[0] > 4950.f)
         return false;
 
-    if (pos[2] < 1000.f || pos[2] > 1120.f)
+    if (pos[1] < -2100.f || pos[1] > -1700.f)
+        return false;
+    
+    if (pos[2] < 1000.f || pos[2] > 1150.f)
         return false;
 
     return true;

@@ -82,37 +82,39 @@ public:
     // Following 2 functions save our temporary maps inside the db
 
     void OnAchiSave(SQLTransaction& trans, Player *player, uint16 achId, CompletedAchievementData achiData) override {
+        if (player->azthPlayer->m_completed_achievement_map.find(achId) != player->azthPlayer->m_completed_achievement_map.end()) {
+            AzthPlayer::AzthAchiData it = player->azthPlayer->m_completed_achievement_map[achId];
+            uint32 index = 0;
 
-        AzthPlayer::AzthAchiData& it = player->azthPlayer->m_completed_achievement_map[achId];
-        uint32 index = 0;
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVESTATS);
+            stmt->setUInt32(index++, player->GetGUID());
+            stmt->setUInt32(index++, achId);
+            stmt->setUInt32(index++, ACHIEVEMENT_TYPE);
+            stmt->setUInt32(index++, it.level);
+            stmt->setUInt32(index++, it.levelParty);
+            stmt->setUInt32(index++, achiData.date);
+            trans->Append(stmt);
 
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVESTATS);
-        stmt->setUInt32(index++, player->GetGUID());
-        stmt->setUInt32(index++, achId);
-        stmt->setUInt32(index++, ACHIEVEMENT_TYPE);
-        stmt->setUInt32(index++, it.level);
-        stmt->setUInt32(index++, it.levelParty);
-        stmt->setUInt32(index++, achiData.date);
-        trans->Append(stmt);
-
-        player->azthPlayer->m_completed_achievement_map.erase(achId);
+            player->azthPlayer->m_completed_achievement_map.erase(achId); 
+        }
     }
 
     void OnCriteriaSave(SQLTransaction& trans, Player* player, uint16 critId, CriteriaProgress criteriaData) override {
+        if (player->azthPlayer->m_completed_criteria_map.find(critId) != player->azthPlayer->m_completed_criteria_map.end()) {
+            AzthPlayer::AzthAchiData it = player->azthPlayer->m_completed_criteria_map[critId];
+            uint32 index = 0;
 
-        AzthPlayer::AzthAchiData& it = player->azthPlayer->m_completed_criteria_map[critId];
-        uint32 index = 0;
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVESTATS);
+            stmt->setUInt32(index++, player->GetGUID());
+            stmt->setUInt32(index++, critId);
+            stmt->setUInt32(index++, CRITERIA_TYPE);
+            stmt->setUInt32(index++, it.level);
+            stmt->setUInt32(index++, it.levelParty);
+            stmt->setUInt32(index++, criteriaData.date);
+            trans->Append(stmt);
 
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVESTATS);
-        stmt->setUInt32(index++, player->GetGUID());
-        stmt->setUInt32(index++, critId);
-        stmt->setUInt32(index++, CRITERIA_TYPE);
-        stmt->setUInt32(index++, it.level);
-        stmt->setUInt32(index++, it.levelParty);
-        stmt->setUInt32(index++, criteriaData.date);
-        trans->Append(stmt);
-
-        player->azthPlayer->m_completed_criteria_map.erase(critId);
+            player->azthPlayer->m_completed_criteria_map.erase(critId);
+        }
     }
 
 };

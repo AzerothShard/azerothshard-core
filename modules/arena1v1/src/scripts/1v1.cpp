@@ -78,7 +78,7 @@
          }
          // get the team rating for queueing
          arenaRating = at->GetRating();
-         matchmakerRating = arenaRating;
+         matchmakerRating = at->GetAverageMMR();
          // the arenateam id must match for everyone in the group
 
          if (arenaRating <= 0)
@@ -152,9 +152,14 @@
      }
 
      bool OnGossipHello(Player* player, Creature* me) {
-         if (!player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)))
-             player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Create 1v1 Rated Arena Team", GOSSIP_SENDER_MAIN, 1, "Create 1v1 arena team?", ARENA_1V1_COST, false);
-         else {
+         if (!player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1))) {
+            uint32 cost = ARENA_1V1_COST;
+            
+            if (player->azthPlayer->isPvP())
+                cost=0;
+
+             player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Create 1v1 Rated Arena Team", GOSSIP_SENDER_MAIN, 1, "Create 1v1 arena team?", cost, false);
+         } else {
              if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_1v1))
                  player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Leave 1v1 Arena", GOSSIP_SENDER_MAIN, 3);
              else {
@@ -177,7 +182,12 @@
              case 1: // Create new Arenateam
              {
                  if (ARENA_1V1_MIN_LEVEL <= player->getLevel()) {
-                     if (player->GetMoney() >= ARENA_1V1_COST && CreateArenateam(player, me))
+                     uint32 cost=ARENA_1V1_COST;
+
+                    if (player->azthPlayer->isPvP())
+                        cost=0;
+
+                     if (player->GetMoney() >= cost && CreateArenateam(player, me))
                          player->ModifyMoney(-(int32) ARENA_1V1_COST);
                  } else {
                      ChatHandler(player->GetSession()).PSendSysMessage("You need level %u+ to create an 1v1 Arena Team.", ARENA_1V1_MIN_LEVEL);

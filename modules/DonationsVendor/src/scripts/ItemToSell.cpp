@@ -87,10 +87,14 @@ void ItemToSell::SendListInventoryDonorVendor(WorldSession *session, uint64 vend
         uint32 extCost = allItems[slot].GetExtCost();
         if (_proto)
         {
+            bool own = OwnItem(player, allItems[slot].GetId());
+            
             data << uint32(slot + 1); // client expects counting to start at 1
             data << uint32(allItems[slot].GetId());
             data << uint32(_proto->DisplayInfoID);
-            if (allItems[slot].GetCanBeBought() || OwnItem(player, allItems[slot].GetId()))
+            if (own)
+                data << int32(1); // allow to buy 1 item at time for own items (collection)
+            else if (allItems[slot].GetCanBeBought())
                 data << int32(0xFFFFFFFF);
             else
                 data << int32(0);

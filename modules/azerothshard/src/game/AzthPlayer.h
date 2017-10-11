@@ -21,7 +21,6 @@ public:
     void SetTempGear(bool hasGear);
     bool hasGear();
     explicit AzthPlayer(Player *origin);
-  ~AzthPlayer();
 
   void SetPlayerQuestRate(float rate);
 
@@ -84,7 +83,7 @@ public:
   void setLastPositionInfo(std::vector<float> posInfo);
   bool isInBlackMarket();
   std::vector<float> getLastPositionInfoFromDB();
-  void saveLastPositionInfoToDB(std::vector<float> posInfo);
+  void saveLastPositionInfoToDB(Player *pl, std::vector<float> posInfo);
 
   bool isPvP();
   void loadPvPInfo();
