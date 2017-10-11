@@ -175,15 +175,14 @@ public:
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
             item->SaveToDB(trans); // if this item has not been saved yet in character inventory
-            CharacterDatabase.CommitTransaction(trans);
 
             //instant remove
             player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, slot, true);
 
             //delete from inventory
-            trans = CharacterDatabase.BeginTransaction();
             item->DeleteFromInventoryDB(trans);
             item->SaveToDB(trans);
+            player->SaveInventoryAndGoldToDB(trans);
             CharacterDatabase.CommitTransaction(trans);
 
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
