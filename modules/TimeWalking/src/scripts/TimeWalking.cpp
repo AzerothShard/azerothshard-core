@@ -269,6 +269,9 @@ public:
 
     void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override
     {
+		if (sAzthAchievement->GetAchievementList().find(criteria->ID) == sAzthAchievement->GetAchievementList().end())
+			return;
+
         AzthAchievement achi = sAzthAchievement->GetAchievementList()[criteria->ID];
 
         uint32 count = achi.GetRewardCount();
