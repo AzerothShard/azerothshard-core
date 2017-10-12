@@ -373,9 +373,9 @@ SmartStoneCommand SmartStone::getCommandByItem(uint32 item) {
 };
 
 bool SmartStone::isNullCommand(SmartStoneCommand command) {
-    return (command.id == NULL && command.text == "" && command.item == NULL &&
-            command.icon == NULL && command.parent_menu == NULL &&
-            command.type == NULL && command.action == NULL);
+    return (command.id == 0 && command.text == "" && command.item == 0 &&
+            command.icon == 0 && command.parent_menu == 0 &&
+            command.type == 0 && command.action == 0);
 };
 
 SmartStonePlayerCommand SmartStone::toPlayerCommand(SmartStoneCommand command) {
