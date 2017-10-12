@@ -14554,6 +14554,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                             }
                         }
                     }
+                }
 
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
                     sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "Adding %u to stat nb %u", enchant_amount, enchant_spell_id);
@@ -14807,7 +14808,6 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                     }
                     break;
                 }
-            }
             case ITEM_ENCHANTMENT_TYPE_TOTEM:           // Shaman Rockbiter Weapon
             {
                 if (getClass() == CLASS_SHAMAN)
