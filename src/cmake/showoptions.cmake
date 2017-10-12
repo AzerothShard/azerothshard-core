@@ -128,12 +128,5 @@ else()
   message("* Enable extra logging functions    : No (default)")
 endif()
 
-if( DISABLE_EXTRA_LOGS )
-  message("* Disable extra logging functions    : Yes (default)")
-  add_definitions(-DDISABLE_EXTRA_LOGS)
-else()
-  message("* Disable extra logging functions    : No")
-endif()
-
 message("")
 
