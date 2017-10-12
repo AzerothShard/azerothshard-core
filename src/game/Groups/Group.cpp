@@ -1843,11 +1843,6 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next(), ++memberscount)
     {
         Player* member = itr->GetSource();
-        
-        //[AZTH]
-        if (!sASeasonMgr->canJoinArenaOrBg(member))
-            return ERR_BATTLEGROUND_JOIN_FAILED;
-        //[/AZTH]
 
         // don't let join with offline members
         if (!member)

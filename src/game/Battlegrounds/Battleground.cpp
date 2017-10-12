@@ -1267,7 +1267,8 @@ void Battleground::AddPlayer(Player* player)
     // Log
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
     sLog->outDetail("BATTLEGROUND: Player %s joined the battle.", player->GetName().c_str());
-#endif}
+#endif
+}
 
 // this method adds player to his team's bg group, or sets his correct group if player is already in bg group
 void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, TeamId teamId)

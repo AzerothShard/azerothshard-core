@@ -3333,6 +3333,7 @@ void Player::InitTalentForLevel()
 { 
     uint32 talentPointsForLevel = CalculateTalentsPoints();
 
+    uint8 level = getLevel();
     sScriptMgr->OnBeforeInitTalentForLevel(this, level, talentPointsForLevel);
 
     // xinef: more talent points that we have are used, reset
@@ -14806,6 +14807,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                     }
                     break;
                 }
+            }
             case ITEM_ENCHANTMENT_TYPE_TOTEM:           // Shaman Rockbiter Weapon
             {
                 if (getClass() == CLASS_SHAMAN)
