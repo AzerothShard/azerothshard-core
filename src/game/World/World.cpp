@@ -3159,7 +3159,6 @@ void World::LoadGlobalPlayerDataStore()
 {
     uint32 oldMSTime = getMSTime();
 
-    _globalPlayerDataStore.clear();
     QueryResult result = CharacterDatabase.Query("SELECT guid, account, name, gender, race, class, level FROM characters WHERE deleteDate IS NULL");
     if (!result)
     {
