@@ -34,7 +34,6 @@ AzthAchievement::AzthAchievement(uint32 achievement, uint32 criteria, uint32 poi
     this->reward = reward;
     this->rewardCount = rewardCount;
     this->killCredit = killCredit;
-    achievementList = std::map<uint32, AzthAchievement>();
 }
 
 map<uint32, AzthAchievement> AzthAchievement::GetAchievementList() const

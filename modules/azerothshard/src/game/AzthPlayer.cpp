@@ -14,12 +14,14 @@ AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
   player = origin;
   customLang = AZTH_LOC_IT;
-  std::fill_n(arena1v1Info, 100, 0);
-  std::fill_n(arena3v3Info, 100, 0);
+  std::fill_n(arena1v1Info, 7, 0);
+  std::fill_n(arena3v3Info, 7, 0);
   
-  m_itemsInBank = ItemInBankMap();
-  m_completed_achievement_map = CompletedAchievementMap();
-  m_completed_criteria_map = CompletedCriteriaMap();
+  m_itemsInBank.clear();
+}
+
+AzthPlayer::~AzthPlayer() {
+    m_itemsInBank.clear();
 }
 
 void AzthPlayer::setCustLang(AzthCustomLangs code) {

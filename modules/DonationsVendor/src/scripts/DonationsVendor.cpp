@@ -8,16 +8,14 @@
 #include "AzthLanguage.h"
 #include "AzthUtils.h"
 
-std::vector<ItemToSell> ItemToSellList;
-
-std::map<uint32, std::map<uint32, std::string>> itemTypePositions;
-
 #define AZTH_ITEMBANK_START_ACTION 100000
 // same as MAX_VENDOR_ITEMS
 #define AZTH_ITEMBANK_RANGE 150
 
+std::vector<ItemToSell> ItemToSellList;
+
 class loadItemVendor : public WorldScript
-{
+{   
 public:
     loadItemVendor() : WorldScript("loadItemVendor") {}
     void OnStartup()
@@ -47,6 +45,8 @@ public:
 
 class DonatorVendor : public CreatureScript
 {
+    std::map<uint32, std::map<uint32, std::string>> itemTypePositions;
+
 public:
     DonatorVendor() : CreatureScript("DonatorVendor") {}
 
@@ -57,7 +57,7 @@ public:
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Deposita item", GOSSIP_SENDER_MAIN, 501);
         }
-        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Inserisci gli item da cercare qui", GOSSIP_SENDER_MAIN, 500, "Inserisci nome item", 0, true);
+        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Inserisci gli items da cercare qui", GOSSIP_SENDER_MAIN, 500, "Inserisci nome item", 0, true);
         
         // from 1 to 150
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, sAzthLang->getf(AZTH_LANG_SHOW_BANK_ITEMS,player,1,150), GOSSIP_SENDER_MAIN, AZTH_ITEMBANK_START_ACTION);

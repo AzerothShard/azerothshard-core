@@ -15,12 +15,11 @@ class Player;
 class SmartStone;
 
 class AzthPlayer {
-    uint32 timeWalkingLevel = 0;
-    bool PVPTempGear = false;
 public:
     void SetTempGear(bool hasGear);
     bool hasGear();
     explicit AzthPlayer(Player *origin);
+    ~AzthPlayer();
 
   void SetPlayerQuestRate(float rate);
 
@@ -55,7 +54,7 @@ public:
       CompletedCriteriaMap;
   CompletedCriteriaMap m_completed_criteria_map;
   
-  typedef std::map<uint32 /*entry*/, uint32 /*guid*/> ItemInBankMap;
+  typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*guid*/> ItemInBankMap;
 
   uint32 instanceID;
 
@@ -104,6 +103,9 @@ private:
   std::vector<float> lastPositionInfo;
   bool m_isPvP;
   AzthCustomLangs customLang;
+  
+  uint32 timeWalkingLevel = 0;
+  bool PVPTempGear = false;
 
   ItemInBankMap  m_itemsInBank;
 };

@@ -1806,7 +1806,10 @@ void World::SetInitialWorldSettings()
 
     mail_expire_check_timer = time(NULL) + 6*3600;
 
-    extmail_timer.SetInterval(m_int_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] * MINUTE * IN_MILLISECONDS);     //[AZTH] External Mail
+    //[AZTH] 
+    m_guildhousetimer=0;
+    extmail_timer.SetInterval(m_int_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] * MINUTE * IN_MILLISECONDS);     //External Mail
+    //[/AZTH]
 
     ///- Initilize static helper structures
     AIRegistry::Initialize();
