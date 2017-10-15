@@ -277,54 +277,60 @@ public:
         uint32 count = achi.GetRewardCount();
         uint32 reward = achi.GetReward();
         uint32 killCredit = achi.GetKillCredit();
+        
+        if (!count && !killCredit) {
+            return;
+        }
 
         uint32 level = player->azthPlayer->getGroupLevel() > 0 ? player->azthPlayer->getGroupLevel() : player->getLevel();
 
         // to achieve it you must be in range
         if (achi.GetLevelMin() <= level && achi.GetLevelMax() >= level) {
-            ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(reward);
-            if (!_proto)
-                return;
+            if (count > 0) {
+                ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(reward);
+                if (!_proto)
+                    return;
 
 
-            bool hasBonus = false;
-            RaidList rList = sAzthRaid->GetRaidList();
-            for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
-                if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
-                    hasBonus = true;
-                    break;
-                }
-            }
-
-            if (_proto->IsCurrencyToken()) {
-                // if bonus is active then you'll get x2 tokens
-                // moreover if you have the level <= of suggested
-                // then you'll get x6 tokens instead
-                if (hasBonus) {
-                    count *= 2;
-
-                    if (level <= achi.GetLevel())
-                        count *= 3;
-                }
-                
-                player->AddItem(reward, count);
-            } else {
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                MailDraft* draft = new MailDraft(_proto->Name1, "");
-                
-                for (uint32 i = 0; i < count; i++)
-                {
-                    Item *item = NewItemOrBag(_proto);
-                    if (!item->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), _proto->ItemId, player)) {
-                        delete item;
-                        return;
+                bool hasBonus = false;
+                RaidList rList = sAzthRaid->GetRaidList();
+                for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
+                    if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
+                        hasBonus = true;
+                        break;
                     }
-                    draft->AddItem(item);
                 }
+                
+                if (_proto->IsCurrencyToken()) {
+                    // if bonus is active then you'll get x2 tokens
+                    // moreover if you have the level <= of suggested
+                    // then you'll get x6 tokens instead
+                    if (hasBonus) {
+                        count *= 2;
 
-                draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
-                CharacterDatabase.CommitTransaction(trans);
-                ChatHandler(player->GetSession()).PSendSysMessage("Complimenti! |cffff0000  %s x%d|r ti è stato inviato via mail", _proto->Name1.c_str(), count);
+                        if (level <= achi.GetLevel())
+                            count *= 3;
+                    }
+
+                    player->AddItem(reward, count);
+                } else {
+                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                    MailDraft* draft = new MailDraft(_proto->Name1, "");
+                    
+                    for (uint32 i = 0; i < count; i++)
+                    {
+                        Item *item = NewItemOrBag(_proto);
+                        if (!item->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), _proto->ItemId, player)) {
+                            delete item;
+                            return;
+                        }
+                        draft->AddItem(item);
+                    }
+
+                    draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+                    CharacterDatabase.CommitTransaction(trans);
+                    ChatHandler(player->GetSession()).PSendSysMessage("Complimenti! |cffff0000  %s x%d|r ti è stato inviato via mail", _proto->Name1.c_str(), count);
+                }
             }
 
             if (killCredit) {
