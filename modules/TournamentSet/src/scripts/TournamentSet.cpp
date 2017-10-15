@@ -202,7 +202,7 @@ public:
         
         // this change automatically items of all slots depending by team
         // "_h" field instead can be used to differentiate (or deprecated)
-        if (player->GetTeamId() == TEAM_HORDE) {
+        if (player->GetTeamId(true) == TEAM_HORDE) {
             if (sObjectMgr->FactionChangeItems.find(entry) != sObjectMgr->FactionChangeItems.end()) {
                 uint32 horde=sObjectMgr->FactionChangeItems[entry];
                 if (horde)
@@ -216,7 +216,8 @@ public:
             }
         }
         
-        Item* pItem = Item::CreateItem(entry, 1, player);
+        /* // already done in preCheckEquip
+         * Item* pItem = Item::CreateItem(entry, 1, player);
         
         if (player->azthPlayer->isPvP()) {
             InventoryResult msg = player->CanEquipItem(INVENTORY_SLOT_BAG_0, slot, pItem, false);
@@ -226,16 +227,93 @@ public:
                 ChatHandler(player->GetSession()).PSendSysMessage("%s", sAzthLang->get(AZTH_LANG_PVP_NPC_CANNOT_EQUIP));
                 return;
             }
-        }
+        }*/
         
         Item* item = player->EquipNewItem(slot, entry, true);
         setEnchantAndSocket(player, item, originalEntry, spec);
+    }
+    
+    bool preCheckEquip(uint32 entry, bool &ok) {
+        Item* pItem = Item::CreateItem(entry, 1, player);
+        
+        InventoryResult msg = player->CanEquipItem(INVENTORY_SLOT_BAG_0, slot, pItem, false);
+        if (msg != EQUIP_ERR_OK)
+        {
+            player->SendEquipError(msg, pItem, NULL);
+            ChatHandler(player->GetSession()).PSendSysMessage("%s", sAzthLang->getf(AZTH_LANG_PVP_NPC_CANNOT_EQUIP, pItem->GetTemplate()->Name1.c_str()));
+            ok = false;
+        }
     }
 
     bool equipSet(AzthGearScaling set, Player* player, uint32 spec)
     {
         uint32 INVENTORY_END = 18;
         
+        bool ok=true;
+        preCheckEquip(set.GetHead(), ok);
+        preCheckEquip(set.GetNeck(), ok);
+        preCheckEquip(set.GetShoulders(), ok);
+        preCheckEquip(set.GetBody(), ok);
+        preCheckEquip(set.GetChest(), ok);
+        preCheckEquip(set.GetWaist(), ok);
+        preCheckEquip(set.GetLegs(), ok);
+        preCheckEquip(set.GetFeet(), ok);
+        preCheckEquip(set.GetHands(), ok);
+        preCheckEquip(set.GetBack(), ok);
+        preCheckEquip(set.GetMainHand(), ok);
+        preCheckEquip(set.GetOffHand(), ok);
+        preCheckEquip(set.GetRanged(), ok);
+        preCheckEquip(set.GetTabard(), ok);
+
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetWrists_h() == 0)
+        {
+            preCheckEquip(set.GetWrists(), ok);
+        }
+        else
+        {
+            preCheckEquip(set.GetWrists_h(), ok);
+        }
+        
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetFinger1_h() == 0)
+        {
+            preCheckEquip(set.GetFinger1(), ok);
+        }
+        else
+        {
+            preCheckEquip(set.GetFinger1_h(), ok);
+        }
+
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetFinger2_h() == 0)
+        {
+            preCheckEquip(set.GetFinger2(), ok);
+        }
+        else
+        {
+            preCheckEquip(set.GetFinger2_h(), ok);
+        }
+        
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetTrinket1_h() == 0)
+        {
+            preCheckEquip(set.GetTrinket1(), ok);
+        }
+        else
+        {
+            preCheckEquip(set.GetTrinket1_h(), ok);
+        }
+        
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetTrinket2_h() == 0)
+        {
+            preCheckEquip(set.GetTrinket2(), ok);
+        }
+        else
+        {
+            preCheckEquip(set.GetTrinket2_h(), ok);
+        }
+        
+        if (!ok) {
+            return false;
+        }
+
         for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++) {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
 
@@ -274,7 +352,6 @@ public:
             draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED, 0, 2000);
         
         delete draft;
-        
 
         CharacterDatabase.CommitTransaction(trans);         
 
@@ -296,7 +373,7 @@ public:
         equipItem(set.GetRanged(), SLOT_RANGED, player, spec);
         equipItem(set.GetTabard(), SLOT_TABARD, player, spec);
 
-        if (player->GetTeamId() == TEAM_ALLIANCE || set.GetWrists_h() == 0)
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetWrists_h() == 0)
         {
             equipItem(set.GetWrists(), SLOT_WRISTS, player, spec);
         }
@@ -305,7 +382,7 @@ public:
             equipItem(set.GetWrists_h(), SLOT_WRISTS, player, spec);
         }
         
-        if (player->GetTeamId() == TEAM_ALLIANCE || set.GetFinger1_h() == 0)
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetFinger1_h() == 0)
         {
             equipItem(set.GetFinger1(), SLOT_FINGER1, player, spec);
         }
@@ -314,7 +391,7 @@ public:
             equipItem(set.GetFinger1_h(), SLOT_FINGER1, player, spec);
         }
 
-        if (player->GetTeamId() == TEAM_ALLIANCE || set.GetFinger2_h() == 0)
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetFinger2_h() == 0)
         {
             equipItem(set.GetFinger2(), SLOT_FINGER2, player, spec);
         }
@@ -323,7 +400,7 @@ public:
             equipItem(set.GetFinger2_h(), SLOT_FINGER2, player, spec);
         }
         
-        if (player->GetTeamId() == TEAM_ALLIANCE || set.GetTrinket1_h() == 0)
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetTrinket1_h() == 0)
         {
             equipItem(set.GetTrinket1(), SLOT_TRINKET1, player, spec);
         }
@@ -332,7 +409,7 @@ public:
             equipItem(set.GetTrinket1_h(), SLOT_TRINKET1, player, spec);
         }
         
-        if (player->GetTeamId() == TEAM_ALLIANCE || set.GetTrinket2_h() == 0)
+        if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetTrinket2_h() == 0)
         {
             equipItem(set.GetTrinket2(), SLOT_TRINKET2, player, spec);
         }
