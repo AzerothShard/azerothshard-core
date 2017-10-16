@@ -34,8 +34,8 @@ public:
     ~AzthLang();
     
     void loadStrings();
-    const char * get(uint32 strId, Player *pl=nullptr);
-    const char * getf(uint32 strId, Player *pl=nullptr, ...);
+    virtual const char * get(uint32 strId, Player *pl=nullptr) const;
+    virtual const char * getf(uint32 strId, Player *pl=nullptr, ...) const;
     void add(uint32 strId, std::string const def, std::string const it);
 };
 

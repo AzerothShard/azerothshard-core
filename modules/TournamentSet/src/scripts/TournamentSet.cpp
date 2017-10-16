@@ -10,6 +10,13 @@
 #include "AzthLanguage.h"
 #include "ScriptedGossip.h"
 
+
+#include <iostream>
+#include <chrono>
+
+using namespace std;
+using namespace std::chrono;
+
 std::map<uint32, AzthGearScaling> tournamentTempGearList;
 std::map<uint64, AzthGearScalingSocket> tournamentTempGearSocketList;
 
@@ -194,12 +201,7 @@ public:
         }
     }
     
-    void equipItem(uint32 entry, uint16 slot, Player *player, uint32 spec) {
-        if (!entry)
-            return;
-        
-        uint32 originalEntry=entry;
-        
+    uint32 getFactionItem(uint32 entry, Player *player) {
         // this change automatically items of all slots depending by team
         // "_h" field instead can be used to differentiate (or deprecated)
         if (player->GetTeamId(true) == TEAM_HORDE) {
@@ -216,6 +218,18 @@ public:
             }
         }
         
+        return entry;
+    }
+    
+    void equipItem(uint32 entry, uint16 slot, Player *player, uint32 spec, bool update = true) {
+        if (!entry)
+            return;
+        
+        uint32 originalEntry=entry;
+        
+        entry=getFactionItem(entry, player);
+
+        
         /* // already done in preCheckEquip
          * Item* pItem = Item::CreateItem(entry, 1, player);
         
@@ -229,18 +243,24 @@ public:
             }
         }*/
         
-        Item* item = player->EquipNewItem(slot, entry, true);
+        Item* item = player->EquipNewItem(slot, entry, update);
         setEnchantAndSocket(player, item, originalEntry, spec);
     }
     
-    bool preCheckEquip(uint32 entry, bool &ok) {
+    void preCheckEquip(uint32 entry, uint16 slot, Player *player, bool &ok) {
+        if (!entry)
+            return;
+        
+        entry=getFactionItem(entry, player);
+
         Item* pItem = Item::CreateItem(entry, 1, player);
         
-        InventoryResult msg = player->CanEquipItem(INVENTORY_SLOT_BAG_0, slot, pItem, false);
+        InventoryResult msg = player->CanEquipItem(INVENTORY_SLOT_BAG_0, slot, pItem, true); // must be considered a swap
         if (msg != EQUIP_ERR_OK)
         {
             player->SendEquipError(msg, pItem, NULL);
-            ChatHandler(player->GetSession()).PSendSysMessage("%s", sAzthLang->getf(AZTH_LANG_PVP_NPC_CANNOT_EQUIP, pItem->GetTemplate()->Name1.c_str()));
+            const char *msg=sAzthLang->getf(AZTH_LANG_PVP_NPC_CANNOT_EQUIP, player, entry, pItem->GetTemplate()->Name1.c_str());
+            ChatHandler(player->GetSession()).SendSysMessage(msg);
             ok = false;
         }
     }
@@ -249,70 +269,74 @@ public:
     {
         uint32 INVENTORY_END = 18;
         
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
+        
         bool ok=true;
-        preCheckEquip(set.GetHead(), ok);
-        preCheckEquip(set.GetNeck(), ok);
-        preCheckEquip(set.GetShoulders(), ok);
-        preCheckEquip(set.GetBody(), ok);
-        preCheckEquip(set.GetChest(), ok);
-        preCheckEquip(set.GetWaist(), ok);
-        preCheckEquip(set.GetLegs(), ok);
-        preCheckEquip(set.GetFeet(), ok);
-        preCheckEquip(set.GetHands(), ok);
-        preCheckEquip(set.GetBack(), ok);
-        preCheckEquip(set.GetMainHand(), ok);
-        preCheckEquip(set.GetOffHand(), ok);
-        preCheckEquip(set.GetRanged(), ok);
-        preCheckEquip(set.GetTabard(), ok);
+        preCheckEquip(set.GetHead(), SLOT_HEAD, player, ok);
+        preCheckEquip(set.GetNeck(), SLOT_NECK, player, ok);
+        preCheckEquip(set.GetShoulders(), SLOT_SHOULDERS, player, ok);
+        preCheckEquip(set.GetBody(), SLOT_SHIRT, player, ok);
+        preCheckEquip(set.GetChest(), SLOT_CHEST, player, ok);
+        preCheckEquip(set.GetWaist(), SLOT_WAIST, player, ok);
+        preCheckEquip(set.GetLegs(), SLOT_LEGS, player, ok);
+        preCheckEquip(set.GetFeet(), SLOT_FEET, player, ok);
+        preCheckEquip(set.GetHands(), SLOT_HANDS, player, ok);
+        preCheckEquip(set.GetBack(), SLOT_BACK, player, ok);
+        preCheckEquip(set.GetMainHand(), SLOT_MAIN_HAND, player, ok);
+        preCheckEquip(set.GetOffHand(), SLOT_OFF_HAND, player, ok);
+        preCheckEquip(set.GetRanged(), SLOT_RANGED, player, ok);
+        preCheckEquip(set.GetTabard(), SLOT_TABARD, player, ok);
 
         if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetWrists_h() == 0)
         {
-            preCheckEquip(set.GetWrists(), ok);
+            preCheckEquip(set.GetWrists(), SLOT_WRISTS, player, ok);
         }
         else
         {
-            preCheckEquip(set.GetWrists_h(), ok);
+            preCheckEquip(set.GetWrists_h(), SLOT_WRISTS, player, ok);
         }
         
         if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetFinger1_h() == 0)
         {
-            preCheckEquip(set.GetFinger1(), ok);
+            preCheckEquip(set.GetFinger1(), SLOT_FINGER1, player, ok);
         }
         else
         {
-            preCheckEquip(set.GetFinger1_h(), ok);
+            preCheckEquip(set.GetFinger1_h(), SLOT_FINGER1, player, ok);
         }
 
         if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetFinger2_h() == 0)
         {
-            preCheckEquip(set.GetFinger2(), ok);
+            preCheckEquip(set.GetFinger2(), SLOT_FINGER2, player, ok);
         }
         else
         {
-            preCheckEquip(set.GetFinger2_h(), ok);
+            preCheckEquip(set.GetFinger2_h(), SLOT_FINGER2, player, ok);
         }
         
         if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetTrinket1_h() == 0)
         {
-            preCheckEquip(set.GetTrinket1(), ok);
+            preCheckEquip(set.GetTrinket1(), SLOT_TRINKET1, player, ok);
         }
         else
         {
-            preCheckEquip(set.GetTrinket1_h(), ok);
+            preCheckEquip(set.GetTrinket1_h(), SLOT_TRINKET1, player, ok);
         }
         
         if (player->GetTeamId(true) == TEAM_ALLIANCE || set.GetTrinket2_h() == 0)
         {
-            preCheckEquip(set.GetTrinket2(), ok);
+            preCheckEquip(set.GetTrinket2(), SLOT_TRINKET2, player, ok);
         }
         else
         {
-            preCheckEquip(set.GetTrinket2_h(), ok);
+            preCheckEquip(set.GetTrinket2_h(), SLOT_TRINKET2, player, ok);
         }
         
         if (!ok) {
             return false;
         }
+        
+        high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
         for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++) {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
@@ -340,6 +364,8 @@ public:
         
         delete draft;
         
+        high_resolution_clock::time_point t3 = high_resolution_clock::now();
+        
         draft = new MailDraft(sAzthLang->get(AZTH_LANG_REMOVED_ITEMS,player), "");
         hasItems=false;
         // next 9 slots (ugly workaround)
@@ -357,6 +383,7 @@ public:
 
         player->RemoveItemDependentAurasAndCasts((Item*)NULL);
 
+        high_resolution_clock::time_point t4 = high_resolution_clock::now();
 
         equipItem(set.GetHead(), SLOT_HEAD, player, spec);
         equipItem(set.GetNeck(), SLOT_NECK, player, spec);
@@ -418,6 +445,18 @@ public:
             equipItem(set.GetTrinket2_h(), SLOT_TRINKET2, player, spec);
         }
         
+        high_resolution_clock::time_point t5 = high_resolution_clock::now();
+        
+        auto duration1 = duration_cast<microseconds>( t2 - t1 ).count();
+        auto duration2 = duration_cast<microseconds>( t3 - t2 ).count();
+        auto duration3 = duration_cast<microseconds>( t4 - t3 ).count();
+        auto duration4 = duration_cast<microseconds>( t5 - t4 ).count();
+        
+        cout << "duration 1: " << duration1 << "\n";
+        cout << "duration 2: " << duration2 << "\n";
+        cout << "duration 3: " << duration3 << "\n";
+        cout << "duration 4: " << duration4 << "\n";
+        
         //player->InitStatsForLevel(true);
 
         player->SetHealth(player->GetMaxHealth());
@@ -432,9 +471,6 @@ public:
     void setEnchantAndSocket(Player* player, Item* item, uint32 entry, uint32 spec)
     {
         uint32 id = (entry * 10000) + (player->getClass()*100) + spec;
-
-        item->SetBinding(true);
-        item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1, true); // special flag
 
         map<uint64, AzthGearScalingSocket> AllItemsSockets = sAzthGearScalingSocket->GetGearScalingSocketList();
         map<uint64, AzthGearScalingSocket>::iterator iter = AllItemsSockets.find(id);

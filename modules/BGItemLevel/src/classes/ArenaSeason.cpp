@@ -56,10 +56,15 @@ void Season::SetEnabled(bool enable)
     this->enabled = enable;
 }
 
+//
+// Passing player argument will check the player state and automatically shows a message
+// 
 bool Season::checkItem(ItemTemplate const* proto, Player const* player) {
     if (player->InBattleground() || player->InArena() || player->InBattlegroundQueue()) {
-        if (!this->checkItem(proto))
-            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000%s|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", proto->Name1.c_str());
+        if (!this->checkItem(proto)) {
+            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", proto->ItemId, proto->Name1.c_str());
+            return false;
+        }
     }
     
     return true;
@@ -91,9 +96,10 @@ std::vector<std::string> Season::checkItems(Player *pl) {
         Item* itemToCheck = pl->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
         if (itemToCheck != nullptr)
         {
-            if (!sASeasonMgr->checkItem(itemToCheck->GetTemplate(), pl))
+            if (!sASeasonMgr->checkItem(itemToCheck->GetTemplate()))
             {
               incompatibleItems.push_back(itemToCheck->GetTemplate()->Name1);
+              ChatHandler(pl->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str());
               counter++;
             }
         }
