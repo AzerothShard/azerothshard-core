@@ -36,9 +36,12 @@ public:
 
         if (itemInBankQuery)
         {
-            Field* itemInBankField = itemInBankQuery->Fetch();
-
             do {
+                Field* itemInBankField = itemInBankQuery->Fetch();
+                
+                if (!itemInBankField)
+                    break;
+                
                 uint32 itemGUID = itemInBankField[0].GetUInt32();
                 uint32 itemEntry = itemInBankField[1].GetUInt32();
 

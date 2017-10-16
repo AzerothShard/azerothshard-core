@@ -30,7 +30,7 @@ public:
         return;
     }
 
-    Field* season_table = result->Fetch();
+
     Field* arena_timestamp_table = getLastDate->Fetch();
 
     //get last date of a system change
@@ -80,6 +80,11 @@ public:
 
     do
     {
+        Field* season_table = result->Fetch();
+        
+        if (!season_table)
+            break;
+        
         //retrieve timestamp from db
         startingDate = time_t(season_table[1].GetUInt32());
         endDate = time_t(season_table[2].GetUInt32());

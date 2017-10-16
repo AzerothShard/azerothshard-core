@@ -2,6 +2,7 @@
 #include "AzthLanguage.h"
 #include "AzthUtils.h"
 #include "ScriptMgr.h"
+#include "AzthFirstKills.h"
 
 class AzthWorldScript : public WorldScript
 {
@@ -26,6 +27,7 @@ public:
     {
         sAzthLang->loadStrings();
         sAzthUtils->loadClassSpells();
+        sAzthFirstKills->loadCurrentFirstkills();
     }
 };
 

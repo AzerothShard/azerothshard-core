@@ -203,6 +203,8 @@ class npc_guild_master : public CreatureScript
             do
             {
                 Field *fields = result->Fetch();
+                if (!fields)
+                    break;
 
                 guildhouseId = fields[0].GetInt32();
                 comment = fields[1].GetString();

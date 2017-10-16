@@ -569,8 +569,7 @@ public:
                 player->SaveToDB(false, false);
                 ChatHandler(player->GetSession()).PSendSysMessage("Il tuo set PVP e' stato rimosso, non puoi cambiare zona con un set temporaneo!");
                 // teleport to dalaran
-                WorldLocation loc = WorldLocation(571, 5804.15f, 624.771f, 647.767f, 1.64f);
-                player->TeleportTo(loc);
+                player->TeleportTo(SharedDef::dalaran);
             }
         }
     }

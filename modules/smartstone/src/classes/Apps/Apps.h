@@ -13,6 +13,7 @@ public:
     /*
      *  PvP Menu
      */
+    void teleportDalaran(Player *player);
 
     /*
      * CharMenu

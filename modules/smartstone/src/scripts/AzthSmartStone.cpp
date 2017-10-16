@@ -32,6 +32,7 @@ enum SmartStoneCommands {
     SMRTST_MAX_SKILL=10,
     SMRTST_XP_CHANGE=11,
     SMRTST_RESET_AURAS=12,
+    SMRTST_TELEPORT_DALARAN=13,
     SMRTST_SHOP_MENU=2000, //unused
     SMRTST_BACK_MENU=2001,
 };
@@ -113,7 +114,10 @@ public:
                 case SMRTST_RESET_AURAS:
                     apps->resetAuras(player);
                 break;
-
+                
+                case SMRTST_TELEPORT_DALARAN:
+                    apps->teleportDalaran(player);
+                break;
                 case 99999:
                     break;
                 default:
@@ -195,6 +199,16 @@ public:
             // azth xp command
             SmartStoneCommand azthXp = sSmartStone->getCommandById(11);
             player->ADD_GOSSIP_ITEM_EXTENDED(azthXp.icon, azthXp.getText(player), GOSSIP_SENDER_MAIN, azthXp.id, "Scrivi il valore desiderato.", 0, true);
+            
+            // reset auras
+            SmartStoneCommand resetAuras = sSmartStone->getCommandById(12);
+            player->ADD_GOSSIP_ITEM(resetAuras.icon, resetAuras.getText(player), GOSSIP_SENDER_MAIN, resetAuras.id);
+            
+            if (player->azthPlayer->isPvP()) {
+                // dalaran teleport
+                SmartStoneCommand dalaranTeleport = sSmartStone->getCommandById(13);
+                player->ADD_GOSSIP_ITEM(dalaranTeleport.icon, dalaranTeleport.getText(player), GOSSIP_SENDER_MAIN, dalaranTeleport.id);
+            }
         }
 
         std::vector<SmartStonePlayerCommand> playerCommands =
@@ -233,7 +247,7 @@ public:
             }
 
             if (command.id != 0 && command.parent_menu == parent) {
-                if (command.type != 3) {
+                if (command.type != DO_SCRIPTED_ACTION_WITH_CODE) {
                     player->ADD_GOSSIP_ITEM(command.icon, text, GOSSIP_SENDER_MAIN, command.id);
                 } else {
                     player->ADD_GOSSIP_ITEM_EXTENDED(command.icon, text, GOSSIP_SENDER_MAIN, command.id, "Scrivi il valore desiderato.", 0, true);

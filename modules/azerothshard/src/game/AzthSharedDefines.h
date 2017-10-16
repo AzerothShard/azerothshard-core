@@ -1,5 +1,8 @@
 #ifndef SHAREDDEFINES_H
 #define SHAREDDEFINES_H
+
+#include "Object.h"
+
 /*
 enum AzthRbac {
     RBAC_PERM_COMMAND_QUESTCOMPLETER = 1000,
@@ -30,6 +33,11 @@ enum SkillSpells {
 enum AzthCustomLangs {
     AZTH_LOC_IT = 0,
     AZTH_LOC_EN = 1,
+};
+
+class SharedDef {
+public:
+    static const WorldLocation dalaran;
 };
 
 #endif /* SHAREDDEFINES_H */
