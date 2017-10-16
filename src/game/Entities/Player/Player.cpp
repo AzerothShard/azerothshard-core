@@ -19754,10 +19754,12 @@ void Player::SaveToDB(bool create, bool logout)
         _SaveStats(trans);
 
     CharacterDatabase.CommitTransaction(trans);
-
+    
     //[AZTH]
     // Place this code AFTER CharacterDatabase.CommitTransaction(); to avoid some character saving errors.
     // Wowarmory feeds
+    SQLTransaction wowArmoryTrans = CharacterDatabase.BeginTransaction();
+    
     if (!m_wowarmory_feeds.empty())
     {
         std::ostringstream sWowarmory;
@@ -19769,19 +19771,23 @@ void Player::SaveToDB(bool create, bool logout)
             if (iter != m_wowarmory_feeds.end() - 1)
                 sWowarmory << ",";
         }
-        CharacterDatabase.PExecute(sWowarmory.str().c_str());
+        wowArmoryTrans->Append(sWowarmory.str().c_str());
         // Clear old saved feeds from storage - they are not required for server core.
         InitWowarmoryFeeds();
     }
+    
+    wowArmoryTrans->PAppend("DELETE FROM armory_character_stats WHERE guid = %u", GetGUIDLow());
+    
     // Character stats
     std::ostringstream ps;
     time_t t = time(NULL);
-    CharacterDatabase.PExecute("DELETE FROM armory_character_stats WHERE guid = %u", GetGUIDLow());
     ps << "INSERT INTO armory_character_stats (guid, data, save_date) VALUES (" << GetGUIDLow() << ", '";
     for (uint16 i = 0; i < m_valuesCount; ++i)
         ps << GetUInt32Value(i) << " ";
     ps << "', " << uint64(t) << ");";
-    CharacterDatabase.PExecute(ps.str().c_str());
+    wowArmoryTrans->Append(ps.str().c_str());
+    
+    CharacterDatabase.CommitTransaction(wowArmoryTrans);
     //[/AZTH]
 
     // save pet (hunter pet level and experience and all type pets health/mana).
