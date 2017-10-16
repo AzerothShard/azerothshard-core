@@ -57,7 +57,7 @@ struct boss_faction_championsAI : public ScriptedAI
             UnitAI::AttackStartCaster(who, 18.5f);
     }
 
-    float GetThreatMod(float dist, float /*armor*/, uint32 health, uint32 /*maxhealth*/, Unit* target)
+    float GetThreatMod(float dist, float  /*armor*/, uint32 health, uint32 /*maxhealth*/, Unit* target)
     {
         /*float mod_health = ((float)health)/maxhealth;
         if (mod_health < 0.4f) mod_health = 0.4f;
@@ -114,7 +114,7 @@ struct boss_faction_championsAI : public ScriptedAI
             pInstance->SetData(TYPE_FACTION_CHAMPIONS, DONE);
     }
 
-    void KilledUnit(Unit* /*who*/)
+    void KilledUnit(Unit*  /*who*/)
     {
         if( pInstance )
             pInstance->SetData(TYPE_FACTION_CHAMPIONS_PLAYER_DIED, 1);
@@ -1810,7 +1810,7 @@ public:
                         events.RepeatEvent(5000);
                     break;
                 case EVENT_SPELL_STRANGULATE:
-                    if(SelectEnemyCaster(false, 30.0f) )
+                    if(SelectEnemyCaster(false, 30.0f))
                     {
                         me->CastSpell(me->GetVictim(), SPELL_STRANGULATE, false);
                         events.RepeatEvent(120000);

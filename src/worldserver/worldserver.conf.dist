@@ -90,8 +90,6 @@ LogsDir = ""
 LoginDatabaseInfo     = "127.0.0.1;3306;acore;acore;acore_auth"
 WorldDatabaseInfo     = "127.0.0.1;3306;acore;acore;acore_world"
 CharacterDatabaseInfo = "127.0.0.1;3306;acore;acore;acore_characters"
-# [AZTH]
-ExtraDatabaseInfo     = "127.0.0.1;3306;root;root;extra"
 
 #
 #    LoginDatabase.WorkerThreads
@@ -107,8 +105,6 @@ ExtraDatabaseInfo     = "127.0.0.1;3306;root;root;extra"
 LoginDatabase.WorkerThreads     = 1
 WorldDatabase.WorkerThreads     = 1
 CharacterDatabase.WorkerThreads = 1
-# [AZTH]
-ExtraDatabase.WorkerThreads     = 1
 
 #
 #    LoginDatabase.SynchThreads
@@ -122,8 +118,6 @@ ExtraDatabase.WorkerThreads     = 1
 LoginDatabase.SynchThreads     = 1
 WorldDatabase.SynchThreads     = 1
 CharacterDatabase.SynchThreads = 2
-# [AZTH]
-ExtraDatabase.SynchThreads     = 1
 
 #
 #    MaxPingTime
