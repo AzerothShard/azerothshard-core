@@ -155,6 +155,24 @@ public:
             uint32 slot = action;
 
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+            
+            if (!item)
+            {
+                player->SendMailResult(0, MAIL_SEND, MAIL_ERR_MAIL_ATTACHMENT_INVALID);
+                return true;
+            }
+
+            if (item->GetUInt32Value(ITEM_FIELD_DURATION))
+            {
+                player->SendMailResult(0, MAIL_SEND, MAIL_ERR_EQUIP_ERROR, EQUIP_ERR_MAIL_BOUND_ITEM);
+                return true;
+            }
+
+            if (item->IsNotEmptyBag())
+            {
+                player->SendMailResult(0, MAIL_SEND, MAIL_ERR_EQUIP_ERROR, EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS);
+                return true;
+            }
 
             if (item->GetCount() > 1)
             {
