@@ -376,7 +376,7 @@ public:
         }
 
         //set last known position to black market
-        std::vector<float> & pos = player->azthPlayer->getLastPositionInfoFromDB();
+        std::vector<float> pos = player->azthPlayer->getLastPositionInfoFromDB();
         player->azthPlayer->setLastPositionInfo(pos);
     }
 

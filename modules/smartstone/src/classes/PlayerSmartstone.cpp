@@ -326,7 +326,12 @@ void AzthPlayer::setLastPositionInfo(std::vector<float> posInfo) {
     lastPositionInfo = posInfo;
 };
 
-std::vector<float> & AzthPlayer::getLastPositionInfoFromDB() {
+/**
+ * We should not return a reference (&) in this case since
+ * the returned value is local. Then must be copied
+ * 
+ */
+std::vector<float> AzthPlayer::getLastPositionInfoFromDB() {
     std::vector<float> lastPos;
     QueryResult ssCommandsResult = CharacterDatabase.PQuery(
             "SELECT mapId, posX, posY, posZ FROM character_saved_position WHERE type = 1 AND charGuid = %u LIMIT 1;", player->GetGUIDLow());
