@@ -22,6 +22,7 @@ class AzthFirstKills {
 public:
     void loadCurrentFirstkills();
     bool isRealmCompleted(AchievementEntry const* achievement, bool originalValue);
+    void setRealmCompleted(AchievementEntry const* achievement);
 private:
     std::set<uint32> currentFirstKills;
 };

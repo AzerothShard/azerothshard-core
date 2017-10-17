@@ -2326,6 +2326,10 @@ bool AchievementGlobalMgr::IsRealmCompleted(AchievementEntry const* achievement)
 
     if (itr->second == std::chrono::system_clock::time_point::min())
         return false;
+    
+    //[AZTH] do not continue, do our check instead
+    if (achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL)
+        return sAzthFirstKills->isRealmCompleted(achievement,(std::chrono::system_clock::now() - itr->second) > std::chrono::minutes(1));
 
     if (itr->second == std::chrono::system_clock::time_point::max())
         return true;
@@ -2344,6 +2348,8 @@ void AchievementGlobalMgr::SetRealmCompleted(AchievementEntry const* achievement
     if (IsRealmCompleted(achievement))
         return;
 
+    //[AZTH]
+    sAzthFirstKills->setRealmCompleted(achievement);
     m_allCompletedAchievements[achievement->ID] = std::chrono::system_clock::now();
 }
 

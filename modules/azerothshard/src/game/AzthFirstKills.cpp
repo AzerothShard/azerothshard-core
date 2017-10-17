@@ -5,6 +5,11 @@
 #include <time.h>
  
 
+void AzthFirstKills::setRealmCompleted(const AchievementEntry* achievement)
+{
+    this->currentFirstKills.insert(achievement->ID);
+} 
+ 
 bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool originalValue) {
     if (!achievement) //should never happen
         return originalValue;
@@ -16,46 +21,34 @@ bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool 
     struct tm * tnow = std::gmtime(&now);
     
     switch(achievement->ID) {
-        /*case ACHI_NAXXRAMAS:
-
-            this->currentFirstKills.insert(ACHI_NAXXRAMAS);
-            
-            return false;
+        case ACHI_NAXXRAMAS:
+            if (tnow->tm_mon >= 0) // January : 1-1           
+                return originalValue;
         break;
         case ACHI_OBSIDIAN:
-            this->currentFirstKills.insert(ACHI_OBSIDIAN);
-            
-            return false;
-        break;
-        case ACHI_OBSIDIAN:
-            this->currentFirstKills.insert(ACHI_OBSIDIAN);
-            
-            return false;
+            if (tnow->tm_mon >= 1) // February          
+                return originalValue;
         break;
         case ACHI_MAGIC_SEEKER:
-            this->currentFirstKills.insert(ACHI_OBSIDIAN);
-            
-            return false;
-        break;*/
-        /*case ACHI_DEATH_DEMISE:
-            this->currentFirstKills.insert(ACHI_OBSIDIAN);
-            
-            return false;
+            if (tnow->tm_mon >= 2) // March        
+                return originalValue;
+        break;
+        case ACHI_DEATH_DEMISE:
+            if (tnow->tm_mon >= 3) // Avril      
+                return originalValue;
         break;
         case ACHI_CELESTIAL_DEFENDER:
-            this->currentFirstKills.insert(ACHI_OBSIDIAN);
-            
-            return false;
+            if (tnow->tm_mon >= 4) // May      
+                return originalValue;
         break;
         case ACHI_GRAND_CRUSADER:
-            this->currentFirstKills.insert(ACHI_OBSIDIAN);
-            
-            return false;
-        break;*/
-        case ACHI_FALL_OF_LK:
-            if (tnow->tm_mon >= 9) // October : 10-1           
-                return false;
+            if (tnow->tm_mon >= 7) // August      
+                return originalValue;
         break;
+        /*case ACHI_FALL_OF_LK:
+            if (tnow->tm_mon >= 8 // September          
+                return originalValue;
+        break;*/
     }
     
     return originalValue; // shouldn't happen
