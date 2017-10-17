@@ -26,10 +26,6 @@ public:
     uint32 GetRewardCount() const;
     uint32 GetKillCredit() const;
 
-    map<uint32, AzthAchievement> GetAchievementList() const;
-
-    void SetAchievementList(map<uint32, AzthAchievement> achievementList);
-
     AzthAchievement();
     AzthAchievement(uint32 achievement, uint32 criteria, uint32 points, uint32 category, uint32 parentCategory, uint32 difficulty, uint32 levelMax, 
                     uint32 levelMin, uint32 level, uint32 originalPoints, string name, string description, uint32 reward, uint32 rewardCount, uint32 killCredit);
@@ -51,9 +47,13 @@ private:
     uint32 reward;
     uint32 rewardCount;
     uint32 killCredit;
+};
+
+class AzthAchievementMgr {
+public:
     map<uint32, AzthAchievement> achievementList;
 };
 
-#define sAzthAchievement ACE_Singleton<AzthAchievement, ACE_Null_Mutex>::instance()
+#define sAzthAchievementMgr ACE_Singleton<AzthAchievementMgr, ACE_Null_Mutex>::instance()
 
 #endif

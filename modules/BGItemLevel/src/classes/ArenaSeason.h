@@ -26,7 +26,7 @@ public:
 
     Season();
     Season(uint32 itemLevel, time_t startingDate, time_t endDate);
-    std::vector<std::string> checkItems(Player *pl);
+    bool checkItems(Player *pl);
     bool canJoinArenaOrBg(Player *pl);
 
 private:

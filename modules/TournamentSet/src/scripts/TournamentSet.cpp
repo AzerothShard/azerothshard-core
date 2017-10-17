@@ -40,7 +40,7 @@ public:
             tournamentTempGearList[tournament_tempGear_Field[0].GetUInt32() * 10000 + tournament_tempGear_Field[1].GetUInt32() * 100 + tournament_tempGear_Field[2].GetUInt32()] = AzthGearScaling(tournament_tempGear_Field[0].GetUInt32(), tournament_tempGear_Field[1].GetUInt32(), tournament_tempGear_Field[2].GetUInt32(), tournament_tempGear_Field[3].GetString().c_str(), tournament_tempGear_Field[4].GetUInt32(), tournament_tempGear_Field[5].GetUInt32(), tournament_tempGear_Field[6].GetUInt32(), tournament_tempGear_Field[7].GetUInt32(), tournament_tempGear_Field[8].GetUInt32(), tournament_tempGear_Field[9].GetUInt32(), tournament_tempGear_Field[10].GetUInt32(), tournament_tempGear_Field[11].GetUInt32(), tournament_tempGear_Field[12].GetUInt32(), tournament_tempGear_Field[13].GetUInt32(), tournament_tempGear_Field[14].GetUInt32(), tournament_tempGear_Field[15].GetUInt32(), tournament_tempGear_Field[16].GetUInt32(), tournament_tempGear_Field[17].GetUInt32(), tournament_tempGear_Field[18].GetUInt32(), tournament_tempGear_Field[19].GetUInt32(), tournament_tempGear_Field[20].GetUInt32(), tournament_tempGear_Field[21].GetUInt32(), tournament_tempGear_Field[22].GetUInt32(), tournament_tempGear_Field[23].GetUInt32(), tournament_tempGear_Field[24].GetUInt32(), tournament_tempGear_Field[25].GetUInt32(), tournament_tempGear_Field[26].GetUInt32(), tournament_tempGear_Field[27].GetUInt32());
         } while (tournament_tempGear_table->NextRow());
 
-        sAzthGearScaling->SetGearScalingList(tournamentTempGearList);
+        sAzthGearScalingMgr->SetGearScalingList(tournamentTempGearList);
 
         //-------------------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ public:
                     tournament_socketEnchants_Field[6].GetUInt32()); // enchant
             } while (tournament_socketEnchants_table->NextRow());
 
-            sAzthGearScalingSocket->SetGearScalingSocketList(tournamentTempGearSocketList);
+            sAzthGearScalingSocketMgr->SetGearScalingSocketList(tournamentTempGearSocketList);
         }
     }
        
@@ -128,7 +128,7 @@ public:
         {
             uint32 season = action / 10000;
             uint32 spec = action - (season * 10000) - (player->getClass()*100);
-            AzthGearScaling set = sAzthGearScaling->GetGearScalingList()[action];
+            AzthGearScaling & set = sAzthGearScalingMgr->GetGearScalingList()[action];
 
             if (equipSet(set, player, spec)) {
                 if (!player->azthPlayer->isPvP()) {
@@ -472,7 +472,7 @@ public:
     {
         uint32 id = (entry * 10000) + (player->getClass()*100) + spec;
 
-        map<uint64, AzthGearScalingSocket> AllItemsSockets = sAzthGearScalingSocket->GetGearScalingSocketList();
+        map<uint64, AzthGearScalingSocket> & AllItemsSockets = sAzthGearScalingSocketMgr->GetGearScalingSocketList();
         map<uint64, AzthGearScalingSocket>::iterator iter = AllItemsSockets.find(id);
         if (iter != AllItemsSockets.end()) //items has at least 1 socket or 1 enchant
         {

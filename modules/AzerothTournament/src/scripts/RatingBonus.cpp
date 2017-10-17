@@ -13,7 +13,7 @@ public:
 
     void OnAfterArenaRatingCalculation(Battleground *const bg, int32 &winnerMatchmakerChange, int32 & /*loserMatchmakerChange*/, int32 &winnerChange, int32 & /*loserChange*/) override
     {
-        std::vector<Bonus> currBonuses = sBonusRating->getRatingBonuses();
+        std::vector<Bonus> & currBonuses = sBonusRating->getRatingBonuses();
 
         // no bonuses right now
         if (currBonuses.size() == 0)
@@ -31,7 +31,7 @@ public:
 
 	void OnBeforeUpdatingPersonalRating(int32 &mod, uint32 type) override
 	{
-		std::vector<Bonus> currBonuses = sBonusRating->getRatingBonuses();
+		std::vector<Bonus> & currBonuses = sBonusRating->getRatingBonuses();
 
 		// no bonuses right now
 		if (currBonuses.size() == 0)
@@ -87,7 +87,7 @@ void BonusRating::printBonusesToPlayer(ChatHandler * handler, uint32 bracket)
 	}
 }
 
-std::vector<Bonus> BonusRating::getRatingBonuses()
+std::vector<Bonus> & BonusRating::getRatingBonuses()
 {
     return bonuses;
 }

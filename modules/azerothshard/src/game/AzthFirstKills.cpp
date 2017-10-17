@@ -17,6 +17,7 @@ bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool 
     if (this->currentFirstKills.find(achievement->ID) != this->currentFirstKills.end())
         return true;
     
+
     time_t now = time(0);
     struct tm * tnow = std::gmtime(&now);
     
@@ -45,10 +46,10 @@ bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool 
             if (tnow->tm_mon >= 7) // August      
                 return originalValue;
         break;
-        /*case ACHI_FALL_OF_LK:
-            if (tnow->tm_mon >= 8 // September          
+        case ACHI_FALL_OF_LK:
+            if (tnow->tm_mon >= 8) // September          
                 return originalValue;
-        break;*/
+        break;
     }
     
     return originalValue; // shouldn't happen

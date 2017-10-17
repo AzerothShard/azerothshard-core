@@ -10,7 +10,7 @@ void SmartStoneApps::blackMarketTeleport(Player *player) {
         player->TeleportTo(1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
     }
     if (!player->IsInCombat() && player->azthPlayer->isInBlackMarket()) {
-        std::vector<float> pos = player->azthPlayer->getLastPositionInfo();
+        std::vector<float> & pos = player->azthPlayer->getLastPositionInfo();
 
         Map *m = sMapMgr->FindBaseMap(pos[0]);
 

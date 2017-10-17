@@ -8,6 +8,37 @@
 
 AzthUtils::AzthUtils()
 {
+    INVTYPE_NON_EQUIP_STRING = "Generic";
+    INVTYPE_HEAD_STRING = "Heads";
+    INVTYPE_NECK_STRING = "Necks";
+    INVTYPE_SHOULDERS_STRING = "Shoulders";
+    INVTYPE_BODY_STRING = "Body";
+    INVTYPE_CHEST_STRING = "Chests";
+    INVTYPE_WAIST_STRING = "Waists";
+    INVTYPE_LEGS_STRING = "Legs";
+    INVTYPE_FEET_STRING = "Feets";
+    INVTYPE_WRISTS_STRING = "Wrists";
+    INVTYPE_HANDS_STRING = "Hands";
+    INVTYPE_FINGER_STRING = "Fingers";
+    INVTYPE_TRINKET_STRING = "Trinkets";
+    INVTYPE_WEAPON_STRING = "Weapons";
+    INVTYPE_SHIELD_STRING = "Shields";
+    INVTYPE_RANGED_STRING = "Ranged";
+    INVTYPE_CLOAK_STRING = "Cloaks";
+    INVTYPE_2HWEAPON_STRING = "2H Weapons";
+    INVTYPE_BAG_STRING = "Bags";
+    INVTYPE_TABARD_STRING = "Tabards";
+    INVTYPE_ROBE_STRING = "Robes";
+    INVTYPE_WEAPONMAINHAND_STRING = "Main Hand Weapons";
+    INVTYPE_WEAPONOFFHAND_STRING = "Off Hand Weapons";
+    INVTYPE_HOLDABLE_STRING = "Holdables";
+    INVTYPE_AMMO_STRING = "Ammo";
+    INVTYPE_THROWN_STRING = "Thrown";
+    INVTYPE_RANGEDRIGHT_STRING = "Right Ranged";
+    INVTYPE_QUIVER_STRING = "Quiver";
+    INVTYPE_RELIC_STRING = "Relics";
+    
+    
     for (ObjectMgr::CharacterConversionMap::iterator i = sObjectMgr->FactionChangeItems.begin(); i != sObjectMgr->FactionChangeItems.end(); ++i)
         this->FactionChangeItemsHorde[i->second] = i->first;
 }
@@ -288,38 +319,8 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
 
 
 
-std::vector<std::string> getCategoryIconAndNameByItemType(uint32 itemType)
-{
-    std::string INVTYPE_NON_EQUIP_STRING = "Generic";
-    std::string INVTYPE_HEAD_STRING = "Heads";
-    std::string INVTYPE_NECK_STRING = "Necks";
-    std::string INVTYPE_SHOULDERS_STRING = "Shoulders";
-    std::string INVTYPE_BODY_STRING = "Body";
-    std::string INVTYPE_CHEST_STRING = "Chests";
-    std::string INVTYPE_WAIST_STRING = "Waists";
-    std::string INVTYPE_LEGS_STRING = "Legs";
-    std::string INVTYPE_FEET_STRING = "Feets";
-    std::string INVTYPE_WRISTS_STRING = "Wrists";
-    std::string INVTYPE_HANDS_STRING = "Hands";
-    std::string INVTYPE_FINGER_STRING = "Fingers";
-    std::string INVTYPE_TRINKET_STRING = "Trinkets";
-    std::string INVTYPE_WEAPON_STRING = "Weapons";
-    std::string INVTYPE_SHIELD_STRING = "Shields";
-    std::string INVTYPE_RANGED_STRING = "Ranged";
-    std::string INVTYPE_CLOAK_STRING = "Cloaks";
-    std::string INVTYPE_2HWEAPON_STRING = "2H Weapons";
-    std::string INVTYPE_BAG_STRING = "Bags";
-    std::string INVTYPE_TABARD_STRING = "Tabards";
-    std::string INVTYPE_ROBE_STRING = "Robes";
-    std::string INVTYPE_WEAPONMAINHAND_STRING = "Main Hand Weapons";
-    std::string INVTYPE_WEAPONOFFHAND_STRING = "Off Hand Weapons";
-    std::string INVTYPE_HOLDABLE_STRING = "Holdables";
-    std::string INVTYPE_AMMO_STRING = "Ammo";
-    std::string INVTYPE_THROWN_STRING = "Thrown";
-    std::string INVTYPE_RANGEDRIGHT_STRING = "Right Ranged";
-    std::string INVTYPE_QUIVER_STRING = "Quiver";
-    std::string INVTYPE_RELIC_STRING = "Relics";
-    
+std::vector<std::string> AzthUtils::getCategoryIconAndNameByItemType(uint32 itemType)
+{   
     std::vector<std::string> category;
 
     switch (itemType)
@@ -445,7 +446,7 @@ std::vector<std::string> getCategoryIconAndNameByItemType(uint32 itemType)
     return category;
 }
 
-std::string GetItemIcon(uint32 entry, uint32 width, uint32 height, int x, int y)
+std::string AzthUtils::GetItemIcon(uint32 entry, uint32 width, uint32 height, int x, int y)
 {
     std::ostringstream ss;
     ss << "|TInterface";

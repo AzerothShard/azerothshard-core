@@ -1,5 +1,6 @@
 #include "AzthAchievement.h"
 
+
 AzthAchievement::AzthAchievement()
 {
     achievement = uint32(0);
@@ -34,16 +35,6 @@ AzthAchievement::AzthAchievement(uint32 achievement, uint32 criteria, uint32 poi
     this->reward = reward;
     this->rewardCount = rewardCount;
     this->killCredit = killCredit;
-}
-
-map<uint32, AzthAchievement> AzthAchievement::GetAchievementList() const
-{
-    return achievementList;
-}
-
-void AzthAchievement::SetAchievementList(map<uint32, AzthAchievement> achievementList)
-{
-    this->achievementList = achievementList;
 }
 
 uint32 AzthAchievement::GetAchievement() const

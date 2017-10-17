@@ -63,7 +63,7 @@ public:
   void ForceKilledMonsterCredit(uint32 entry, uint64 guid);
   time_t lastSent = time(NULL);
 
-  std::vector<SmartStonePlayerCommand> getSmartStoneCommands();
+  std::vector<SmartStonePlayerCommand> & getSmartStoneCommands();
   void addSmartStoneCommand(SmartStonePlayerCommand command, bool query);
   void addSmartStoneCommand(uint32 id, bool query, uint64 dateExpired,
                             int32 charges);
@@ -78,10 +78,10 @@ public:
   void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool giveLevel=true);
   bool AzthMaxPlayerSkill();
   bool AzthSelfChangeXp(float rate);
-  std::vector<float> getLastPositionInfo();
+  std::vector<float> & getLastPositionInfo();
   void setLastPositionInfo(std::vector<float> posInfo);
   bool isInBlackMarket();
-  std::vector<float> getLastPositionInfoFromDB();
+  std::vector<float> & getLastPositionInfoFromDB();
   void saveLastPositionInfoToDB(Player *pl, std::vector<float> posInfo);
 
   bool isPvP();

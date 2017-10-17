@@ -75,17 +75,15 @@ bool Season::checkItem(ItemTemplate const* proto) {
     return !(proto->InventoryType > 0 && proto->InventoryType != INVTYPE_AMMO && proto->ItemLevel > GetItemLevel());
 }
 
-std::vector<std::string> Season::checkItems(Player *pl) {
-    std::vector<std::string> incompatibleItems;
-    
+bool Season::checkItems(Player *pl) {   
     if (!IsEnabled())
     {
-        return incompatibleItems; //SYSTEM DISABLED
+        return true; //SYSTEM DISABLED
     }
 
     if (pl->IsGameMaster())
     {
-        return incompatibleItems;
+        return true;
     }
 
     uint32 INVENTORY_END = 18;
@@ -98,7 +96,6 @@ std::vector<std::string> Season::checkItems(Player *pl) {
         {
             if (!sASeasonMgr->checkItem(itemToCheck->GetTemplate()))
             {
-              incompatibleItems.push_back(itemToCheck->GetTemplate()->Name1);
               ChatHandler(pl->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str());
               counter++;
             }
@@ -108,11 +105,11 @@ std::vector<std::string> Season::checkItems(Player *pl) {
     if (counter>0)
         ChatHandler(pl->GetSession()).PSendSysMessage("L'attuale Season ha livello massimo |cffff0000%d|r", sASeasonMgr->GetItemLevel());
     
-    return incompatibleItems;
+    return counter == 0;
 }
 
 bool Season::canJoinArenaOrBg(Player *pl) {
-    if (sASeasonMgr->checkItems(pl).empty()) {
+    if (sASeasonMgr->checkItems(pl)) {
         return true;
     }
     

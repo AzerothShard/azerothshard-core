@@ -28,7 +28,7 @@ public:
     uint32 GetDamPct() const;
     uint32 GetHealPct() const;
 
-    map<uint32, AzthLevelStat> GetLevelStatList() const;
+
 
 
     //SETTERS 
@@ -44,7 +44,7 @@ public:
     void SetHealPct(uint32 heal);
 
 
-    void SetLevelStatList(map<uint32, AzthLevelStat> levelStatList);
+
 
     AzthLevelStat();
     AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 damage, uint32 heal);
@@ -61,9 +61,16 @@ private:
     uint32 spirit;
     uint32 damage;
     uint32 heal;
+};
+
+class AzthLevelStatMgr {
+public:
+    const map<uint32, AzthLevelStat> & GetLevelStatList();
+    void SetLevelStatList(map<uint32, AzthLevelStat> levelStatList);
+private:
     map<uint32, AzthLevelStat> levelStatList;
 };
 
-#define sAzthLevelStat ACE_Singleton<AzthLevelStat, ACE_Null_Mutex>::instance()
+#define sAzthLevelStatMgr ACE_Singleton<AzthLevelStatMgr, ACE_Null_Mutex>::instance()
 
 #endif

@@ -22,12 +22,12 @@ AzthGearScalingSocket::AzthGearScalingSocket(uint32 itemId, uint8 plClass, uint8
     this->enchant = enchant;
 }
 
-map<uint64, AzthGearScalingSocket> AzthGearScalingSocket::GetGearScalingSocketList() const
+map<uint64, AzthGearScalingSocket> & AzthGearScalingSocketMgr::GetGearScalingSocketList()
 {
     return gearScalingSocketList;
 }
 
-void AzthGearScalingSocket::SetGearScalingSocketList(map<uint64, AzthGearScalingSocket> gearScalingSocketList)
+void AzthGearScalingSocketMgr::SetGearScalingSocketList(map<uint64, AzthGearScalingSocket> gearScalingSocketList)
 {
     this->gearScalingSocketList = gearScalingSocketList;
 }

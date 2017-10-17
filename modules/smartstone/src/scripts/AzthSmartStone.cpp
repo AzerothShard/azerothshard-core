@@ -211,7 +211,7 @@ public:
             }
         }
 
-        std::vector<SmartStonePlayerCommand> playerCommands =
+        std::vector<SmartStonePlayerCommand> & playerCommands =
                 player->azthPlayer->getSmartStoneCommands();
         int n = playerCommands.size();
 
@@ -376,7 +376,7 @@ public:
         }
 
         //set last known position to black market
-        std::vector<float> pos = player->azthPlayer->getLastPositionInfoFromDB();
+        std::vector<float> & pos = player->azthPlayer->getLastPositionInfoFromDB();
         player->azthPlayer->setLastPositionInfo(pos);
     }
 
@@ -459,7 +459,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession *session, uint64 vendo
 
                 uint32 leftInStock = 0xFFFFFFFF;
 
-                std::vector<SmartStonePlayerCommand> playerCommands =
+                std::vector<SmartStonePlayerCommand> & playerCommands =
                         session->GetPlayer()->azthPlayer->getSmartStoneCommands();
                 int n = playerCommands.size();
                 SmartStoneCommand command = sSmartStone->getCommandByItem(item->item);

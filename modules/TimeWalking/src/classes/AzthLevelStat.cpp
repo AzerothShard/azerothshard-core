@@ -28,12 +28,13 @@ AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 str
     this->heal = heal;
 }
 
-map<uint32, AzthLevelStat> AzthLevelStat::GetLevelStatList() const
+const map<uint32, AzthLevelStat> & AzthLevelStatMgr::GetLevelStatList()
 {
-    return levelStatList;
+    const map<uint32, AzthLevelStat> &ptr = levelStatList;
+    return ptr;
 }
 
-void AzthLevelStat::SetLevelStatList(map<uint32, AzthLevelStat> levelStatList)
+void AzthLevelStatMgr::SetLevelStatList(map<uint32, AzthLevelStat> levelStatList)
 {
     this->levelStatList = levelStatList;
 }

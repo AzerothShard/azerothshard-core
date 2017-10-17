@@ -97,7 +97,7 @@ public:
 				{
 					uint32 inventoryType = item->GetTemplate()->InventoryType;
 
-					std::vector<std::string> category = getCategoryIconAndNameByItemType(inventoryType);
+					std::vector<std::string> category = sAzthUtils->getCategoryIconAndNameByItemType(inventoryType);
 					std::string categoryName = category[0];
 					std::string categoryIcon = category[1];
 
@@ -135,7 +135,7 @@ public:
                             if (item != NULL)
                             {
                                 std::string itemName = it2->second;
-                                std::string itemIcon = GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
+                                std::string itemIcon = sAzthUtils->GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
                                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, itemIcon + itemName, GOSSIP_SENDER_SEC_BANK, itemPosition);
                                 counter++;
                             }
@@ -278,7 +278,9 @@ public:
 
             // get own items
             if (!player->azthPlayer->GetBankItemsList().empty()) {
-                for(AzthPlayer::ItemInBankMap::iterator iterator = player->azthPlayer->GetBankItemsList().begin(); iterator != player->azthPlayer->GetBankItemsList().end(); iterator++) {
+                AzthPlayer::ItemInBankMap & items=player->azthPlayer->GetBankItemsList();
+
+                for(AzthPlayer::ItemInBankMap::iterator iterator = items.begin(); iterator != items.end(); iterator++) {
                     ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(iterator->first);
                     if (!_proto)
                         continue;

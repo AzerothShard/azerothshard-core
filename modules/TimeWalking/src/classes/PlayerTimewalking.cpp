@@ -16,7 +16,12 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool giveLevel)
     //apply debuf/buff section (spell) and enable timewalking mode
     if (itsTimeWalkingLevel > 0)
     {
-        AzthLevelStat stats = sAzthLevelStat->GetLevelStatList()[timeWalkingLevel * 10000 + player->getRace() * 100 + player->getClass()];
+        std::map<uint32, AzthLevelStat>::const_iterator itr = sAzthLevelStatMgr->GetLevelStatList().find(timeWalkingLevel * 10000 + player->getRace() * 100 + player->getClass());
+        
+        if (itr == sAzthLevelStatMgr->GetLevelStatList().end())
+            return;
+        
+        AzthLevelStat stats = itr->second;
 
         if (player->getLevel() != timeWalkingLevel || giveLevel)
             player->GiveLevel(timeWalkingLevel);

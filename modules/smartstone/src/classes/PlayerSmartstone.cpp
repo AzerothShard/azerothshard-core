@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "Opcodes.h"
 
-std::vector<SmartStonePlayerCommand> AzthPlayer::getSmartStoneCommands() {
+std::vector<SmartStonePlayerCommand> & AzthPlayer::getSmartStoneCommands() {
     return smartStoneCommands;
 }
 
@@ -43,7 +43,7 @@ void AzthPlayer::addSmartStoneCommand(uint32 id, bool /*query*/, uint64 dateExpi
 }
 
 bool AzthPlayer::hasSmartStoneCommand(uint32 id) {
-    std::vector<SmartStonePlayerCommand> playerCommands = getSmartStoneCommands();
+    std::vector<SmartStonePlayerCommand> & playerCommands = getSmartStoneCommands();
     int n = playerCommands.size();
     for (int i = 0; i < n; i++) {
         if (playerCommands[i].id == id)
@@ -153,7 +153,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
         return false;
     }
 
-    std::vector<SmartStonePlayerCommand> playerCommands = getSmartStoneCommands();
+    std::vector<SmartStonePlayerCommand> & playerCommands = getSmartStoneCommands();
     int n = playerCommands.size();
     SmartStoneCommand command = sSmartStone->getCommandByItem(item);
 
@@ -318,7 +318,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
     return true;
 }
 
-std::vector<float> AzthPlayer::getLastPositionInfo() {
+std::vector<float> & AzthPlayer::getLastPositionInfo() {
     return lastPositionInfo;
 };
 
@@ -326,7 +326,7 @@ void AzthPlayer::setLastPositionInfo(std::vector<float> posInfo) {
     lastPositionInfo = posInfo;
 };
 
-std::vector<float> AzthPlayer::getLastPositionInfoFromDB() {
+std::vector<float> & AzthPlayer::getLastPositionInfoFromDB() {
     std::vector<float> lastPos;
     QueryResult ssCommandsResult = CharacterDatabase.PQuery(
             "SELECT mapId, posX, posY, posZ FROM character_saved_position WHERE type = 1 AND charGuid = %u LIMIT 1;", player->GetGUIDLow());

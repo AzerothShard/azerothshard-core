@@ -36,9 +36,6 @@ public:
     uint32 GetRanged() const;
     uint32 GetTabard() const;
 
-    map<uint32, AzthGearScaling> GetGearScalingList() const;
-    void SetGearScalingList(map<uint32, AzthGearScaling> gearScalingList);
-
     AzthGearScaling();
     AzthGearScaling(uint32 season, uint32 Class, uint32 spec, string name, uint32 head, uint32 neck, uint32 shoulders, uint32 body, uint32 chest, uint32 waist, uint32 legs, uint32 feet, uint32 wrists, uint32 wrists_h, uint32 hands, uint32 finger1, uint32 finger1_h, uint32 finger2, uint32 finger2_h, uint32 trinket1, uint32 trinket1_h, uint32 trinket2, uint32 trinket2_h, uint32 back, uint32 mainHand, uint32 offHand, uint32 ranged, uint32 tabard);
 
@@ -71,7 +68,15 @@ private:
     uint32 spec;
     uint32 season;
     uint32 Class;
+
+};
+
+class AzthGearScalingMgr {
+public:    
+    map<uint32, AzthGearScaling> & GetGearScalingList();
+    void SetGearScalingList(map<uint32, AzthGearScaling> gearScalingList);   
+private:
     map<uint32, AzthGearScaling> gearScalingList;
 };
 
-#define sAzthGearScaling ACE_Singleton<AzthGearScaling, ACE_Null_Mutex>::instance()
+#define sAzthGearScalingMgr ACE_Singleton<AzthGearScalingMgr, ACE_Null_Mutex>::instance()

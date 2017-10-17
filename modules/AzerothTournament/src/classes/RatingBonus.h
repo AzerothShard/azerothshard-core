@@ -14,7 +14,7 @@ struct Bonus
 class BonusRating
 {
     public:
-        std::vector<Bonus> getRatingBonuses();
+        std::vector<Bonus> & getRatingBonuses();
 		void addBonus(uint32 bracket, float multiplier);
 		void removeBonus(uint32 bracket);
 		void printBonusesToPlayer(ChatHandler * handler, uint32 bracket);

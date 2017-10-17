@@ -63,12 +63,12 @@ AzthGearScaling::AzthGearScaling(uint32 season, uint32 Class, uint32 spec, strin
     this->tabard = tabard;
 }
 
-map<uint32, AzthGearScaling> AzthGearScaling::GetGearScalingList() const
+map<uint32, AzthGearScaling> & AzthGearScalingMgr::GetGearScalingList()
 {
     return gearScalingList;
 }
 
-void AzthGearScaling::SetGearScalingList(map<uint32, AzthGearScaling> gearScalingList)
+void AzthGearScalingMgr::SetGearScalingList(map<uint32, AzthGearScaling> gearScalingList)
 {
     this->gearScalingList = gearScalingList;
 }

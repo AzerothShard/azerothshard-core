@@ -69,7 +69,7 @@ public:
             timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()*10000+timeWalkingLevel_Field[1].GetUInt32()*100+timeWalkingLevel_Field[2].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[9].GetUInt32());
         } while (timewalkingLevel_table->NextRow());
 
-        sAzthLevelStat->SetLevelStatList(timeWalkingLevelsStatsList);
+        sAzthLevelStatMgr->SetLevelStatList(timeWalkingLevelsStatsList);
 
         //-------------------------------------------------------------------
         //Loading achievement
@@ -94,7 +94,7 @@ public:
                 azthAchievement_field[12].GetUInt32(), azthAchievement_field[13].GetUInt32(), azthAchievement_field[13].GetUInt32());
         } while (azthAchievement_table->NextRow());
 
-        sAzthAchievement->SetAchievementList(azthAchievementList);
+        sAzthAchievementMgr->achievementList=azthAchievementList;
     }
 };
 
@@ -269,10 +269,10 @@ public:
 
     void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override
     {
-		if (sAzthAchievement->GetAchievementList().find(criteria->ID) == sAzthAchievement->GetAchievementList().end())
+		if (sAzthAchievementMgr->achievementList.find(criteria->ID) == sAzthAchievementMgr->achievementList.end())
 			return;
 
-        AzthAchievement achi = sAzthAchievement->GetAchievementList()[criteria->ID];
+        AzthAchievement achi = sAzthAchievementMgr->achievementList[criteria->ID];
 
         uint32 count = achi.GetRewardCount();
         uint32 reward = achi.GetReward();
