@@ -256,7 +256,8 @@ public:
         Item* pItem = Item::CreateItem(entry, 1, player);
         
         InventoryResult msg = player->CanEquipItem(INVENTORY_SLOT_BAG_0, slot, pItem, true); // must be considered a swap
-        if (msg != EQUIP_ERR_OK)
+        if (msg != EQUIP_ERR_OK 
+            && msg != EQUIP_ERR_CANT_EQUIP_WITH_TWOHANDED) // TODO: maybe two hand control skip should be solved in another way. It can skip some important checks.
         {
             player->SendEquipError(msg, pItem, NULL);
             const char *msg=sAzthLang->getf(AZTH_LANG_PVP_NPC_CANNOT_EQUIP, player, entry, pItem->GetTemplate()->Name1.c_str());
