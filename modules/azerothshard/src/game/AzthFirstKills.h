@@ -6,6 +6,7 @@
 #include "DatabaseEnv.h"
 #include "DBCEnums.h"
 #include "DBCStores.h"
+#include <chrono>
 
 enum FirstKills:uint32 {
     ACHI_NAXXRAMAS=1402, //-- "Conqueror of Naxxramas"    
@@ -24,7 +25,7 @@ public:
     bool isRealmCompleted(AchievementEntry const* achievement, bool originalValue);
     void setRealmCompleted(AchievementEntry const* achievement);
 private:
-    std::set<uint32> currentFirstKills;
+    std::map<uint32 /*achiID*/, std::chrono::system_clock::time_point /*completionTime*/> currentFirstKills;
 };
 
 #define sAzthFirstKills ACE_Singleton<AzthFirstKills, ACE_Null_Mutex>::instance()
