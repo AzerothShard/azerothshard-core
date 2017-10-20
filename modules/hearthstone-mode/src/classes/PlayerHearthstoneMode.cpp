@@ -1,6 +1,7 @@
 #include "AzthPlayer.h"
 #include "Player.h"
 #include "Group.h"
+#include "azth_custom_hearthstone_mode.h"
 
 // Send a kill credit, skipping the normal checks on raid group.
 void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid) {
@@ -61,4 +62,24 @@ void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid) {
       }
     }
   }
+}
+
+bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 /*entry*/, uint32 /*realEntry*/, uint64 /*guid*/) {
+    uint32 qId=qInfo->GetQuestId();
+    int flag=sHearthstoneMode->getHeartstoneQuestFlag(qId);
+
+    if (flag<=0)
+        return true; // pass the check if no Hs quest exists
+    
+    // check for quests that require timewalking
+    if (qInfo->GetQuestLevel() < 80) {
+        uint32 level = this->getGroupLevel() > 0 ? this->getGroupLevel() : this->player->getLevel();
+        
+        if (level >= qInfo->GetMinLevel() && qInfo->GetQuestLevel() > 0 && level <= uint32(qInfo->GetQuestLevel()))
+            return true;
+    }
+    
+    // in this case conditions above are negative
+    // so check has not passed
+    return false;
 }

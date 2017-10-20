@@ -246,54 +246,26 @@ int HearthstoneMode::returnData1(AchievementCriteriaEntry const* criteria)
 
 #define GOSSIP_ITEM_GIVE_PVE_QUEST      "Vorrei ricevere la mia missione PVE giornaliera."
 #define GOSSIP_ITEM_GIVE_PVP_QUEST      "Vorrei ricevere la mia missione PVP giornaliera."
+#define GOSSIP_ITEM_GIVE_EXTRA_QUEST    "Vorrei ricevere la mia missione PVE settimanale."
 
 class npc_han_al : public CreatureScript
 {
 public:
-    uint32 pveId = 0;
-    uint32 pvpId = 0;
     npc_han_al() : CreatureScript("npc_han_al") { }
 
-    bool OnGossipSelect(Player* player, Creature*  /*creature*/, uint32 /*sender*/, uint32 action) override
-    {
-        if (pveId == 0 && pvpId == 0)
-            return false;
+    bool OnGossipSelect(Player* player, Creature*  /*creature*/, uint32 sender, uint32 action) override
+    {    
+        if (sender != GOSSIP_SENDER_MAIN)
+            return true;
+        
+        Quest const * quest = sObjectMgr->GetQuestTemplate(action);
 
-        Quest const * questPve = sObjectMgr->GetQuestTemplate(pveId);
-        Quest const * questPvp = sObjectMgr->GetQuestTemplate(pvpId);
-        player->PlayerTalkClass->ClearMenus();
-        switch (action)
+
+        if (player->CanAddQuest(quest, false) && player->CanTakeQuest(quest, false))
         {
-        case GOSSIP_ACTION_INFO_DEF:
-
-            if (!questPve)
-                return false;
-
-            if (player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false))
-            {
-                player->AddQuest(questPve, NULL);
-
-                // simply close gossip or send something else?
-                player->PlayerTalkClass->SendCloseGossip();
-            }
-            break;
-        case GOSSIP_ACTION_INFO_DEF + 1:
-
-            if (!questPvp)
-                return false;
-
-            if (player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false))
-            {
-                player->AddQuest(questPvp, NULL);
-
-                // simply close gossip or send something else?
-                player->PlayerTalkClass->SendCloseGossip();
-            }
-            break;
-        case GOSSIP_ACTION_INFO_DEF + 2:
-
-            break;
+            player->AddQuest(quest, NULL);
         }
+
         player->PlayerTalkClass->SendCloseGossip();
         return true;
     }
@@ -303,29 +275,67 @@ public:
         unsigned char bitmask = 0;
         int gossip = 100000;
 
+        uint32 index;
+        uint64 seed;
+        uint32 pveId=0,pvpId=0,weeklyId=0;
+        UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
+        
         time_t t = time(NULL);
         tm *lt = localtime(&t);
-        int seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
-        srand(seed);
-        pveId = sHearthstoneMode->hsPveQuests.at(rand() % (sHearthstoneMode->hsPveQuests.size() - 1)).id;
+
+        
+        if (sHearthstoneMode->hsPveQuests.size() > 0) {
+            seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
+            srand(seed);
+                
+            index=sHearthstoneMode->hsPveQuests.size() > 1 ? rand() % (sHearthstoneMode->hsPveQuests.size() - 1) : 0;
+            
+            _tmpItr = sHearthstoneMode->hsPveQuests.begin();
+            std::advance( _tmpItr, index );
+            pveId = _tmpItr->second.id;
+        }
+
         Quest const * questPve = sObjectMgr->GetQuestTemplate(pveId);
 
-        t = time(NULL);
-        seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + player->GetGUID();
-        srand(seed);
-        pvpId = sHearthstoneMode->hsPvpQuests.at(rand() % (sHearthstoneMode->hsPvpQuests.size() - 1)).id;
+        if (sHearthstoneMode->hsPvpQuests.size() > 0) {
+            seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + player->GetGUID();
+            srand(seed);
+                
+            index=sHearthstoneMode->hsPvpQuests.size() > 1 ? rand() % (sHearthstoneMode->hsPvpQuests.size() - 1) : 0;
+            
+            _tmpItr = sHearthstoneMode->hsPvpQuests.begin();
+            std::advance( _tmpItr, index );
+            pvpId = _tmpItr->second.id;
+        }
+
         Quest const * questPvp = sObjectMgr->GetQuestTemplate(pvpId);
+        
+        
+        if (sHearthstoneMode->hsWeeklyQuests.size() > 0) {
+            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
+            seed = (((1609909200 - firstTuesday )/60/60/24))/7;
+            srand(seed);
+                
+            uint32 count= (sHearthstoneMode->hsWeeklyQuests.size() - 1);
+            index=count > 0 ? rand() % count : 0;
+            
+            _tmpItr = sHearthstoneMode->hsWeeklyQuests.begin();
+            std::advance( _tmpItr, index );
+            weeklyId = _tmpItr->second.id;
+        }
+
+        Quest const * questWeekly = sObjectMgr->GetQuestTemplate(weeklyId);
 
 //"Pve Quest Check"
         int PveMaxCheck = 0;
-        std::size_t i = 0;
-        while (i <= (sHearthstoneMode->hsPveQuests.size() - 1) && PveMaxCheck <= MAX_PVE_QUEST_NUMBER)
+        _tmpItr = sHearthstoneMode->hsPveQuests.begin();
+        while (_tmpItr != sHearthstoneMode->hsPveQuests.end() && PveMaxCheck <= MAX_PVE_QUEST_NUMBER)
         {
-            if (player->GetQuestStatus(sHearthstoneMode->hsPveQuests.at(i).id) != QUEST_STATUS_NONE)
+            if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
             {
                 PveMaxCheck = PveMaxCheck + 1;
             }
-            i = i + 1;
+            _tmpItr++;
         }
         if (questPve && player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false) && PveMaxCheck < MAX_PVE_QUEST_NUMBER)
         {
@@ -335,14 +345,14 @@ public:
 
 //"Pvp Quest Check"
         int PvpMaxCheck = 0;
-        i = 0;
-        while (i <= (sHearthstoneMode->hsPvpQuests.size() - 1) && PvpMaxCheck <= MAX_PVE_QUEST_NUMBER) // NEED PVP MAX?
+        _tmpItr = sHearthstoneMode->hsPvpQuests.begin();
+        while (_tmpItr != sHearthstoneMode->hsPvpQuests.end()  && PvpMaxCheck <= MAX_PVE_QUEST_NUMBER) // NEED PVP MAX?
         {
-            if (player->GetQuestStatus(sHearthstoneMode->hsPvpQuests.at(i).id) != QUEST_STATUS_NONE)
+            if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
             {
                 PvpMaxCheck = PvpMaxCheck + 1;
             }
-            i = i + 1;
+            _tmpItr++;
         }
         if (questPvp && player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false) && PvpMaxCheck < MAX_PVP_QUEST_NUMBER)
         {
@@ -350,25 +360,42 @@ public:
         }
 //endcheck
 
+//"Weekly Quest Check"
+        int WeeklyMaxCheck = 0;
+        _tmpItr = sHearthstoneMode->hsWeeklyQuests.begin();
+        while (_tmpItr != sHearthstoneMode->hsWeeklyQuests.end() && WeeklyMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
+        {
+            if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
+            {
+                WeeklyMaxCheck = WeeklyMaxCheck + 1;
+            }
+            _tmpItr++;
+        }
+        if (questWeekly && player->CanAddQuest(questWeekly, false) && player->CanTakeQuest(questWeekly, false) && WeeklyMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        {
+            bitmask = bitmask | BITMASK_WEEKLY;
+        }
+//endcheck
+
         if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
         {
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVE_QUEST, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVE_QUEST, GOSSIP_SENDER_MAIN, pveId);
         }
         if ((bitmask & BITMASK_PVP) == BITMASK_PVP)
         {
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVP_QUEST, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVP_QUEST, GOSSIP_SENDER_MAIN, pvpId);
         }
-        if ((bitmask & BITMASK_EXTRA) == BITMASK_EXTRA)
+        if ((bitmask & BITMASK_WEEKLY) == BITMASK_WEEKLY)
         {
-            // player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_EXTRA_QUEST, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_EXTRA_QUEST, GOSSIP_SENDER_MAIN, weeklyId);
         }
         if (bitmask == 0)
         {
-            if (player->hasQuest(pveId) && player->hasQuest(pvpId)) // and id extra
+            if (player->hasQuest(pveId) && player->hasQuest(pvpId) && player->hasQuest(weeklyId))
                 gossip = 100001;
             else { gossip = 100002; }
         }
-        if (PveMaxCheck >= MAX_PVE_QUEST_NUMBER && PvpMaxCheck >= MAX_PVP_QUEST_NUMBER)
+        if (PveMaxCheck >= MAX_PVE_QUEST_NUMBER && PvpMaxCheck >= MAX_PVP_QUEST_NUMBER && WeeklyMaxCheck >= MAX_WEEKLY_QUEST_NUMBER)
             gossip = 100003;
 
         player->SEND_GOSSIP_MENU(gossip, creature->GetGUID());
@@ -737,16 +764,19 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
 
 int64 HearthstoneMode::getHeartstoneQuestFlag(uint64 id)
 {
-	for (std::vector<HearthstoneQuest>::iterator itr = hsPveQuests.begin(); itr != hsPveQuests.end(); itr++)
-	{
-		if ((*itr).id == id)
-			return (*itr).flag;
-	}
-	for (std::vector<HearthstoneQuest>::iterator itr = hsPvpQuests.begin(); itr != hsPvpQuests.end(); itr++)
-	{
-		if ((*itr).id == id)
-			return (*itr).flag;
-	}
+    UNORDERED_MAP<uint32,HearthstoneQuest>::iterator itr = hsPveQuests.find(id);
+    if (itr != hsPveQuests.end())
+        return itr->second.flag;
+    
+    
+    itr = hsWeeklyQuests.find(id);
+    if (itr != hsWeeklyQuests.end())
+        return itr->second.flag;
+    
+    itr = hsPvpQuests.find(id);
+    if (itr != hsPvpQuests.end())
+        return itr->second.flag;
+
 	return -1;
 };
 
@@ -800,6 +830,7 @@ void HearthstoneMode::loadHearthstone()
         uint32 questCount = 0;
         sHearthstoneMode->hsPveQuests.clear();
         sHearthstoneMode->hsPvpQuests.clear();
+        sHearthstoneMode->hsWeeklyQuests.clear();
 
         QueryResult hsQuestResult = ExtraDatabase.PQuery("SELECT id, flag FROM hearthstone_quests");
 
@@ -813,9 +844,11 @@ void HearthstoneMode::loadHearthstone()
                 unsigned char bitmask = hq.flag;
 
                 if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
-                    sHearthstoneMode->hsPveQuests.push_back(hq); // push the newly created element in the list
+                    sHearthstoneMode->hsPveQuests[hq.id]=hq; 
                 if ((bitmask & BITMASK_PVP) == BITMASK_PVP)
-                    sHearthstoneMode->hsPvpQuests.push_back(hq); // push the newly created element in the list
+                    sHearthstoneMode->hsPvpQuests[hq.id]=hq; 
+                if ((bitmask & BITMASK_WEEKLY) == BITMASK_WEEKLY)
+                    sHearthstoneMode->hsWeeklyQuests[hq.id]=hq;
 
                 questCount++;
             } while (hsQuestResult->NextRow());

@@ -61,6 +61,7 @@ public:
   uint8 getGroupLevel();
 
   void ForceKilledMonsterCredit(uint32 entry, uint64 guid);
+  bool passHsChecks(Quest const* qInfo, uint32 entry, uint32 realEntry, uint64 guid);
   time_t lastSent = time(NULL);
 
   std::vector<SmartStonePlayerCommand> & getSmartStoneCommands();

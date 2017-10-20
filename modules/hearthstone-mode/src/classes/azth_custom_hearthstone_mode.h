@@ -46,7 +46,7 @@ enum bitmasksHs
 {
     BITMASK_PVE = 1,
     BITMASK_PVP = 2,
-    BITMASK_EXTRA = 4
+    BITMASK_WEEKLY = 4
 };
 
 enum miscHs
@@ -55,6 +55,8 @@ enum miscHs
     MAX_PVE_QUEST_NUMBER = 3,
     PVP_QUEST_NUMBER = 1,
     MAX_PVP_QUEST_NUMBER = 3,
+    WEEKLY_QUEST_NUMBER = 1,
+    MAX_WEEKLY_QUEST_NUMBER = 3,
     AZTH_REPUTATION_ID = 948
 };
 
@@ -77,8 +79,9 @@ class HearthstoneMode
         int returnData0(AchievementCriteriaEntry const* criteria);
         int returnData1(AchievementCriteriaEntry const* criteria);
         std::vector<HearthstoneAchievement> hsAchievementTable;
-        std::vector<HearthstoneQuest> hsPveQuests;
-        std::vector<HearthstoneQuest> hsPvpQuests;
+        UNORDERED_MAP<uint32, HearthstoneQuest> hsPveQuests;
+        UNORDERED_MAP<uint32, HearthstoneQuest> hsPvpQuests;
+        UNORDERED_MAP<uint32, HearthstoneQuest> hsWeeklyQuests;
         int getQuality();
         std::vector<int> items[8];
         bool isInArray(int val);
