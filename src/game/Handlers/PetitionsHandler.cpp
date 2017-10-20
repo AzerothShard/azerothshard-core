@@ -117,17 +117,17 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
         {
             case 1:
                 charterid = ARENA_TEAM_CHARTER_2v2;
-                cost = ARENA_TEAM_CHARTER_2v2_COST;
+                cost = /*[AZTH]*/_player->azthPlayer->isPvP() ? 0 :/*[/AZTH]*/ ARENA_TEAM_CHARTER_2v2_COST;
                 type = ARENA_TEAM_CHARTER_2v2_TYPE;
                 break;
             case 2:
                 charterid = ARENA_TEAM_CHARTER_3v3;
-                cost = ARENA_TEAM_CHARTER_3v3_COST;
+                cost = /*[AZTH]*/_player->azthPlayer->isPvP() ? 0 :/*[/AZTH]*/ ARENA_TEAM_CHARTER_3v3_COST;
                 type = ARENA_TEAM_CHARTER_3v3_TYPE;
                 break;
             case 3:
                 charterid = ARENA_TEAM_CHARTER_5v5;
-                cost = ARENA_TEAM_CHARTER_5v5_COST;
+                cost = /*[AZTH]*/_player->azthPlayer->isPvP() ? 0 :/*[/AZTH]*/ ARENA_TEAM_CHARTER_5v5_COST;
                 type = ARENA_TEAM_CHARTER_5v5_TYPE;
                 break;
             default:
@@ -906,21 +906,21 @@ void WorldSession::SendPetitionShowList(uint64 guid)
         data << uint32(1);                                  // index
         data << uint32(ARENA_TEAM_CHARTER_2v2);             // charter entry
         data << uint32(CHARTER_DISPLAY_ID);                 // charter display id
-        data << uint32(ARENA_TEAM_CHARTER_2v2_COST);        // charter cost
+        data << uint32(/*[AZTH]*/GetPlayer()->azthPlayer->isPvP() ? 0 :/*[/AZTH]*/ ARENA_TEAM_CHARTER_2v2_COST);        // charter cost
         data << uint32(2);                                  // unknown
         data << uint32(2);                                  // required signs?
         // 3v3
         data << uint32(2);                                  // index
         data << uint32(ARENA_TEAM_CHARTER_3v3);             // charter entry
         data << uint32(CHARTER_DISPLAY_ID);                 // charter display id
-        data << uint32(ARENA_TEAM_CHARTER_3v3_COST);        // charter cost
+        data << uint32(/*[AZTH]*/GetPlayer()->azthPlayer->isPvP() ? 0 :/*[/AZTH]*/ ARENA_TEAM_CHARTER_3v3_COST);        // charter cost
         data << uint32(3);                                  // unknown
         data << uint32(3);                                  // required signs?
         // 5v5
         data << uint32(3);                                  // index
         data << uint32(ARENA_TEAM_CHARTER_5v5);             // charter entry
         data << uint32(CHARTER_DISPLAY_ID);                 // charter display id
-        data << uint32(ARENA_TEAM_CHARTER_5v5_COST);        // charter cost
+        data << uint32(/*[AZTH]*/GetPlayer()->azthPlayer->isPvP() ? 0 :/*[/AZTH]*/ ARENA_TEAM_CHARTER_5v5_COST);        // charter cost
         data << uint32(5);                                  // unknown
         data << uint32(5);                                  // required signs?
     }
