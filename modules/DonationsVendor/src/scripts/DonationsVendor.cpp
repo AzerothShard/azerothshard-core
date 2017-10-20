@@ -45,8 +45,6 @@ public:
 
 class DonatorVendor : public CreatureScript
 {
-    std::map<uint32, std::map<uint32, std::string>> itemTypePositions;
-
 public:
     DonatorVendor() : CreatureScript("DonatorVendor") {}
 
@@ -71,6 +69,7 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action) override
     {
+        std::map<uint32, std::map<uint32, std::string>> itemTypePositions;
       
         // <---- first step 
         player->PlayerTalkClass->ClearMenus();
@@ -88,10 +87,9 @@ public:
         {
             std::map<uint32, std::string> categoryNames;
 
-            for (uint32 position = 23; position < SLOT_END; position++)
+            for (uint32 position = 23; position <= SLOT_END; ++position)
             {
 				Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
-				uint32 counter = 0;
 
 				if (item != NULL)
 				{
@@ -102,11 +100,10 @@ public:
 					std::string categoryIcon = category[1];
 
 
-					if (categoryNames[inventoryType].length() == 0 && counter < 26)
+					if (categoryNames[inventoryType].length() == 0)
 					{
 						categoryNames[inventoryType] = categoryName;
 						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
-						counter++;
 					}
 
 					itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
@@ -272,7 +269,7 @@ public:
         player->PlayerTalkClass->ClearMenus();
         if (action == 500 && sender == GOSSIP_SENDER_MAIN)
         {
-            std::vector<ItemToSell> allItems = ItemToSellList;
+            std::vector<ItemToSell> allItems = ItemToSellList; // make a copy of the list avoiding reference since it's a global list
             std::vector<ItemToSell> buyAbleItems;
             std::vector<ItemToSell> notBuyAbleItems;
 
