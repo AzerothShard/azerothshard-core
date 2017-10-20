@@ -1161,7 +1161,7 @@ bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
     
     uint32 MinPlayersPerTeam = sBattlegroundMgr->isArenaTesting() ? 1 : 3;
 
-    bool filterTalents = sConfigMgr->GetBoolDefault("Arena.1v1.BlockForbiddenTalents", false);
+    bool filterTalents = sConfigMgr->GetBoolDefault("Solo.3v3.FilterTalents", false);
 
     for (int teamId = 0; teamId < 2; teamId++) // BG_QUEUE_PREMADE_ALLIANCE and BG_QUEUE_PREMADE_HORDE
     {

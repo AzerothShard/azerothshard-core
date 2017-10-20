@@ -389,7 +389,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
 
     // [AZTH]
-    if ((bgQueueTypeId == BATTLEGROUND_QUEUE_1v1 || bgQueueTypeId == BATTLEGROUND_QUEUE_3v3_SOLO ) && Arena1v1CheckTalents(_player) == false)
+    if ((bgQueueTypeId == BATTLEGROUND_QUEUE_1v1 || bgQueueTypeId == BATTLEGROUND_QUEUE_3v3_SOLO ) && (action == 1 /*accept join*/ && Arena1v1CheckTalents(_player) == false))
         return;
 
     // get group info from queue
