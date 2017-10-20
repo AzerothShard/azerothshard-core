@@ -93,6 +93,11 @@ public:
                 player->learnSpell(41514); // flying mount, netherdrake
                 player->learnSpell(54753); // ground mount, bear
                 
+                // Cast spells that teach dual spec
+                // Both are also ImplicitTarget self and must be cast by player
+                player->CastSpell(player, 63680, true, NULL, NULL, player->GetGUID());
+                player->CastSpell(player, 63624, true, NULL, NULL, player->GetGUID());
+                
                 
                 // explore all zones
                 for (uint8 i = 0; i<PLAYER_EXPLORED_ZONES_SIZE; i++)
