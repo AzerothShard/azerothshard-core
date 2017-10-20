@@ -17079,6 +17079,12 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
         if (q_status.Status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->IsAllowedInRaid(GetMap()->GetDifficulty()) ||
             (qInfo->IsPVPQuest() && (GetGroup()->isBFGroup() || GetGroup()->isBGGroup()))))
         {
+            //[AZTH] it it's an Hearthstone quest and doesn't satisfy requirements, skip
+            // otherwise continue as normal
+            if (!azthPlayer->passHsChecks(qInfo, entry, real_entry, guid)) 
+                continue;
+            
+            
             if (qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_KILL) /*&& !qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_CAST)*/)
             {
                 for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
