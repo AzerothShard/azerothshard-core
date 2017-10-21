@@ -1255,11 +1255,12 @@ class npc_teleport : public CreatureScript
           // Teleportation
           case GOSSIP_TELEPORT:
             player->CLOSE_GOSSIP_MENU();
+            /* what is this code? removing sickness? meh.. 
             if(player->HasAura(15007,0)) 
             {
                 creature->CastSpell(player,38588,false); // Healing effect
                 player->RemoveAurasDueToSpell(15007);
-            }
+            }*/
 
             ActionTeleport(player, creature, param);
             break;
