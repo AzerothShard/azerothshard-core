@@ -166,7 +166,7 @@ public:
         
         if (pVendor->GetScriptName() == "npc_azth_vendor") {
             
-            std::vector<HearthstoneVendor> vendors = sHearthstoneMode->hsVendors;
+            std::vector<HearthstoneVendor> & vendors = sHearthstoneMode->hsVendors;
             int pos = 0;
             for (std::size_t i = 0; i < vendors.size(); i++)
             {
@@ -183,9 +183,10 @@ public:
             if (vendor.pvpVendor) {
                 item->SetBinding(true);
                 item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1, true);
+                /* try to avoid for performances
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 item->SaveToDB(trans);
-                CharacterDatabase.CommitTransaction(trans);
+                CharacterDatabase.CommitTransaction(trans);*/
             }
         }
     }
