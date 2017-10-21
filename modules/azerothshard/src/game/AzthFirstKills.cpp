@@ -1,6 +1,6 @@
 #include "AzthFirstKills.h"
 #include "Player.h"
-
+#include "AzthUtils.h"
 #include <stdio.h>
 #include <time.h>
  
@@ -82,19 +82,8 @@ bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool 
 
 
 void AzthFirstKills::loadCurrentFirstkills() {
-
-    time_t now = time(0);
-    struct tm * tnow = std::gmtime(&now);
-    int currentYear = tnow->tm_year + 1900;
-    // is it valid until 2100?
-    int epochYear = currentYear - 1970;
-    int leapYears = (epochYear + 1) / 4;
-    time_t result = epochYear * 24 * 60 * 60 * 365;
-    result += leapYears * 24 * 60 * 60;
+    uint32 t= static_cast<uint32>(sAzthUtils->getStartsOfYear());
     
-    // valid until 2106
-    uint32 t = static_cast<uint32>(result);
-
     QueryResult fkAchievements = CharacterDatabase.PQuery("SELECT DISTINCT(achievement) FROM character_achievement WHERE achievement IN (%u,%u,%u,%u,%u,%u,%u) AND date >= %u",
         ACHI_NAXXRAMAS,
         ACHI_OBSIDIAN,

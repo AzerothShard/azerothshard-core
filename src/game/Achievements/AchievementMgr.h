@@ -16,8 +16,6 @@
 #include "DBCEnums.h"
 #include "DBCStores.h"
 
-#include "AzthFirstKills.h" //[AZTH]
-
 typedef std::list<AchievementCriteriaEntry const*> AchievementCriteriaEntryList;
 typedef std::list<AchievementEntry const*>         AchievementEntryList;
 

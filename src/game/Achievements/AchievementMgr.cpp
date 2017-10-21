@@ -30,7 +30,10 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "azth_custom_hearthstone_mode.h" //[AZTH]
+//[AZTH]
+#include "azth_custom_hearthstone_mode.h"
+#include "AzthFirstKills.h"
+#include "AzthUtils.h"
 
 namespace Trinity
 {
@@ -1745,6 +1748,11 @@ bool AchievementMgr::IsCompletedCriteria(AchievementCriteriaEntry const* achieve
     CriteriaProgress const* progress = GetCriteriaProgress(achievementCriteria);
     if (!progress)
         return false;
+    
+    //[AZTH] if criteria has been achieved before this year, then it's not valid for our first kill system
+    if (achievement->flags & (ACHIEVEMENT_FLAG_REALM_FIRST_REACH | ACHIEVEMENT_FLAG_REALM_FIRST_KILL) && progress->date < sAzthUtils->getStartsOfYear())
+        return false;
+    //[/AZTH]
 
     switch (achievementCriteria->requiredType)
     {
@@ -2328,8 +2336,8 @@ bool AchievementGlobalMgr::IsRealmCompleted(AchievementEntry const* achievement)
         return false;
     
     //[AZTH] do not continue, do our check instead
-    //if (achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL)
-    //    return sAzthFirstKills->isRealmCompleted(achievement,(std::chrono::system_clock::now() - itr->second) > std::chrono::minutes(1));
+    if (achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL)
+        return sAzthFirstKills->isRealmCompleted(achievement,((itr->second == std::chrono::system_clock::time_point::max()) || (std::chrono::system_clock::now() - itr->second) > std::chrono::minutes(1)));
 
     if (itr->second == std::chrono::system_clock::time_point::max())
         return true;
@@ -2349,7 +2357,7 @@ void AchievementGlobalMgr::SetRealmCompleted(AchievementEntry const* achievement
         return;
 
     //[AZTH]
-    //sAzthFirstKills->setRealmCompleted(achievement);
+    sAzthFirstKills->setRealmCompleted(achievement);
     m_allCompletedAchievements[achievement->ID] = std::chrono::system_clock::now();
 }
 

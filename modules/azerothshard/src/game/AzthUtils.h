@@ -9,6 +9,8 @@
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "SpellAuras.h"
+#include <stdio.h>
+#include <time.h>
 
 class AuraApplication;
 
@@ -65,6 +67,8 @@ public:
     void learnClassSpells(Player* player, bool new_level);
     
     void loadClassSpells();
+    
+    time_t getStartsOfYear();
     
     // horde version of objectmgr factionchangeitems map
     ObjectMgr::CharacterConversionMap FactionChangeItemsHorde;

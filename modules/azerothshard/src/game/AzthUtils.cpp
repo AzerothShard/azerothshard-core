@@ -5,7 +5,6 @@
 #include "SpellInfo.h"
 
 
-
 AzthUtils::AzthUtils()
 {
     INVTYPE_NON_EQUIP_STRING = "Generic";
@@ -45,6 +44,20 @@ AzthUtils::AzthUtils()
 
 AzthUtils::~AzthUtils()
 {
+}
+
+time_t AzthUtils::getStartsOfYear() {
+    time_t now = time(0);
+    struct tm * tnow = std::gmtime(&now);
+    int currentYear = tnow->tm_year + 1900;
+    // is it valid until 2100?
+    int epochYear = currentYear - 1970;
+    int leapYears = (epochYear + 1) / 4;
+    time_t result = epochYear * 24 * 60 * 60 * 365;
+    // valid until 2106
+    result += leapYears * 24 * 60 * 60;
+    
+    return result;
 }
 
 void AzthUtils::loadClassSpells() {
