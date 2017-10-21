@@ -69,8 +69,6 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action) override
     {
-        std::map<uint32, std::map<uint32, std::string>> itemTypePositions;
-      
         // <---- first step 
         player->PlayerTalkClass->ClearMenus();
 
@@ -91,24 +89,21 @@ public:
             {
 				Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
 
-				if (item != NULL)
-				{
-					uint32 inventoryType = item->GetTemplate()->InventoryType;
+				if (!item)
+                    continue;
 
-					std::vector<std::string> category = sAzthUtils->getCategoryIconAndNameByItemType(inventoryType);
-					std::string categoryName = category[0];
-					std::string categoryIcon = category[1];
+                uint32 inventoryType = item->GetTemplate()->InventoryType;
+
+                std::vector<std::string> category = sAzthUtils->getCategoryIconAndNameByItemType(inventoryType);
+                std::string categoryName = category[0];
+                std::string categoryIcon = category[1];
 
 
-					if (categoryNames[inventoryType].length() == 0)
-					{
-						categoryNames[inventoryType] = categoryName;
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
-					}
-
-					itemTypePositions[inventoryType][position] = item->GetTemplate()->Name1;
-				}
-                
+                if (categoryNames[inventoryType].length() == 0)
+                {
+                    categoryNames[inventoryType] = categoryName;
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
+                }
             }
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", GOSSIP_SENDER_MAIN, action);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", GOSSIP_SENDER_MAIN, 300);
@@ -117,30 +112,21 @@ public:
         else if (sender == GOSSIP_SENDER_INFO)
         {
             uint32 inventoryType = action;
-            uint32 counter = 0;
 
-            for (std::map<uint32, std::map<uint32, std::string>>::iterator it = itemTypePositions.begin(); it != itemTypePositions.end(); ++it)
+            for (uint32 position = 23; position <= SLOT_END; ++position)
             {
-                if (it->first == inventoryType)
-                {
-                    for (std::map<uint32, std::string>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
-                    {
-                        if (counter < 26)
-                        {
-                            uint32 itemPosition = it2->first;
-                            Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, itemPosition);
-                            if (item != NULL)
-                            {
-                                std::string itemName = it2->second;
-                                std::string itemIcon = sAzthUtils->GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
-                                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, itemIcon + itemName, GOSSIP_SENDER_SEC_BANK, itemPosition);
-                                counter++;
-                            }
-                        }
-                        
-                    }
+                Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
+
+                if (!item)
+                    continue;
+
+                if (item->GetTemplate()->InventoryType == inventoryType) {
+                    std::string itemName = item->GetTemplate()->Name1;
+                    std::string itemIcon = sAzthUtils->GetItemIcon(item->GetEntry(), 30, 30, -18, 0);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, itemIcon + itemName, GOSSIP_SENDER_SEC_BANK, position);
                 }
             }
+
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", GOSSIP_SENDER_INFO, action);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", GOSSIP_SENDER_MAIN, 301);
             player->SEND_GOSSIP_MENU(10, creature->GetGUID());
