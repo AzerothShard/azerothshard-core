@@ -132,10 +132,10 @@ public:
 
             if (equipSet(set, player, spec)) {
                 if (!player->azthPlayer->isPvP()) {
-                    player->azthPlayer->SetTempGear(true);
                     QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_tournamentset_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
-                    player->SaveToDB(false, false);
-                }   
+                }
+
+                player->SaveToDB(false, false);
             }
 
             player->PlayerTalkClass->SendCloseGossip();
@@ -244,6 +244,11 @@ public:
         }*/
         
         Item* item = player->EquipNewItem(slot, entry, update);
+
+        //soulbound with our special flag
+        item->SetBinding(true);
+        item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1, true);
+
         setEnchantAndSocket(player, item, originalEntry, spec);
     }
     
@@ -259,18 +264,19 @@ public:
         if (msg != EQUIP_ERR_OK 
             && msg != EQUIP_ERR_CANT_EQUIP_WITH_TWOHANDED) // TODO: maybe two hand control skip should be solved in another way. It can skip some important checks.
         {
-            player->SendEquipError(msg, pItem, NULL);
-            const char *msg=sAzthLang->getf(AZTH_LANG_PVP_NPC_CANNOT_EQUIP, player, entry, pItem->GetTemplate()->Name1.c_str());
-            ChatHandler(player->GetSession()).SendSysMessage(msg);
-            ok = false;
+            if (player->azthPlayer->isPvP() 
+                || msg != EQUIP_ERR_CANT_CARRY_MORE_OF_THIS) {
+                player->SendEquipError(msg, pItem, NULL);
+                const char *msg=sAzthLang->getf(AZTH_LANG_PVP_NPC_CANNOT_EQUIP, player, entry, pItem->GetTemplate()->Name1.c_str());
+                ChatHandler(player->GetSession()).SendSysMessage(msg);
+                ok = false;
+            }
         }
     }
 
     bool equipSet(AzthGearScaling set, Player* player, uint32 spec)
     {
         uint32 INVENTORY_END = 18;
-        
-        high_resolution_clock::time_point t1 = high_resolution_clock::now();
         
         bool ok=true;
         preCheckEquip(set.GetHead(), SLOT_HEAD, player, ok);
@@ -336,8 +342,6 @@ public:
         if (!ok) {
             return false;
         }
-        
-        high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
         for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++) {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
@@ -384,8 +388,9 @@ public:
 
         player->RemoveItemDependentAurasAndCasts((Item*)NULL);
 
-        high_resolution_clock::time_point t4 = high_resolution_clock::now();
-
+        if (!player->azthPlayer->isPvP())
+            player->azthPlayer->SetTempGear(true);
+        
         equipItem(set.GetHead(), SLOT_HEAD, player, spec);
         equipItem(set.GetNeck(), SLOT_NECK, player, spec);
         equipItem(set.GetShoulders(), SLOT_SHOULDERS, player, spec);
@@ -445,18 +450,6 @@ public:
         {
             equipItem(set.GetTrinket2_h(), SLOT_TRINKET2, player, spec);
         }
-        
-        high_resolution_clock::time_point t5 = high_resolution_clock::now();
-        
-        auto duration1 = duration_cast<microseconds>( t2 - t1 ).count();
-        auto duration2 = duration_cast<microseconds>( t3 - t2 ).count();
-        auto duration3 = duration_cast<microseconds>( t4 - t3 ).count();
-        auto duration4 = duration_cast<microseconds>( t5 - t4 ).count();
-        
-        cout << "duration 1: " << duration1 << "\n";
-        cout << "duration 2: " << duration2 << "\n";
-        cout << "duration 3: " << duration3 << "\n";
-        cout << "duration 4: " << duration4 << "\n";
         
         //player->InitStatsForLevel(true);
 

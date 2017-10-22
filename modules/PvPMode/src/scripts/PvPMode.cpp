@@ -159,12 +159,12 @@ public:
     }
     
     // logger for custom extended costs
-    void OnAfterStoreOrEquipNewItem(Player* player, uint32  /*vendorslot*/, Item* item, uint8  /*count*/, uint8  /*bag*/, uint8  /*slot*/, ItemTemplate const*  /*pProto*/, Creature* pVendor, VendorItem const*  /*crItem*/, bool  /*bStore*/) override
+    void OnAfterStoreOrEquipNewItem(Player* player, uint32  /*vendorslot*/, Item* item, uint8  /*count*/, uint8  /*bag*/, uint8  /*slot*/, ItemTemplate const*  /*pProto*/, Creature* /*pVendor*/, VendorItem const*  /*crItem*/, bool  /*bStore*/) override
     {
         if (!player->azthPlayer->isPvP())
             return;
         
-        if (pVendor->GetScriptName() == "npc_azth_vendor") {
+        /*if (pVendor->GetScriptName() == "npc_azth_vendor") {
             
             std::vector<HearthstoneVendor> & vendors = sHearthstoneMode->hsVendors;
             int pos = 0;
@@ -181,14 +181,16 @@ public:
             HearthstoneVendor vendor = vendors.at(pos);
             
             if (vendor.pvpVendor) {
+         */
+                // all items stored in pvp account should be soulbound
                 item->SetBinding(true);
                 item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1, true);
                 /* try to avoid for performances
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 item->SaveToDB(trans);
                 CharacterDatabase.CommitTransaction(trans);*/
-            }
-        }
+        /*    }
+        }*/
     }
     
     void OnBeforeDurabilityRepair(Player * player, uint64  /*npcGUID*/, uint64  /*itemGUID*/, float & discountMod, uint8  /*guildbank*/) override {

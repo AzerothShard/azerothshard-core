@@ -186,6 +186,13 @@ void WorldSession::HandleSendMail(WorldPacket & recvData)
         player->SendMailResult(0, MAIL_SEND, MAIL_ERR_NOT_YOUR_TEAM);
         return;
     }
+    
+    //[AZTH]
+    if (player->azthPlayer->isPvP()) {
+        player->SendMailResult(0, MAIL_SEND, MAIL_ERR_DISABLED_FOR_TRIAL_ACC);
+        return;
+    }
+    //[/AZTH]
 
     Item* items[MAX_MAIL_ITEMS];
 

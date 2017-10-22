@@ -617,6 +617,13 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
         SendTradeStatus(TRADE_STATUS_IGNORE_YOU);
         return;
     }
+    
+    //[AZTH]
+    if (_player->azthPlayer->isPvP() != pOther->azthPlayer->isPvP()) {
+        SendTradeStatus(TRADE_STATUS_NOT_ELIGIBLE);
+        return;
+    }
+    //[/AZTH]
 
     if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_TRADE) && pOther->GetTeamId() != _player->GetTeamId())
     {
