@@ -136,8 +136,5 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* inst
         return false;
     }
     
-    /**
-     *  TIMEWALKING CHECK
-     */
-    
+    return true;
 }
