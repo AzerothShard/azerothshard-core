@@ -9,6 +9,10 @@
 #include "Player.h"
 #include "AccountMgr.h"
 
+#include "MapManager.h"
+#include "MapInstanced.h"
+#include "InstanceScript.h"
+
 
 AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
@@ -120,4 +124,20 @@ void AzthPlayer::DelBankItem(uint32 itemEntry) {
 AzthPlayer::ItemInBankMap & AzthPlayer::GetBankItemsList()
 {
     return m_itemsInBank;
+}
+
+bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* instance, bool loginCheck) {
+    
+    /**
+     *  FULL PVP CHECK
+     */
+    if (isPvP() && (entry->IsRaid() || entry->IsDungeon())) {
+        player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
+        return false;
+    }
+    
+    /**
+     *  TIMEWALKING CHECK
+     */
+    
 }

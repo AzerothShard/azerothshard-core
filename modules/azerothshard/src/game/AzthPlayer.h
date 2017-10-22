@@ -94,6 +94,7 @@ public:
   void DelBankItem(uint32 itemEntry);
   void SetBankItemsList(ItemInBankMap itemsInBankList);
   ItemInBankMap & GetBankItemsList();
+  bool canEnterMap(MapEntry const* entry, InstanceTemplate const* instance, bool loginCheck);
 
 private:
   Player *player;

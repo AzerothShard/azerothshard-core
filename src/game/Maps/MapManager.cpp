@@ -141,6 +141,11 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
         return true;
 
     char const* mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
+    
+    //[AZTH] TODO: add an hook here
+    if (!player->azthPlayer->canEnterMap(entry, instance, loginCheck))
+        return false;
+    //[AZTH]
 
     Group* group = player->GetGroup();
     if (entry->IsRaid())
