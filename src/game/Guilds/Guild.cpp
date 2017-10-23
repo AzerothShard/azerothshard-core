@@ -2868,7 +2868,7 @@ void Guild::_BroadcastEvent(GuildEvents guildEvent, uint64 guid, const char* par
 void Guild::_SendBankList(WorldSession* session /* = NULL*/, uint8 tabId /*= 0*/, bool sendAllSlots /*= false*/, SlotIds *slots /*= NULL*/) const
 {
     //[AZTH]
-    if (session->GetPlayer()->azthPlayer->isPvP()) {
+    if (session && session->GetPlayer() && session->GetPlayer()->azthPlayer->isPvP()) {
         return;
     }
     //[/AZTH]
