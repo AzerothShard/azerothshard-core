@@ -8,11 +8,13 @@
 #include "ItemPrototype.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "Group.h"
 #include "SpellAuras.h"
 #include <stdio.h>
 #include <time.h>
 
 class AuraApplication;
+class Group;
 
 class AzthUtils
 {
@@ -54,10 +56,6 @@ public:
 
     uint32 selectCorrectSpellRank(uint8 level, uint32 spellId);
 
-    uint32 selectSpellForTW(Player* player, uint32 spellId);
-
-    void removeTimewalkingAura(Unit * unit);
-
     float getCustomMultiplier(ItemTemplate const * pProto, uint32 multiplier);
 
     uint32 getCalcReqLevel(ItemTemplate const* pProto);
@@ -68,8 +66,34 @@ public:
     
     void loadClassSpells();
     
+    void sendMessageToGroup(Player *pl, Group *group, const char* msg);
+    
     time_t getStartsOfYear();
     
+    bool checkItemLvL(ItemTemplate const* proto,uint32 level);
+    
+    int getReaction(Unit const* unit, Unit const* target);
+    
+    bool canFly(Unit* const caster, Unit* originalCaster);
+    
+    // [Timewalking]
+    
+    uint32 selectSpellForTW(Player* player, uint32 spellId);
+
+    void removeTimewalkingAura(Unit * unit);
+    
+    std::string getLevelInfo(uint32 level);
+    
+    bool updateTwLevel(Player *player, Group *group=nullptr);
+    // [/Timewalking]
+    
+    // DIMENSIONS
+    std::string getDimensionName(uint32 dim);
+    bool isPhasedDimension(uint32 dim);
+    PhaseDimensionsEnum getCurrentDimensionByPhase(uint32 phase);
+    bool dimIntegrityCheck(Unit *target, uint32 phasemask);
+    // /DIMENSIONS
+
     // horde version of objectmgr factionchangeitems map
     ObjectMgr::CharacterConversionMap FactionChangeItemsHorde;
     
@@ -77,6 +101,9 @@ public:
     
     std::string GetItemIcon(uint32 entry, uint32 width, uint32 height, int x, int y);
     std::vector<std::string> getCategoryIconAndNameByItemType(uint32 itemType);
+    
+private:
+    std::map <uint32,PhaseDimensionsEnum> phaseMap;
 
 };
 

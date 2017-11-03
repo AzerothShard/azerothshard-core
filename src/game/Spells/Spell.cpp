@@ -47,6 +47,8 @@
 #include "BattlegroundIC.h"
 #include "GameObjectAI.h"
 #include "ArenaSpectator.h"
+//[AZTH]
+#include "AzthUtils.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -3320,7 +3322,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
 
     //[/AZTH]
     // Fill aura scaling information
-    if ((m_caster->isType(TYPEMASK_PLAYER) && ((Player*)m_caster)->azthPlayer->GetTimeWalkingLevel() > 0) || //[AZTH] timewalking scale everything!!!
+    if ((m_caster->isType(TYPEMASK_PLAYER) && ((Player*)m_caster)->azthPlayer->isTimeWalking(true)) || //[AZTH] timewalking scale everything!!!
         m_caster->IsTotem() || (m_caster->IsControlledByPlayer() && !m_spellInfo->IsPassive() && m_spellInfo->SpellLevel && !m_spellInfo->IsChanneled() && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_SCALING)))
     {
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)

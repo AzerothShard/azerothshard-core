@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Group.h"
 #include "azth_custom_hearthstone_mode.h"
+#include "AzthUtils.h"
 
 // Send a kill credit, skipping the normal checks on raid group.
 void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid) {
@@ -64,19 +65,52 @@ void AzthPlayer::ForceKilledMonsterCredit(uint32 entry, uint64 guid) {
   }
 }
 
-bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 /*entry*/, uint32 /*realEntry*/, uint64 /*guid*/) {
+bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntry, uint64 /*guid*/) {
     uint32 qId=qInfo->GetQuestId();
-    int flag=sHearthstoneMode->getHeartstoneQuestFlag(qId);
+    uint32 currentDimension = getCurrentDimensionByAura();
 
-    if (flag<=0)
+    HearthstoneQuest *hsQuest=sHearthstoneMode->getHeartstoneQuestInfo(qId);
+
+    if (!hsQuest) {
+        // Do not allow official quest completition in empty/custom dimensions
+        if (sAzthUtils->isPhasedDimension(currentDimension))
+            return false;
+
         return true; // pass the check if no Hs quest exists
+    }
     
-    // check for quests that require timewalking
+    if (hsQuest->reqDimension > 0 && hsQuest->reqDimension != currentDimension)
+        return false;
+    
+    /*
+     * check for quests that require timewalking
+     */
+    // normal timewalking
     if (qInfo->GetQuestLevel() < 80) {
-        uint32 level = this->getGroupLevel() > 0 ? this->getGroupLevel() : this->player->getLevel();
+        uint32 groupLevel=this->getGroupLevel();
+        uint32 level = groupLevel > 0 ? groupLevel : this->player->getLevel();
         
-        if (level >= qInfo->GetMinLevel() && qInfo->GetQuestLevel() > 0 && level <= uint32(qInfo->GetQuestLevel()))
+        if (level >= qInfo->GetMinLevel() && qInfo->GetQuestLevel() > 0 && level <= uint32(qInfo->GetQuestLevel())) {
+            for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
+                if (qInfo->RequiredNpcOrGo[j] == entry)
+                    realEntry = entry;
+            }
+            
             return true;
+        }
+    } else  if (hsQuest->specialLevel>0) {
+        //special timewalking
+        uint32 groupLevel=this->getGroupLevel(false);
+        uint32 specialLevel =  groupLevel > 0 ? groupLevel : GetTimeWalkingLevel();
+        
+        if (specialLevel == hsQuest->specialLevel) {
+            for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
+                if (qInfo->RequiredNpcOrGo[j] == entry)
+                    realEntry = entry;
+            }
+
+            return true;
+        }
     }
     
     // in this case conditions above are negative

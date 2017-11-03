@@ -762,22 +762,13 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
     }
 }
 
-int64 HearthstoneMode::getHeartstoneQuestFlag(uint64 id)
+HearthstoneQuest* HearthstoneMode::getHeartstoneQuestInfo(uint64 id)
 {
-    UNORDERED_MAP<uint32,HearthstoneQuest>::iterator itr = hsPveQuests.find(id);
-    if (itr != hsPveQuests.end())
-        return itr->second.flag;
-    
-    
-    itr = hsWeeklyQuests.find(id);
-    if (itr != hsWeeklyQuests.end())
-        return itr->second.flag;
-    
-    itr = hsPvpQuests.find(id);
-    if (itr != hsPvpQuests.end())
-        return itr->second.flag;
+    UNORDERED_MAP<uint32,HearthstoneQuest>::iterator itr = allQuests.find(id);
+    if (itr != allQuests.end())
+        return &itr->second;
 
-	return -1;
+    return nullptr;
 };
 
 void HearthstoneMode::loadHearthstone()
@@ -832,7 +823,7 @@ void HearthstoneMode::loadHearthstone()
         sHearthstoneMode->hsPvpQuests.clear();
         sHearthstoneMode->hsWeeklyQuests.clear();
 
-        QueryResult hsQuestResult = ExtraDatabase.PQuery("SELECT id, flag FROM hearthstone_quests");
+        QueryResult hsQuestResult = ExtraDatabase.PQuery("SELECT id, flag, specialLevel, reqDimension FROM hearthstone_quests");
 
         if (hsQuestResult)
         {
@@ -841,8 +832,11 @@ void HearthstoneMode::loadHearthstone()
                 HearthstoneQuest hq = {};
                 hq.id = (*hsQuestResult)[0].GetUInt32();
                 hq.flag = (*hsQuestResult)[1].GetUInt32();
+                hq.specialLevel = (*hsQuestResult)[2].GetUInt32();
+                hq.reqDimension = (*hsQuestResult)[3].GetUInt32();
                 unsigned char bitmask = hq.flag;
 
+                sHearthstoneMode->allQuests[hq.id]=hq;
                 if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
                     sHearthstoneMode->hsPveQuests[hq.id]=hq; 
                 if ((bitmask & BITMASK_PVP) == BITMASK_PVP)

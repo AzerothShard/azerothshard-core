@@ -375,13 +375,17 @@ public:
             } while (ssCommandsResult->NextRow());
         }
 
-        //set last known position to black market
-        std::vector<float> pos = player->azthPlayer->getLastPositionInfoFromDB();
-        player->azthPlayer->setLastPositionInfo(pos);
+        std::map<uint32,WorldLocation> pos = player->azthPlayer->getLastPositionInfoFromDB();
+        
+        uint32 dimension=player->azthPlayer->getCurrentDimensionByAura();
+        if (pos.find(dimension) != pos.end())
+            player->azthPlayer->setLastPositionInfo(dimension, pos[dimension]);
+        else
+            player->azthPlayer->setLastPositionInfo(dimension, AzthSharedDef::blackMarket);
     }
 
     void OnLogout(Player* player) override {
-        player->azthPlayer->saveLastPositionInfoToDB(player, player->azthPlayer->getLastPositionInfo());
+        player->azthPlayer->saveLastPositionInfoToDB(player);
     }
 
     void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8  /*bag*/, uint8 /*slot*/) override {

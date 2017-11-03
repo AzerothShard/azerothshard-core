@@ -1,29 +1,31 @@
 #include "Apps.h"
 #include "MapManager.h"
+#include "AzthSharedDefines.h"
 
 void SmartStoneApps::blackMarketTeleport(Player *player) {
-    if (!player->IsInCombat() && !player->azthPlayer->isInBlackMarket()) {
-        float mapid = player->GetMapId();
-        std::vector<float> pos = {mapid, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()};
-        player->azthPlayer->setLastPositionInfo(pos);
+    if (player->IsInCombat())
+        return;
+    
+    if (!player->azthPlayer->isInBlackMarket()) {
+        WorldLocation pos = WorldLocation(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
+        player->azthPlayer->setLastPositionInfo(player->azthPlayer->getCurrentDimensionByAura(), pos);
 
-        player->TeleportTo(1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
+        player->TeleportTo(AzthSharedDef::blackMarket);
     }
-    if (!player->IsInCombat() && player->azthPlayer->isInBlackMarket()) {
-        std::vector<float> & pos = player->azthPlayer->getLastPositionInfo();
+    else {
+        WorldLocation pos = player->azthPlayer->getLastPositionInfo(player->azthPlayer->getCurrentDimensionByAura());
 
-        Map *m = sMapMgr->FindBaseMap(pos[0]);
+        Map *m = sMapMgr->FindBaseMap(pos.GetMapId());
 
         if (m && m->IsDungeon()) {
 
-            // pos[0] is the map
-            WorldSafeLocsEntry const* ClosestGrave = sObjectMgr->GetClosestGraveyard(pos[1], pos[2], pos[3], pos[0], TEAM_NEUTRAL);
+            WorldSafeLocsEntry const* ClosestGrave = sObjectMgr->GetClosestGraveyard(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetMapId(), TEAM_NEUTRAL);
 
             if (ClosestGrave) {
                 player->TeleportTo(ClosestGrave->map_id, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, player->GetOrientation());
             }
         } else {
-            player->TeleportTo(pos[0], pos[1], pos[2], pos[3], 0.174f, 0);
+            player->TeleportTo(pos);
         }
     }   
 }

@@ -1649,7 +1649,7 @@ bool Pet::resetTalents()
         return false;
 
     //[AZTH] Timewalking
-    if (((Player*)owner)->azthPlayer->GetTimeWalkingLevel() > 0)
+    if (((Player*)owner)->azthPlayer->isTimeWalking())
         return false;
 
     // not need after this call

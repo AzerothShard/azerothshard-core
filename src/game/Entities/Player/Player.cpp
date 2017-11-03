@@ -3038,7 +3038,9 @@ void Player::SetGameMaster(bool on)
         CombatStopWithPets();
 
         SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
-        m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
+        //[AZTH] xeela
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_MODERATOR);
+        //[/AZTH]
     }
     else
     {
@@ -3073,9 +3075,7 @@ void Player::SetGameMaster(bool on)
         UpdateArea(m_areaUpdateId);
 
         getHostileRefManager().setOnlineOfflineState(true);
-        //[AZTH] xeela
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_MODERATOR);
-        //[/AZTH]
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
     }
 
     UpdateObjectVisibility();
@@ -6668,7 +6668,7 @@ uint16 Player::GetMaxSkillValue(uint32 skill) const
     int32 result = int32(SKILL_MAX(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos))));
     
     //[AZTH] Hack for timewalking
-    if (this->azthPlayer->GetTimeWalkingLevel()>0)
+    if (this->azthPlayer->isTimeWalking())
         result = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
     
     result += SKILL_TEMP_BONUS(bonus);
@@ -6686,7 +6686,7 @@ uint16 Player::GetPureMaxSkillValue(uint32 skill) const
         return 0;
     
     //[AZTH] Hack for timewalking
-    if (this->azthPlayer->GetTimeWalkingLevel()>0)
+    if (this->azthPlayer->isTimeWalking())
         return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
 
     return SKILL_MAX(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos)));
@@ -6935,6 +6935,11 @@ void Player::CheckAreaExploreAndOutdoor()
 
     if (IsInFlight())
         return;
+    
+    //[AZTH]
+    if (!azthPlayer->canExplore())
+        return;
+    //[/AZTH]
 
     bool isOutdoor = IsOutdoors();
     uint32 areaFlag = GetAreaFlagByAreaID(GetAreaId());
@@ -8258,7 +8263,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     }
 
     // Add armor bonus from ArmorDamageModifier if > 0
-    if (proto->ArmorDamageModifier > 0 /*[AZTH] */ && azthPlayer->GetTimeWalkingLevel() == 0) // [/AZTH] armor modifier doesn't scale, so we need to deactivate
+    if (proto->ArmorDamageModifier > 0 /*[AZTH] */ && !azthPlayer->isTimeWalking(true)) // [/AZTH] armor modifier doesn't scale, so we need to deactivate
         HandleStatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(proto->ArmorDamageModifier), apply);
 
     if (proto->Block)
@@ -8501,7 +8506,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
         if (req > this->getLevel()) {
             return;
         }
-    } else if (azthPlayer->GetTimeWalkingLevel() > 0) {
+    } else if (azthPlayer->isTimeWalking(true)) {
         return;
     }
 
@@ -8628,7 +8633,7 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
         if (req > this->getLevel()) {
             return;
         }
-    } else if (azthPlayer->GetTimeWalkingLevel() > 0) {
+    } else if (azthPlayer->isTimeWalking(true)) {
         return;
     }
     
@@ -11971,9 +11976,8 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
             //[AZTH] if you have the pvp set or not valid item for this season and you
             // are equipping something, it won't be equipped
             if (!GetSession()->PlayerLoading() && pProto->InventoryType>0
-                && (azthPlayer->hasGear() || (sASeasonMgr->IsEnabled() && !sASeasonMgr->checkItem(pProto, this)) ))
+                && !azthPlayer->canEquipItem(pProto))
             {
-                if(pProto->InventoryType != INVTYPE_AMMO)
                     return EQUIP_ERR_CANT_DO_RIGHT_NOW;
             }
             //[/AZTH]
@@ -12474,7 +12478,7 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
         
         //[AZTH] if you are a timewalker you can equip all items
         // because you are an 80 with "fake low level"
-        if (azthPlayer->GetTimeWalkingLevel() == 0) {
+        if (!azthPlayer->isTimeWalking()) {
             if (getLevel() < proto->RequiredLevel)
                 return EQUIP_ERR_CANT_EQUIP_LEVEL_I;
         }
@@ -27600,7 +27604,7 @@ void Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 //[AZTH]
 
 uint16 Player::GetMaxSkillValueForLevel() const {
-    if (this->azthPlayer->GetTimeWalkingLevel()>0)
+    if (this->azthPlayer->isTimeWalking())
         return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
     
     return Unit::GetMaxSkillValueForLevel();

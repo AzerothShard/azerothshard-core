@@ -3,6 +3,8 @@
 #include "Pet.h"
 #include "SpellMgr.h"
 #include "SpellInfo.h"
+#include "AzthSharedDefines.h"
+#include "GuildHouse.h"
 
 
 AzthUtils::AzthUtils()
@@ -40,6 +42,14 @@ AzthUtils::AzthUtils()
     
     for (ObjectMgr::CharacterConversionMap::iterator i = sObjectMgr->FactionChangeItems.begin(); i != sObjectMgr->FactionChangeItems.end(); ++i)
         this->FactionChangeItemsHorde[i->second] = i->first;
+
+    for (uint8 i=1; i<=MAX_DIMENSION; i++) {
+        SpellInfo const* spellInfo =sSpellMgr->GetSpellInfo(DIMENSION_SPELL_MARK+i);
+        if (spellInfo) {
+            uint32 phase=spellInfo->Effects[0].MiscValue;
+            phaseMap[phase]=PhaseDimensionsEnum(i);
+        }
+    }
 }
 
 AzthUtils::~AzthUtils()
@@ -58,6 +68,24 @@ time_t AzthUtils::getStartsOfYear() {
     result += leapYears * 24 * 60 * 60;
     
     return result;
+}
+
+void AzthUtils::sendMessageToGroup(Player *pl, Group *group, const char* msg) {
+    if (!group) {
+        // fallback
+        if (pl)
+            ChatHandler(pl->GetSession()).SendSysMessage(msg);
+        return;
+    }
+    
+    for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+    {
+        Player* player = itr->GetSource();
+        if (!player)
+            continue;
+
+        ChatHandler(player->GetSession()).SendSysMessage(msg);
+    }
 }
 
 void AzthUtils::loadClassSpells() {
@@ -476,3 +504,145 @@ std::string AzthUtils::GetItemIcon(uint32 entry, uint32 width, uint32 height, in
     ss << ":" << width << ":" << height << ":" << x << ":" << y << "|t";
     return ss.str();
 }
+
+
+std::string AzthUtils::getDimensionName(uint32 dim) {
+    std::string name = "";
+    switch (dim) {
+        case DIMENSION_NORMAL:
+            name += "Illusory World";
+        break;
+        case DIMENSION_GUILD:
+            name += "Guild World";
+        break;
+        case DIMENSION_PVP:
+            name += "Corrupted World";
+        break;
+        case DIMENSION_ENTERTAINMENT:
+            name += "Toys World";
+        break;
+        case DIMENSION_RPG:
+            name += "Warcraft Tales";
+        break;
+        case DIMENSION_60:
+            name += "Classic World";
+        break;
+        case DIMENSION_70:
+            name += "TBC World";
+        break;
+        break;
+        case DIMENSION_TEST:
+            name += "Test World";
+        break;
+        case DIMENSION_GM:
+            name += "GameMaster World";
+        break;
+        default:
+            name += "Unknown";
+        break;
+    }
+    
+    return name;
+}
+
+bool AzthUtils::dimIntegrityCheck(Unit *target, uint32 phasemask) {
+    if (target && target->GetTypeId() == TYPEID_PLAYER) {
+        Player *player=target->ToPlayer();
+        
+        if (player) {     
+            PhaseDimensionsEnum dim=getCurrentDimensionByPhase(phasemask);
+            
+            // If target has temporary normal dimension
+            // we must consider as it's in normal phase
+            // avoiding dimension changing from <temp normal> to <normal>.
+            // If we're summoning a player from instance to instance for example.
+            // Of course if we're summoning an instanced player with <temp normal> dimension
+            // outside of an instance on <normal dimension>, 
+            // then the map changing check will restore the correct dimension
+            //
+            // Moreover checking aura instead phase, if it differ by dim
+            // then the changeDimension can fix eventually exploits
+            // with phased players without correct aura
+            uint32 targetDim=player->azthPlayer->getCurrentDimensionByAura();
+            
+            if (isPhasedDimension(dim) && dim != targetDim) { 
+                return player->azthPlayer->changeDimension(dim, true);
+            }
+        }
+    }
+    
+    return true;
+}
+
+bool AzthUtils::isPhasedDimension(uint32 dim) {
+    return dim > DIMENSION_NORMAL;
+}
+
+PhaseDimensionsEnum AzthUtils::getCurrentDimensionByPhase(uint32 phase) {
+    // some aura phases include 1 normal map in addition to phase itself
+    // we should catch also characters that, for some odd reason, have 
+    // special dimension + normal (shouldn't happen)
+    phase = phase & ~PHASEMASK_NORMAL;
+    
+    if (phase>0) {
+        if (phaseMap.find(phase) != phaseMap.end())
+            return phaseMap[phase];
+    }
+    
+    return DIMENSION_NORMAL;
+}
+
+
+bool AzthUtils::checkItemLvL(ItemTemplate const* proto,uint32 level) {
+    // return false if item level > current season
+    return !(proto->InventoryType > 0 && proto->InventoryType != INVTYPE_AMMO && proto->ItemLevel > level);
+}
+
+
+int AzthUtils::getReaction(Unit const* unit, Unit const* target) {
+    Player const* selfPlayerOwner = unit->GetAffectingPlayer();
+    Player const* targetPlayerOwner = target->GetAffectingPlayer();
+    
+    // case of 2 players
+    if (selfPlayerOwner && targetPlayerOwner) {
+        // before guild check
+        if (selfPlayerOwner->azthPlayer->isInBlackMarket() && targetPlayerOwner->azthPlayer->isInBlackMarket())
+            return REP_FRIENDLY;
+    }
+    
+    uint32 dimUnit=selfPlayerOwner ? selfPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(unit->GetPhaseMask());
+    uint32 dimTarget=targetPlayerOwner ? targetPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(target->GetPhaseMask());
+    
+    if (dimUnit== DIMENSION_GUILD && dimTarget == DIMENSION_GUILD) {
+        uint32 guildUnit=selfPlayerOwner ? selfPlayerOwner->GetGuildId() : GHobj.GetGuildByUnit(unit->GetGUIDLow());
+        uint32 guildTarget=targetPlayerOwner ? targetPlayerOwner->GetGuildId() : GHobj.GetGuildByUnit(target->GetGUIDLow());
+        
+        // it can happen only when the unit is a creature and
+        // not assigned to any guild (blackmarket NPCs for example)
+        // A player with guild = 0 shouldn't be allowed to enter
+        // this dimension and there are checks about it in other places
+        if (!guildTarget || !guildUnit) {
+            // normal creature (not assigned to any guild)
+            // get the default reaction 
+            return -1;
+        }
+
+        return guildUnit != guildTarget ? REP_HOSTILE : REP_FRIENDLY;
+    }
+    
+    return -1;
+}
+
+bool AzthUtils::canFly(Unit*const /*caster*/, Unit* originalCaster)
+{
+    if (originalCaster && originalCaster->GetTypeId() == TYPEID_PLAYER) {
+        uint32 curDim=((Player*)originalCaster)->azthPlayer->getCurrentDimensionByAura();
+        if (curDim == DIMENSION_TEST || curDim == DIMENSION_GM) {
+            return true;
+        }
+    }
+    
+    // return false to continue with other checks
+    return false;
+}
+

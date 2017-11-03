@@ -54,6 +54,8 @@
 #include "AccountMgr.h"
 //[AZTH]
 #include "AzthLevelStat.h"
+#include "AzthUtils.h"
+//[/AZTH
 
 #include <math.h>
 
@@ -9228,7 +9230,6 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
                 return *repRank;
     }
 
-
     if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
     {
         if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
@@ -9282,6 +9283,13 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
             }
         }
     }
+    
+    //[AZTH]
+    int repRank = sAzthUtils->getReaction(this, target);
+    if (repRank>=0)
+        return ReputationRank(repRank);
+    //[/AZTH]
+    
     // do checks dependant only on our faction
     return GetFactionReactionTo(GetFactionTemplateEntry(), target);
 }
@@ -10373,21 +10381,24 @@ float Unit::SpellPctDamageModsDone(Unit* victim, SpellInfo const* spellProto, Da
 
         //[AZTH] Timewalking scaled healing spells shouldn't have the 
         // percent reduction of tw table, but we can apply a minor modifier
-        if ((*i)->GetId() == TIMEWALKING_AURA_MOD_DAMAGESPELL && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= uint32(getLevel() + 10))
-            || spellProto->SpellLevel <= uint32(getLevel() + 10))) {
-            uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
-            int32 reduction = -(spellLevel > getLevel() ? spellLevel - getLevel() : 0);
-            //  replicate conditions below
-            if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
-            {
-                if ((*i)->GetSpellInfo()->EquippedItemClass == -1)
-                    AddPct(DoneTotalMod, reduction);
-                else if (!(*i)->GetSpellInfo()->HasAttribute(SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK) && ((*i)->GetSpellInfo()->EquippedItemSubClassMask == 0))
-                    AddPct(DoneTotalMod, reduction);
-                else if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()))
-                    AddPct(DoneTotalMod, reduction);
+        Player *modOwner = GetSpellModOwner();
+        if (modOwner && modOwner->azthPlayer->isTimeWalking(true)) {
+            if ((*i)->GetId() == TIMEWALKING_AURA_MOD_DAMAGESPELL && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= uint32(getLevel() + 10))
+                || spellProto->SpellLevel <= uint32(getLevel() + 10))) {
+                uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
+                int32 reduction = -(spellLevel > getLevel() ? spellLevel - getLevel() : 0);
+                //  replicate conditions below
+                if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
+                {
+                    if ((*i)->GetSpellInfo()->EquippedItemClass == -1)
+                        AddPct(DoneTotalMod, reduction);
+                    else if (!(*i)->GetSpellInfo()->HasAttribute(SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK) && ((*i)->GetSpellInfo()->EquippedItemSubClassMask == 0))
+                        AddPct(DoneTotalMod, reduction);
+                    else if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()))
+                        AddPct(DoneTotalMod, reduction);
+                }
+                continue;
             }
-            continue;
         }
         //[/AZTH]
 
@@ -11378,14 +11389,18 @@ float Unit::SpellPctHealingModsDone(Unit* victim, SpellInfo const* spellProto, D
     for (AuraEffectList::const_iterator i = mHealingDonePct.begin(); i != mHealingDonePct.end(); ++i) {
         //[AZTH] Timewalking scaled healing spells shouldn't have the 
         // percent reduction of tw table, but we can apply a minor modifier
-        if ((*i)->GetId() == TIMEWALKING_AURA_MOD_HEALING && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= uint32(getLevel()+10))
-            || spellProto->SpellLevel <= uint32(getLevel() + 10))) {
-            uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
-            int32 mod = spellLevel > getLevel() ? spellLevel - getLevel() : 0;
+        Player* modOwner = GetSpellModOwner();
+        if (modOwner && modOwner->azthPlayer->isTimeWalking(true)) {
+            if ((*i)->GetId() == TIMEWALKING_AURA_MOD_HEALING && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= uint32(getLevel()+10))
+                || spellProto->SpellLevel <= uint32(getLevel() + 10))) {
+                uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
+                int32 mod = spellLevel > getLevel() ? spellLevel - getLevel() : 0;
 
-            AddPct(DoneTotalMod, -(mod));
-            continue;
+                AddPct(DoneTotalMod, -(mod));
+                continue;
+            }
         }
+        //[/AZTH]
         
         AddPct(DoneTotalMod, (*i)->GetAmount());
     }
@@ -17625,6 +17640,11 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
         // xinef: ZOMG!, to comment, bellow line should be removed
         // pussywizard: goign to other phase (valithria, algalon) should not remove such auras
         //RemoveNotOwnSingleTargetAuras(newPhaseMask, true);            // we can lost access to caster or target
+        
+        //[AZTH]
+        if (!sAzthUtils->dimIntegrityCheck(this, newPhaseMask))
+            return;
+        //[/AZTH]
 
         // modify hostile references for new phasemask, some special cases deal with hostile references themselves
         if (GetTypeId() == TYPEID_UNIT || (!ToPlayer()->IsGameMaster() && !ToPlayer()->GetSession()->PlayerLogout()))
@@ -19424,9 +19444,32 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                         fieldBuffer << (m_uint32Values[index] & 0xFFFFF2FF); // clear UNIT_BYTE2_FLAG_PVP, UNIT_BYTE2_FLAG_FFA_PVP, UNIT_BYTE2_FLAG_SANCTUARY
                     else
                         fieldBuffer << (uint32)target->getFaction();
+                //[AZTH]
                 }
-                else
-                    fieldBuffer << m_uint32Values[index];
+                else  {
+                    int r=sAzthUtils->getReaction(this,target);
+                    if (target != this && r >= REP_HATED) {
+                        //implicit change of unit fields from azth
+                        FactionTemplateEntry const* ft1 = GetFactionTemplateEntry();
+                        FactionTemplateEntry const* ft2 = target->GetFactionTemplateEntry();
+
+                        if (r >= REP_FRIENDLY && ft1 && ft2 && !ft1->IsFriendlyTo(*ft2)) {
+                            if (index == UNIT_FIELD_BYTES_2)
+                                // Allow targetting opposite faction in party when enabled in config
+                                fieldBuffer << (m_uint32Values[UNIT_FIELD_BYTES_2] & ((UNIT_BYTE2_FLAG_SANCTUARY) << 8)); // this flag is at uint8 offset 1 !!
+                            else
+                                // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
+                                fieldBuffer << uint32(target->getFaction());
+                        } else if (r <= REP_HOSTILE && ft1 && ft2 && ft1->IsFriendlyTo(*ft2)) {
+                                fieldBuffer << (m_uint32Values[UNIT_FIELD_BYTES_2] | (UNIT_BYTE2_FLAG_FFA_PVP << 8));
+                        } else {
+                            fieldBuffer << m_uint32Values[index];
+                        }
+                    } else {
+                        fieldBuffer << m_uint32Values[index];
+                    }
+                }
+                //[/AZTH]
             }
             else
                 // send in current format (float as float, uint32 as uint32)

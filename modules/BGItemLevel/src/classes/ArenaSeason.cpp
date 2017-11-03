@@ -1,4 +1,5 @@
 #include "ArenaSeason.h"
+#include "AzthUtils.h"
 
 Season::Season()
 {
@@ -60,8 +61,13 @@ void Season::SetEnabled(bool enable)
 // Passing player argument will check the player state and automatically shows a message
 // 
 bool Season::checkItem(ItemTemplate const* proto, Player const* player) {
+    if (!IsEnabled())
+    {
+        return true; //SYSTEM DISABLED
+    }
+    
     if (player->InBattleground() || player->InArena() || player->InBattlegroundQueue()) {
-        if (!this->checkItem(proto)) {
+        if (!sAzthUtils->checkItemLvL(proto, GetItemLevel())) {
             ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", proto->ItemId, proto->Name1.c_str());
             return false;
         }
@@ -70,48 +76,16 @@ bool Season::checkItem(ItemTemplate const* proto, Player const* player) {
     return true;
 }
 
-bool Season::checkItem(ItemTemplate const* proto) {
-    // return false if item level > current season
-    return !(proto->InventoryType > 0 && proto->InventoryType != INVTYPE_AMMO && proto->ItemLevel > GetItemLevel());
-}
-
-bool Season::checkItems(Player *pl) {   
+bool Season::canJoinArenaOrBg(Player *pl) {
     if (!IsEnabled())
     {
         return true; //SYSTEM DISABLED
     }
-
-    if (pl->IsGameMaster())
-    {
+    
+    if (pl->azthPlayer->checkItems(GetItemLevel())) {
         return true;
     }
-
-    uint32 INVENTORY_END = 18;
-    uint32 counter = 0;
-
-    for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
-    {
-        Item* itemToCheck = pl->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
-        if (itemToCheck != nullptr)
-        {
-            if (!sASeasonMgr->checkItem(itemToCheck->GetTemplate()))
-            {
-              ChatHandler(pl->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str());
-              counter++;
-            }
-        }
-    }  
-    
-    if (counter>0)
-        ChatHandler(pl->GetSession()).PSendSysMessage("L'attuale Season ha livello massimo |cffff0000%d|r", sASeasonMgr->GetItemLevel());
-    
-    return counter == 0;
-}
-
-bool Season::canJoinArenaOrBg(Player *pl) {
-    if (sASeasonMgr->checkItems(pl)) {
-        return true;
-    }
-    
+            
+    ChatHandler(pl->GetSession()).PSendSysMessage("L'attuale Season ha livello massimo |cffff0000%d|r", sASeasonMgr->GetItemLevel());
     return false;
 }

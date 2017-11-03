@@ -1,9 +1,10 @@
 #include "AzthPlayer.h"
+#include "AzthLevelStat.h"
 #include "Group.h"
 #include "Player.h"
 
-uint8 AzthPlayer::getGroupLevel() {
-  uint8 groupLevel = 0;
+uint32 AzthPlayer::getGroupLevel(bool normalized) {
+  uint32 groupLevel = 0;
   
   if (!player)
       return groupLevel;
@@ -11,7 +12,7 @@ uint8 AzthPlayer::getGroupLevel() {
   Group *group = player->GetGroup();
   Map *map = player->FindMap();
   if (group) {
-    if (map->IsDungeon()) {
+    if (map->IsDungeon() || map->IsRaid()) {
       // caso party instance
       InstanceSave *is = sInstanceSaveMgr->PlayerGetInstanceSave(
           GUID_LOPART(player->GetGUID()), map->GetId(),
@@ -26,6 +27,9 @@ uint8 AzthPlayer::getGroupLevel() {
     // outworld party or limit case for dungeon
     groupLevel = group->azthGroupMgr->levelMaxGroup;
   }
+  
+  if (normalized && groupLevel>=TIMEWALKING_SPECIAL_LVL_MIN)
+      groupLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
   return groupLevel;
 }

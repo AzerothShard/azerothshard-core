@@ -83,6 +83,7 @@ class GH_Item
 
 typedef UNORDERED_MAP<uint32, GuildHouse> GuildHouseMap;
 typedef UNORDERED_MAP<uint32, GH_Item> GH_Add;
+typedef UNORDERED_MAP<uint32, uint32> GuildHouseUnits;
 typedef UNORDERED_MAP<uint32, uint32> GuildGuardID;
 
 class GuildHouseObject
@@ -91,6 +92,7 @@ class GuildHouseObject
     GuildHouseMap GH_map;
     GH_Add GH_AddHouse;
     GuildGuardID mGuildGuardID;
+    GuildHouseUnits mGHUnits;
 
     GuildHouseObject();
 
@@ -108,6 +110,7 @@ class GuildHouseObject
     void UpdateGuardMap(uint32 guid, uint32 guild);
     uint32 GetGuildByGuardID(uint32 guid);
 	uint32 GetGuildByGuardID(Creature* guardia); 
+    uint32 GetGuildByUnit(uint32 guid);
     void ControlGuildHouse();
     void LoadGuildHouseSystem();
 };

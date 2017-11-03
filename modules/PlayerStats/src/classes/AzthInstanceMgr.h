@@ -13,6 +13,6 @@ class AzthInstanceMgr {
         void saveToDb();
 
         InstanceSave* is;
-        uint8 levelMax;
+        uint32 levelMax;
 };
 #endif

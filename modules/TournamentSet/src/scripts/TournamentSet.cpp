@@ -369,8 +369,6 @@ public:
         
         delete draft;
         
-        high_resolution_clock::time_point t3 = high_resolution_clock::now();
-        
         draft = new MailDraft(sAzthLang->get(AZTH_LANG_REMOVED_ITEMS,player), "");
         hasItems=false;
         // next 9 slots (ugly workaround)
@@ -530,18 +528,22 @@ public:
             player->azthPlayer->SetTempGear(true);
     }
 
-    void OnUpdateZone(Player* player, uint32  /*newZone*/, uint32 newArea) override
+    void OnUpdateZone(Player* player, uint32  newZone, uint32 /*newArea*/) override
     {
         if (player->GetSession()->PlayerLoading())
             return; // do not remove set during login
             
         if (player->azthPlayer->isPvP())
             return; // do not remove set for pvp players
+            
+        uint32 curDimension=player->azthPlayer->getCurrentDimensionByAura();
+        if (curDimension && (curDimension == DIMENSION_PVP || curDimension == DIMENSION_ENTERTAINMENT || curDimension == DIMENSION_TEST))
+            return; // do not remove set on special dimensions
         
         uint32 zone;
         uint32 area;
         player->GetBaseMap()->GetZoneAndAreaId(zone, area, player->GetEntryPoint().GetPositionX(), player->GetEntryPoint().GetPositionY(), player->GetEntryPoint().GetPositionZ());
-        if (newArea == area)
+        if (newZone == zone)
             return; // do not remove set if we're leaving BG/Arena
         
         
@@ -563,7 +565,7 @@ public:
                 player->SaveToDB(false, false);
                 ChatHandler(player->GetSession()).PSendSysMessage("Il tuo set PVP e' stato rimosso, non puoi cambiare zona con un set temporaneo!");
                 // teleport to dalaran
-                player->TeleportTo(SharedDef::dalaran);
+                player->TeleportTo(AzthSharedDef::blackMarket);
             }
         }
     }

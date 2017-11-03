@@ -30,6 +30,8 @@ struct HearthstoneQuest
 {
     uint32 id;
     uint32 flag;
+    uint32 specialLevel;
+    uint32 reqDimension;
 };
 
 struct HearthstoneVendor
@@ -44,9 +46,10 @@ struct HearthstoneVendor
 
 enum bitmasksHs
 {
-    BITMASK_PVE = 1,
-    BITMASK_PVP = 2,
-    BITMASK_WEEKLY = 4
+    BITMASK_NORMAL = 0, //normal quests but with hs checks
+    BITMASK_PVE    = 1, //hs daily random
+    BITMASK_PVP    = 2, //hs daily random
+    BITMASK_WEEKLY = 4  //hs weekly random
 };
 
 enum miscHs
@@ -79,6 +82,7 @@ class HearthstoneMode
         int returnData0(AchievementCriteriaEntry const* criteria);
         int returnData1(AchievementCriteriaEntry const* criteria);
         std::vector<HearthstoneAchievement> hsAchievementTable;
+        UNORDERED_MAP<uint32, HearthstoneQuest> allQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsPveQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsPvpQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsWeeklyQuests;
@@ -88,7 +92,7 @@ class HearthstoneMode
         bool PlayerCanUseItem(Item const* item, Player* player, bool classCheck);
         void loadHearthstone();
         std::vector<HearthstoneVendor> hsVendors;
-		int64 getHeartstoneQuestFlag(uint64 id);
+		HearthstoneQuest *getHeartstoneQuestInfo(uint64 id);
 
     private:
         float CHANCES[8] = { 10.f, 30.f, 20.f, 15.f, 5.f, 1.f, 0.5f, 1.f };

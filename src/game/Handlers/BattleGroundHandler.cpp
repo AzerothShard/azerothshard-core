@@ -156,8 +156,9 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
                  _player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5)) // can't be already queued for arenas
             err = ERR_BATTLEGROUND_QUEUED_FOR_RATED;
         //[AZTH]
-        else if (!sASeasonMgr->canJoinArenaOrBg(_player))
-            err = ERR_BATTLEGROUND_NONE;
+        else if (!_player->azthPlayer->canJoinQueue(AZTH_QUEUE_BG)) {
+                err = ERR_BATTLEGROUND_NONE;
+        }
         //[/AZTH]
         
 
@@ -683,7 +684,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
     if (!asGroup)
     {
         //[AZTH]
-        if (!sASeasonMgr->canJoinArenaOrBg(_player))
+        if (!_player->azthPlayer->canJoinQueue(AZTH_QUEUE_ARENA))
             err = ERR_BATTLEGROUND_NONE;
         //[/AZTH]
         

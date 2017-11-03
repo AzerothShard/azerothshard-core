@@ -49,7 +49,7 @@ bool GuildHouseObject::CheckGuildID(uint32 guild_id)
     if (!guild_id)
         return false;
     
-    if (!guild_id)
+    if (!sGuildMgr->GetGuildById(guild_id))
     {
 		sLog->outDebug(LOG_FILTER_GUILDHOUSE,"The guild %u not found", guild_id);
         return false;
@@ -244,6 +244,8 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                         UpdateGuardMap(*itr2, guild);
                         sLog->outDebug(LOG_FILTER_GUILDHOUSE, "GuildHouse: insert guard with GUID: %u,Guild: %u", *itr2, guild);
                     }
+                    
+                    mGHUnits[(*itr2)] = guild;
 
                     Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(data->mapid));
                     
@@ -400,6 +402,13 @@ uint32 GuildHouseObject::GetGuildByGuardID(Creature* guardia)
 			return (*i).second;
 	}
 	return 0;
+}
+
+uint32 GuildHouseObject::GetGuildByUnit(uint32 guid) {
+    if (mGHUnits.find(guid) != mGHUnits.end())
+        return mGHUnits[guid];
+    
+    return 0;
 }
 
 void GuildHouseObject::UpdateGuardMap(uint32 guid, uint32 guild)

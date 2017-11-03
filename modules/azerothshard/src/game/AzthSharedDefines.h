@@ -35,9 +35,26 @@ enum AzthCustomLangs {
     AZTH_LOC_EN = 1,
 };
 
-class SharedDef {
+enum PhaseDimensionsEnum {
+    DIMENSION_NORMAL        = 1,
+    DIMENSION_GUILD         = 2,
+    DIMENSION_PVP           = 3,
+    DIMENSION_ENTERTAINMENT = 4,
+    DIMENSION_RPG           = 5,
+    DIMENSION_60            = 6,
+    DIMENSION_70            = 7,
+    DIMENSION_TEST          = 8,
+    DIMENSION_GM            = 9
+};
+
+#define MAX_DIMENSION 9
+
+#define DIMENSION_SPELL_MARK 1000000
+
+class AzthSharedDef {
 public:
     static const WorldLocation dalaran;
+    static const WorldLocation blackMarket;
 };
 
 #endif /* SHAREDDEFINES_H */

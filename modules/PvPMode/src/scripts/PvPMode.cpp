@@ -79,12 +79,14 @@ public:
                 player->GiveLevel(79);
                 player->GiveLevel(80); 
                 
-                player->SetHonorPoints(500);
+                player->SetHonorPoints(2000);
 
                 player->InitTalentForLevel();
                 player->learnDefaultSpells();
                 player->SetUInt32Value(PLAYER_XP, 0);
                 sAzthUtils->learnClassSpells(player, false);
+                
+                player->azthPlayer->changeDimension(DIMENSION_PVP);
                 
                 // riding + flying
                 player->learnSpell(34091); // artisan riding

@@ -1,6 +1,7 @@
 #include "AzthPlayer.h"
 #include "Player.h"
 #include "Opcodes.h"
+#include "AzthSharedDefines.h"
 
 std::vector<SmartStonePlayerCommand> & AzthPlayer::getSmartStoneCommands() {
     return smartStoneCommands;
@@ -318,12 +319,12 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
     return true;
 }
 
-std::vector<float> & AzthPlayer::getLastPositionInfo() {
-    return lastPositionInfo;
+WorldLocation & AzthPlayer::getLastPositionInfo(uint32 dimension) {
+    return lastPositionInfo[dimension];
 };
 
-void AzthPlayer::setLastPositionInfo(std::vector<float> posInfo) {
-    lastPositionInfo = posInfo;
+void AzthPlayer::setLastPositionInfo(uint32 dimension, WorldLocation posInfo) {
+    lastPositionInfo[dimension] = posInfo;
 };
 
 /**
@@ -331,25 +332,35 @@ void AzthPlayer::setLastPositionInfo(std::vector<float> posInfo) {
  * the returned value is local. Then must be copied
  * 
  */
-std::vector<float> AzthPlayer::getLastPositionInfoFromDB() {
-    std::vector<float> lastPos;
-    QueryResult ssCommandsResult = CharacterDatabase.PQuery(
-            "SELECT mapId, posX, posY, posZ FROM character_saved_position WHERE type = 1 AND charGuid = %u LIMIT 1;", player->GetGUIDLow());
+std::map<uint32,WorldLocation> AzthPlayer::getLastPositionInfoFromDB() {
+    std::map<uint32,WorldLocation> lastPos;
 
-    if (ssCommandsResult) {
-        lastPos.push_back((*ssCommandsResult)[0].GetFloat());
-        lastPos.push_back((*ssCommandsResult)[1].GetFloat());
-        lastPos.push_back((*ssCommandsResult)[2].GetFloat());
-        lastPos.push_back((*ssCommandsResult)[3].GetFloat());
-    } else {
-        lastPos = {1.f, 4818.27f, -1971.3f, 1069.75f}; //black market position
-    }
+    QueryResult savedPosResult = CharacterDatabase.PQuery(
+            "SELECT type, mapId, posX, posY, posZ FROM character_saved_position WHERE charGuid = %u LIMIT 1;", player->GetGUIDLow());
+
+    if (!savedPosResult)
+        return lastPos;
+    
+    do
+    {
+        Field* posFields = savedPosResult->Fetch();
+        
+        lastPos[posFields[0].GetUInt32()] = WorldLocation(posFields[1].GetFloat(),posFields[2].GetFloat(),posFields[3].GetFloat(), posFields[4].GetFloat(), player->GetOrientation());
+    } while (savedPosResult->NextRow());
+
     return lastPos;
 };
 
-void AzthPlayer::saveLastPositionInfoToDB(Player *pl, std::vector<float> posInfo) {
-    QueryResult ssCommandsResult = CharacterDatabase.PQuery(
-            "REPLACE INTO character_saved_position VALUES (%u, 1, %f, %f, %f, %f);", pl->GetGUIDLow(), posInfo[1], posInfo[2], posInfo[3], posInfo[0]);
+void AzthPlayer::saveLastPositionInfoToDB(Player *pl) {
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();   
+    
+    std::map<uint32,WorldLocation>::iterator it;
+    for ( it = lastPositionInfo.begin(); it != lastPositionInfo.end(); it++ ) {
+        WorldLocation _loc= it->second;
+        trans->PAppend("REPLACE INTO character_saved_position(charGuid,type,posX,posY,posZ,mapId) VALUES (%u, %u, %f, %f, %f, %u);", pl->GetGUIDLow(), it->first, _loc.GetPositionX(), _loc.GetPositionY(), _loc.GetPositionZ(), _loc.GetMapId());
+    }
+
+    CharacterDatabase.CommitTransaction(trans);   
 };
 
 bool AzthPlayer::isInBlackMarket() {

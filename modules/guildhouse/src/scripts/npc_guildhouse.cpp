@@ -40,6 +40,8 @@
 #include "Guild.h"
 #include "Teleport.h"
 #include "AccountMgr.h"
+//[AZTH]
+#include "AzthUtils.h"
 
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
@@ -963,6 +965,22 @@ class npc_buffnpc : public CreatureScript
 # npc_portal
 #########*/
 
+#define SPELL_VISUAL_TELEPORT   35517
+
+// Teleport Player
+void Teleport(Player *player, uint16 map,
+                float X, float Y, float Z, float orient)
+{
+    uint32 aurDim=player->azthPlayer->getCurrentDimensionByAura();
+    if (sAzthUtils->isPhasedDimension(aurDim) && !player->azthPlayer->changeDimension(DIMENSION_NORMAL, true))
+        return;
+    
+    player->CLOSE_GOSSIP_MENU();
+    player->CastSpell(player, SPELL_VISUAL_TELEPORT, true);
+    if (!player->TeleportTo(map, X, Y, Z, orient) && sAzthUtils->isPhasedDimension(aurDim))
+        player->azthPlayer->changeDimension(aurDim); // we have to restore old dimension to avoid exploits if teleport failed
+};
+
 class npc_portal : public CreatureScript
 {
     public:
@@ -1011,48 +1029,37 @@ class npc_portal : public CreatureScript
         switch(action)
         {
             case 1005: //Dalaran
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(571, 5804.15f, 624.77f, 647.8f, 1.64f);
+                Teleport(player, 571, 5804.15f, 624.77f, 647.8f, 1.64f);
                 break;
             case 1010: // Shattrath
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(530, -1838.16f, 5301.79f, -12.5f, 5.95f);
+                Teleport(player, 530, -1838.16f, 5301.79f, -12.5f, 5.95f);
                 break;
             case 1015: // Stormwind
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(0, -8992.20f, 848.46f, 29.63f, 0);
+                Teleport(player, 0, -8992.20f, 848.46f, 29.63f, 0);
                 break;
             case 1020: // Ironforge
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(0, -4602.75f, -906.53f, 502.76f, 0);
+                Teleport(player, 0, -4602.75f, -906.53f, 502.76f, 0);
                 break;
             case 1025: // Darnassus
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(1, 9952.13f, 2283.35f, 1341.40f, 0);
+                Teleport(player, 1, 9952.13f, 2283.35f, 1341.40f, 0);
                 break;
             case 1030: // Exodar
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(530, -4021.21f, -11561.82f, -138.14f, 0);
+                Teleport(player, 530, -4021.21f, -11561.82f, -138.14f, 0);
                 break;
             case 1035: // Orgrimmar
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(1, 1469.64f, -4221.07f, 59.23f, 0);
+                Teleport(player, 1, 1469.64f, -4221.07f, 59.23f, 0);
                 break;
             case 1040: // Undercity
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(0, 1769.64f, 64.17f, -46.33f, 0);
+                Teleport(player, 0, 1769.64f, 64.17f, -46.33f, 0);
                 break;
             case 1045: // Thunder Bluff
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(1, -970.36f, 284.84f, 111.41f, 0);
+                Teleport(player, 1, -970.36f, 284.84f, 111.41f, 0);
                 break;
             case 1050: // Silvermoon
-                player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(530, 10000.25f, -7112.02f, 47.71f, 0);
+                Teleport(player, 530, 10000.25f, -7112.02f, 47.71f, 0);
                 break;
             case 1100: //Wintergrasp
-                player->CLOSE_GOSSIP_MENU();
-				player->TeleportTo(571, 4525.60f, 2828.08f, 390, 0.28f); //Out the Fortress 
+                Teleport(player, 571, 4525.60f, 2828.08f, 390, 0.28f); //Out the Fortress 
                 break;
         }
     };
@@ -1076,8 +1083,6 @@ class npc_portal : public CreatureScript
 #define GOSSIP_NEXT_PAGED       1004
 #define GOSSIP_PREV_PAGED       1005
 #define GOSSIP_MAIN_MENU        1006
-
-#define SPELL_VISUAL_TELEPORT   35517
 
 #define NB_ITEM_PAGE            10
 #define MSG_CAT                 100000
@@ -1117,14 +1122,6 @@ namespace
         Str += "pc";
 
         return Str;
-    };
-
-    // Teleport Player
-    void Teleport(Player * const player, const uint16 &map,
-                  const float &X, const float &Y, const float &Z, const float &orient)
-    {
-        player->CastSpell(player, SPELL_VISUAL_TELEPORT, true);
-        player->TeleportTo(map, X, Y, Z, orient);
     };
 
     // Display categories

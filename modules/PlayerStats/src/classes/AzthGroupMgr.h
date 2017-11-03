@@ -10,7 +10,7 @@ public:
 
     void saveToDb();
 
-    uint8 levelMaxGroup;
+    uint32 levelMaxGroup;
     Group* group;
 };
 #endif

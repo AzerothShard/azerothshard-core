@@ -5,6 +5,7 @@
 #include "Map.h"
 #include "WorldSession.h"
 #include "Group.h"
+#include "AzthUtils.h"
 
 enum achievementStatsType {
     ACHIEVEMENT_TYPE,
@@ -19,12 +20,8 @@ public:
 
     void OnAddMember(Group* group, uint64 guid) override {
         Player* player = ObjectAccessor::FindPlayer(guid);
-        if (player) {
-            if (group->azthGroupMgr->levelMaxGroup < player->getLevel()) {
-                group->azthGroupMgr->levelMaxGroup = player->getLevel();
-                group->azthGroupMgr->saveToDb();
-            }
-        }
+        
+        sAzthUtils->updateTwLevel(player, group);
     }
 };
 
@@ -35,27 +32,7 @@ public:
     }
 
     void OnUpdateZone(Player* player, uint32  /*newZone*/, uint32  /*newArea*/) override {
-        uint16 levelPlayer = player->getLevel();
-
-        Map* map = player->FindMap();
-
-        if (map->IsDungeon()) {
-            InstanceSave* is = sInstanceSaveMgr->PlayerGetInstanceSave(GUID_LOPART(player->GetGUID()), map->GetId(), player->GetDifficulty(map->IsRaid()));
-            if (is->azthInstMgr->levelMax == 0) {
-                player->azthPlayer->instanceID = map->GetInstanceId();
-
-                QueryResult result = CharacterDatabase.PQuery("SELECT levelPg FROM instance WHERE id = %u", player->azthPlayer->instanceID);
-                if (!result)
-                    return;
-                Field* fields = result->Fetch();
-                is->azthInstMgr->levelMax = fields[0].GetUInt32();
-            }
-
-            if (levelPlayer > is->azthInstMgr->levelMax) {
-                is->azthInstMgr->levelMax = levelPlayer;
-                is->InsertToDB();
-            }
-        }
+        sAzthUtils->updateTwLevel(player);
     }
 
 

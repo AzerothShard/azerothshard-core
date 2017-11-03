@@ -1,32 +1,5 @@
 #include "AzthLevelStat.h"
 
-AzthLevelStat::AzthLevelStat()
-{
-    level = uint32(80);
-    race = uint32(0);
-    Class = uint32(0);
-    strength = uint32(0);
-    agility = uint32(0);
-    stamina = uint32(0);
-    intellect = uint32(0);
-    spirit = uint32(0);
-    damage = uint32(0);
-    heal = uint32(0);
-}
-
-AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 damage, uint32 heal)
-{
-    this->level = level;
-    this->race = race;
-    this->Class = Class;
-    this->strength = strength;
-    this->agility = agility;
-    this->stamina = stamina;
-    this->intellect = intellect;
-    this->spirit = spirit;
-    this->damage = damage;
-    this->heal = heal;
-}
 
 const map<uint32, AzthLevelStat> & AzthLevelStatMgr::GetLevelStatList()
 {
@@ -38,6 +11,17 @@ void AzthLevelStatMgr::SetLevelStatList(map<uint32, AzthLevelStat> levelStatList
 {
     this->levelStatList = levelStatList;
 }
+
+
+
+AzthLevelStat::AzthLevelStat(uint32 level, uint32 race, uint32 Class, std::map<aura_timewalking_enum, uint32> pctMap)
+{
+    this->level = level;
+    this->race = race;
+    this->Class = Class;
+    this->pctMap = pctMap;
+}
+
 
 uint32 AzthLevelStat::GetLevel() const
 {
@@ -69,72 +53,14 @@ void AzthLevelStat::SetClass(uint32 Class)
     this->Class = Class;
 }
 
-uint32 AzthLevelStat::GetStrPct() const
+
+uint32 AzthLevelStat::GetPct(aura_timewalking_enum aura)
 {
-    return strength;
+    return this->pctMap[aura];
 }
 
-void AzthLevelStat::SetStrPct(uint32 strength)
-{
-    this->strength = strength;
-}
 
-uint32 AzthLevelStat::GetAgiPct() const
+void AzthLevelStat::SetPct(aura_timewalking_enum aura, uint32 val)
 {
-    return agility;
-}
-
-void AzthLevelStat::SetAgiPct(uint32 agility)
-{
-    this->agility = agility;
-}
-
-uint32 AzthLevelStat::GetStaPct() const
-{
-    return stamina;
-}
-
-void AzthLevelStat::SetStaPct(uint32 stamina)
-{
-    this->stamina = stamina;
-}
-
-uint32 AzthLevelStat::GetIntPct() const
-{
-    return intellect;
-}
-
-void AzthLevelStat::SetIntPct(uint32 intellect)
-{
-    this->intellect = intellect;
-}
-
-uint32 AzthLevelStat::GetSpiPct() const
-{
-    return spirit;
-}
-
-void AzthLevelStat::SetSpiPct(uint32 spirit)
-{
-    this->spirit = spirit;
-}
-
-uint32 AzthLevelStat::GetDamPct() const
-{
-    return damage;
-}
-
-void AzthLevelStat::SetDamPct(uint32 damage)
-{
-    this->damage = damage;
-}
-
-uint32 AzthLevelStat::GetHealPct() const
-{
-    return heal;
-}
-
-void AzthLevelStat::SetHealPct(uint32 heal)
-{
-    this->heal = heal;
+    this->pctMap[aura]=val;
 }

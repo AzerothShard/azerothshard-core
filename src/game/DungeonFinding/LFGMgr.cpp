@@ -463,6 +463,11 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
 
     if (grp && (grp->isBGGroup() || grp->isBFGroup()))
         return;
+    
+    //[AZTH]
+    if (!player->azthPlayer->canJoinQueue(AZTH_QUEUE_LFG)) {
+        return;
+    }
 
     // pussywizard: can't join LFG/LFR while using LFR
     if (GetState(player->GetGUID()) == LFG_STATE_RAIDBROWSER)

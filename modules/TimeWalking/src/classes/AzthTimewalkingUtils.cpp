@@ -2,8 +2,72 @@
 #include "AzthLevelStat.h"
 #include "Pet.h"
 
+std::string AzthUtils::getLevelInfo(uint32 level) {
+    switch (level) {
+        case TIMEWALKING_LVL_NAXX:
+            return "Naxxramas Timewalking";
+        case TIMEWALKING_LVL_OBSIDIAN:
+            return "Obsidian Sanctum Timewalking";
+        case TIMEWALKING_LVL_THE_EYE:
+            return "The Eye of Eternity Timewalking";
+    }
+
+    return std::to_string(level);
+}
+
+bool AzthUtils::updateTwLevel(Player *player,Group *group) {
+    
+    uint32 levelPlayer = player->azthPlayer->isTimeWalking() ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
+
+    bool result = false;
+    
+    if (group) {
+        if (group->azthGroupMgr->levelMaxGroup < levelPlayer) {
+            group->azthGroupMgr->levelMaxGroup = levelPlayer;
+            group->azthGroupMgr->saveToDb();
+            
+            std::string _slvl=sAzthUtils->getLevelInfo(levelPlayer);
+            string s = "|cffff0000 Il livello di " + player->GetName() +" è stato registrato all'interno del gruppo, con il valore: " + _slvl + "|r";
+            sAzthUtils->sendMessageToGroup(player, player->GetGroup(), s.c_str());
+            result=true;
+        }
+    }
+
+    Map* map = player->FindMap();
+
+    if (map->IsDungeon() || map->IsRaid()) {
+        bool updated=false;
+        InstanceSave* is = sInstanceSaveMgr->PlayerGetInstanceSave(GUID_LOPART(player->GetGUID()), map->GetId(), player->GetDifficulty(map->IsRaid()));
+        if (is->azthInstMgr->levelMax == 0) {
+            player->azthPlayer->instanceID = map->GetInstanceId();
+
+            QueryResult result = CharacterDatabase.PQuery("SELECT levelPg FROM instance WHERE id = %u", player->azthPlayer->instanceID);
+            if (!result)
+                return result;
+            Field* fields = result->Fetch();
+            is->azthInstMgr->levelMax = fields[0].GetUInt32();
+            updated=true;
+        }
+
+        if (levelPlayer > is->azthInstMgr->levelMax) {
+            is->azthInstMgr->levelMax = levelPlayer;
+            is->InsertToDB();
+            updated=true;
+        }
+        
+        if (updated) {
+            std::string _slvl = sAzthUtils->getLevelInfo(is->azthInstMgr->levelMax);
+            string s = "|cffff0000 Il livello di " + player->GetName() +" è stato registrato nell'instance, con il valore: " + _slvl + "|r";
+            sAzthUtils->sendMessageToGroup(player, player->GetGroup(), s.c_str());
+            result=true;
+        }
+    }
+    
+    return result;
+}
+
 uint32 AzthUtils::selectSpellForTW(Player* player, uint32 spellId) {
-    if (player->azthPlayer->GetTimeWalkingLevel() > 0) {
+    if (player->azthPlayer->isTimeWalking(true)) {
         uint32 spell=this->selectCorrectSpellRank(player->getLevel(), spellId);
         if (spell)
             return spell;
@@ -21,8 +85,7 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
         AuraApplication const* aurApp = iter->second;
         Aura const* aura = aurApp->GetBase();
 
-        // we remove/apply them in another place
-        if (aura->GetSpellInfo()->Id >= TIMEWALKING_AURA_MOD_HEALING && aura->GetSpellInfo()->Id <= TIMEWALKING_AURA_VISIBLE) {
+        if (aura->GetSpellInfo()->Id >= TIMEWALKING_AURA_MOD_INCREASE_HEALTH_PCT && aura->GetSpellInfo()->Id <= TIMEWALKING_AURA_VISIBLE) {
             ++iter;
             continue;
         }
@@ -121,4 +184,21 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
         }
     }
 
+}
+
+
+uint32 AzthPlayer::getTwItemLevel(uint32 twLevel) {       
+    switch (twLevel) {
+        case TIMEWALKING_LVL_NAXX:
+        case TIMEWALKING_LVL_OBSIDIAN:
+        case TIMEWALKING_LVL_THE_EYE:
+            return 213;
+        break;
+        case TIMEWALKING_LVL_ULDUAR:
+        case TIMEWALKING_LVL_TOGC:
+            return 232;
+        break;
+    }
+    
+    return 0;
 }

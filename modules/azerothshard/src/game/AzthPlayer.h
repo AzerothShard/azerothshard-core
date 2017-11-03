@@ -13,6 +13,14 @@ struct SmartStoneCommand;
 class CrossFaction;
 class Player;
 class SmartStone;
+class WorldLocation;
+
+enum AzthQueueMasks {
+    AZTH_QUEUE_BG=1,
+    AZTH_QUEUE_ARENA=2,
+    AZTH_QUEUE_BG_OR_ARENA=3, // mask BG+Arena
+    AZTH_QUEUE_LFG=4
+};
 
 class AzthPlayer {
 public:
@@ -37,13 +45,13 @@ public:
   uint32 getArena3v3Info(uint8 type);
   void setArena3v3Info(uint8 type, uint32 value);
 
-  uint16 levelPlayer;
-  uint16 tmpLevelPg;
-  uint8 groupLevel;
+  uint32 levelPlayer;
+  uint32 tmpLevelPg;
+  uint32 groupLevel;
 
   struct AzthAchiData {
-    uint8 level;
-    uint8 levelParty;
+    uint32 level;
+    uint32 levelParty;
   };
 
   typedef UNORDERED_MAP<uint16 /*achiId*/, AzthAchiData /*data*/>
@@ -58,10 +66,8 @@ public:
 
   uint32 instanceID;
 
-  uint8 getGroupLevel();
-
   void ForceKilledMonsterCredit(uint32 entry, uint64 guid);
-  bool passHsChecks(Quest const* qInfo, uint32 entry, uint32 realEntry, uint64 guid);
+  bool passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntry, uint64 guid);
   time_t lastSent = time(NULL);
 
   std::vector<SmartStonePlayerCommand> & getSmartStoneCommands();
@@ -75,15 +81,13 @@ public:
   bool hasSmartStoneCommand(uint32 id);
 
   void loadAzthPlayerFromDB();
-  uint32 GetTimeWalkingLevel() const;
-  void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool giveLevel=true);
   bool AzthMaxPlayerSkill();
   bool AzthSelfChangeXp(float rate);
-  std::vector<float> & getLastPositionInfo();
-  void setLastPositionInfo(std::vector<float> posInfo);
+  WorldLocation& getLastPositionInfo(uint32 dimension);
+  void setLastPositionInfo(uint32 dimension, WorldLocation posIinfo);
   bool isInBlackMarket();
-  std::vector<float> getLastPositionInfoFromDB();
-  void saveLastPositionInfoToDB(Player *pl, std::vector<float> posInfo);
+  std::map<uint32,WorldLocation> getLastPositionInfoFromDB();
+  void saveLastPositionInfoToDB(Player *pl);
 
   bool isPvP();
   void loadPvPInfo();
@@ -94,7 +98,29 @@ public:
   void DelBankItem(uint32 itemEntry);
   void SetBankItemsList(ItemInBankMap itemsInBankList);
   ItemInBankMap & GetBankItemsList();
-  bool canEnterMap(MapEntry const* entry, InstanceTemplate const* instance, bool loginCheck);
+  bool canEnterMap(MapEntry const* entry, InstanceTemplate const* instance = nullptr, bool loginCheck = false);
+  bool canJoinQueue(AzthQueueMasks type);
+  bool canGroup(Player *with=nullptr);
+  bool canExplore();
+  bool canCompleteCriteria(AchievementCriteriaEntry const* criteria);
+  bool canEquipItem(ItemTemplate const* proto);
+  bool checkItems(uint32 iLvlMax);
+  bool checkItem(ItemTemplate const* proto);
+  uint32 getMaxItemLevelByStatus();
+
+  //TIMEWALKING
+  uint32 getGroupLevel(bool normalized = true);
+  uint32 GetTimeWalkingLevel() const;
+  bool isTimeWalking(bool skipSpecial=false) const;
+  void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool giveLevel=false);
+  uint32 getTwItemLevel(uint32 twLevel);
+  
+  //DIMENSIONS
+  uint32 getCurrentDimensionByMark() const;
+  uint32 getCurrentDimensionByPhase() const;
+  uint32 getCurrentDimensionByAura() const;
+  bool hasDimSpecificAura(uint32 dim);
+  bool changeDimension(uint32 dim, bool validate = false, bool temp = false);
 
 private:
   Player *player;
@@ -102,7 +128,7 @@ private:
   uint32 arena3v3Info[7]; // ARENA_TEAM_END
   float playerQuestRate, maxQuestRate;
   std::vector<SmartStonePlayerCommand> smartStoneCommands;
-  std::vector<float> lastPositionInfo;
+  std::map<uint32,WorldLocation> lastPositionInfo;
   bool m_isPvP;
   AzthCustomLangs customLang;
   

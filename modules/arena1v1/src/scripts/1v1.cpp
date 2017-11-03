@@ -38,7 +38,7 @@
              return false;
          
         //[AZTH]
-        if (!sASeasonMgr->canJoinArenaOrBg(player))
+        if (!player->azthPlayer->canJoinQueue(AZTH_QUEUE_ARENA))
             return false;
         //[/AZTH]
 

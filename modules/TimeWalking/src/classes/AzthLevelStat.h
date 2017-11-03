@@ -7,9 +7,41 @@
 
 enum aura_timewalking_enum
 {
+    // special from official dbc
+    TIMEWALKING_AURA_MOD_PARRY_RETAIL = 21352, // Decrease Parry -1
+    // our from database
+    TIMEWALKING_AURA_MOD_DODGE_PCT = 909080,
+    TIMEWALKING_AURA_MOD_PARRY_PCT = 909081,
+    TIMEWALKING_AURA_MOD_BLOCK_PCT = 909082,
+    TIMEWALKING_AURA_MOD_CRIT_PCT = 909083,
+    TIMEWALKING_AURA_MOD_ARMOR_PENET_PCT = 909084,
+    
+    // base stats
+    TIMEWALKING_AURA_MOD_STR_PCT = 909070,
+    TIMEWALKING_AURA_MOD_STA_PCT = 909071,
+    TIMEWALKING_AURA_MOD_AGI_PCT = 909072,
+    TIMEWALKING_AURA_MOD_INT_PCT = 909073,
+    TIMEWALKING_AURA_MOD_SPI_PCT = 909074,
+    // our from dbc
+    TIMEWALKING_AURA_MOD_INCREASE_HEALTH_PCT = 909090,
+    TIMEWALKING_AURA_MOD_RESISTANCE_PCT = 909091,
     TIMEWALKING_AURA_MOD_HEALING = 909092,
     TIMEWALKING_AURA_MOD_DAMAGESPELL = 909093,
+    TIMEWALKING_AURA_MOD_POWER_COST_SCHOOL_PCT = 909094,
+    TIMEWALKING_AURA_MOD_STAT_PCT = 909095,
     TIMEWALKING_AURA_VISIBLE = 909096
+};
+
+enum TWSpecialLevels
+{
+    TIMEWALKING_SPECIAL_LVL_MIN=300,
+    TIMEWALKING_LVL_NAXX = 381,
+    TIMEWALKING_LVL_OBSIDIAN = 382,
+    TIMEWALKING_LVL_THE_EYE = 383,
+    TIMEWALKING_LVL_ULDUAR = 384,
+    // ALGALON 385 ?
+    TIMEWALKING_LVL_TOGC = 386,
+    TIMEWALKING_SPECIAL_LVL_MAX=555,
 };
 
 class AzthLevelStat
@@ -20,47 +52,21 @@ public:
     uint32 GetLevel() const;
     uint32 GetRace() const;
     uint32 GetClass() const;
-    uint32 GetStrPct() const;
-    uint32 GetAgiPct() const;
-    uint32 GetStaPct() const;
-    uint32 GetIntPct() const;
-    uint32 GetSpiPct() const;
-    uint32 GetDamPct() const;
-    uint32 GetHealPct() const;
-
-
-
+    uint32 GetPct(aura_timewalking_enum aura);
 
     //SETTERS 
     void SetLevel(uint32 level);
     void SetRace(uint32 race);
     void SetClass(uint32 Class);
-    void SetStrPct(uint32 strength);
-    void SetAgiPct(uint32 agility);
-    void SetStaPct(uint32 stamina);
-    void SetIntPct(uint32 intellect);
-    void SetSpiPct(uint32 spirit);
-    void SetDamPct(uint32 damage);
-    void SetHealPct(uint32 heal);
+    void SetPct(aura_timewalking_enum aura, uint32 val);
 
+    AzthLevelStat(uint32 level=80, uint32 race=0, uint32 Class=0, std::map<aura_timewalking_enum, uint32> pctMap = std::map<aura_timewalking_enum, uint32>());
 
-
-
-    AzthLevelStat();
-    AzthLevelStat(uint32 level, uint32 race, uint32 Class, uint32 strength, uint32 agility, uint32 stamina, uint32 intellect, uint32 spirit, uint32 damage, uint32 heal);
-
-
+    std::map<aura_timewalking_enum, uint32> pctMap;
 private:
     uint32 level;
     uint32 race;
     uint32 Class;
-    uint32 strength;
-    uint32 agility;
-    uint32 stamina;
-    uint32 intellect;
-    uint32 spirit;
-    uint32 damage;
-    uint32 heal;
 };
 
 class AzthLevelStatMgr {

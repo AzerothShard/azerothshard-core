@@ -43,10 +43,11 @@ public:
             sLog->outString();
             return;
         }
-        Field* timeWalking_Field = timewalking_table->Fetch();
+
 
         do
         {
+            Field* timeWalking_Field = timewalking_table->Fetch();
             raidList[timeWalking_Field[0].GetUInt32()] = TwRaid(timeWalking_Field[0].GetUInt32(), timeWalking_Field[1].GetString(), timeWalking_Field[2].GetUInt32(), timeWalking_Field[3].GetUInt32(), timeWalking_Field[4].GetUInt32(), timeWalking_Field[5].GetUInt32(), timeWalking_Field[6].GetUInt32());
         } while (timewalking_table->NextRow());
         
@@ -54,7 +55,10 @@ public:
         
         //-------------------------------------------------------------------
         //Loading levels
-        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,race,class,strength_pct,agility_pct,stamina_pct,intellect_pct,spirit_pct,damage_pct,heal_pct FROM timewalking_levels ORDER BY level;");
+        QueryResult timewalkingLevel_table = ExtraDatabase.PQuery("SELECT level,race,class,"
+        "strength_pct,agility_pct,stamina_pct,intellect_pct,spirit_pct,"
+        "dodge_pct, parry_pct, block_pct, crit_pct, armor_pen_pct, health_pct, resistance_pct, power_cost_pct, stat_pct,"
+        "damage_pct,heal_pct FROM timewalking_levels ORDER BY level;");
         if (!timewalkingLevel_table)
         {
             sLog->outString(">> Loaded 0 levels for TimeWalking. DB table `timewalking_levels` is empty.\n");
@@ -62,18 +66,37 @@ public:
             return;
         }
 
-        Field* timeWalkingLevel_Field = timewalkingLevel_table->Fetch();
+
 
         do
         {
-            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()*10000+timeWalkingLevel_Field[1].GetUInt32()*100+timeWalkingLevel_Field[2].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), timeWalkingLevel_Field[3].GetUInt32(), timeWalkingLevel_Field[4].GetUInt32(), timeWalkingLevel_Field[5].GetUInt32(), timeWalkingLevel_Field[6].GetUInt32(), timeWalkingLevel_Field[7].GetUInt32(), timeWalkingLevel_Field[8].GetUInt32(), timeWalkingLevel_Field[9].GetUInt32());
+            Field* timeWalkingLevel_Field = timewalkingLevel_table->Fetch();
+
+            std::map<aura_timewalking_enum, uint32> _pctMap;
+            _pctMap[TIMEWALKING_AURA_MOD_STR_PCT] = timeWalkingLevel_Field[3].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_AGI_PCT] = timeWalkingLevel_Field[4].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_STA_PCT] = timeWalkingLevel_Field[5].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_INT_PCT] = timeWalkingLevel_Field[6].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_SPI_PCT] = timeWalkingLevel_Field[7].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_DODGE_PCT] = timeWalkingLevel_Field[8].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_PARRY_PCT] = timeWalkingLevel_Field[9].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_BLOCK_PCT] = timeWalkingLevel_Field[10].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_CRIT_PCT] = timeWalkingLevel_Field[11].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_ARMOR_PENET_PCT] = timeWalkingLevel_Field[12].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_INCREASE_HEALTH_PCT] = timeWalkingLevel_Field[13].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_RESISTANCE_PCT] = timeWalkingLevel_Field[14].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_POWER_COST_SCHOOL_PCT] = timeWalkingLevel_Field[15].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_STAT_PCT] = timeWalkingLevel_Field[16].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_DAMAGESPELL] = timeWalkingLevel_Field[17].GetUInt32();
+            _pctMap[TIMEWALKING_AURA_MOD_HEALING] = timeWalkingLevel_Field[18].GetUInt32();
+            timeWalkingLevelsStatsList[timeWalkingLevel_Field[0].GetUInt32()*10000+timeWalkingLevel_Field[1].GetUInt32()*100+timeWalkingLevel_Field[2].GetUInt32()] = AzthLevelStat(timeWalkingLevel_Field[0].GetUInt32(), timeWalkingLevel_Field[1].GetUInt32(), timeWalkingLevel_Field[2].GetUInt32(), _pctMap);
         } while (timewalkingLevel_table->NextRow());
 
         sAzthLevelStatMgr->SetLevelStatList(timeWalkingLevelsStatsList);
 
         //-------------------------------------------------------------------
         //Loading achievement
-        QueryResult azthAchievement_table = ExtraDatabase.PQuery("SELECT achievement,criteria,Points,category,parentCategory,difficulty,levelMax,levelMin,level,originalPoints,Name,Description,reward,rewardCount FROM azth_achievements WHERE criteria != 0 ORDER BY achievement;");
+        QueryResult azthAchievement_table = ExtraDatabase.PQuery("SELECT achievement,criteria,Points,category,parentCategory,difficulty,levelMax,levelMin,level,originalPoints,Name,Description,reward,rewardCount,killCredit,specialLevelReq,reqDimension FROM azth_achievements WHERE criteria != 0 ORDER BY achievement;");
         if (!azthAchievement_table)
         {
             sLog->outString(">> Loaded 0 achievements for TimeWalking. DB table `azth_achievements` is empty.\n");
@@ -81,17 +104,17 @@ public:
             return;
         }
 
-        Field* azthAchievement_field = azthAchievement_table->Fetch();
-
         do
         {
+            Field* azthAchievement_field = azthAchievement_table->Fetch();
+
             azthAchievementList[azthAchievement_field[1].GetUInt32()] = AzthAchievement(
                 // achievement                                criteria                           Points                                 category                           parentCategory                    difficulty                        
                 azthAchievement_field[0].GetUInt32(), azthAchievement_field[1].GetUInt32(), azthAchievement_field[2].GetUInt32(), azthAchievement_field[3].GetUInt32(), azthAchievement_field[4].GetUInt32(), azthAchievement_field[5].GetUInt32(),
                 // levelMax                                 levelMin                                    level                              originalPoints                        Name                              Description
                 azthAchievement_field[6].GetUInt32(), azthAchievement_field[7].GetUInt32(), azthAchievement_field[8].GetUInt32(), azthAchievement_field[9].GetUInt32(), azthAchievement_field[10].GetString(), azthAchievement_field[11].GetString(),
-                //reward                                        rewardCount                             killcredit
-                azthAchievement_field[12].GetUInt32(), azthAchievement_field[13].GetUInt32(), azthAchievement_field[13].GetUInt32());
+                //reward                                        rewardCount                             killcredit                      specialLevelReq                         reqDimension
+                azthAchievement_field[12].GetUInt32(), azthAchievement_field[13].GetUInt32(), azthAchievement_field[14].GetUInt32(), azthAchievement_field[15].GetUInt32(), azthAchievement_field[16].GetUInt32());
         } while (azthAchievement_table->NextRow());
 
         sAzthAchievementMgr->achievementList=azthAchievementList;
@@ -111,14 +134,13 @@ public:
 			return true;
 		}
 
-        if (player->getLevel() >= 80) {
+        if (!player->azthPlayer->isTimeWalking()) {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Fase Attuale ( Bonus )", GOSSIP_SENDER_MAIN, 4);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
             player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
-        }
-
-        if (player->azthPlayer->GetTimeWalkingLevel() > 0)
+        } else {
             player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
+        }
 
         player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_MAIN, creature->GetGUID());
 
@@ -133,6 +155,15 @@ public:
 
     void setTimeWalking(Player* player,uint32 level)
     {
+        if (level == sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) // we should skip level 80 and use specials (>300) if needed
+            return;
+        
+        uint32 iLvl=player->azthPlayer->getTwItemLevel(level);
+        if (iLvl && !player->azthPlayer->checkItems(iLvl)) {
+            ChatHandler(player->GetSession()).PSendSysMessage("Questa modalità ha l'item level massimo: %u",iLvl);
+            return;
+        }
+        
         player->azthPlayer->SetTimeWalkingLevel(level);
 
         sAzthUtils->removeTimewalkingAura(player);
@@ -154,7 +185,9 @@ public:
         if (action == 6 && _is_number(code))
         {
             int level = atoi(code);
-            if (level < 0 || level > 80)
+            // we cannot set manually a level > 80
+            // special level must be set by gossip menus
+            if (level < 0 || uint32(level) >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 return false;
             }
@@ -281,61 +314,104 @@ public:
         if (!count && !killCredit) {
             return;
         }
+        
+        /**
+         *  CHECK REQUIREMENTS
+         */
+        if (achi.GetReqDimension() > 0 && achi.GetReqDimension() != player->azthPlayer->getCurrentDimensionByAura())
+            return;
 
-        uint32 level = player->azthPlayer->getGroupLevel() > 0 ? player->azthPlayer->getGroupLevel() : player->getLevel();
+        uint32 groupLevel= player->azthPlayer->getGroupLevel();
+        uint32 specialGroupLevel = player->azthPlayer->getGroupLevel(false);
+        uint32 level = groupLevel > 0 ? groupLevel : player->getLevel();
+        uint32 specialLevel = specialGroupLevel > 0 ? specialGroupLevel : player->azthPlayer->GetTimeWalkingLevel();
+        
+        // skip rewards if you don't have the required special level
+        if (achi.GetSpecialLevelReq() > 0 && 
+            (!player->azthPlayer->isTimeWalking() || specialLevel != achi.GetSpecialLevelReq()) ) {
+            return;
+        }
+        
+        if (level < achi.GetLevelMin() || level  > achi.GetLevelMax() ) {
+            return;
+        }
+        /*
+         *  END 
+         */
 
         // to achieve it you must be in range
-        if (achi.GetLevelMin() <= level && achi.GetLevelMax() >= level) {
-            if (count > 0) {
-                ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(reward);
-                if (!_proto)
-                    return;
+        if (count > 0) {
+            ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(reward);
+            if (!_proto)
+                return;
 
 
-                bool hasBonus = false;
-                RaidList rList = sAzthRaid->GetRaidList();
-                for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
-                    if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
-                        hasBonus = true;
-                        break;
-                    }
+            bool hasBonus = false;
+            RaidList rList = sAzthRaid->GetRaidList();
+            for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
+                if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
+                    hasBonus = true;
+                    break;
                 }
+            }
+            
+            if (_proto->IsCurrencyToken()) {
+                // if bonus is active then you'll get x2 tokens
+                // moreover if you have the level <= of suggested
+                // then you'll get x6 tokens instead
+                if (hasBonus) {
+                    count *= 2;
+
+                    if (level <= achi.GetLevel())
+                        count *= 3;
+                }
+
+                player->AddItem(reward, count);
+            } else {
+                uint32 mailItems=0;
+
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                MailDraft* draft = new MailDraft(_proto->Name1, "");
                 
-                if (_proto->IsCurrencyToken()) {
-                    // if bonus is active then you'll get x2 tokens
-                    // moreover if you have the level <= of suggested
-                    // then you'll get x6 tokens instead
-                    if (hasBonus) {
-                        count *= 2;
-
-                        if (level <= achi.GetLevel())
-                            count *= 3;
-                    }
-
-                    player->AddItem(reward, count);
-                } else {
-                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                    MailDraft* draft = new MailDraft(_proto->Name1, "");
+                for (uint32 i = 0; i < count; i++)
+                {
+                    Item *item = NewItemOrBag(_proto);
                     
-                    for (uint32 i = 0; i < count; i++)
-                    {
-                        Item *item = NewItemOrBag(_proto);
-                        if (!item->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), _proto->ItemId, player)) {
-                            delete item;
-                            return;
-                        }
-                        draft->AddItem(item);
+                    if (!item->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), _proto->ItemId, player)) {
+                        delete item;
+                        return;
                     }
 
-                    draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
-                    CharacterDatabase.CommitTransaction(trans);
-                    ChatHandler(player->GetSession()).PSendSysMessage("Complimenti! |cffff0000  %s x%d|r ti è stato inviato via mail", _proto->Name1.c_str(), count);
+                    ItemPosCountVec off_dest;
+                    if (mailItems == 0 && player->CanStoreItem(NULL_BAG, NULL_SLOT, off_dest, item, false) == EQUIP_ERR_OK)
+                    {
+                        player->StoreItem(off_dest, item, true);
+                    } else {
+                        draft->AddItem(item);
+                        mailItems++;
+                        
+                        if ((i==count-1) || (mailItems > 0 && mailItems % 10 == 0)) {
+                            draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+                            CharacterDatabase.CommitTransaction(trans);
+                            
+                            if (i<count-1) {
+                                trans = CharacterDatabase.BeginTransaction();
+                                draft = new MailDraft(_proto->Name1, "");
+                            }
+                        }
+                    }
+                }
+
+
+                ChatHandler(player->GetSession()).PSendSysMessage("Complimenti! hai ottenuto |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ", _proto->ItemId, _proto->Name1.c_str(), count);
+                if (mailItems > 0) {
+                    ChatHandler(player->GetSession()).PSendSysMessage("Hai le borse piene! Controlla la mailbox!");
                 }
             }
+        }
 
-            if (killCredit) {
-                player->azthPlayer->ForceKilledMonsterCredit(killCredit, 0); // send credit 
-            }
+        if (killCredit) {
+            player->azthPlayer->ForceKilledMonsterCredit(killCredit, 0); // send credit 
         }
 
     }
@@ -353,11 +429,26 @@ public:
     
     void OnBeforeInitTalentForLevel(Player* player, uint8&  /*level*/, uint32& talentPointsForLevel) override
     {
-        if (player->azthPlayer->GetTimeWalkingLevel() > 0)
+        if (player->azthPlayer->isTimeWalking())
         {
-            talentPointsForLevel = 71;
+            talentPointsForLevel = 71; // to avoid talent points reset after relog in timewalking
         }
     }
+};
+
+
+class achievement_timewalking_check : public AchievementCriteriaScript
+{
+    public:
+        achievement_timewalking_check(char const* name) : AchievementCriteriaScript(name) {}
+
+        //Should be deprecated since canCompleteCriteria used in official AchievementMgr.cpp check is enough
+        //however you can attach this script on achievement_criteria_data if needed
+        bool OnCheck(Player*  player, Unit* /*target*/, uint32 criteria_id) override
+        {
+            AchievementCriteriaEntry const* criteria = sAchievementCriteriaStore.LookupEntry(criteria_id);
+            return player->azthPlayer->canCompleteCriteria(criteria);  
+        }
 };
 
 void AddSC_TimeWalking()
@@ -365,4 +456,5 @@ void AddSC_TimeWalking()
     new loadTimeWalkingRaid();
     new TimeWalkingGossip();
     new timeWalkingPlayer();
+    new achievement_timewalking_check("achievement_timewalking_check");
 }

@@ -2,5 +2,5 @@
 
 
 void SmartStoneApps::teleportDalaran(Player *player) {
-    player->TeleportTo(SharedDef::dalaran);
+    player->TeleportTo(AzthSharedDef::dalaran);
 }

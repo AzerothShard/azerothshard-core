@@ -1,24 +1,7 @@
 #include "AzthAchievement.h"
 
-
-AzthAchievement::AzthAchievement()
-{
-    achievement = uint32(0);
-    criteria = uint32(0);
-    points = uint32(0); 
-    category = uint32(0);
-    parentCategory = uint32(0);
-    difficulty = uint32(0);
-    levelMax = uint32(0);
-    levelMin = uint32(0);
-    level = uint32(0);
-    originalPoints = uint32(0);
-    name = string("");
-    description = string("");
-    
-}
-
-AzthAchievement::AzthAchievement(uint32 achievement, uint32 criteria, uint32 points, uint32 category, uint32 parentCategory, uint32 difficulty, uint32 levelMax, uint32 levelMin, uint32 level, uint32 originalPoints, string name, string description, uint32 reward, uint32 rewardCount, uint32 killCredit)
+AzthAchievement::AzthAchievement(uint32 achievement, uint32 criteria, uint32 points, uint32 category, uint32 parentCategory, uint32 difficulty, uint32 levelMax, uint32 levelMin, 
+                                 uint32 level, uint32 originalPoints, string name, string description, uint32 reward, uint32 rewardCount, uint32 killCredit, uint32 specialLevelReq, uint32 reqDimension)
 {
     this->achievement = achievement;
     this->criteria = criteria;
@@ -35,6 +18,8 @@ AzthAchievement::AzthAchievement(uint32 achievement, uint32 criteria, uint32 poi
     this->reward = reward;
     this->rewardCount = rewardCount;
     this->killCredit = killCredit;
+    this->specialLevelReq = specialLevelReq;
+    this->reqDimension = reqDimension;
 }
 
 uint32 AzthAchievement::GetAchievement() const
@@ -110,4 +95,14 @@ uint32 AzthAchievement::GetRewardCount() const
 uint32 AzthAchievement::GetKillCredit() const
 {
     return killCredit;
+}
+
+uint32 AzthAchievement::GetSpecialLevelReq() const
+{
+    return specialLevelReq;
+}
+
+uint32 AzthAchievement::GetReqDimension() const
+{
+    return reqDimension;
 }

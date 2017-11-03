@@ -34,6 +34,7 @@
 #include "azth_custom_hearthstone_mode.h"
 #include "AzthFirstKills.h"
 #include "AzthUtils.h"
+//[/AZTH]
 
 namespace Trinity
 {
@@ -807,16 +808,19 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
 
     if (!achievementCriteriaList) 
         return;
-    
-    //[AZTH]
-    std::vector<uint32> hsCheckList;
+
+    std::vector<uint32> hsCheckList; //[AZTH]
 
     for (AchievementCriteriaEntryList::const_iterator i = achievementCriteriaList->begin(); i != achievementCriteriaList->end(); ++i)
     {
         AchievementCriteriaEntry const* achievementCriteria = (*i);
         AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementCriteria->referredAchievement);
 
-        sHearthstoneMode->sendQuestCredit(GetPlayer(), achievementCriteria, hsCheckList); //[AZTH] need it before the check on completed achievements
+        //[AZTH] need it before the check on completed achievements
+        sHearthstoneMode->sendQuestCredit(GetPlayer(), achievementCriteria, hsCheckList);
+        if (!GetPlayer()->azthPlayer->canCompleteCriteria(achievementCriteria))
+            continue;
+        //[/AZTH]
 
         if (!achievement)
             continue;
@@ -2356,8 +2360,8 @@ void AchievementGlobalMgr::SetRealmCompleted(AchievementEntry const* achievement
     if (IsRealmCompleted(achievement))
         return;
 
-    //[AZTH]
-    sAzthFirstKills->setRealmCompleted(achievement);
+
+    sAzthFirstKills->setRealmCompleted(achievement); //[AZTH]
     m_allCompletedAchievements[achievement->ID] = std::chrono::system_clock::now();
 }
 
