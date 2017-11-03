@@ -51,7 +51,7 @@ public:
     bool OnGossipHello(Player* player, Creature* creature) override
     {
         //                              icon            text                           sender      action   popup message    money  code
-        if (!(player->azthPlayer->GetTimeWalkingLevel() > 0) && !player->azthPlayer->hasGear())
+        if (!player->azthPlayer->isTimeWalking() && !player->azthPlayer->hasGear())
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Deposita item", GOSSIP_SENDER_MAIN, 501);
         }
@@ -136,37 +136,74 @@ public:
             //player->PlayerTalkClass->SendCloseGossip();
 
             uint32 slot = action;
+            
+            //send menu again but it won't stop following code
+            OnGossipSelect(player, creature, GOSSIP_SENDER_INFO, inventoryType);
 
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
             
             if (!item)
             {
-                player->SendMailResult(0, MAIL_SEND, MAIL_ERR_MAIL_ATTACHMENT_INVALID);
+                creature->MonsterWhisper("Questo item non è valido", player);
                 return true;
             }
 
             if (item->GetUInt32Value(ITEM_FIELD_DURATION))
             {
-                player->SendMailResult(0, MAIL_SEND, MAIL_ERR_EQUIP_ERROR, EQUIP_ERR_MAIL_BOUND_ITEM);
+                creature->MonsterWhisper("Non è possibile depositare items con una durata temporanea!", player);
                 return true;
             }
 
             if (item->IsNotEmptyBag())
             {
-                player->SendMailResult(0, MAIL_SEND, MAIL_ERR_EQUIP_ERROR, EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS);
+                creature->MonsterWhisper("Non è possibile depositare borse non vuote!", player);
                 return true;
             }
 
             if (item->GetCount() > 1)
             {
-                ChatHandler(player->GetSession()).PSendSysMessage("Non possono essere depositati item raggruppati in un unico slot (stacked).");
+                creature->MonsterWhisper("Non possono essere depositati item raggruppati in un unico slot (stacked).");
                 return true;
+            }
+            
+            // disable ashen band
+            switch(item->GetEntry()) {
+                //EXALTED id
+                case 50398:
+                case 52572:
+                case 50402:
+                case 50404:
+                case 50400:
+
+                //REVERED id 
+                case 50397:
+                case 52571:
+                case 50401:
+                case 50403:
+                case 50399:
+
+                //HONORED id
+                case 50384:
+                case 52570:
+                case 50387:
+                case 50388:
+                case 50386:
+
+                //FRIENDLY id
+                case 50377:
+                case 52569:
+                case 50376:
+                case 50375:
+                case 50378:
+                    creature->MonsterWhisper("Non è possibile depositare l'Ashen Band!.", player);
+                    return true;
             }
 
             uint32 inventoryType = item->GetTemplate()->InventoryType;
 
             if (sItemToSell->OwnItem(player, item->GetEntry()))
             {
+                creature->MonsterWhisper("Hai già depositato questo item!", player);
                 return true;
                 //player already deposited this item
             }
@@ -188,10 +225,7 @@ public:
 
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
 
-            ChatHandler(player->GetSession()).PSendSysMessage("Item depositato.");//, item->GetTemplate()->Name1);
-
-            OnGossipSelect(player, creature, GOSSIP_SENDER_INFO, inventoryType);
-            //send menu again
+            creature->MonsterWhisper("Item depositato.");//, item->GetTemplate()->Name1);
         }
         else if (action == 300) // go to main menu
         {
