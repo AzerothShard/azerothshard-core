@@ -1420,7 +1420,7 @@ void Battleground::ReadyMarkerClicked(Player* p)
             req = 2;
             break;
         case ARENA_TYPE_3v3_SOLO:
-            req = MAX_TALENT_CAT;
+            req = 6;
             break;
         //[/AZTH]
     }
