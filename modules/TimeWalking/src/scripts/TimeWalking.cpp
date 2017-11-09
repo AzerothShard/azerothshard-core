@@ -138,6 +138,10 @@ public:
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Fase Attuale ( Bonus )", GOSSIP_SENDER_MAIN, 4);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
             player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
+            if (player->IsGameMaster()) {
+                // only available for game master at the moment
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, 8);
+            }
         } else {
             player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
         }
@@ -154,24 +158,8 @@ public:
     }
 
     void setTimeWalking(Player* player,uint32 level)
-    {
-        if (level == sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) // we should skip level 80 and use specials (>300) if needed
-            return;
-        
-        uint32 iLvl=player->azthPlayer->getTwItemLevel(level);
-        if (iLvl && !player->azthPlayer->checkItems(iLvl)) {
-            ChatHandler(player->GetSession()).PSendSysMessage("Questa modalità ha l'item level massimo: %u",iLvl);
-            return;
-        }
-        
-        player->azthPlayer->SetTimeWalkingLevel(level);
-
-        sAzthUtils->removeTimewalkingAura(player);
-        if (player->GetPet() != NULL) {
-            sAzthUtils->removeTimewalkingAura(player->GetPet());
-        }
-
-        player->SaveToDB(false, false);
+    {        
+        player->azthPlayer->SetTimeWalkingLevel(level, true, true, false);
     }
 
     bool OnGossipSelectCode(Player* player, Creature*  /*creature*/, uint32 sender, uint32 action, const char* code) override
@@ -271,9 +259,9 @@ public:
             }
             player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_RAID, creature->GetGUID());
         }
-        else if (action >= 10000) //apply level
+        else if (action >= 10000 || action == 8) //apply level
         {
-            uint32 level = action - 10000;
+            uint32 level = action == 8 ? TIMEWALKING_LVL_AUTO : action - 10000;
             if (player->azthPlayer->GetTimeWalkingLevel() == 0)
             {
                 setTimeWalking(player, level);
@@ -287,7 +275,7 @@ public:
         
         else if (action == 7)
         {
-            setTimeWalking(player, 0);
+            setTimeWalking(player, 0 );
             player->PlayerTalkClass->SendCloseGossip();
         }
 
@@ -299,6 +287,56 @@ class timeWalkingPlayer : public PlayerScript
 {
 public:
     timeWalkingPlayer() : PlayerScript("timeWalkingPlayer") {}
+    
+    bool _autoscaling(Player *player, uint32 newZone = 0, uint32 newArea = 0) {
+        player->azthPlayer->autoScalingPending=(player->IsInCombat() || !player->IsAlive() || !player->IsInWorld()) ? time(NULL)+2 /*2 seconds after */: 0;
+        
+        if (player->azthPlayer->autoScalingPending > 0)
+            return false;
+
+        uint32 posLvl = 0;
+        if (newArea && newZone) {
+            posLvl = sAzthUtils->getPositionLevel(false, player->GetMap(), newZone, newArea);
+        } else {
+            WorldLocation pos = WorldLocation(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()); 
+            posLvl = sAzthUtils->getPositionLevel(false, player->GetMap(), pos); 
+        }
+        
+        if (!posLvl)
+            return false;
+
+        if (player->getLevel() == posLvl)
+            return false;
+        
+        player->azthPlayer->SetTimeWalkingLevel(TIMEWALKING_LVL_AUTO, true, true, false);
+
+        return true;
+    }
+    
+    void OnUpdateArea(Player* player, uint32 oldArea, uint32 newArea) override {
+        if (!player)
+            return;
+
+        if (oldArea != newArea && player->azthPlayer->GetTimeWalkingLevel() == TIMEWALKING_LVL_AUTO) {
+            AreaTableEntry const* area = GetAreaEntryByAreaID(newArea);
+            _autoscaling(player, area->zone, newArea);
+        }
+
+        sAzthUtils->updateTwLevel(player); // needed for player stats
+    }
+    
+    void OnBeforeUpdate(Player *player, uint32 /*p_time*/) override {
+        if (!player)
+            return;
+        
+        if (player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO)
+            return;
+        
+        if (player->azthPlayer->autoScalingPending > time(NULL))
+            return;
+
+        _autoscaling(player);
+    }
 
     void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override
     {
@@ -344,18 +382,17 @@ public:
             ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(reward);
             if (!_proto)
                 return;
-
-
-            bool hasBonus = false;
-            RaidList rList = sAzthRaid->GetRaidList();
-            for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
-                if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
-                    hasBonus = true;
-                    break;
-                }
-            }
             
             if (_proto->IsCurrencyToken()) {
+                bool hasBonus = false;
+                RaidList rList = sAzthRaid->GetRaidList();
+                for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
+                    if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
+                        hasBonus = true;
+                        break;
+                    }
+                }
+                
                 // if bonus is active then you'll get x2 tokens
                 // moreover if you have the level <= of suggested
                 // then you'll get x6 tokens instead
@@ -422,7 +459,7 @@ public:
         {
             Field* timewalkingCharactersActive_field = timewalkingCharactersActive_table->Fetch();
 
-            player->azthPlayer->SetTimeWalkingLevel(timewalkingCharactersActive_field[1].GetUInt32());
+            player->azthPlayer->SetTimeWalkingLevel(timewalkingCharactersActive_field[1].GetUInt32(), false, false , true);
         }
     }
     
@@ -455,9 +492,27 @@ class achievement_timewalking_check : public AchievementCriteriaScript
         }
 };
 
+class global_timewalking : public GlobalScript {
+    public:
+        global_timewalking() : GlobalScript("global_timewalking_script") { }
+        
+        void OnBeforeItemRoll(Player const* player, Loot& /*loot*/, bool canRate, uint16 /*lootMode*/, LootStoreItem* LootStoreItem) override {
+            if (!canRate)
+                return;
+            
+            if (LootStoreItem->chance >= 100.0f)
+                    return;
+            
+            if (sAzthUtils->isEligibleForBonusByArea(player)) {
+                LootStoreItem->chance *= 2;
+            }
+        }
+};
+
 void AddSC_TimeWalking()
 {
     new loadTimeWalkingRaid();
+    new global_timewalking();
     new TimeWalkingGossip();
     new timeWalkingPlayer();
     new achievement_timewalking_check("achievement_timewalking_check");
