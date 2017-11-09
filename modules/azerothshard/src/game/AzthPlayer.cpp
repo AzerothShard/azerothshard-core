@@ -421,27 +421,51 @@ bool AzthPlayer::checkItem(ItemTemplate const* proto) {
     return true;
 }
 
-bool AzthPlayer::checkItems(uint32 iLvlMax) {   
+bool AzthPlayer::checkItems(uint32 iLvlMax, uint8 type /*=0*/) {   
     if (player->IsGameMaster())
     {
         return true;
     }
+    
+    if (type==0) {
+        // cap limit for each item
+        uint32 INVENTORY_END = 18;
+        uint32 counter = 0;
 
-    uint32 INVENTORY_END = 18;
-    uint32 counter = 0;
-
-    for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
-    {
-        Item* itemToCheck = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
-        if (itemToCheck != nullptr)
+        for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
         {
-            if (!sAzthUtils->checkItemLvL(itemToCheck->GetTemplate(), iLvlMax))
+            // don't check tabard, ranged, offhand or shirt
+            if (INVENTORY_INDEX == EQUIPMENT_SLOT_TABARD || INVENTORY_INDEX == EQUIPMENT_SLOT_RANGED || INVENTORY_INDEX == EQUIPMENT_SLOT_OFFHAND || INVENTORY_INDEX == EQUIPMENT_SLOT_BODY)
+                continue;
+            
+            Item* itemToCheck = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
+            if (itemToCheck != nullptr)
             {
-              ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto!", itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str());
-              counter++;
+                if (!sAzthUtils->checkItemLvL(itemToCheck->GetTemplate(), iLvlMax))
+                {
+                ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto!", itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str());
+                counter++;
+                }
             }
         }
+        
+        return counter == 0;
+    } else {
+        uint32 avg=0;
+        switch(type) {
+            case 1:
+                avg=player->GetAverageItemLevel();
+            break;
+            case 2:
+                avg=player->GetAverageItemLevelForDF();
+            break;
+        }
+        
+        if (avg > iLvlMax) {
+            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Il tuo item level medio è troppo alto: %u|r",avg);
+            return false;
+        } else {
+            return true;
+        }
     }
-    
-    return counter == 0;
 }
