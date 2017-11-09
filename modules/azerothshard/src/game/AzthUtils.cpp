@@ -180,14 +180,25 @@ void AzthUtils::learnClassSpells(Player* player, bool /*new_level*/)
 
 uint32 AzthUtils::selectCorrectSpellRank(uint8 level, uint32 spellId) {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    
+    if (!spellInfo)
+        return spellId; // should never happen
+        
+    // spells that must not scale
+    /*switch (spellId) {
+        case 9634: // dire bear form, scaling it cause visual issue on spell button (unfortunately it's scaled anyway, event with this check)
+            return spellId;
+    }*/
 
+    SpellInfo const* lastFoundSpell;
     for (SpellInfo const* nextSpellInfo = spellInfo; nextSpellInfo != NULL; nextSpellInfo = nextSpellInfo->GetPrevRankSpell())
     {
+        lastFoundSpell = nextSpellInfo;
         if ((nextSpellInfo->SpellLevel == 0 && uint32(level) >= nextSpellInfo->BaseLevel) || uint32(level) >= nextSpellInfo->SpellLevel)
                 return nextSpellInfo->Id;
     }
 
-    return 0;
+    return lastFoundSpell ? lastFoundSpell->Id : spellId; // return last rank found  // return 0 <- informing about not scaled spell
 }
 
 uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
@@ -243,6 +254,37 @@ float AzthUtils::getCustomMultiplier(ItemTemplate const * pProto,uint32 multipli
     }
 }
 
+int32 AzthUtils::normalizeFeralAp(int32 feralBonus, int32 extraDPS, ItemTemplate const* pProto, bool isScaling) {
+    if (!feralBonus)
+        return 0;
+    
+    if (!isScaling)
+        return feralBonus;
+    
+    float dps;
+    if (pProto->Delay == 0)
+        return 0;
+    float temp = 0;
+    
+    if (pProto->Damage[0].DamageMin > 1 || pProto->Damage[0].DamageMax > 1
+        || pProto->Damage[1].DamageMin > 1 || pProto->Damage[1].DamageMax > 1) {
+        // heirloom items (isScaling==true) must have damage min = 1 and damage max = 0
+        // if it's not true, then it's a normal item scaled by our TW system (?)
+        // then we have to recalculate Feral AP using modified formula of item prototype (getDPS)
+
+        temp+=1 + 0; // min 1 , max 0
+        dps = temp*500/pProto->Delay;
+
+        int32 bonus = int32((extraDPS + dps)*14.0f) - 767;
+        if (bonus < 0)
+            return 0;
+
+        return bonus;
+    }
+    
+    return feralBonus;
+}
+
 uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player *pl)
 {    
     if (pl == nullptr)
@@ -288,27 +330,59 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
         return 0;
     }
 
-    // WEAPONS 
+    // WEAPONS + 512 to 16384 <-- this is the dps modifiers ( getDPSMod ) , 32768 <-- spell power modifier, 65536 <-- it's for feral dps (unused?)
     if (pProto->InventoryType == INVTYPE_2HWEAPON) {
-        if (pProto->Class == ITEM_CLASS_WEAPON && pProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF ) {
-            return 16; // + 4096 + 32768; // return 8 + 4096 + 32768;
+        bool isCaster=false;
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+        {
+            if (i >= pProto->StatsCount)
+                break;
+
+            // not accurate but mostly
+            if (pProto->ItemStat[i].ItemStatType == ITEM_MOD_SPELL_POWER || pProto->ItemStat[i].ItemStatType == ITEM_MOD_SPELL_PENETRATION
+                || pProto->ItemStat[i].ItemStatType == ITEM_MOD_HASTE_SPELL_RATING || pProto->ItemStat[i].ItemStatType == ITEM_MOD_CRIT_SPELL_RATING
+                || pProto->ItemStat[i].ItemStatType == ITEM_MOD_INTELLECT || pProto->ItemStat[i].ItemStatType == ITEM_MOD_SPIRIT
+            )
+                isCaster=true;
+        }
+
+        if ( isCaster ) { 
+            return 16 + 4096 + 32768; // return 8 + 4096 + 32768;  // 2h dps caster
         } else {
-            return 16; // + 1024; //return 8 + 1024;
+            return 16 + 1024;         // return 8 + 1024;          // 2h weapon
         }
     }
 
     if (pProto->InventoryType == INVTYPE_WEAPON || pProto->InventoryType == INVTYPE_WEAPONMAINHAND
         || pProto->InventoryType == INVTYPE_WEAPONOFFHAND) {
-        return 16; //+ 512; //return 4 + 512; // should be 4 ?
+        bool isCaster=false;
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+        {
+            if (i >= pProto->StatsCount)
+                break;
+
+            // not accurate but mostly
+            if (pProto->ItemStat[i].ItemStatType == ITEM_MOD_SPELL_POWER || pProto->ItemStat[i].ItemStatType == ITEM_MOD_SPELL_PENETRATION
+                || pProto->ItemStat[i].ItemStatType == ITEM_MOD_HASTE_SPELL_RATING || pProto->ItemStat[i].ItemStatType == ITEM_MOD_CRIT_SPELL_RATING
+                || pProto->ItemStat[i].ItemStatType == ITEM_MOD_INTELLECT || pProto->ItemStat[i].ItemStatType == ITEM_MOD_SPIRIT
+            )
+                isCaster=true;
+        }
+        
+        if (isCaster) {
+            return 16 + 2048 + 32768; // return 8 + 2048 + 32768;  // 1h dps caster
+        } else {
+            return 16 + 512;          // return 8 + 512;           // 1h weapon
+        }
     }
 
     // RANGED
     if (pProto->InventoryType == INVTYPE_RANGED || pProto->InventoryType == INVTYPE_AMMO || pProto->InventoryType == INVTYPE_THROWN)
-        return 16; //+ 8192; // should be 16 ?
+        return 16 + 8192; // should be 16 ?
         
     // WANDS
     if (pProto->InventoryType == INVTYPE_RANGEDRIGHT)
-        return 16; //+ 16384; // should be 16 ?
+        return 16 + 16384; // should be 16 ?
 
 
     if (pProto->InventoryType == INVTYPE_TRINKET) {
@@ -646,3 +720,73 @@ bool AzthUtils::canFly(Unit*const /*caster*/, Unit* originalCaster)
     return false;
 }
 
+uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zone*/, uint32 area) const {
+
+    uint32 level=0;
+    
+    if (includeSpecialLvl) {       
+        switch(map->GetId()) {
+            case NAXXRAMS_RAID:
+                level = TIMEWALKING_LVL_NAXX;
+            break;
+            case ULDUAR_RAID:
+                level = TIMEWALKING_LVL_ULDUAR;
+            break;
+            case OBSIDIAN_RAID:
+                level = TIMEWALKING_LVL_OBSIDIAN;
+            break;
+            case THE_EYE_OF_ETERNITY_RAID:
+                level = TIMEWALKING_LVL_THE_EYE;
+            break;
+            case TRIAL_OF_THE_CRUSADRE_RAID:
+                level = TIMEWALKING_LVL_TOGC;
+            break;
+        }
+    }
+    
+    if (!level)
+    {
+        AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(area);
+        if (areaEntry && areaEntry->area_level > 0)
+            level = areaEntry->area_level;
+    }
+    
+    if (!level) {
+        LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty());
+        if (dungeon && (map->IsDungeon() || map->IsRaid()))
+            level  = dungeon->minlevel;
+    }
+    
+        
+    if (!level) {
+        // try to get level from access requirement (last chance)
+        AccessRequirement const* ar=sObjectMgr->GetAccessRequirement(map->GetId(), map->GetDifficulty());
+        if (ar)
+            level = ar->levelMin;
+    }
+
+    return level;
+}
+
+uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, WorldLocation const& posInfo) const {
+    uint32 zoneid,areaid;
+    map->GetZoneAndAreaId(zoneid, areaid, posInfo.GetPositionX(), posInfo.GetPositionY(), posInfo.GetPositionY());
+    return getPositionLevel(includeSpecialLvl, map, zoneid, areaid);
+}
+
+
+uint32 AzthUtils::getFreeSpaceInBags(Player *player) {
+    uint32 count=0;
+    
+    for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++) {
+        Item* pItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (!pItem)
+            count++;
+    }
+    
+    for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
+        if (Bag* pBag = player->GetBagByPos(i))
+            count+=pBag->GetFreeSlots();
+        
+    return count;
+}

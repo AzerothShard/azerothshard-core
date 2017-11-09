@@ -12,6 +12,7 @@
 #include "SpellAuras.h"
 #include <stdio.h>
 #include <time.h>
+#include "AzthSharedDefines.h"
 
 class AuraApplication;
 class Group;
@@ -59,8 +60,6 @@ public:
     float getCustomMultiplier(ItemTemplate const * pProto, uint32 multiplier);
 
     uint32 getCalcReqLevel(ItemTemplate const* pProto);
-
-    uint32 calculateItemScalingValue(ItemTemplate const* pProto,Player *pl = NULL);
     
     void learnClassSpells(Player* player, bool new_level);
     
@@ -76,7 +75,14 @@ public:
     
     bool canFly(Unit* const caster, Unit* originalCaster);
     
+    uint32 getFreeSpaceInBags(Player *player);
+
+    uint32 calculateItemScalingValue(ItemTemplate const* pProto, Player *pl = NULL);    
+    int32 normalizeFeralAp(int32 feralBonus, int32 extraDPS, ItemTemplate const* pProto, bool isScaling);
+    
     // [Timewalking]
+    uint32 getPositionLevel(bool includeSpecialLvl, Map *map, uint32 zone = 0, uint32 area = 0) const;
+    uint32 getPositionLevel(bool includeSpecialLvl, Map *map, WorldLocation const& posInfo) const;
     
     uint32 selectSpellForTW(Player* player, uint32 spellId);
 
@@ -85,6 +91,10 @@ public:
     std::string getLevelInfo(uint32 level);
     
     bool updateTwLevel(Player *player, Group *group=nullptr);
+    
+    int32 getSpellReduction(Player *player, SpellInfo const* spellProto);
+    
+    bool isEligibleForBonusByArea(Player const *player);
     // [/Timewalking]
     
     // DIMENSIONS
