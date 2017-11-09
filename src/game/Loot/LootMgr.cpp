@@ -17,6 +17,9 @@
 #include "Containers.h"
 #include "ScriptMgr.h"
 
+//[AZTH]
+#include "AzthUtils.h"
+
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {
     RATE_DROP_ITEM_POOR,                                    // ITEM_QUALITY_POOR
@@ -463,6 +466,12 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
     quest_items.reserve(MAX_NR_QUEST_ITEMS);
 
     tab->Process(*this, store.IsRatesAllowed(), lootMode, lootOwner);          // Processing is done there, callback via Loot::AddItem()
+
+    //[AZTH] give another loot process if done with correct level
+    if (sAzthUtils->isEligibleForBonusByArea(lootOwner)) {
+        tab->Process(*this, store.IsRatesAllowed(), lootMode, lootOwner);
+    }
+    //[/AZTH]
 
     // Setting access rights for group loot case
     Group* group = lootOwner->GetGroup();
