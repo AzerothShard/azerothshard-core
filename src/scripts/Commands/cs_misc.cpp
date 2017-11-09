@@ -350,6 +350,10 @@ public:
         {
             handler->GetSession()->GetPlayer()->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER);
             handler->GetSession()->SendNotification(LANG_DEV_ON);
+            //[AZTH]
+            handler->GetSession()->GetPlayer()->SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);
+            handler->GetSession()->GetPlayer()->SetGameMaster(true);
+            //[/AZTH]
             return true;
         }
 
@@ -357,6 +361,9 @@ public:
         {
             handler->GetSession()->GetPlayer()->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER);
             handler->GetSession()->SendNotification(LANG_DEV_OFF);
+            //[AZTH]
+            handler->GetSession()->GetPlayer()->SetGameMaster(false);
+            //[/AZTH]
             return true;
         }
 
