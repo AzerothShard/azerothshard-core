@@ -425,6 +425,10 @@ public:
             player->azthPlayer->SetTimeWalkingLevel(timewalkingCharactersActive_field[1].GetUInt32());
         }
     }
+    
+    void OnLogin(Player *player) override {
+        sAzthUtils->updateTwLevel(player); // to fix level on instance that cannot be calculated OnLoadFromDB (too early)
+    }
 
     
     void OnBeforeInitTalentForLevel(Player* player, uint8&  /*level*/, uint32& talentPointsForLevel) override

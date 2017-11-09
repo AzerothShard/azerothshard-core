@@ -31,8 +31,8 @@ public:
     PlayerStats() : PlayerScript("PlayerStats") {
     }
 
-    void OnUpdateZone(Player* player, uint32  /*newZone*/, uint32  /*newArea*/) override {
-        sAzthUtils->updateTwLevel(player);
+    void OnUpdateZone(Player* /*player*/, uint32  /*newZone*/, uint32  /*newArea*/) override {
+        // sAzthUtils->updateTwLevel(player); <-- we will do it in TimeWalking.cpp script, having correct order with autoscaling
     }
 
 

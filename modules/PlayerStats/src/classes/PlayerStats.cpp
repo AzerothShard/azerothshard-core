@@ -3,7 +3,7 @@
 #include "Group.h"
 #include "Player.h"
 
-uint32 AzthPlayer::getGroupLevel(bool normalized) {
+uint32 AzthPlayer::getGroupLevel(bool normalized /*=true*/) {
   uint32 groupLevel = 0;
   
   if (!player)
@@ -28,7 +28,7 @@ uint32 AzthPlayer::getGroupLevel(bool normalized) {
     groupLevel = group->azthGroupMgr->levelMaxGroup;
   }
   
-  if (normalized && groupLevel>=TIMEWALKING_SPECIAL_LVL_MIN)
+  if (normalized && groupLevel>=TIMEWALKING_SPECIAL_LVL_MAX_START && groupLevel<=TIMEWALKING_SPECIAL_LVL_MAX_END)
       groupLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
   return groupLevel;
