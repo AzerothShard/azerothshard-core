@@ -148,6 +148,7 @@ public:
             if (at) {
                 std::stringstream s;
                 s << "Rating: " << at->GetStats().Rating;
+                s << "\nPersonal Rating: " << player->GetArenaPersonalRating(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3));
                 s << "\nRank: " << at->GetStats().Rank;
                 s << "\nSeason Games: " << at->GetStats().SeasonGames;
                 s << "\nSeason Wins: " << at->GetStats().SeasonWins;

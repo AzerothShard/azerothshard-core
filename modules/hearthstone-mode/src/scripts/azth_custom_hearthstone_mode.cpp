@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cstdlib> // now using C++ header
 #include "AzthPlayer.h"
+#include "ArenaTeamMgr.h"
 
 // old
 void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 /*extendedCostStartValue*/)
@@ -466,29 +467,34 @@ public:
         if (vendor.reputationId < 0)
         {
             int16 bracket = vendor.reputationId * -1;
-            int32 rating = player->GetArenaPersonalRating(ArenaTeam::GetSlotByType(bracket));
+            
+            ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)));
+            
+            int32 rating = (bracket==ARENA_TEAM_SOLO_3v3 && at) ? at->GetStats().Rating : player->GetArenaPersonalRating(ArenaTeam::GetSlotByType(bracket));
             
             if (!player->IsGameMaster() && (!creature->IsVendor() || rating < vendor.repValue)) {
                 stringstream ss;
                 ss << vendor.repValue;
                 
-                std::string str="Hai bisogno di "+ss.str()+" personal rating ";
+                std::string str="You need "+ss.str();
+                
+                str+=(bracket==ARENA_TEAM_SOLO_3v3 && at) ? " team rating in" : " personal rating in";
                 
                 switch(bracket) {
                     case 1:
-                        str+" 1v1";
+                        str+=" 1v1";
                     break;
                     case 2:
-                        str+" 2v2";
+                        str+=" 2v2";
                     break;
                     case 3:
-                        str+" 3v3";
+                        str+=" 3v3";
                     break;
                     case 4:
-                        str+" 3v3 Solo Queue";
+                        str+=" 3v3 Solo Queue";
                     break;
                     case 5:
-                        str+" 5v5";
+                        str+=" 5v5";
                     break;
                 }
 

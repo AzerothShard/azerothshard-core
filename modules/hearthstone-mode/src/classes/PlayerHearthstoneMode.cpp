@@ -92,10 +92,10 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
         
         if (level >= qInfo->GetMinLevel() && qInfo->GetQuestLevel() > 0 && level <= uint32(qInfo->GetQuestLevel())) {
             for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
-                if (qInfo->RequiredNpcOrGo[j] == entry)
+                if (qInfo->RequiredNpcOrGo[j] > 0 && uint32(qInfo->RequiredNpcOrGo[j]) == entry)
                     realEntry = entry;
             }
-            
+
             return true;
         }
     } else  if (hsQuest->specialLevel>0) {
@@ -105,7 +105,7 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
         
         if (specialLevel == hsQuest->specialLevel) {
             for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
-                if (qInfo->RequiredNpcOrGo[j] == entry)
+                if (qInfo->RequiredNpcOrGo[j] > 0 && uint32(qInfo->RequiredNpcOrGo[j]) == entry)
                     realEntry = entry;
             }
 

@@ -104,7 +104,7 @@ public:
   bool canExplore();
   bool canCompleteCriteria(AchievementCriteriaEntry const* criteria);
   bool canEquipItem(ItemTemplate const* proto);
-  bool checkItems(uint32 iLvlMax);
+  bool checkItems(uint32 iLvlMax, uint8 type = 0);
   bool checkItem(ItemTemplate const* proto);
   uint32 getMaxItemLevelByStatus();
 
@@ -112,8 +112,9 @@ public:
   uint32 getGroupLevel(bool normalized = true);
   uint32 GetTimeWalkingLevel() const;
   bool isTimeWalking(bool skipSpecial=false) const;
-  void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool giveLevel=false);
+  void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool clearAuras = true, bool save = true, bool login = false);
   uint32 getTwItemLevel(uint32 twLevel);
+  time_t autoScalingPending;
   
   //DIMENSIONS
   uint32 getCurrentDimensionByMark() const;

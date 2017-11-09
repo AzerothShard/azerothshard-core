@@ -58,7 +58,7 @@ public:
     {
         if (oldLevel == 9 && !player->azthPlayer->isTimeWalking())
         {
-            sWorld->SendGameMail(player, "Well done!", "You reached level 10, a small present for you!", 10 * GOLD);
+            sWorld->SendGameMail(player, "Well done!", "You reached level 10, a small present for you by AzerothShard!", 10 * GOLD);
         }
     }
 

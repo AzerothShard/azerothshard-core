@@ -26,6 +26,7 @@ AzthPlayer::AzthPlayer(Player *origin) {
   customLang = AZTH_LOC_IT;
   std::fill_n(arena1v1Info, 7, 0);
   std::fill_n(arena3v3Info, 7, 0);
+  autoScalingPending = 0;
   
   m_itemsInBank.clear();
 }
@@ -110,8 +111,8 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
     }
 
     for (std::list<SkillSpells>::const_iterator spell = learnList.begin(), end = learnList.end(); spell != end; ++spell) {
-        if (!target->HasSpell(*spell))
-            target->learnSpell(*spell);
+        if (!target->HasSpell(uint32(*spell)))
+            target->learnSpell(uint32(*spell));
     }
 
     target->UpdateSkillsToMaxSkillsForLevel();
@@ -145,6 +146,9 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
     targetDifficulty = player->GetDifficulty(entry->IsRaid());
     
     if (!entry->IsBattlegroundOrArena() && !sLFGMgr->inLfgDungeonMap(player->GetGUID(), entry->MapID, targetDifficulty)) {
+        
+        // we could use GetContentLevelsForMapAndZone(uint32 mapid, uint32 zoneId) for a more accurate chech (?)
+
         if (curDimension == DIMENSION_60 && entry->Expansion() > 0) {
             // CLASSIC EXPANSION CHECK
             ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Sei nella dimensione Classic, non è possibile accedere a mappe di espansioni più recenti|r");
@@ -269,14 +273,14 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
         }
         
         if (dim == DIMENSION_60) {
-            if (player->getLevel() > 60) {
+            if (player->getLevel() > 60 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
                 ChatHandler(player->GetSession()).PSendSysMessage("E' necessario essere di livello 60 o inferiore per entrare in questa dimensione, prova ad usare il Timewalking");
                 return false;
             }
         }
         
         if (dim == DIMENSION_70) {
-            if (player->getLevel() > 70) {
+            if (player->getLevel() > 70 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
                 ChatHandler(player->GetSession()).PSendSysMessage("E' necessario essere di livello 70 o inferiore per entrare in questa dimensione, prova ad usare il Timewalking");
                 return false;
             }

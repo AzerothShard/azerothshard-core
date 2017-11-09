@@ -47,6 +47,14 @@ enum PhaseDimensionsEnum {
     DIMENSION_GM            = 9
 };
 
+enum AzthCommonMaps {
+    NAXXRAMS_RAID               = 533,
+    ULDUAR_RAID                 = 603,
+    OBSIDIAN_RAID               = 615,
+    THE_EYE_OF_ETERNITY_RAID    = 616,
+    TRIAL_OF_THE_CRUSADRE_RAID  = 649
+};
+
 #define MAX_DIMENSION 9
 
 #define DIMENSION_SPELL_MARK 1000000
