@@ -130,7 +130,7 @@ public:
             uint32 spec = action - (season * 10000) - (player->getClass()*100);
             AzthGearScaling & set = sAzthGearScalingMgr->GetGearScalingList()[action];
 
-            if (equipSet(set, player, spec)) {
+            if (equipSet(creature, set, player, spec)) {
                 if (!player->azthPlayer->isPvP()) {
                     QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_tournamentset_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
                 }
@@ -143,8 +143,7 @@ public:
 
         if (action == 9) //exit from this mode
         {
-            uint32 INVENTORY_END = 18;
-            for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
+            for (uint32 INVENTORY_INDEX = EQUIPMENT_SLOT_START; INVENTORY_INDEX < EQUIPMENT_SLOT_END; INVENTORY_INDEX++)
             {
                 Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
                 if (item != nullptr)
@@ -178,7 +177,7 @@ public:
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
     }
 
-    void unequipItem(Player* player, uint32 invIndex, bool &mailItems, SQLTransaction &trans, MailDraft* draft) {      
+    void unequipItem(Player* player, uint32 invIndex) {      
         Item *item=player->GetItemByPos(INVENTORY_SLOT_BAG_0, invIndex);
         
         if (item == nullptr)
@@ -190,14 +189,6 @@ public:
         {
             player->RemoveItem(INVENTORY_SLOT_BAG_0, invIndex, true);
             player->StoreItem(off_dest, item, true);
-        }
-        else
-        {
-            player->MoveItemFromInventory(INVENTORY_SLOT_BAG_0, invIndex, true);
-            item->DeleteFromInventoryDB(trans);                   // deletes item from character's inventory
-            item->SaveToDB(trans);
-            draft->AddItem(item);
-            mailItems=true;
         }
     }
     
@@ -274,10 +265,8 @@ public:
         }
     }
 
-    bool equipSet(AzthGearScaling set, Player* player, uint32 spec)
-    {
-        uint32 INVENTORY_END = 18;
-        
+    bool equipSet(Creature *creature, AzthGearScaling set, Player* player, uint32 spec)
+    {       
         bool ok=true;
         preCheckEquip(set.GetHead(), SLOT_HEAD, player, ok);
         preCheckEquip(set.GetNeck(), SLOT_NECK, player, ok);
@@ -343,46 +332,33 @@ public:
             return false;
         }
 
-        for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++) {
+        uint32 spaceCnt=sAzthUtils->getFreeSpaceInBags(player);
+        uint32 equipCnt=0;
+
+        for (uint32 INVENTORY_INDEX = EQUIPMENT_SLOT_START; INVENTORY_INDEX < EQUIPMENT_SLOT_END; INVENTORY_INDEX++) {
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
 
             if (item == nullptr)
                 continue;
+            
+            equipCnt++;
 
             InventoryResult off_msg = player->CanUnequipItem(item->GetPos(), false);
             if (off_msg != EQUIP_ERR_OK && off_msg != EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS)
                 return false;
         }
+        
+        if (spaceCnt < equipCnt) {
+            std::string str = "You have only "+std::to_string(spaceCnt)+" free space in your bags, at least "+std::to_string(equipCnt)+" are needed";
+            creature->MonsterWhisper(str.c_str(), player);
+            return false;
+        }
 
         //remove equipped items and send to mail
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        MailDraft* draft = new MailDraft(sAzthLang->get(AZTH_LANG_REMOVED_ITEMS,player), "");
-        bool hasItems=false;
-        // first 9 slots (ugly workaround)
-        for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= 8; INVENTORY_INDEX++)
+        for (uint32 INVENTORY_INDEX = EQUIPMENT_SLOT_START; INVENTORY_INDEX < EQUIPMENT_SLOT_END; INVENTORY_INDEX++)
         {
-            unequipItem(player, INVENTORY_INDEX, hasItems, trans, draft);
-        }
-
-        if (hasItems)
-            draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED, 0, 2000);
-        
-        delete draft;
-        
-        draft = new MailDraft(sAzthLang->get(AZTH_LANG_REMOVED_ITEMS,player), "");
-        hasItems=false;
-        // next 9 slots (ugly workaround)
-        for (uint32 INVENTORY_INDEX = 9; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
-        {
-            unequipItem(player, INVENTORY_INDEX, hasItems, trans, draft);
-        }
-
-        if (hasItems)
-            draft->SendMailTo(trans, player, MailSender(player, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED, 0, 2000);
-        
-        delete draft;
-
-        CharacterDatabase.CommitTransaction(trans);         
+            unequipItem(player, INVENTORY_INDEX);
+        }      
 
         player->RemoveItemDependentAurasAndCasts((Item*)NULL);
 
@@ -551,8 +527,7 @@ public:
         {
             if (player->azthPlayer->hasGear())
             {
-                uint32 INVENTORY_END = 18;
-                for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
+                for (uint32 INVENTORY_INDEX = EQUIPMENT_SLOT_START; INVENTORY_INDEX < EQUIPMENT_SLOT_END; INVENTORY_INDEX++)
                 {
                     Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
                     if (item != nullptr)

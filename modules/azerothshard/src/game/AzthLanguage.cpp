@@ -31,8 +31,8 @@ void AzthLang::loadStrings() {
               "Items removed from npc",
               "Item rimossi dall'npc");
     this->add(AZTH_LANG_PVP_NPC_SET_ADVICE,
-              "Current equipped items will be removed or sent to mail, continue?",
-              "Gli item attualmente equippati saranno rimossi o mandati alla mail, vuoi proseguire?");
+              "Current equipped items will be moved in bag, make sure you have enough space. Do you want continue?",
+              "Gli item attualmente equippati saranno spostati nella borsa, assicurati di avere abbastanza spazio. Vuoi proseguire?");
     this->add(AZTH_LANG_PVP_NPC_CANNOT_EQUIP,
               "Item |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r cannot be equipped, maybe it's unique and you already got or you don't have the requirements",
               "L'item |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r non può essere equippato, forse è unico e già lo possiedi oppure non hai i requisiti");
