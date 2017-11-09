@@ -6,6 +6,8 @@
 #include "Player.h"
 #include "AzthLanguage.h"
 
+#define AZTH_SMRTST_POSITION_HOUSE_INDEX 100000
+
 class SmartStoneApps
 {
 public:
@@ -30,6 +32,7 @@ public:
      */
     void jukebox(Player *player);
     void blackMarketTeleport(Player *player);
+    void teleportHouse(Player *owner, Player *guest);
     
     /*
      * Utils

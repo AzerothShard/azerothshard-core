@@ -13,7 +13,9 @@ void SmartStoneApps::blackMarketTeleport(Player *player) {
         player->TeleportTo(AzthSharedDef::blackMarket);
     }
     else {
-        WorldLocation pos = player->azthPlayer->getLastPositionInfo(player->azthPlayer->getCurrentDimensionByAura());
+        WorldLocation const& pos = player->azthPlayer->getLastPositionInfo(player->azthPlayer->getCurrentDimensionByAura());
+        if (!MapManager::IsValidMapCoord(pos))
+            return;
 
         Map *m = sMapMgr->FindBaseMap(pos.GetMapId());
 
@@ -28,6 +30,17 @@ void SmartStoneApps::blackMarketTeleport(Player *player) {
             player->TeleportTo(pos);
         }
     }   
+}
+
+void SmartStoneApps::teleportHouse(Player *owner, Player *guest) {
+    if (guest->IsInCombat())
+        return;
+
+    WorldLocation const& pos = owner->azthPlayer->getLastPositionInfo(AZTH_SMRTST_POSITION_HOUSE_INDEX);
+    if (!MapManager::IsValidMapCoord(pos))
+        return;
+
+    guest->TeleportTo(pos);
 }
 
 void SmartStoneApps::jukebox(Player *player) {

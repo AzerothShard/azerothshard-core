@@ -16,8 +16,11 @@
 #include "WorldSession.h"
 #include "MapManager.h"
 #include "Map.h"
+#include "Group.h"
 
 #include "Apps/Apps.h"
+
+class Group;
 
 enum SmartStoneCommands {
     SMRTST_BLACK_MARKET=1,
@@ -33,6 +36,7 @@ enum SmartStoneCommands {
     SMRTST_XP_CHANGE=11,
     SMRTST_RESET_AURAS=12,
     SMRTST_TELEPORT_DALARAN=13,
+    SMRTST_TELEPORT_HOUSE=14,
     SMRTST_SHOP_MENU=2000, //unused
     SMRTST_BACK_MENU=2001,
 };
@@ -63,6 +67,18 @@ public:
 
     azth_smart_stone() : ItemScript("azth_smart_stone") {
         apps = new SmartStoneApps();
+    }
+    
+    Player* getHomeOwner(Player *player) {
+        Player *owner=player;
+        Player* leader=nullptr;
+        if (player->GetGroup())
+            leader = ObjectAccessor::FindPlayerInOrOutOfWorld(player->GetGroup()->GetLeaderGUID());
+        
+        if (leader)
+            owner = leader;
+        
+        return owner;
     }
     
     
@@ -118,6 +134,11 @@ public:
                 case SMRTST_TELEPORT_DALARAN:
                     apps->teleportDalaran(player);
                 break;
+
+                case SMRTST_TELEPORT_HOUSE:
+                    apps->teleportHouse(getHomeOwner(player), player);
+                break;
+
                 case 99999:
                     break;
                 default:
@@ -173,19 +194,19 @@ public:
         if (parent == 1) // not-to-buy commands for the main menu
         {
             // black market teleport id 1
-            SmartStoneCommand teleport = sSmartStone->getCommandById(1);
+            SmartStoneCommand teleport = sSmartStone->getCommandById(SMRTST_BLACK_MARKET);
             if (!player->azthPlayer->isInBlackMarket())
                 player->ADD_GOSSIP_ITEM(teleport.icon, teleport.getText(player), GOSSIP_SENDER_MAIN, teleport.id);
             else
                 player->ADD_GOSSIP_ITEM(teleport.icon, "Riportami indietro", GOSSIP_SENDER_MAIN, teleport.id);
 
             // menu character (rename, change faction, etc) id 4
-            SmartStoneCommand characterMenu = sSmartStone->getCommandById(4);
+            SmartStoneCommand characterMenu = sSmartStone->getCommandById(SMRTST_CHAR_MENU);
             player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.getText(player),
                     GOSSIP_SENDER_MAIN, characterMenu.id);
 
             // menu passive bonus id 9
-            SmartStoneCommand passiveMenu = sSmartStone->getCommandById(9);
+            SmartStoneCommand passiveMenu = sSmartStone->getCommandById(SMRTST_BONUS_MENU);
             player->ADD_GOSSIP_ITEM(passiveMenu.icon, passiveMenu.getText(player),
                     GOSSIP_SENDER_MAIN, passiveMenu.id);
         }
@@ -193,21 +214,34 @@ public:
         if (parent == 2) // not-to-buy commands for the characters menu
         {
             // max skill command
-            SmartStoneCommand maxSkill = sSmartStone->getCommandById(10);
+            SmartStoneCommand maxSkill = sSmartStone->getCommandById(SMRTST_MAX_SKILL);
             player->ADD_GOSSIP_ITEM(maxSkill.icon, maxSkill.getText(player), GOSSIP_SENDER_MAIN, maxSkill.id);
 
             // azth xp command
-            SmartStoneCommand azthXp = sSmartStone->getCommandById(11);
+            SmartStoneCommand azthXp = sSmartStone->getCommandById(SMRTST_XP_CHANGE);
             player->ADD_GOSSIP_ITEM_EXTENDED(azthXp.icon, azthXp.getText(player), GOSSIP_SENDER_MAIN, azthXp.id, "Scrivi il valore desiderato.", 0, true);
             
             // reset auras
-            SmartStoneCommand resetAuras = sSmartStone->getCommandById(12);
+            SmartStoneCommand resetAuras = sSmartStone->getCommandById(SMRTST_RESET_AURAS);
             player->ADD_GOSSIP_ITEM(resetAuras.icon, resetAuras.getText(player), GOSSIP_SENDER_MAIN, resetAuras.id);
             
             if (player->azthPlayer->isPvP()) {
                 // dalaran teleport
-                SmartStoneCommand dalaranTeleport = sSmartStone->getCommandById(13);
+                SmartStoneCommand dalaranTeleport = sSmartStone->getCommandById(SMRTST_TELEPORT_DALARAN);
                 player->ADD_GOSSIP_ITEM(dalaranTeleport.icon, dalaranTeleport.getText(player), GOSSIP_SENDER_MAIN, dalaranTeleport.id);
+            }
+            
+
+            if (player->azthPlayer->getCurrentDimensionByAura() == DIMENSION_RPG) {
+                Player *owner=getHomeOwner(player);
+                
+                if (MapManager::IsValidMapCoord(owner->azthPlayer->getLastPositionInfo(AZTH_SMRTST_POSITION_HOUSE_INDEX))) {
+                    // home teleport for RPG world
+                    SmartStoneCommand homeTeleport = sSmartStone->getCommandById(SMRTST_TELEPORT_HOUSE);
+                    std::string str=homeTeleport.getText(player) + " (" +owner->GetName()+")";
+                    
+                    player->ADD_GOSSIP_ITEM(homeTeleport.icon, str.c_str() , GOSSIP_SENDER_MAIN, homeTeleport.id);
+                }
             }
         }
 
@@ -375,13 +409,7 @@ public:
             } while (ssCommandsResult->NextRow());
         }
 
-        std::map<uint32,WorldLocation> pos = player->azthPlayer->getLastPositionInfoFromDB();
-        
-        uint32 dimension=player->azthPlayer->getCurrentDimensionByAura();
-        if (pos.find(dimension) != pos.end())
-            player->azthPlayer->setLastPositionInfo(dimension, pos[dimension]);
-        else
-            player->azthPlayer->setLastPositionInfo(dimension, AzthSharedDef::blackMarket);
+        player->azthPlayer->getLastPositionInfoFromDB();
     }
 
     void OnLogout(Player* player) override {

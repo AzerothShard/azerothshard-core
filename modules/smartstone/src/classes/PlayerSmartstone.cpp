@@ -336,7 +336,7 @@ std::map<uint32,WorldLocation> AzthPlayer::getLastPositionInfoFromDB() {
     std::map<uint32,WorldLocation> lastPos;
 
     QueryResult savedPosResult = CharacterDatabase.PQuery(
-            "SELECT type, mapId, posX, posY, posZ FROM character_saved_position WHERE charGuid = %u LIMIT 1;", player->GetGUIDLow());
+            "SELECT type, mapId, posX, posY, posZ FROM character_saved_position WHERE charGuid = %u;", player->GetGUIDLow());
 
     if (!savedPosResult)
         return lastPos;
@@ -345,7 +345,10 @@ std::map<uint32,WorldLocation> AzthPlayer::getLastPositionInfoFromDB() {
     {
         Field* posFields = savedPosResult->Fetch();
         
-        lastPos[posFields[0].GetUInt32()] = WorldLocation(posFields[1].GetFloat(),posFields[2].GetFloat(),posFields[3].GetFloat(), posFields[4].GetFloat(), player->GetOrientation());
+        uint32 type = posFields[0].GetUInt32();
+        lastPos[type] = WorldLocation(posFields[1].GetFloat(),posFields[2].GetFloat(),posFields[3].GetFloat(), posFields[4].GetFloat(), player->GetOrientation());
+
+        player->azthPlayer->setLastPositionInfo(type, lastPos[type]);
     } while (savedPosResult->NextRow());
 
     return lastPos;
@@ -382,6 +385,4 @@ bool AzthPlayer::isInBlackMarket() {
         return false;
 
     return true;
-
-
 };
