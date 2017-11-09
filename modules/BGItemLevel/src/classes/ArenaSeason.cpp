@@ -66,7 +66,13 @@ bool Season::checkItem(ItemTemplate const* proto, Player const* player) {
         return true; //SYSTEM DISABLED
     }
     
-    if (player->InBattleground() || player->InArena() || player->InBattlegroundQueue()) {
+    if (/*player->InBattleground() ||*/ player->InArena() || /*player->InBattlegroundQueue()*/
+        player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2) ||
+                 player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) ||
+                 player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5) ||
+                 player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO) ||
+                 player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_1v1)
+    ) {
         if (!sAzthUtils->checkItemLvL(proto, GetItemLevel())) {
             ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", proto->ItemId, proto->Name1.c_str());
             return false;

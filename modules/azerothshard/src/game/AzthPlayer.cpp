@@ -193,7 +193,7 @@ bool AzthPlayer::canGroup(Player* with)
 
 
 bool AzthPlayer::canJoinQueue(AzthQueueMasks type) {  
-    if ((type & AZTH_QUEUE_BG_OR_ARENA) == type) {
+    if ((type & AZTH_QUEUE_ARENA) == type) {
         if (!sASeasonMgr->canJoinArenaOrBg(player))
             return false;
     }

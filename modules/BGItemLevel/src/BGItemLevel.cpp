@@ -181,7 +181,7 @@ public:
   //Check if a player is just entered in battleground/arena with not compatible items
   void OnUpdateZone(Player* player, uint32  /*newZone*/, uint32  /*newArea*/)
   {
-    if (player->InBattleground() || player->InArena())
+    if (/*player->InBattleground() ||*/ player->InArena())
     {
       checkPlayerItems(player, true);
     }
@@ -190,7 +190,7 @@ public:
   //Check if a player equip not compatible item during battleground/arena
   void OnEquip(Player* player, Item*  /*item*/, uint8  /*bag*/, uint8  /*slot*/, bool  /*update*/)
   {
-    if (player->InBattleground() || player->InArena())
+    if (/*player->InBattleground() ||*/ player->InArena())
     {
       checkPlayerItems(player, true);
     }

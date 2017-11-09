@@ -12472,8 +12472,7 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
 
         //if player is in bg or arena and tournament is enabled check for item level 
         //if it is > of the maximum level doesnt allow the equipment
-        if((InBattleground() || InArena()) && sASeasonMgr->IsEnabled())
-            if(proto->ItemLevel > sASeasonMgr->GetItemLevel())
+        if(proto->InventoryType>0 && !azthPlayer->canEquipItem(proto))
                 return EQUIP_ERR_CANT_DO_RIGHT_NOW;
         
         //[AZTH] if you are a timewalker you can equip all items
