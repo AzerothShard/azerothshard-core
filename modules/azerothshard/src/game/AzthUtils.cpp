@@ -790,3 +790,39 @@ uint32 AzthUtils::getFreeSpaceInBags(Player *player) {
         
     return count;
 }
+
+
+bool AzthUtils::isAshenBand(uint32 entry) {
+    switch(entry) {
+        //EXALTED id
+        case 50398:
+        case 52572:
+        case 50402:
+        case 50404:
+        case 50400:
+
+        //REVERED id 
+        case 50397:
+        case 52571:
+        case 50401:
+        case 50403:
+        case 50399:
+
+        //HONORED id
+        case 50384:
+        case 52570:
+        case 50387:
+        case 50388:
+        case 50386:
+
+        //FRIENDLY id
+        case 50377:
+        case 52569:
+        case 50376:
+        case 50375:
+        case 50378:
+            return true;
+    }
+
+    return false;
+}

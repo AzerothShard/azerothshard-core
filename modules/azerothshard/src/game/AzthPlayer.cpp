@@ -409,6 +409,22 @@ bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {
     if (!checkItem(proto))
         return false;
     
+    //Double ashen block system
+    if(sAzthUtils->isAshenBand(proto->ItemId)) {
+        // finger slots
+        for (uint32 INVENTORY_INDEX = EQUIPMENT_SLOT_FINGER1; INVENTORY_INDEX <= EQUIPMENT_SLOT_FINGER2; INVENTORY_INDEX++)
+        {            
+            Item* itemToCheck = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
+            if (itemToCheck != nullptr)
+            {
+                if (sAzthUtils->isAshenBand(itemToCheck->GetEntry())) {
+                    ChatHandler(player->GetSession()).PSendSysMessage("Are you a double ashen abuser?!");
+                    return false;
+                }
+            }
+        }
+    }
+    
     return true;
 }
 

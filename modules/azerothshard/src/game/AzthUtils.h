@@ -80,6 +80,8 @@ public:
     uint32 calculateItemScalingValue(ItemTemplate const* pProto, Player *pl = NULL);    
     int32 normalizeFeralAp(int32 feralBonus, int32 extraDPS, ItemTemplate const* pProto, bool isScaling);
     
+    bool isAshenBand(uint32 entry);
+    
     // [Timewalking]
     uint32 getPositionLevel(bool includeSpecialLvl, Map *map, uint32 zone = 0, uint32 area = 0) const;
     uint32 getPositionLevel(bool includeSpecialLvl, Map *map, WorldLocation const& posInfo) const;
