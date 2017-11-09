@@ -51,10 +51,10 @@ public:
     bool OnGossipHello(Player* player, Creature* creature) override
     {
         //                              icon            text                           sender      action   popup message    money  code
-        if (!player->azthPlayer->isTimeWalking() && !player->azthPlayer->hasGear())
-        {
+        //if (!player->azthPlayer->isTimeWalking() && !player->azthPlayer->hasGear())
+        //{
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Deposita item", GOSSIP_SENDER_MAIN, 501);
-        }
+        //}
         player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Inserisci gli items da cercare qui", GOSSIP_SENDER_MAIN, 500, "Inserisci nome item", 0, true);
         
         // from 1 to 150
@@ -79,13 +79,12 @@ public:
         uint32 BACKPACK_SLOT_END = 38;
         uint32 CURRENCIES_SLOT_START = 118;
         uint32 CURRENCIES_SLOT_END = 135;*/
-        uint32 SLOT_END = 38;
 
         if (action == 501 && sender == GOSSIP_SENDER_MAIN)
         {
             std::map<uint32, std::string> categoryNames;
 
-            for (uint32 position = 23; position <= SLOT_END; ++position)
+            for (uint8 position = INVENTORY_SLOT_ITEM_START; position < INVENTORY_SLOT_ITEM_END; position++)
             {
 				Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
 
@@ -113,7 +112,7 @@ public:
         {
             uint32 inventoryType = action;
 
-            for (uint32 position = 23; position <= SLOT_END; ++position)
+            for (uint8 position = INVENTORY_SLOT_ITEM_START; position < INVENTORY_SLOT_ITEM_END; position++)
             {
                 Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, position);
 
@@ -136,17 +135,20 @@ public:
             //player->PlayerTalkClass->SendCloseGossip();
 
             uint32 slot = action;
-            
-            //send menu again but it won't stop following code
-            OnGossipSelect(player, creature, GOSSIP_SENDER_INFO, inventoryType);
 
             Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
             
             if (!item)
             {
                 creature->MonsterWhisper("Questo item non è valido", player);
+                player->PlayerTalkClass->SendCloseGossip();
                 return true;
             }
+            
+            uint32 inventoryType = item->GetTemplate()->InventoryType;
+            
+            //send menu again but it won't stop following code
+            OnGossipSelect(player, creature, GOSSIP_SENDER_INFO, inventoryType);
 
             if (item->GetUInt32Value(ITEM_FIELD_DURATION))
             {
@@ -162,7 +164,7 @@ public:
 
             if (item->GetCount() > 1)
             {
-                creature->MonsterWhisper("Non possono essere depositati item raggruppati in un unico slot (stacked).");
+                creature->MonsterWhisper("Non possono essere depositati item raggruppati in un unico slot (stacked).", player);
                 return true;
             }
             
@@ -199,8 +201,6 @@ public:
                     return true;
             }
 
-            uint32 inventoryType = item->GetTemplate()->InventoryType;
-
             if (sItemToSell->OwnItem(player, item->GetEntry()))
             {
                 creature->MonsterWhisper("Hai già depositato questo item!", player);
@@ -225,7 +225,7 @@ public:
 
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
 
-            creature->MonsterWhisper("Item depositato.");//, item->GetTemplate()->Name1);
+            creature->MonsterWhisper("Item depositato.", player);//, item->GetTemplate()->Name1);
         }
         else if (action == 300) // go to main menu
         {
@@ -373,11 +373,12 @@ public:
                 Item* pItem = NewItemOrBag(_proto);
 
                 QueryResult selectItemQuery = CharacterDatabase.PQuery("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, playedTime, text, itemEntry FROM item_instance WHERE guid = %d", guid);
-                if (selectItemQuery) {
-                    Field* selectItemField = selectItemQuery->Fetch();
+                Field* selectItemField = nullptr;
 
-                    pItem->LoadFromDB(guid, player->GetGUID(), selectItemField, itemEntry);
+                if (selectItemQuery)
+                    selectItemField = selectItemQuery->Fetch();
 
+                if (selectItemField && pItem->LoadFromDB(guid, player->GetGUID(), selectItemField, itemEntry)) {
                     ItemPosCountVec dest;
 
                     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -398,7 +399,8 @@ public:
                         data << int32(0); // new count
                         data << uint32(1); // count
                         player->GetSession()->SendPacket(&data);
-                        player->SendNewItem(pItem, 1, true, false, false);
+                        //player->SendNewItem(pItem, 1, true, false, false); <-- crash when we separate stacked items and then we get again
+                        ChatHandler(player->GetSession()).PSendSysMessage("Item received: |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r", itemEntry, _proto->Name1.c_str());
                     }
                     else {
                         ChatHandler(player->GetSession()).PSendSysMessage("Item non recuperato, unique? borse piene?");
