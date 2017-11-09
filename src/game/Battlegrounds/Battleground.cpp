@@ -1413,7 +1413,7 @@ void Battleground::ReadyMarkerClicked(Player* p)
             req = 6;
             break;
         case ARENA_TYPE_5v5:
-            req = 2;
+            req = 10;
             break;
         // [AZTH]
         case ARENA_TYPE_1v1:
