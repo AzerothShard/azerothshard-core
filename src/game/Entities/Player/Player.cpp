@@ -75,6 +75,8 @@
 #include "TicketMgr.h"
 #include "ScriptMgr.h"
 
+//[AZTH]
+#include "AzthLevelStat.h"
 #include "AzthUtils.h"
 #include "ArenaSeason.h"
 
@@ -3037,7 +3039,7 @@ void Player::SetGameMaster(bool on)
         getHostileRefManager().setOnlineOfflineState(false);
         CombatStopWithPets();
 
-        SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
+        //[AZTH] SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
         //[AZTH] xeela
         m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_MODERATOR);
         //[/AZTH]
@@ -3309,6 +3311,10 @@ void Player::GiveLevel(uint8 level)
     if (Pet* pet = GetPet())
         pet->SynchronizeLevelWithOwner();
 
+    //[AZTH]
+    if (!azthPlayer->isTimeWalking()) {
+    //[/AZTH]
+    
     if (MailLevelReward const* mailReward = sObjectMgr->GetMailLevelReward(level, getRaceMask()))
     {
         //- TODO: Poor design of mail system
@@ -3317,6 +3323,10 @@ void Player::GiveLevel(uint8 level)
         CharacterDatabase.CommitTransaction(trans);
     }
 
+    //[AZTH]
+    }
+    //[/AZTH]
+    
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL);
 
     // Refer-A-Friend
@@ -8232,7 +8242,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
     // Apply Spell Power from ScalingStatValue if set
     if (ssv)
-        if (int32 spellbonus = ssv->getSpellBonus(proto->ScalingStatValue))
+        if (int32 spellbonus = ssv->getSpellBonus(azthScalingStatValue))
             ApplySpellPowerBonus(spellbonus, apply);
 
     // If set ScalingStatValue armor get it or use item armor
@@ -8313,11 +8323,14 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
         int32 feral_bonus = 0;
         if (ssv)
         {
-            dpsMod = ssv->getDPSMod(proto->ScalingStatValue);
-            feral_bonus += ssv->getFeralBonus(proto->ScalingStatValue);
+            dpsMod = ssv->getDPSMod(azthScalingStatValue);
+            feral_bonus += ssv->getFeralBonus(azthScalingStatValue);
         }
 
         feral_bonus += proto->getFeralBonus(dpsMod);
+        //[AZTH]
+        feral_bonus = sAzthUtils->normalizeFeralAp(feral_bonus, dpsMod, proto, ssv);
+        //[/AZTH]
         if (feral_bonus)
             ApplyFeralAPBonus(feral_bonus, apply);
     }
@@ -8427,6 +8440,12 @@ void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attac
 
 void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
 {
+    //[AZTH] weapon damage is already handled by our item scaling system
+    // but we need other effect of MOD_DAMAGE_PERCENT with SPELL_SCHOOL_MASK_NORMAL (physic spells)
+    if (aura->GetSpellInfo()->Id == TIMEWALKING_AURA_MOD_DAMAGESPELL)
+        return;
+    //[/AZTH]
+    
     // don't apply mod if item is broken or cannot be used
     if (item->IsBroken() || !CanUseAttackType(attackType))
         return;

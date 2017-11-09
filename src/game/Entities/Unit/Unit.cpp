@@ -10379,23 +10379,21 @@ float Unit::SpellPctDamageModsDone(Unit* victim, SpellInfo const* spellProto, Da
         if (!spellProto->ValidateAttribute6SpellDamageMods(this, *i, damagetype == DOT))
             continue;
 
-        //[AZTH] Timewalking scaled healing spells shouldn't have the 
+        //[AZTH] Timewalking scaled damage spells shouldn't have the 
         // percent reduction of tw table, but we can apply a minor modifier
         Player *modOwner = GetSpellModOwner();
-        if (modOwner && modOwner->azthPlayer->isTimeWalking(true)) {
-            if ((*i)->GetId() == TIMEWALKING_AURA_MOD_DAMAGESPELL && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= uint32(getLevel() + 10))
-                || spellProto->SpellLevel <= uint32(getLevel() + 10))) {
-                uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
-                int32 reduction = -(spellLevel > getLevel() ? spellLevel - getLevel() : 0);
+        if (modOwner && modOwner->azthPlayer->isTimeWalking(true) && (*i)->GetId() == TIMEWALKING_AURA_MOD_DAMAGESPELL) {
+            int32 reduction = sAzthUtils->getSpellReduction(modOwner, spellProto);
+            if (reduction>=0) {
                 //  replicate conditions below
                 if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
                 {
                     if ((*i)->GetSpellInfo()->EquippedItemClass == -1)
-                        AddPct(DoneTotalMod, reduction);
+                        AddPct(DoneTotalMod, -(reduction));
                     else if (!(*i)->GetSpellInfo()->HasAttribute(SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK) && ((*i)->GetSpellInfo()->EquippedItemSubClassMask == 0))
-                        AddPct(DoneTotalMod, reduction);
+                        AddPct(DoneTotalMod, -(reduction));
                     else if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()))
-                        AddPct(DoneTotalMod, reduction);
+                        AddPct(DoneTotalMod, -(reduction));
                 }
                 continue;
             }
@@ -11390,13 +11388,10 @@ float Unit::SpellPctHealingModsDone(Unit* victim, SpellInfo const* spellProto, D
         //[AZTH] Timewalking scaled healing spells shouldn't have the 
         // percent reduction of tw table, but we can apply a minor modifier
         Player* modOwner = GetSpellModOwner();
-        if (modOwner && modOwner->azthPlayer->isTimeWalking(true)) {
-            if ((*i)->GetId() == TIMEWALKING_AURA_MOD_HEALING && ((spellProto->SpellLevel == 0 && spellProto->BaseLevel <= uint32(getLevel()+10))
-                || spellProto->SpellLevel <= uint32(getLevel() + 10))) {
-                uint8 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
-                int32 mod = spellLevel > getLevel() ? spellLevel - getLevel() : 0;
-
-                AddPct(DoneTotalMod, -(mod));
+        if (modOwner && modOwner->azthPlayer->isTimeWalking(true) && (*i)->GetId() == TIMEWALKING_AURA_MOD_HEALING) {
+            int32 reduction = sAzthUtils->getSpellReduction(modOwner, spellProto);
+            if (reduction>=0) {
+                AddPct(DoneTotalMod, -(reduction));
                 continue;
             }
         }
@@ -12017,6 +12012,27 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         {
             if (!spellProto->ValidateAttribute6SpellDamageMods(this, *i, false))
                 continue;
+
+            //[AZTH] Timewalking scaled damage spells shouldn't have the 
+            // percent reduction of tw table, but we can apply a minor modifier
+            Player *modOwner = GetSpellModOwner();
+            if (modOwner && modOwner->azthPlayer->isTimeWalking(true) && (*i)->GetId() == TIMEWALKING_AURA_MOD_DAMAGESPELL) {               
+                int32 reduction = sAzthUtils->getSpellReduction(modOwner, spellProto);
+                if (reduction>=0) {
+                    //  replicate conditions below
+                    if (((*i)->GetMiscValue() & spellProto->GetSchoolMask()) && !((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+                    {
+                        if ((*i)->GetSpellInfo()->EquippedItemClass == -1)
+                            AddPct(DoneTotalMod, -(reduction));
+                        else if (!(*i)->GetSpellInfo()->HasAttribute(SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK) && ((*i)->GetSpellInfo()->EquippedItemSubClassMask == 0))
+                            AddPct(DoneTotalMod, -(reduction));
+                        else if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()))
+                            AddPct(DoneTotalMod, -(reduction));
+                    }
+                    continue;
+                }
+            }
+            //[/AZTH]
 
             if (((*i)->GetMiscValue() & spellProto->GetSchoolMask()) && !((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
             {

@@ -28,6 +28,8 @@
 #include "Pet.h"
 #include "ReputationMgr.h"
 #include "InstanceScript.h"
+//[AZTH]
+#include "AzthLevelStat.h"
 
 class Aura;
 //
@@ -4661,7 +4663,7 @@ void AuraEffect::HandleModDamageDone(AuraApplication const* aurApp, uint8 mode, 
     // with spell->EquippedItemClass and  EquippedItemSubClassMask and EquippedItemInventoryTypeMask
     // GetMiscValue() comparison with item generated damage types
 
-    if ((GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL) != 0)
+    if ((GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL) != 0 && /*[AZTH]*/ GetSpellInfo()->Id != TIMEWALKING_AURA_MOD_DAMAGESPELL)
     {
         // apply generic physical damage bonuses including wand case
         if (GetSpellInfo()->EquippedItemClass == -1 || target->GetTypeId() != TYPEID_PLAYER)
@@ -4731,6 +4733,11 @@ void AuraEffect::HandleModDamagePercentDone(AuraApplication const* aurApp, uint8
     if (!target)
         return;
 
+    //[AZTH] weapon damage is already handled by our item scaling system
+    // but we need other effect of MOD_DAMAGE_PERCENT with SPELL_SCHOOL_MASK_NORMAL (physic spells)
+    if (GetSpellInfo()->Id == TIMEWALKING_AURA_MOD_DAMAGESPELL)
+        return;
+    
     if (target->GetTypeId() == TYPEID_PLAYER)
     {
         for (int i = 0; i < MAX_ATTACK; ++i)
