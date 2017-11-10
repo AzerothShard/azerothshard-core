@@ -362,6 +362,7 @@ public:
             handler->GetSession()->GetPlayer()->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER);
             handler->GetSession()->SendNotification(LANG_DEV_OFF);
             //[AZTH]
+            handler->GetSession()->GetPlayer()->SetPhaseMask(uint32(PHASEMASK_NORMAL), false);
             handler->GetSession()->GetPlayer()->SetGameMaster(false);
             //[/AZTH]
             return true;
