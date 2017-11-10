@@ -42,6 +42,10 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
     std::string lvlName=sAzthUtils->getLevelInfo(itsTimeWalkingLevel);
     
     if (!login) {
+        // hacking attempt?
+        if (timeWalkingLevel==0 && player->getLevel()<sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+            return;
+        
         uint32 iLvl=player->azthPlayer->getTwItemLevel(itsTimeWalkingLevel);
         if (iLvl && !player->azthPlayer->checkItems(iLvl)) {
             ChatHandler(player->GetSession()).PSendSysMessage("Questa modalità ha l'item level massimo: %u",iLvl);

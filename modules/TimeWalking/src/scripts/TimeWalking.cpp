@@ -134,6 +134,9 @@ public:
 			return true;
 		}
 
+        if (!player->azthPlayer->isTimeWalking() && player->getLevel()<sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+            return false;
+
         if (!player->azthPlayer->isTimeWalking()) {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Fase Attuale ( Bonus )", GOSSIP_SENDER_MAIN, 4);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
@@ -175,7 +178,7 @@ public:
             int level = atoi(code);
             // we cannot set manually a level > 80
             // special level must be set by gossip menus
-            if (level < 0 || uint32(level) >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+            if (level <= 0 || uint32(level) >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 return false;
             }
