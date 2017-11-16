@@ -75,9 +75,14 @@
 #include "WhoListCache.h"
 #include "AsyncAuctionListing.h"
 #include "SavingSystem.h"
+#include <VMapManager2.h>
+
+
 #include "GuildHouse.h" //[AZTH]
 #include "Teleport.h" //[AZTH]
 #include "azth_custom_hearthstone_mode.h" //[AZTH]
+
+
 
 ACE_Atomic_Op<ACE_Thread_Mutex, bool> World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1306,6 +1311,12 @@ void World::SetInitialWorldSettings()
     
     sLog->outString("Initializing Scripts...");
     sScriptMgr->Initialize();
+
+    ///- Initialize VMapManager function pointers (to untangle game/collision circular deps)
+    if (VMAP::VMapManager2* vmmgr2 = dynamic_cast<VMAP::VMapManager2*>(VMAP::VMapFactory::createOrGetVMapManager()))
+    {
+        vmmgr2->GetLiquidFlagsPtr = &GetLiquidFlags;
+    }
 
     ///- Initialize config settings
     LoadConfigSettings();
