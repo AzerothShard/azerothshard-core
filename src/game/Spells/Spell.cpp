@@ -4358,7 +4358,7 @@ void Spell::SendCastResult(SpellCastResult result)
     if ((_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) && result != SPELL_FAILED_BM_OR_INVISGOD)
         result = SPELL_FAILED_DONT_REPORT;
 
-    SendCastResult(m_caster->ToPlayer(), m_spellInfo, m_cast_count, result, m_customError);
+    SendCastResult(m_caster->ToPlayer(), /*[AZTH]*/ m_twOriginalSpell ? m_twOriginalSpell->GetSpellInfo() : /*[/AZTH]*/ m_spellInfo, m_cast_count, result, m_customError);
 }
 
 void Spell::SendPetCastResult(SpellCastResult result)
@@ -5164,11 +5164,23 @@ void Spell::TakeReagents()
 
     for (uint32 x = 0; x < MAX_SPELL_REAGENTS; ++x)
     {
+        //[AZTH] TIMEWALKING REAGENTS
+        if (m_twOriginalSpell) {
+            if (m_twOriginalSpell->GetSpellInfo()->Reagent[x] <= 0)
+                continue;
+        } else //[/AZTH]
         if (m_spellInfo->Reagent[x] <= 0)
             continue;
 
-        uint32 itemid = m_spellInfo->Reagent[x];
+        uint32 itemid    = m_spellInfo->Reagent[x];
         uint32 itemcount = m_spellInfo->ReagentCount[x];
+
+        //[AZTH] overwrite
+        if (m_twOriginalSpell) {
+            itemid    = m_twOriginalSpell->GetSpellInfo()->Reagent[x];
+            itemcount = m_twOriginalSpell->GetSpellInfo()->ReagentCount[x];
+        }
+        //[/AZTH]
 
         // if CastItem is also spell reagent
         if (castItemTemplate && castItemTemplate->ItemId == itemid)
@@ -6799,11 +6811,23 @@ SpellCastResult Spell::CheckItems()
         {
             for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
             {
+                //[AZTH] TIMEWALKING REAGENTS
+                if (m_twOriginalSpell) {
+                    if (m_twOriginalSpell->GetSpellInfo()->Reagent[i] <= 0)
+                        continue;
+                } else //[/AZTH]
                 if (m_spellInfo->Reagent[i] <= 0)
                     continue;
 
                 uint32 itemid    = m_spellInfo->Reagent[i];
                 uint32 itemcount = m_spellInfo->ReagentCount[i];
+
+                //[AZTH] overwrite
+                if (m_twOriginalSpell) {
+                    itemid    = m_twOriginalSpell->GetSpellInfo()->Reagent[i];
+                    itemcount = m_twOriginalSpell->GetSpellInfo()->ReagentCount[i];
+                }
+                //[/AZTH]
 
                 // if CastItem is also spell reagent
                 if (m_CastItem && m_CastItem->GetEntry() == itemid)
