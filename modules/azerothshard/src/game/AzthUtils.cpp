@@ -628,8 +628,8 @@ bool AzthUtils::dimIntegrityCheck(Unit *target, uint32 phasemask) {
             
             // If target has temporary normal dimension
             // we must consider as it's in normal phase
-            // avoiding dimension changing from <temp normal> to <normal>.
-            // If we're summoning a player from instance to instance for example.
+            // avoiding dimension changing from <temp normal> to <normal>,
+            // if we're summoning a player from instance to instance for example.
             // Of course if we're summoning an instanced player with <temp normal> dimension
             // outside of an instance on <normal dimension>, 
             // then the map changing check will restore the correct dimension

@@ -179,14 +179,15 @@ bool AzthPlayer::canGroup(Player* with)
     if (with) {
         uint32 curDimPlayer=player->azthPlayer->getCurrentDimensionByPhase();
         uint32 curDimWith=with->azthPlayer->getCurrentDimensionByPhase();
-        if (curDimPlayer != curDimWith) {
+        /*if (curDimPlayer != curDimWith) {
             ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Non è possibile entrare in gruppo con PG di dimensioni diverse|r");
             return false;
-        }
-            
-        if (curDimPlayer == DIMENSION_GUILD && curDimWith == DIMENSION_GUILD) {
+        }*/
+
+        if (curDimPlayer == DIMENSION_GUILD || curDimWith == DIMENSION_GUILD) {
             if (player->GetGuildId() != with->GetGuildId()) {
-                ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Non è possibile entrare in gruppo con PG di altre gilde in questa dimensione|r");
+                ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Non è possibile entrare in gruppo con PG di altre gilde presenti nella dimensione Guild World|r");
+                ChatHandler(with->GetSession()).PSendSysMessage("|cffff0000 Non è possibile entrare in gruppo con PG di altre gilde presenti nella dimensione Guild World|r");
                 return false;
             }
         }
@@ -253,10 +254,10 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
     // this is the most accurate check for validity since
     // with an exploit we could have a special dimension phase even without auras
     // then we must not allow it
-    uint32 phaseDimension     = getCurrentDimensionByPhase();
+    //uint32 phaseDimension     = getCurrentDimensionByPhase();
     bool changed=false;
     
-    bool inGmParty=false;
+    /*bool inGmParty=false;
     if (player->GetGroup()) {
         uint32 leaderGuid=player->GetGroup()->GetLeaderGUID();
         if (Player* leader = ObjectAccessor::FindPlayer(leaderGuid)) {
@@ -264,13 +265,13 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
                 inGmParty=true;
             }
         }
-    }
+    }*/
     
     if (validate) {
-        if (auraDimension != dim && !inGmParty && player->GetGroup()) {
+        /*if (auraDimension != dim && !inGmParty && player->GetGroup()) {
             ChatHandler(player->GetSession()).SendSysMessage("Non è possibile cambiare dimensione mentre si è in gruppo");
             return false;
-        }
+        }*/
         
         if (dim == DIMENSION_60) {
             if (player->getLevel() > 60 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
@@ -301,7 +302,7 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
         }
     }
     
-    if (!inGmParty) {
+    /*if (!inGmParty) {
         if (phaseDimension != dim && player->GetGroup()) {
             // if we changed phase and we're grouped
             // then we should ungroup to avoid exploits
@@ -311,7 +312,7 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
             if (player->GetGroup())
                 player->RemoveFromGroup();
         }
-    }
+    }*/
     
     if (!temp) {
         if (markedDimension > DIMENSION_NORMAL) {

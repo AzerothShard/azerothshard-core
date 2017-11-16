@@ -75,6 +75,39 @@ class PhaseDimensions : public PlayerScript
 public:
     PhaseDimensions() : PlayerScript("PhaseDimensions") {}
 
+    bool OnBeforeTeleport(Player* player, uint32 mapid, float /*x*/, float /*y,*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit *target) override {
+        if (!target)
+            return true;
+
+        if (target->GetTypeId() != TYPEID_PLAYER)
+            return true;
+
+        Player *pTarget = target->ToPlayer();
+
+        if (player->GetGUIDLow() == pTarget->GetGUIDLow())
+            return true; //strange case but could happen
+
+        uint32 playerPhaseDimension = player->azthPlayer->getCurrentDimensionByPhase();
+        uint32 targetPhaseDimension = pTarget->azthPlayer->getCurrentDimensionByPhase();
+        
+        if (targetPhaseDimension == playerPhaseDimension)
+            return true;
+
+        if (targetPhaseDimension == DIMENSION_NORMAL) {               
+            if (!player->azthPlayer->changeDimension(targetPhaseDimension, true))
+                return false;
+        } else {
+            std::string dimSource = sAzthUtils->getDimensionName(playerPhaseDimension);
+            std::string dimDest = sAzthUtils->getDimensionName(targetPhaseDimension);
+
+            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Non puoi essere summonato in questa dimensione!|r");
+            ChatHandler(pTarget->GetSession()).PSendSysMessage("|cffff0000 Non puoi summonare il player dalla dimensione %s alla dimensione %s |r", dimSource.c_str(), dimDest.c_str());
+            return false;
+        }
+
+        return true;
+    }
+
     void OnMapChanged(Player* player) override { 
         if (!player)
             return;
