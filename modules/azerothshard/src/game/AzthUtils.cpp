@@ -688,8 +688,30 @@ int AzthUtils::getReaction(Unit const* unit, Unit const* target) {
     uint32 dimTarget=targetPlayerOwner ? targetPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(target->GetPhaseMask());
     
     if (dimUnit== DIMENSION_GUILD && dimTarget == DIMENSION_GUILD) {
-        uint32 guildUnit=selfPlayerOwner ? selfPlayerOwner->GetGuildId() : GHobj.GetGuildByUnit(unit->GetGUIDLow());
-        uint32 guildTarget=targetPlayerOwner ? targetPlayerOwner->GetGuildId() : GHobj.GetGuildByUnit(target->GetGUIDLow());
+        GH_unit *su = nullptr;
+        if (!selfPlayerOwner) {
+            su = GHobj.GetUnitByGuid(unit->GetGUIDLow());
+            
+            if (!su)
+                return -1;
+            
+            if (su->type == NPC_DUMMY)
+                return REP_HOSTILE;
+        }
+
+        GH_unit *tu = nullptr;
+        if (!targetPlayerOwner) {
+            tu = GHobj.GetUnitByGuid(target->GetGUIDLow());
+            
+            if (!tu)
+                return -1;
+            
+            if (tu->type == NPC_DUMMY)
+                return REP_HOSTILE;
+        }
+        
+        uint32 guildUnit=selfPlayerOwner ? selfPlayerOwner->GetGuildId() : su->guild;
+        uint32 guildTarget=targetPlayerOwner ? targetPlayerOwner->GetGuildId() : tu->guild;
         
         // it can happen only when the unit is a creature and
         // not assigned to any guild (blackmarket NPCs for example)
@@ -746,7 +768,7 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zo
     
     if (!level)
     {
-        AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(area);
+        AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(area);
         if (areaEntry && areaEntry->area_level > 0)
             level = areaEntry->area_level;
     }

@@ -39,6 +39,7 @@ enum GuildAdd_Type
     NPC_BASIC        = 0x00000001,
     NPC_GUARD        = 0x00000002,
     NPC_BUFFMAN      = 0x00000004,
+    NPC_DUMMY        = 0x00000005,
     NPC_TELE         = 0x00000008,
 };
 #define NPC_MAX 32
@@ -81,9 +82,19 @@ class GH_Item
       }
 };
 
+class GH_unit{
+public:
+    uint32 guild;
+    uint8 type;
+    GH_unit(uint32 guild, uint8 type) {
+        this->guild = guild;
+        this->type  = type;
+    }
+};
+
 typedef UNORDERED_MAP<uint32, GuildHouse> GuildHouseMap;
 typedef UNORDERED_MAP<uint32, GH_Item> GH_Add;
-typedef UNORDERED_MAP<uint32, uint32> GuildHouseUnits;
+typedef UNORDERED_MAP<uint32, GH_unit*> GuildHouseUnits;
 typedef UNORDERED_MAP<uint32, uint32> GuildGuardID;
 
 class GuildHouseObject
@@ -110,7 +121,7 @@ class GuildHouseObject
     void UpdateGuardMap(uint32 guid, uint32 guild);
     uint32 GetGuildByGuardID(uint32 guid);
 	uint32 GetGuildByGuardID(Creature* guardia); 
-    uint32 GetGuildByUnit(uint32 guid);
+    GH_unit* GetUnitByGuid(uint32 guid);
     void ControlGuildHouse();
     void LoadGuildHouseSystem();
 };
