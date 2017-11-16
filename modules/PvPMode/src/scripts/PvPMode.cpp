@@ -46,7 +46,7 @@ public:
             startLoc.m_positionX = 4718.45f;
             startLoc.m_positionY = -1974.84f;
             startLoc.m_positionZ = 1086.91f;
-            startLoc.m_orientation = 5.12f;
+            startLoc.m_orientation = 0.06f;
             startLoc.m_mapId  = 1;
 
             player->Relocate(&startLoc);

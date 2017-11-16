@@ -47,11 +47,13 @@ bool AzthUtils::isEligibleForBonusByArea(Player const* player) {
 }
 
 bool AzthUtils::updateTwLevel(Player *player,Group *group) {
+    bool result = false;
+    
+    if (!player || !player->azthPlayer)
+        return result;
     
     uint32 levelPlayer = player->azthPlayer->isTimeWalking() && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO 
                                 ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
-
-    bool result = false;
     
     if (group) {
         if (group->azthGroupMgr->levelMaxGroup < levelPlayer) {

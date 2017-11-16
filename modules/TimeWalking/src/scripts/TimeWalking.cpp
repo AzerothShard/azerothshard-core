@@ -321,7 +321,10 @@ public:
             return;
 
         if (oldArea != newArea && player->azthPlayer->GetTimeWalkingLevel() == TIMEWALKING_LVL_AUTO) {
-            AreaTableEntry const* area = GetAreaEntryByAreaID(newArea);
+            AreaTableEntry const* area = sAreaTableStore.LookupEntry(newArea);
+            if (!area)
+                return;
+            
             _autoscaling(player, area->zone, newArea);
         }
 

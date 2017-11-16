@@ -199,6 +199,9 @@ public:
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
 
             creature->MonsterWhisper("Item depositato.", player);//, item->GetTemplate()->Name1);
+            
+            //send menu again but it won't stop following code
+            OnGossipSelect(player, creature, GOSSIP_SENDER_INFO, inventoryType);
         }
         else if (action == 300) // go to main menu
         {

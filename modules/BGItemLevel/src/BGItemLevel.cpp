@@ -250,12 +250,12 @@ public:
         if (itemLevel == -1)
         {
             sASeasonMgr->SetItemLevel(defaultMaxItemLevel);
-            handler->PSendSysMessage("L'item level massimo e stato riportato al valore predefinito");
+            handler->PSendSysMessage("L'item level massimo e' stato riportato al valore predefinito");
         }
         else
         {
             sASeasonMgr->SetItemLevel(itemLevel);
-            handler->PSendSysMessage("L'item level massimo e stato cambiato");
+            handler->PSendSysMessage("L'item level massimo e' stato cambiato");
         }
 
         return true;
