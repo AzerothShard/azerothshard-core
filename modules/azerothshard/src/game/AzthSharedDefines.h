@@ -58,6 +58,7 @@ enum AzthCommonMaps {
 #define MAX_DIMENSION 9
 
 #define DIMENSION_SPELL_MARK 1000000
+#define AZTH_CUSTOM_SPELL_MIN 900000
 
 class AzthSharedDef {
 public:
