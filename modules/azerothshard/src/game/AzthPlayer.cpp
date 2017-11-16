@@ -403,6 +403,10 @@ uint32 AzthPlayer::getMaxItemLevelByStatus() {
 }
 
 bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {
+    // it is needed to avoid equip in empty slots
+    if (hasGear())
+        return false;
+
     if (!sASeasonMgr->checkItem(proto, player))
         return false;
     
