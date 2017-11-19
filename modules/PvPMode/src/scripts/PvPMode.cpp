@@ -160,6 +160,24 @@ public:
         }
     }
     
+    void OnMapChanged(Player* player) override { 
+        if (!player)
+            return;
+        
+        MapEntry const* mEntry = sMapStore.LookupEntry(player->GetMapId());
+        
+        if (player->InArena() && mEntry->IsBattleArena()) {
+            switch(player->getClass()) {
+                case CLASS_WARLOCK:
+                    player->CastSpell(player, 58889, TRIGGERED_FULL_MASK); // warlock soulwell in arena
+                break;
+                case CLASS_MAGE:
+                    player->CastSpell(player, 58661, TRIGGERED_FULL_MASK); // mage refreshment table in arena
+                break;
+            }
+        }
+    }
+    
     // logger for custom extended costs
     void OnAfterStoreOrEquipNewItem(Player* player, uint32  /*vendorslot*/, Item* item, uint8  /*count*/, uint8  /*bag*/, uint8  /*slot*/, ItemTemplate const*  /*pProto*/, Creature* /*pVendor*/, VendorItem const*  /*crItem*/, bool  /*bStore*/) override
     {
