@@ -389,24 +389,26 @@ public:
             if (!_proto)
                 return;
             
-            if (_proto->IsCurrencyToken()) {
-                bool hasBonus = false;
-                RaidList rList = sAzthRaid->GetRaidList();
-                for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
-                    if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
-                        hasBonus = true;
-                        break;
+            if (_proto->IsCurrencyToken()) {                
+                if (player->GetMap()->IsDungeon() || player->GetMap()->IsRaid()) {
+                    bool hasBonus = false;
+                    RaidList rList = sAzthRaid->GetRaidList();
+                    for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
+                        if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
+                            hasBonus = true;
+                            break;
+                        }
                     }
-                }
-                
-                // if bonus is active then you'll get x2 tokens
-                // moreover if you have the level <= of suggested
-                // then you'll get x6 tokens instead
-                if (hasBonus) {
-                    count *= 2;
+                    
+                    // if bonus is active then you'll get x2 tokens
+                    // moreover if you have the level <= of suggested
+                    // then you'll get x6 tokens instead
+                    if (hasBonus) {
+                        count *= 2;
 
-                    if (level <= achi.GetLevel())
-                        count *= 3;
+                        if (level <= achi.GetLevel())
+                            count *= 3;
+                    }
                 }
 
                 player->AddItem(reward, count);
