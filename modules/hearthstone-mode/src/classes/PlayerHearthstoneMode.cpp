@@ -111,6 +111,9 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
 
             return true;
         }
+    } else {
+        // normal case
+        return true;
     }
     
     // in this case conditions above are negative
