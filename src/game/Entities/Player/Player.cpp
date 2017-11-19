@@ -3044,7 +3044,7 @@ void Player::SetGameMaster(bool on)
 
         //[AZTH] SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
         //[AZTH] xeela
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_MODERATOR);
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_GAMEMASTER);
         //[/AZTH]
     }
     else
@@ -3104,7 +3104,7 @@ void Player::SetGMVisible(bool on)
         SetGameMaster(true);
 
         //[AZTH] xeela
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_MODERATOR);
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_GAMEMASTER);
         //[/AZTH]
     }
 }
