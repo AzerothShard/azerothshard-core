@@ -3044,7 +3044,7 @@ void Player::SetGameMaster(bool on)
 
         //[AZTH] SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
         //[AZTH] xeela
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_GAMEMASTER);
+        m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_ENTERTAINER ? GetSession()->GetSecurity() : SEC_ENTERTAINER);
         //[/AZTH]
     }
     else
@@ -3076,7 +3076,7 @@ void Player::SetGameMaster(bool on)
         UpdateArea(m_areaUpdateId);
 
         getHostileRefManager().setOnlineOfflineState(true);
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+        m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
     }
 
     UpdateObjectVisibility();
@@ -3104,7 +3104,7 @@ void Player::SetGMVisible(bool on)
         SetGameMaster(true);
 
         //[AZTH] xeela
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_GAMEMASTER ? GetSession()->GetSecurity() : SEC_GAMEMASTER);
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_ENTERTAINER ? GetSession()->GetSecurity() : SEC_ENTERTAINER);
         //[/AZTH]
     }
 }
@@ -22926,7 +22926,8 @@ bool Player::IsVisibleGloballyFor(Player const* u) const
 
     // GMs are visible for higher gms (or players are visible for gms)
     if (!AccountMgr::IsPlayerAccount(u->GetSession()->GetSecurity()))
-        return GetSession()->GetSecurity() <= u->GetSession()->GetSecurity();
+        return GetSession()->GetSecurity() <= u->GetSession()->GetSecurity() 
+                    || (GetSession()->GetSecurity() == SEC_ENTERTAINER && u->GetSession()->GetSecurity() == SEC_T1_SUPPORTER); //[AZTH]
 
     // non faction visibility non-breakable for non-GMs
     return false;

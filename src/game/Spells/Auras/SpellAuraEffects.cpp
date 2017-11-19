@@ -1721,7 +1721,7 @@ void AuraEffect::HandlePhase(AuraApplication const* aurApp, uint8 mode, bool app
             newPhase = PHASEMASK_NORMAL;
 
         // do not change phase to GM with all phases enabled
-        if (player->IsGameMaster() /*[AZTH]*/ && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER) /*[/AZTH]*/)
+        if (/*player->IsGameMaster() [AZTH] &&*/ player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER) /*[/AZTH]*/)
             newPhase = PHASEMASK_ANYWHERE;
 
         player->SetPhaseMask(newPhase, false);

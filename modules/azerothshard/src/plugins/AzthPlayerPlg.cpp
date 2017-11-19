@@ -52,6 +52,12 @@ public:
             } while (itemInBankQuery->NextRow());
 
         }
+        
+        // GM mods, see anything
+        if (pl->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER) /*[/AZTH]*/) {
+            pl->SetPhaseMask(PHASEMASK_ANYWHERE, false);
+            pl->GetSession()->SendSetPhaseShift(PHASEMASK_ANYWHERE);
+        }
     }
     
     void OnLevelChanged(Player* player, uint8 oldLevel) override
