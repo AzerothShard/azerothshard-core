@@ -5,7 +5,7 @@
 #include "ItemToSell.h"
 #include "ScriptedGossip.h"
 #include "GossipDef.h"
-#include "AzthLanguage.h"
+#include "AzthLanguageStrings.h"
 #include "AzthUtils.h"
 
 #define AZTH_ITEMBANK_START_ACTION 100000

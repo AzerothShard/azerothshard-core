@@ -6,14 +6,6 @@
 
 class Player;
 
-enum AzthLangStrEnum {
-    AZTH_LANG_REMOVED_ITEMS=0,
-    AZTH_LANG_PVP_NPC_SET_ADVICE,
-    AZTH_LANG_PVP_NPC_CANNOT_EQUIP,
-    AZTH_LANG_RESET_AURAS_ADVICE,
-    AZTH_LANG_SHOW_BANK_ITEMS,
-};
-
 class AzthLangString {
 public:
     friend class AzthLang;

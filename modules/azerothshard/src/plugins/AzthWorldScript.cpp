@@ -1,5 +1,5 @@
 #include "Configuration/Config.h"
-#include "AzthLanguage.h"
+#include "AzthLanguageStrings.h"
 #include "AzthUtils.h"
 #include "ScriptMgr.h"
 #include "AzthFirstKills.h"

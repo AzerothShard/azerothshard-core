@@ -4,7 +4,7 @@
 #include "ConditionMgr.h"
 #include "ScriptedGossip.h"
 #include "GossipDef.h"
-#include "AzthLanguage.h"
+#include "AzthLanguageStrings.h"
 #include "AzthUtils.h"
 #include "AzthSharedDefines.h"
 

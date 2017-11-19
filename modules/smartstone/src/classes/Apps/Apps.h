@@ -4,7 +4,7 @@
 #include "Define.h"
 #include "Common.h"
 #include "Player.h"
-#include "AzthLanguage.h"
+#include "AzthLanguageStrings.h"
 
 #define AZTH_SMRTST_POSITION_HOUSE_INDEX 100000
 

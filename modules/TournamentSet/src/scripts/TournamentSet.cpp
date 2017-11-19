@@ -7,7 +7,7 @@
 #include "AzthUtils.h"
 #include "AzthGearScaling.h"
 #include "AzthGearScalingSocket.h"
-#include "AzthLanguage.h"
+#include "AzthLanguageStrings.h"
 #include "ScriptedGossip.h"
 
 

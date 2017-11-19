@@ -3,7 +3,7 @@
 
 #include "Define.h"
 #include "Common.h"
-#include "AzthLanguage.h"
+#include "AzthLanguageStrings.h"
 #include "AzthSharedDefines.h"
 
 class WorldSession;
