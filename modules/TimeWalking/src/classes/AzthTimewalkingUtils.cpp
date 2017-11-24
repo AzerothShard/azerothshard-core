@@ -267,3 +267,13 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
     
     return 0; // no reduction, but scaled
 }
+
+bool AzthUtils::isValidSpellForTw(SpellInfo const* spellProto) {
+    switch(spellProto->Id) {
+        case 54428: // Divine Plea
+        //case 53601: // Sacred Shield
+            return true;
+    }
+    
+    return false;
+}

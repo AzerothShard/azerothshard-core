@@ -833,7 +833,7 @@ void Spell::SelectSpellTargets()
                 if (m_auraScaleMask && ihit->effectMask == m_auraScaleMask)
                 {
                     // Do not check for selfcast
-                    if (!ihit->scaleAura /*[AZTH] && ihit->targetGUID != m_caster->GetGUID()*/)
+                    if (!ihit->scaleAura /*[AZTH] && ihit->targetGUID != m_caster->GetGUID()*/  /*[AZTH]*/ && !sAzthUtils->isValidSpellForTw(m_spellInfo) /*[/AZTH]*/)
                     {
                          m_UniqueTargetInfo.erase(ihit++);
                          continue;

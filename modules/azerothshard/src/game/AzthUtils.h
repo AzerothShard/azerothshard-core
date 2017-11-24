@@ -97,6 +97,8 @@ public:
     int32 getSpellReduction(Player *player, SpellInfo const* spellProto);
     
     bool isEligibleForBonusByArea(Player const *player);
+    
+    bool isValidSpellForTw(SpellInfo const* spellProto);
     // [/Timewalking]
     
     // DIMENSIONS
@@ -104,6 +106,7 @@ public:
     bool isPhasedDimension(uint32 dim);
     PhaseDimensionsEnum getCurrentDimensionByPhase(uint32 phase);
     bool dimIntegrityCheck(Unit *target, uint32 phasemask);
+    bool isSharedArea(Player *player, MapEntry const *mEntry, uint32 zone, uint32 area);
     // /DIMENSIONS
 
     // horde version of objectmgr factionchangeitems map
