@@ -6778,6 +6778,36 @@ void Player::SendActionButtons(uint32 state) const
     {
         for (uint8 button = 0; button < MAX_ACTION_BUTTONS; ++button)
         {
+            //[AZTH] Timewalking
+            if (azthPlayer->isTimeWalking(true)) {
+                ActionButtonList::const_iterator itr = m_actionButtons.find(button);
+                if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED && itr->second.GetType() == ACTION_BUTTON_SPELL) { 
+                    SpellInfo const *sInfo = sSpellMgr->GetSpellInfo(itr->second.GetAction());
+                    bool canScale=true;
+                    for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
+                    {
+                        if (sInfo->Reagent[i] <= 0)
+                            continue;
+                        
+                        canScale=false;
+                    }
+                        
+                    if (canScale) {
+                        uint32 spell=sAzthUtils->selectCorrectSpellRank(getLevel(), itr->second.GetAction());
+                        if (spell) {
+                            ActionButton _twBtn = itr->second;
+                            _twBtn.SetActionAndType(spell, ACTION_BUTTON_SPELL);
+                            data << uint32(_twBtn.packedData);
+                        } else {
+                            data << uint32(0);
+                        }
+
+                        continue;
+                    }
+                }
+            }
+            //[/AZTH] Timewalking
+            
             ActionButtonList::const_iterator itr = m_actionButtons.find(button);
             if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED)
                 data << uint32(itr->second.packedData);
