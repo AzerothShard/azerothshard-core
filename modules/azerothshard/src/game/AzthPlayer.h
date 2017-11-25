@@ -94,6 +94,9 @@ public:
   AzthCustomLangs getCustLang();
   void setCustLang(AzthCustomLangs code);
   
+  bool isPvPFlagOn(bool def);
+  bool isFFAPvPFlagOn(bool def);
+  
   void AddBankItem(uint32 itemEntry, uint32 itemGuid);
   void DelBankItem(uint32 itemEntry);
   void SetBankItemsList(ItemInBankMap itemsInBankList);
