@@ -109,6 +109,19 @@ public:
     }
 
     void OnMapChanged(Player* player) override { 
+        _zoneCheck(player, player->GetMapId(), player->GetZoneId(), player->GetAreaId());
+    }
+    
+    void OnUpdateZone(Player *player, uint32 zone, uint32 area) override {
+        AreaTableEntry const* aEntry = sAreaTableStore.LookupEntry(area);
+        if (!aEntry)
+            return;
+
+        _zoneCheck(player, aEntry->mapid , zone, area);
+    }
+    
+    
+    void _zoneCheck(Player *player, uint32 mapid, uint32 zoneid, uint32 areaid) {
         if (!player)
             return;
         
@@ -119,9 +132,9 @@ public:
         // without aura (hacking/exploit)
         uint32 phaseDimension = player->azthPlayer->getCurrentDimensionByPhase();
         
-        MapEntry const* mEntry = sMapStore.LookupEntry(player->GetMapId());
+        MapEntry const* mEntry = sMapStore.LookupEntry(mapid);
         
-        if (sAzthUtils->isPhasedDimension(curDimension) && (mEntry->IsBattlegroundOrArena() || mEntry->IsDungeon() || mEntry->IsRaid())) {
+        if (sAzthUtils->isPhasedDimension(curDimension) && sAzthUtils->isSharedArea(player, mEntry, zoneid, areaid)) {
             // TEMPORARY DISABLE DIMENSION IN BG BUT DO NOT REMOVE THE MARKER
             player->azthPlayer->changeDimension(DIMENSION_NORMAL, false, true);
         } else if (phaseDimension == DIMENSION_60 && mEntry->Expansion() > 0) {
