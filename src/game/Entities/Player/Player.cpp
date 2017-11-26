@@ -6783,26 +6783,17 @@ void Player::SendActionButtons(uint32 state) const
                 ActionButtonList::const_iterator itr = m_actionButtons.find(button);
                 if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED && itr->second.GetType() == ACTION_BUTTON_SPELL) { 
                     SpellInfo const *sInfo = sSpellMgr->GetSpellInfo(itr->second.GetAction());
-                    bool canScale=true;
-                    for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
-                    {
-                        if (sInfo->Reagent[i] <= 0)
-                            continue;
                         
-                        canScale=false;
-                    }
-                        
-                    if (canScale) {
+                    if (sAzthUtils->canScaleSpell(sInfo)) {
                         uint32 spell=sAzthUtils->selectCorrectSpellRank(getLevel(), itr->second.GetAction());
-                        if (spell) {
+                        if (spell != itr->second.GetAction() 
+                            && HasActiveSpell(spell)) { // we cannot send information about low ranks that are not active (maybe workaround needed?)
                             ActionButton _twBtn = itr->second;
                             _twBtn.SetActionAndType(spell, ACTION_BUTTON_SPELL);
                             data << uint32(_twBtn.packedData);
-                        } else {
-                            data << uint32(0);
-                        }
 
-                        continue;
+                            continue;
+                        }
                     }
                 }
             }
