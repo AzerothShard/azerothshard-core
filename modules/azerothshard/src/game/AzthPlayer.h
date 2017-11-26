@@ -116,6 +116,7 @@ public:
   uint32 GetTimeWalkingLevel() const;
   bool isTimeWalking(bool skipSpecial=false) const;
   void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool clearAuras = true, bool save = true, bool login = false);
+  void prepareTwSpells(uint32 oldLevel);
   uint32 getTwItemLevel(uint32 twLevel);
   time_t autoScalingPending;
   

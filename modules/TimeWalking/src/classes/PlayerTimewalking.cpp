@@ -3,6 +3,7 @@
 #include "AzthLevelStat.h"
 #include "AzthUtils.h"
 #include "Pet.h"
+#include "Opcodes.h"
 
 uint32 AzthPlayer::GetTimeWalkingLevel() const
 {
@@ -60,6 +61,8 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
     uint32 realLevel = itsTimeWalkingLevel;
     uint32 statsLevel = itsTimeWalkingLevel;
     
+    uint32 oldLevel = player->getLevel();
+    
     if (itsTimeWalkingLevel>TIMEWALKING_SPECIAL_LVL_MIN && itsTimeWalkingLevel<=TIMEWALKING_SPECIAL_LVL_MAX) { // 300 + 255 levels
         
         if (itsTimeWalkingLevel == TIMEWALKING_LVL_AUTO) {
@@ -103,8 +106,11 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         //set must be before givelevel allowing make the check inside givelevel to avoid level mail
         timeWalkingLevel = itsTimeWalkingLevel;
 
-        if (player->getLevel() != realLevel)
+        if (oldLevel != realLevel) {
             player->GiveLevel(realLevel);
+            
+            player->SendActionButtons(1);
+        }
 
         player->SetUInt32Value(PLAYER_XP, 0);
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
@@ -133,6 +139,8 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         
         if (save) {
             player->GiveLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+            
+            player->SendActionButtons(1);
 
             if (player->GetPet()) {
                 player->GetPet()->GivePetLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
@@ -158,6 +166,8 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         }
     }
     
+    prepareTwSpells(oldLevel);
+    
     sAzthUtils->updateTwLevel(player, player->GetGroup());
     
     if (clearAuras) {
@@ -170,4 +180,90 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
     /*if (save) {
         player->SaveToDB(false, false);
     }*/
+}
+
+
+void AzthPlayer::prepareTwSpells(uint32 oldLevel) {
+    if (!player || !player->IsInWorld()) // shouldn't happen
+        return;
+    
+    bool isTw=isTimeWalking(true);
+
+    // do nothing if we are not changing timewalking level
+    if (!isTw && oldLevel==player->getLevel())
+        return;
+
+    std::map<uint32 /*old*/, uint32 /*new*/> spellMap;
+    
+    bool apply=isTw && player->getLevel() < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    
+    for (PlayerSpellMap::iterator itr = player->m_spells.begin(); itr != player->m_spells.end(); ++itr)
+    {
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+
+        if (!itr->second->IsInSpec(player->GetActiveSpec())) //!spellInfo->HasAttribute(SPELL_ATTR4_UNK21))
+            continue;
+        
+        bool isValidSpell=false;
+        
+        // All stance spells. if any better way, change it.
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            switch (spellInfo->SpellFamilyName)
+            {
+                case SPELLFAMILY_PALADIN:
+                    // Paladin aura Spell
+                    if (spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID)
+                        isValidSpell=true;
+                    break;
+                case SPELLFAMILY_DRUID:
+                    // Druid form Spell
+                    if (spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA &&
+                        spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
+                        isValidSpell=true;
+                    break;
+            }
+        }
+        
+        if (!isValidSpell)
+            continue;
+        
+        if (!sAzthUtils->canScaleSpell(spellInfo))
+            continue;
+        
+        uint32 lastKnownSpell=sSpellMgr->GetLastSpellInChain(itr->first);
+        while (!player->HasSpell(lastKnownSpell)) {
+            lastKnownSpell = sSpellMgr->GetPrevSpellInChain(lastKnownSpell);
+        }
+
+        uint32 spell=sAzthUtils->selectCorrectSpellRank(apply ? player->getLevel() : oldLevel, lastKnownSpell);
+
+        uint32 remove = apply ? lastKnownSpell : spell;
+        uint32 learn  = apply ? spell : lastKnownSpell;
+        
+        if (remove == learn)
+            continue;
+        
+        if (itr->first == remove) {
+            // SUPERCED high ranks with low ranks
+            itr->second->Active = false;
+            spellMap[remove]=learn;
+        }
+    }
+
+    for (std::map<uint32, uint32>::const_iterator itr = spellMap.begin(), end = spellMap.end(); itr != end; ++itr) {
+        PlayerSpellMap::iterator s = player->m_spells.find(itr->second);
+        if (s == player->m_spells.end() || player->HasActiveSpell(s->first) || player->HasActiveSpell(itr->first))
+            continue;
+
+        s->second->Active = true;
+
+        // update ranks in action bar
+        WorldPacket data(SMSG_SUPERCEDED_SPELL, 4 + 4);
+        data << uint32(itr->first); // old
+        data << uint32(itr->second); // new
+        player->GetSession()->SendPacket(&data);
+        
+        player->SendLearnPacket(itr->first, false); // be sure that old spell is removed from spellbook
+    }
 }

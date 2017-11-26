@@ -98,7 +98,9 @@ public:
     
     bool isEligibleForBonusByArea(Player const *player);
     
-    bool isValidSpellForTw(SpellInfo const* spellProto);
+    bool canScaleSpell(SpellInfo const* spellProto);
+    
+    bool isSpecialSpellForTw(SpellInfo const* spellProto);
     // [/Timewalking]
     
     // DIMENSIONS

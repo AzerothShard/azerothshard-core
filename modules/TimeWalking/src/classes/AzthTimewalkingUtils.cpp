@@ -130,7 +130,7 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
             // keep auras that are lower or equal to unit level
             if (aura->GetSpellInfo()->SpellLevel <= unit->getLevel())
                 continue;
-            
+
             unit->RemoveAura(iter);
         }
         // xinef: special marker, 95% sure
@@ -207,7 +207,7 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
         pl->_ApplyAllLevelScaleItemMods(false);
         pl->_ApplyAllLevelScaleItemMods(true);
         
-        pl->InitStatsForLevel(true);
+        //pl->InitStatsForLevel(true);
     }
     else if (unit->IsPet()) {
         Pet *pet = (Pet*)unit;
@@ -268,7 +268,7 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
     return 0; // no reduction, but scaled
 }
 
-bool AzthUtils::isValidSpellForTw(SpellInfo const* spellProto) {
+bool AzthUtils::isSpecialSpellForTw(SpellInfo const* spellProto) {
     switch(spellProto->Id) {
         case 54428: // Divine Plea
         //case 53601: // Sacred Shield
@@ -276,4 +276,15 @@ bool AzthUtils::isValidSpellForTw(SpellInfo const* spellProto) {
     }
     
     return false;
+}
+
+bool AzthUtils::canScaleSpell(SpellInfo const* spellProto) {
+    // do not allow spell with reagents to be scaled
+    for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
+    {
+        if (spellProto->Reagent[i] > 0)
+            return false;
+    }
+
+    return true;
 }
