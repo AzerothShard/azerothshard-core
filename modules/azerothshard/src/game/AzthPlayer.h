@@ -112,6 +112,8 @@ public:
   uint32 getMaxItemLevelByStatus();
 
   //TIMEWALKING
+  bool canUseItem(Item *item, bool notify = false);
+  bool itemCheckReqLevel(Item *item, bool notify = false);
   uint32 getGroupLevel(bool normalized = true);
   uint32 GetTimeWalkingLevel() const;
   bool isTimeWalking(bool skipSpecial=false) const;

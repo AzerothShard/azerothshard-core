@@ -5293,6 +5293,14 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         if (((const Player*)m_caster)->IsSpectator() && m_spellInfo->Id != SPECTATOR_SPELL_BINDSIGHT)
             return SPELL_FAILED_NOT_HERE;
+        
+    //[AZTH]
+    Player *_plr = m_caster->GetSpellModOwner();
+    if (_plr && _plr->azthPlayer->isTimeWalking(true) && sAzthUtils->isNotAllowedSpellForTw(m_spellInfo)) {
+        _plr->GetSession()->SendNotification("This spell is not allowed in Timewalking");
+        return SPELL_FAILED_DONT_REPORT;
+    }     
+    //[/AZTH]
 
     // check cooldowns to prevent cheating
     if (!m_spellInfo->HasAttribute(SPELL_ATTR0_PASSIVE))

@@ -8551,15 +8551,8 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change)
 void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change)
 {
     // [AZTH] Timewalking
-    if (item) {
-        ItemTemplate const* proto = item->GetTemplate();
-        uint32 req=sAzthUtils->getCalcReqLevel(proto);
-        if (req > this->getLevel()) {
-            return;
-        }
-    } else if (azthPlayer->isTimeWalking(true)) {
+    if (!azthPlayer->itemCheckReqLevel(item))
         return;
-    }
 
     if (apply)
     {
@@ -8679,14 +8672,8 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item* item, ItemTemplate const* proto)
 {
     // [AZTH] Timewalking
-    if (item) {
-        uint32 req=sAzthUtils->getCalcReqLevel(proto);
-        if (req > this->getLevel()) {
-            return;
-        }
-    } else if (azthPlayer->isTimeWalking(true)) {
+    if (!azthPlayer->itemCheckReqLevel(item))
         return;
-    }
     
     // Can do effect if any damage done to target
     if (procVictim & PROC_FLAG_TAKEN_DAMAGE)
@@ -8811,8 +8798,14 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 }
 
 void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex)
-{
+{    
     ItemTemplate const* proto = item->GetTemplate();
+    
+    // [AZTH]
+    if (!azthPlayer->canUseItem(item, true))
+        return;
+    //[/AZTH]
+    
     // special learning case
     if (proto->Spells[0].SpellId == 483 || proto->Spells[0].SpellId == 55884)
     {
@@ -14493,11 +14486,8 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
         return;
 
     //[AZTH] Timewalking
-    ItemTemplate const* proto = item->GetTemplate();
-    uint32 req=sAzthUtils->getCalcReqLevel(proto);
-    if (req > this->getLevel()) {
+    if (!azthPlayer->itemCheckReqLevel(item))
         return;
-    }
 
     uint32 enchant_id = item->GetEnchantmentId(slot);
     if (!enchant_id)
@@ -14507,6 +14497,10 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
     if (!pEnchant)
         return;
 
+    //[AZTH]
+    if (sAzthUtils->disableEnchant(this, pEnchant))
+        return;
+    
     if (!ignore_condition && pEnchant->EnchantmentCondition && !EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
         return;
 

@@ -653,7 +653,7 @@ bool AzthUtils::isPhasedDimension(uint32 dim) {
     return dim > DIMENSION_NORMAL;
 }
 
-bool AzthUtils::isSharedArea(Player *player, MapEntry const *mEntry, uint32 zone, uint32 /*area*/) {
+bool AzthUtils::isSharedArea(Player */*player*/, MapEntry const *mEntry, uint32 zone, uint32 /*area*/) {
     return 
     mEntry->IsBattlegroundOrArena() // all bg and arena
     || mEntry->IsDungeon()          // is dungeon
@@ -779,26 +779,26 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zo
         }
     }
     
+    // before area table because more accurate in dungeon case
+    if (!level) {
+        LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty());
+        if (dungeon && (map->IsDungeon() || map->IsRaid()))
+            level  = dungeon->minlevel;
+    }
+
+    if (!level) {
+        AccessRequirement const* ar=sObjectMgr->GetAccessRequirement(map->GetId(), map->GetDifficulty());
+        if (ar)
+            level = ar->levelMin;
+    }
+    
     if (!level)
     {
         AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(area);
         if (areaEntry && areaEntry->area_level > 0)
             level = areaEntry->area_level;
     }
-    
-    if (!level) {
-        LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty());
-        if (dungeon && (map->IsDungeon() || map->IsRaid()))
-            level  = dungeon->minlevel;
-    }
-    
-        
-    if (!level) {
-        // try to get level from access requirement (last chance)
-        AccessRequirement const* ar=sObjectMgr->GetAccessRequirement(map->GetId(), map->GetDifficulty());
-        if (ar)
-            level = ar->levelMin;
-    }
+
 
     return level;
 }

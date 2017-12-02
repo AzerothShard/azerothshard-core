@@ -12,6 +12,7 @@
 #include "SpellAuras.h"
 #include <stdio.h>
 #include <time.h>
+#include "AzthLevelStat.h"
 #include "AzthSharedDefines.h"
 
 class AuraApplication;
@@ -101,6 +102,13 @@ public:
     bool canScaleSpell(SpellInfo const* spellProto);
     
     bool isSpecialSpellForTw(SpellInfo const* spellProto);
+    
+    bool isNotAllowedSpellForTw(SpellInfo const* spellProto);
+    
+    void setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply);
+    AzthLevelStat const* getTwStats(Player *player, uint32 level);
+    
+    bool disableEnchant(Player *player, SpellItemEnchantmentEntry const* pEnchant);
     // [/Timewalking]
     
     // DIMENSIONS
