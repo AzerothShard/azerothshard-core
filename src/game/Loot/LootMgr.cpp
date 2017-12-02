@@ -468,8 +468,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
     tab->Process(*this, store, lootMode, lootOwner);          // Processing is done there, callback via Loot::AddItem()
 
     //[AZTH] give another loot process if done with correct level
-    if (sAzthUtils->isEligibleForBonusByArea(lootOwner)) {
-        tab->Process(*this, store.IsRatesAllowed(), lootMode, lootOwner);
+    if (sAzthUtils->isEligibleForBonusByArea(lootOwner) && (&store == &LootTemplates_Gameobject || &store == &LootTemplates_Creature)) {
+        tab->Process(*this, store, lootMode, lootOwner);
     }
     //[/AZTH]
 
@@ -1350,6 +1350,26 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, uint16 lootMode, 
             loot.AddItem(*item);                                // Chance is already checked, just add
         }
     }
+    
+    //[AZTH]
+    if (sAzthUtils->isEligibleForBonusByArea(player)) {
+        for (LootGroups::const_iterator i = Groups.begin(); i != Groups.end(); ++i) {
+            if (LootGroup* group = *i) {
+                LootStoreItemList *possibleLoot = group->GetExplicitlyChancedItemList();
+                possibleLoot->remove_if(LootGroupInvalidSelector(loot, lootMode));
+
+                if (!possibleLoot->empty()) {
+                    for (LootStoreItemList::const_iterator itr = possibleLoot->begin(); itr != possibleLoot->end(); ++itr)   // check each explicitly chanced entry in the template and modify its chance based on quality.
+                    {
+                        LootStoreItem* item = *itr;
+                        if (item->chance < 20.f)
+                            item->chance += 20.f;
+                    }
+                }
+            }
+        }
+    }
+    //[/AZTH]
 
     // Now processing groups
     for (LootGroups::const_iterator i = Groups.begin(); i != Groups.end(); ++i)
