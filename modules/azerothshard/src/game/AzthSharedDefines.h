@@ -57,8 +57,19 @@ enum AzthCommonMaps {
 
 #define MAX_DIMENSION 9
 
+// Spells
 #define DIMENSION_SPELL_MARK 1000000
 #define AZTH_CUSTOM_SPELL_MIN 900000
+
+// Items
+
+// only usable in tw
+#define AZTH_TW_ILVL              246
+#define AZTH_TW_ILVL_NORMAL_ONLY  247
+#define AZTH_TW_ILVL_SPECIAL_ONLY 248
+
+
+#define AZTH_MARK_OF_AZEROTH 37711
 
 class AzthSharedDef {
 public:

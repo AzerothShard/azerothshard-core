@@ -5,6 +5,7 @@
 #include "SpellInfo.h"
 #include "AzthSharedDefines.h"
 #include "GuildHouse.h"
+#include "BattlefieldWG.h"
 
 
 AzthUtils::AzthUtils()
@@ -652,6 +653,14 @@ bool AzthUtils::isPhasedDimension(uint32 dim) {
     return dim > DIMENSION_NORMAL;
 }
 
+bool AzthUtils::isSharedArea(Player */*player*/, MapEntry const *mEntry, uint32 zone, uint32 /*area*/) {
+    return 
+    mEntry->IsBattlegroundOrArena() // all bg and arena
+    || mEntry->IsDungeon()          // is dungeon
+    || mEntry->IsRaid()             // is raid
+    || zone == BATTLEFIELD_WG_ZONEID; // WG must be shared mainly because it's an open world BG, then because it apply phase 1 + horde/ally phase...so can collide
+}
+
 PhaseDimensionsEnum AzthUtils::getCurrentDimensionByPhase(uint32 phase) {
     // some aura phases include 1 normal map in addition to phase itself
     // we should catch also characters that, for some odd reason, have 
@@ -677,16 +686,20 @@ int AzthUtils::getReaction(Unit const* unit, Unit const* target) {
     Player const* selfPlayerOwner = unit->GetAffectingPlayer();
     Player const* targetPlayerOwner = target->GetAffectingPlayer();
     
+    uint32 dimUnit=selfPlayerOwner ? selfPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(unit->GetPhaseMask());
+    uint32 dimTarget=targetPlayerOwner ? targetPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(target->GetPhaseMask());
+
     // case of 2 players
     if (selfPlayerOwner && targetPlayerOwner) {
         // before guild check
         if (selfPlayerOwner->azthPlayer->isInBlackMarket() && targetPlayerOwner->azthPlayer->isInBlackMarket())
             return REP_FRIENDLY;
+        
+        if (dimUnit == DIMENSION_PVP && dimTarget == DIMENSION_PVP) {
+            return REP_HOSTILE; // fight against everyone on pvp dimension (maybe we must allow it only in contested territory?)
+        }
     }
-    
-    uint32 dimUnit=selfPlayerOwner ? selfPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(unit->GetPhaseMask());
-    uint32 dimTarget=targetPlayerOwner ? targetPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(target->GetPhaseMask());
-    
+
     if (dimUnit== DIMENSION_GUILD && dimTarget == DIMENSION_GUILD) {
         GH_unit *su = nullptr;
         if (!selfPlayerOwner) {
@@ -766,26 +779,26 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zo
         }
     }
     
+    // before area table because more accurate in dungeon case
+    if (!level) {
+        LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty());
+        if (dungeon && (map->IsDungeon() || map->IsRaid()))
+            level  = dungeon->minlevel;
+    }
+
+    if (!level) {
+        AccessRequirement const* ar=sObjectMgr->GetAccessRequirement(map->GetId(), map->GetDifficulty());
+        if (ar)
+            level = ar->levelMin;
+    }
+    
     if (!level)
     {
         AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(area);
         if (areaEntry && areaEntry->area_level > 0)
             level = areaEntry->area_level;
     }
-    
-    if (!level) {
-        LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty());
-        if (dungeon && (map->IsDungeon() || map->IsRaid()))
-            level  = dungeon->minlevel;
-    }
-    
-        
-    if (!level) {
-        // try to get level from access requirement (last chance)
-        AccessRequirement const* ar=sObjectMgr->GetAccessRequirement(map->GetId(), map->GetDifficulty());
-        if (ar)
-            level = ar->levelMin;
-    }
+
 
     return level;
 }

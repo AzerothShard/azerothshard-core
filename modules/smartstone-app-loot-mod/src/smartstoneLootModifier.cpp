@@ -9,7 +9,7 @@ class lootModifier : public GlobalScript
 public:
 	lootModifier() : GlobalScript("lootModifier") {}
     
-	void OnBeforeDropAddItem(Player const* player, Loot& loot, bool /*canRate*/, uint16 /*lootMode*/, LootStoreItem* lootStore)
+	void OnBeforeDropAddItem(Player const* player, Loot& loot, bool /*canRate*/, uint16 /*lootMode*/, LootStoreItem* lootStore, LootStore const& /*store*/)
 	{
 		if (player->azthPlayer->hasSmartStoneCommand(7))
         {

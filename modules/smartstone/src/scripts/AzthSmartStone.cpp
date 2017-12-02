@@ -304,7 +304,7 @@ public:
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
 
         parent = 1;
-        return true;
+        return false;
     }
 };
 

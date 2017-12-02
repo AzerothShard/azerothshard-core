@@ -55,7 +55,7 @@
 //[AZTH]
 #include "AzthLevelStat.h"
 #include "AzthUtils.h"
-//[/AZTH
+//[/AZTH]
 
 #include <math.h>
 

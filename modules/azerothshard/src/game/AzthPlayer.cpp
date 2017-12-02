@@ -494,3 +494,22 @@ bool AzthPlayer::checkItems(uint32 iLvlMax, uint8 type /*=0*/) {
         }
     }
 }
+
+bool AzthPlayer::isPvPFlagOn(bool def) {
+    if (getCurrentDimensionByPhase() == DIMENSION_PVP) {
+        player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+        return true;
+    }
+
+    return def;
+}
+
+
+bool AzthPlayer::isFFAPvPFlagOn(bool def) {
+    if (getCurrentDimensionByPhase() == DIMENSION_PVP) {
+        player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        return true;
+    }
+
+    return def;
+}

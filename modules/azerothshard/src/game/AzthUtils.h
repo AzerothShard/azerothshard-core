@@ -12,6 +12,7 @@
 #include "SpellAuras.h"
 #include <stdio.h>
 #include <time.h>
+#include "AzthLevelStat.h"
 #include "AzthSharedDefines.h"
 
 class AuraApplication;
@@ -97,6 +98,17 @@ public:
     int32 getSpellReduction(Player *player, SpellInfo const* spellProto);
     
     bool isEligibleForBonusByArea(Player const *player);
+    
+    bool canScaleSpell(SpellInfo const* spellProto);
+    
+    bool isSpecialSpellForTw(SpellInfo const* spellProto);
+    
+    bool isNotAllowedSpellForTw(SpellInfo const* spellProto);
+    
+    void setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply);
+    AzthLevelStat const* getTwStats(Player *player, uint32 level);
+    
+    bool disableEnchant(Player *player, SpellItemEnchantmentEntry const* pEnchant);
     // [/Timewalking]
     
     // DIMENSIONS
@@ -104,6 +116,7 @@ public:
     bool isPhasedDimension(uint32 dim);
     PhaseDimensionsEnum getCurrentDimensionByPhase(uint32 phase);
     bool dimIntegrityCheck(Unit *target, uint32 phasemask);
+    bool isSharedArea(Player *player, MapEntry const *mEntry, uint32 zone, uint32 area);
     // /DIMENSIONS
 
     // horde version of objectmgr factionchangeitems map

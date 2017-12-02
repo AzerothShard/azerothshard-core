@@ -30,6 +30,7 @@
 #include "CustomRates.h"
 #include "AzthSharedDefines.h"
 #include "RatingBonus.h"
+#include "AzthUtils.h"
  
  class azth_commandscript : public CommandScript {
  public:
@@ -37,19 +38,55 @@
      azth_commandscript() : CommandScript("azth_commandscript") {}
 
      std::vector<ChatCommand> GetCommands() const override {
+         // name , level, allowConsole, function
          static std::vector<ChatCommand> lookupAzthCommands = {
-             { "maxskill", SEC_PLAYER, true , &handleAzthMaxSkill, ""},
-             { "xp"      , SEC_PLAYER, false, &handleAzthXP, ""},
-             { "smartstone"      , SEC_PLAYER, true, &handleAzthSmartstone, "" },
-			 { "bonus"      , SEC_PLAYER, false, &handleAzthBonus, "" },
+            { "arealevel"      , SEC_PLAYER, false, &handlePrintAreaLevel, ".azth arealevel : to show calculated level for current area" },
+            { "maxskill"       , SEC_PLAYER, false, &handleAzthMaxSkill,   ".azth maxskill: if you're level 80, you can use this command to max out weapons skills"},
+            { "xp"             , SEC_PLAYER, false, &handleAzthXP,         ".azth xp <rate>: you can set an arbitrary experience rate"},
+            { "smartstone"     , SEC_PLAYER, false, &handleAzthSmartstone, ".azth smartstone: create a smartstone in your bag" },
+            { "bonus"          , SEC_PLAYER, false, &handleAzthBonus,      ".azth bonus <rate> <bracket> :  set temp a rating bonus for brackets" },
+            { "ptype"        , SEC_PLAYER, false,   &handlePlayerType,     ".azth ptype : shows player tipology (normal,fullpvp)" },
          };
 
          static std::vector<ChatCommand> commandTable = {
-             { "azth"    , SEC_PLAYER, true, nullptr, "", lookupAzthCommands},
-             { "qc"      , SEC_PLAYER, true, &HandleQuestCompleterCommand, ""},
+             { "azth"    , SEC_PLAYER, false, nullptr, "", lookupAzthCommands},
+             { "qc"      , SEC_PLAYER, false, &HandleQuestCompleterCommand, ""},
          };
          return commandTable;
      }
+     
+    static bool handlePlayerType(ChatHandler* handler, char const* /*args*/) {
+        Player* target = handler->getSelectedPlayerOrSelf();
+        
+        if (!target)
+            return false;
+        
+        if (target->azthPlayer->isPvP()) {
+            handler->PSendSysMessage("This is a full pvp character");
+            return true;
+        }
+
+        handler->PSendSysMessage("This is a normal character");
+
+        return true;
+    }
+
+    static bool handlePrintAreaLevel(ChatHandler* handler, char const* /*args*/) {
+        Player* target = handler->getSelectedPlayerOrSelf();
+        
+        if (!target)
+            return false;
+        
+        WorldLocation pos = WorldLocation(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation());
+        uint32 posLvl=sAzthUtils->getPositionLevel(true, target->GetMap(), pos);
+
+        if (posLvl)
+            handler->PSendSysMessage("Current area is level: %d", posLvl);
+        else
+            handler->PSendSysMessage("No level for this area");
+
+        return true;
+    }
 
      // Based on HandleQuestComplete method of cs_quest.cpp
 

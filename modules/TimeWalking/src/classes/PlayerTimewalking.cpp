@@ -3,6 +3,7 @@
 #include "AzthLevelStat.h"
 #include "AzthUtils.h"
 #include "Pet.h"
+#include "Opcodes.h"
 
 uint32 AzthPlayer::GetTimeWalkingLevel() const
 {
@@ -60,6 +61,8 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
     uint32 realLevel = itsTimeWalkingLevel;
     uint32 statsLevel = itsTimeWalkingLevel;
     
+    uint32 oldLevel = player->getLevel();
+    
     if (itsTimeWalkingLevel>TIMEWALKING_SPECIAL_LVL_MIN && itsTimeWalkingLevel<=TIMEWALKING_SPECIAL_LVL_MAX) { // 300 + 255 levels
         
         if (itsTimeWalkingLevel == TIMEWALKING_LVL_AUTO) {
@@ -93,28 +96,31 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
             SetTimeWalkingLevel(0, false, false, login);
         }
         
-        std::map<uint32, AzthLevelStat>::const_iterator itr = sAzthLevelStatMgr->GetLevelStatList().find(statsLevel * 10000 + player->getRace() * 100 + player->getClass());
-        
-        if (itr == sAzthLevelStatMgr->GetLevelStatList().end())
+        AzthLevelStat const *stats = sAzthUtils->getTwStats(player, statsLevel);
+        if (!stats)
             return;
-        
-        AzthLevelStat stats = itr->second;
         
         //set must be before givelevel allowing make the check inside givelevel to avoid level mail
         timeWalkingLevel = itsTimeWalkingLevel;
 
-        if (player->getLevel() != realLevel)
+        if (oldLevel != realLevel) {
             player->GiveLevel(realLevel);
+            
+            player->SendActionButtons(1);
+            
+            if (player->GetPet() && player->GetPet()->getLevel() != realLevel) { // could happen
+                player->GetPet()->GivePetLevel(realLevel);
+            }
+        }
 
         player->SetUInt32Value(PLAYER_XP, 0);
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
-        
-        for ( auto& a : stats.pctMap) {
-            if (a.first != TIMEWALKING_AURA_VISIBLE)
-                player->SetAuraStack(a.first, player, a.second);
+
+        sAzthUtils->setTwAuras(player, stats, true);
+        if (player->GetPet() && (!player->HasAura(TIMEWALKING_AURA_VISIBLE) || player->GetPet()->GetAura(TIMEWALKING_AURA_VISIBLE)->GetStackAmount() != stats->GetLevel())) {
+            sAzthUtils->setTwAuras(player->GetPet(), stats, true);
         }
 
-        player->AddAura(TIMEWALKING_AURA_VISIBLE, player);
         if (save) {
             QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
         }
@@ -124,15 +130,14 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
     else
     {
         // used just to be able to loop on keys to remove auras
-        std::map<uint32, AzthLevelStat>::const_iterator itr = sAzthLevelStatMgr->GetLevelStatList().find(player->getLevel() * 10000 + player->getRace() * 100 + player->getClass());
-        
-        if (itr == sAzthLevelStatMgr->GetLevelStatList().end())
+        AzthLevelStat const *stats = sAzthUtils->getTwStats(player, player->getLevel());
+        if (!stats)
             return;
-        
-        AzthLevelStat stats = itr->second;
         
         if (save) {
             player->GiveLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+            
+            player->SendActionButtons(1);
 
             if (player->GetPet()) {
                 player->GetPet()->GivePetLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
@@ -142,11 +147,10 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         player->SetUInt32Value(PLAYER_XP, 0);
         player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN); 
         
-        for ( auto a : stats.pctMap) {
-            player->RemoveAura(a.first);
+        sAzthUtils->setTwAuras(player, stats, false);
+        if (player->GetPet()) {
+            sAzthUtils->setTwAuras(player->GetPet(), stats, false);
         }
-
-        player->RemoveAura(TIMEWALKING_AURA_VISIBLE);
 
         // reset must be after givelevel allowing make the check inside givelevel to avoid level mail
         timeWalkingLevel = 0;
@@ -157,6 +161,8 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
             ChatHandler(player->GetSession()).PSendSysMessage("Sei uscito dalla modalità |cffff0000 Timewalking!|r");
         }
     }
+    
+    prepareTwSpells(oldLevel);
     
     sAzthUtils->updateTwLevel(player, player->GetGroup());
     
@@ -170,4 +176,158 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
     /*if (save) {
         player->SaveToDB(false, false);
     }*/
+}
+
+
+void AzthPlayer::prepareTwSpells(uint32 oldLevel) {
+    if (!player || !player->IsInWorld()) // shouldn't happen
+        return;
+    
+    bool isTw=isTimeWalking(true);
+
+    // do nothing if we are not changing timewalking level
+    if (!isTw && oldLevel==player->getLevel())
+        return;
+
+    std::map<uint32 /*old*/, uint32 /*new*/> spellMap;
+    
+    bool apply=isTw && player->getLevel() < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    
+    for (PlayerSpellMap::iterator itr = player->m_spells.begin(); itr != player->m_spells.end(); ++itr)
+    {
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+
+        if (!itr->second->IsInSpec(player->GetActiveSpec())) //!spellInfo->HasAttribute(SPELL_ATTR4_UNK21))
+            continue;
+        
+        bool isValidSpell=false;
+        
+        // All stance spells. if any better way, change it.
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            switch (spellInfo->SpellFamilyName)
+            {
+                case SPELLFAMILY_PALADIN:
+                    // Paladin aura Spell
+                    if (spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID)
+                        isValidSpell=true;
+                    break;
+                case SPELLFAMILY_DRUID:
+                    // Druid form Spell
+                    if (spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA &&
+                        spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
+                        isValidSpell=true;
+                    break;
+            }
+        }
+        
+        if (!isValidSpell)
+            continue;
+        
+        if (!sAzthUtils->canScaleSpell(spellInfo))
+            continue;
+        
+        uint32 lastKnownSpell=sSpellMgr->GetLastSpellInChain(itr->first);
+        while (!player->HasSpell(lastKnownSpell)) {
+            lastKnownSpell = sSpellMgr->GetPrevSpellInChain(lastKnownSpell);
+        }
+
+        uint32 spell=sAzthUtils->selectCorrectSpellRank(apply ? player->getLevel() : oldLevel, lastKnownSpell);
+
+        uint32 remove = apply ? lastKnownSpell : spell;
+        uint32 learn  = apply ? spell : lastKnownSpell;
+        
+        if (remove == learn)
+            continue;
+        
+        if (itr->first == remove) {
+            // SUPERCED high ranks with low ranks
+            itr->second->Active = false;
+            spellMap[remove]=learn;
+        }
+    }
+
+    for (std::map<uint32, uint32>::const_iterator itr = spellMap.begin(), end = spellMap.end(); itr != end; ++itr) {
+        PlayerSpellMap::iterator s = player->m_spells.find(itr->second);
+        if (s == player->m_spells.end() || player->HasActiveSpell(s->first) || player->HasActiveSpell(itr->first))
+            continue;
+
+        s->second->Active = true;
+
+        // update ranks in action bar
+        WorldPacket data(SMSG_SUPERCEDED_SPELL, 4 + 4);
+        data << uint32(itr->first); // old
+        data << uint32(itr->second); // new
+        player->GetSession()->SendPacket(&data);
+        
+        player->SendLearnPacket(itr->first, false); // be sure that old spell is removed from spellbook
+    }
+}
+
+bool AzthPlayer::canUseItem(Item * item, bool notify) {
+    if (!item)
+        return false;
+    
+    if (!itemCheckReqLevel(item, notify))
+        return false;
+    
+    ItemTemplate const* proto=item->GetTemplate();
+    
+    if (player->azthPlayer->isTimeWalking(true)) {
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+        {
+            _Spell const& spellData = proto->Spells[i];
+            if (spellData.SpellId) {
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
+                if (spellInfo && sAzthUtils->isNotAllowedSpellForTw(spellInfo)) {
+                    if (notify) {
+                        player->GetSession()->SendNotification("This item is not allowed in Timewalking");
+                        player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                    }
+                    return false;
+                }
+            }
+        }
+    }   
+    
+    return true;
+}
+
+bool AzthPlayer::itemCheckReqLevel(Item * item, bool notify) {
+
+    if (item) {
+        ItemTemplate const* proto=item->GetTemplate();
+        
+        if (proto->ItemLevel == AZTH_TW_ILVL_NORMAL_ONLY) {
+            if (!player->azthPlayer->isTimeWalking(true)) {
+                if (notify) {
+                    player->GetSession()->SendNotification("This item can be used only with Timewalking level 1 to 79");
+                    player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                }
+
+                return false;
+            } else {
+                return true; // in this case we know what we're doing with this items, so we can return true directly
+            }
+        }
+
+        uint32 req=sAzthUtils->getCalcReqLevel(proto);
+        if (req > player->getLevel()) {
+            if (notify) {
+                player->GetSession()->SendNotification("Level Required for this item: %u", req);
+                player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            }
+
+            return false;
+        }
+    } else if (player->azthPlayer->isTimeWalking(true)) { // should not happen
+        if (notify) {
+            player->GetSession()->SendNotification("Cannot use this item in Timewalking! Unkown reason");
+            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+        }
+
+        return false;
+    }
+    
+    return true;
 }

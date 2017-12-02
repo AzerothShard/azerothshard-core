@@ -23,6 +23,9 @@
 #include "InstanceScript.h"
 #include "ArenaSpectator.h"
 
+//[AZTH]
+#include "AzthUtils.h"
+
 #define PET_XP_FACTOR 0.05f
 
 Pet::Pet(Player* owner, PetType type) : Guardian(NULL, owner ? owner->GetGUID() : 0, true),
@@ -1011,6 +1014,18 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_DK_PET_SCALING_02, this);
         }
     }
+    
+    //[AZTH] Timewalking
+    if (m_owner->GetTypeId() == TYPEID_PLAYER) { 
+        Player* _plr = m_owner->ToPlayer();
+        if (_plr->azthPlayer->isTimeWalking(true)) {
+            AzthLevelStat const *stats = sAzthUtils->getTwStats(_plr, _plr->getLevel());
+            if (stats) {
+                sAzthUtils->setTwAuras(this, stats, true);
+            }
+        }
+    }
+    //[/AZTH]
 
     UpdateAllStats();
 
@@ -1524,7 +1539,7 @@ void Pet::InitLevelupSpellsForLevel()
         for (PetLevelupSpellSet::const_reverse_iterator itr = levelupSpells->rbegin(); itr != levelupSpells->rend(); ++itr)
         {
             // will called first if level down
-            if (itr->first > level)
+            if (itr->first > level /*[AZTH]*/ && (!GetOwner() || !GetOwner()->azthPlayer->isTimeWalking()) /*[/AZTH]*/)
                 unlearnSpell(itr->second, true);                 // will learn prev rank if any
             // will called if level up
             else
@@ -1544,7 +1559,7 @@ void Pet::InitLevelupSpellsForLevel()
                 continue;
 
             // will called first if level down
-            if (spellEntry->SpellLevel > level)
+            if (spellEntry->SpellLevel > level /*[AZTH]*/ && (!GetOwner() || !GetOwner()->azthPlayer->isTimeWalking()) /*[/AZTH]*/ )
                 unlearnSpell(spellEntry->Id, true);
             // will called if level up
             else
@@ -1807,6 +1822,17 @@ void Pet::InitTalentForLevel()
 { 
     uint8 level = getLevel();
     uint32 talentPointsForLevel = GetMaxTalentPointsForLevel(level);
+    
+    //[AZTH]
+    Unit* _owner = GetOwner();
+    if (!_owner || _owner->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    
+    if (_owner->ToPlayer()->azthPlayer->isTimeWalking())
+        talentPointsForLevel = GetMaxTalentPointsForLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+    //[/AZTH]
+    
     // Reset talents in case low level (on level down) or wrong points for level (hunter can unlearn TP increase talent)
     if (talentPointsForLevel == 0 || m_usedTalentCount > talentPointsForLevel)
         resetTalents(); // Remove all talent points

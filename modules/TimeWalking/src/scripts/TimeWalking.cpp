@@ -11,6 +11,8 @@
 #include "AzthAchievement.h"
 #include "Pet.h"
 #include "ScriptedGossip.h"
+#include "LFG.h"
+#include "LFGMgr.h"
 
 typedef std::map<uint32, TwRaid> RaidList;
 RaidList raidList;
@@ -345,6 +347,9 @@ public:
 
     void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override
     {
+        if (!player || !player->IsInWorld())
+            return;
+        
 		if (sAzthAchievementMgr->achievementList.find(criteria->ID) == sAzthAchievementMgr->achievementList.end())
 			return;
 
@@ -353,6 +358,27 @@ public:
         uint32 count = achi.GetRewardCount();
         uint32 reward = achi.GetReward();
         uint32 killCredit = achi.GetKillCredit();
+        
+        if (reward == AZTH_MARK_OF_AZEROTH && player->inRandomLfgDungeon()) {
+            /* initialize random seed: */
+            srand (time(NULL));
+            /* generate secret number between 3 and 10: */
+            uint8 moaBonus = 1 + rand() % static_cast<int>(4 - 1 + 1);
+
+            if (player->GetGroup()) {
+                std::list<Group::MemberSlot> memberSlots = player->GetGroup()->GetMemberSlots();
+                for (std::list<Group::MemberSlot>::iterator membersIterator = memberSlots.begin(); membersIterator != memberSlots.end(); membersIterator++) {
+                    if ((*membersIterator).guid == player->GetGUID()) {
+                        uint8 role = (*membersIterator).roles;
+
+                        if (role & lfg::PLAYER_ROLE_TANK || role & lfg::PLAYER_ROLE_HEALER) {
+                            count += moaBonus;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
         
         if (!count && !killCredit) {
             return;
@@ -472,6 +498,7 @@ public:
     
     void OnLogin(Player *player) override {
         sAzthUtils->updateTwLevel(player); // to fix level on instance that cannot be calculated OnLoadFromDB (too early)
+        player->azthPlayer->prepareTwSpells(player->getLevel());
     }
 
     
@@ -503,15 +530,23 @@ class global_timewalking : public GlobalScript {
     public:
         global_timewalking() : GlobalScript("global_timewalking_script") { }
         
-        void OnBeforeItemRoll(Player const* player, Loot& /*loot*/, bool canRate, uint16 /*lootMode*/, LootStoreItem* LootStoreItem) override {
+        void OnBeforeItemRoll(Player const* player, Loot& /*loot*/, bool canRate, uint16 /*lootMode*/, LootStoreItem* LootStoreItem, LootStore const& store) override {
             if (!canRate)
                 return;
-            
+
+            if (&store != &LootTemplates_Gameobject && &store != &LootTemplates_Creature)
+                return;
+
             if (LootStoreItem->chance >= 100.0f)
                     return;
             
             if (sAzthUtils->isEligibleForBonusByArea(player)) {
-                LootStoreItem->chance *= 2;
+                if (LootStoreItem->chance < 20.0f)
+                    LootStoreItem->chance += 20.0f;
+
+                // we cannot use it since it changes the value forever (address)
+                //else
+                //    LootStoreItem->chance *= 2;
             }
         }
 };

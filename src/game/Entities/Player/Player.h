@@ -2474,6 +2474,9 @@ class Player : public Unit, public GridObject<Player>
         uint16 GetMaxSkillValueForLevel() const;
         void CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality);
         void InitWowarmoryFeeds();
+        // override Unit.h functions (it must not be const so we don't use override keyword)
+        bool IsFFAPvP() { return azthPlayer->isFFAPvPFlagOn(Unit::IsFFAPvP()); };
+        bool IsPvP() { return azthPlayer->isPvPFlagOn(Unit::IsPvP()); };
         //[/AZTH]
 
         /*********************************************************/

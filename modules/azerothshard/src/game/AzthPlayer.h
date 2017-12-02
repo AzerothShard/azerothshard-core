@@ -94,6 +94,9 @@ public:
   AzthCustomLangs getCustLang();
   void setCustLang(AzthCustomLangs code);
   
+  bool isPvPFlagOn(bool def);
+  bool isFFAPvPFlagOn(bool def);
+  
   void AddBankItem(uint32 itemEntry, uint32 itemGuid);
   void DelBankItem(uint32 itemEntry);
   void SetBankItemsList(ItemInBankMap itemsInBankList);
@@ -109,10 +112,13 @@ public:
   uint32 getMaxItemLevelByStatus();
 
   //TIMEWALKING
+  bool canUseItem(Item *item, bool notify = false);
+  bool itemCheckReqLevel(Item *item, bool notify = false);
   uint32 getGroupLevel(bool normalized = true);
   uint32 GetTimeWalkingLevel() const;
   bool isTimeWalking(bool skipSpecial=false) const;
   void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool clearAuras = true, bool save = true, bool login = false);
+  void prepareTwSpells(uint32 oldLevel);
   uint32 getTwItemLevel(uint32 twLevel);
   time_t autoScalingPending;
   

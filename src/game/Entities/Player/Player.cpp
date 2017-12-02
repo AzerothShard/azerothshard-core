@@ -6778,6 +6778,27 @@ void Player::SendActionButtons(uint32 state) const
     {
         for (uint8 button = 0; button < MAX_ACTION_BUTTONS; ++button)
         {
+            //[AZTH] Timewalking
+            if (azthPlayer->isTimeWalking(true)) {
+                ActionButtonList::const_iterator itr = m_actionButtons.find(button);
+                if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED && itr->second.GetType() == ACTION_BUTTON_SPELL) { 
+                    SpellInfo const *sInfo = sSpellMgr->GetSpellInfo(itr->second.GetAction());
+                        
+                    if (sAzthUtils->canScaleSpell(sInfo)) {
+                        uint32 spell=sAzthUtils->selectCorrectSpellRank(getLevel(), itr->second.GetAction());
+                        if (spell != itr->second.GetAction() 
+                            && HasActiveSpell(spell)) { // we cannot send information about low ranks that are not active (maybe workaround needed?)
+                            ActionButton _twBtn = itr->second;
+                            _twBtn.SetActionAndType(spell, ACTION_BUTTON_SPELL);
+                            data << uint32(_twBtn.packedData);
+
+                            continue;
+                        }
+                    }
+                }
+            }
+            //[/AZTH] Timewalking
+            
             ActionButtonList::const_iterator itr = m_actionButtons.find(button);
             if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED)
                 data << uint32(itr->second.packedData);
@@ -8530,15 +8551,8 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change)
 void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change)
 {
     // [AZTH] Timewalking
-    if (item) {
-        ItemTemplate const* proto = item->GetTemplate();
-        uint32 req=sAzthUtils->getCalcReqLevel(proto);
-        if (req > this->getLevel()) {
-            return;
-        }
-    } else if (azthPlayer->isTimeWalking(true)) {
+    if (!azthPlayer->itemCheckReqLevel(item))
         return;
-    }
 
     if (apply)
     {
@@ -8658,14 +8672,8 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item* item, ItemTemplate const* proto)
 {
     // [AZTH] Timewalking
-    if (item) {
-        uint32 req=sAzthUtils->getCalcReqLevel(proto);
-        if (req > this->getLevel()) {
-            return;
-        }
-    } else if (azthPlayer->isTimeWalking(true)) {
+    if (!azthPlayer->itemCheckReqLevel(item))
         return;
-    }
     
     // Can do effect if any damage done to target
     if (procVictim & PROC_FLAG_TAKEN_DAMAGE)
@@ -8790,8 +8798,14 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 }
 
 void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex)
-{
+{    
     ItemTemplate const* proto = item->GetTemplate();
+    
+    // [AZTH]
+    if (!azthPlayer->canUseItem(item, true))
+        return;
+    //[/AZTH]
+    
     // special learning case
     if (proto->Spells[0].SpellId == 483 || proto->Spells[0].SpellId == 55884)
     {
@@ -14472,11 +14486,8 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
         return;
 
     //[AZTH] Timewalking
-    ItemTemplate const* proto = item->GetTemplate();
-    uint32 req=sAzthUtils->getCalcReqLevel(proto);
-    if (req > this->getLevel()) {
+    if (!azthPlayer->itemCheckReqLevel(item))
         return;
-    }
 
     uint32 enchant_id = item->GetEnchantmentId(slot);
     if (!enchant_id)
@@ -14486,6 +14497,10 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
     if (!pEnchant)
         return;
 
+    //[AZTH]
+    if (sAzthUtils->disableEnchant(this, pEnchant))
+        return;
+    
     if (!ignore_condition && pEnchant->EnchantmentCondition && !EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
         return;
 
@@ -22940,19 +22955,30 @@ bool Player::IsVisibleGloballyFor(Player const* u) const
 }
 
 template<class T>
-inline void UpdateVisibilityOf_helper(T*  /*target*/, std::vector<Unit*>& /*v*/)
+inline void UpdateVisibilityOf_helper(Player::ClientGUIDs& s64, T* target, std::vector<Unit*>& /*v*/)
 {
+    s64.insert(target->GetGUID());
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(Creature* target, std::vector<Unit*>& v)
+inline void UpdateVisibilityOf_helper(Player::ClientGUIDs& s64, GameObject* target, std::vector<Unit*>& /*v*/)
 {
+    // @HACK: This is to prevent objects like deeprun tram from disappearing when player moves far from its spawn point while riding it
+    if ((target->GetGOInfo()->type != GAMEOBJECT_TYPE_TRANSPORT))
+        s64.insert(target->GetGUID());
+}
+
+template<>
+inline void UpdateVisibilityOf_helper(Player::ClientGUIDs& s64, Creature* target, std::vector<Unit*>& v)
+{
+    s64.insert(target->GetGUID());
     v.push_back(target);
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(Player* target, std::vector<Unit*>& v)
+inline void UpdateVisibilityOf_helper(Player::ClientGUIDs& s64, Player* target, std::vector<Unit*>& v)
 {
+    s64.insert(target->GetGUID());
     v.push_back(target);
 }
 
@@ -23066,9 +23092,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::vector<Unit*>&
         if (CanSeeOrDetect(target, false, true))
         {
             target->BuildCreateUpdateBlockForPlayer(&data, this);
-            m_clientGUIDs.insert(target->GetGUID());
-
-            UpdateVisibilityOf_helper(target, visibleNow);
+            UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
         }
     }
 }
@@ -25512,8 +25536,13 @@ uint32 Player::GetPhaseMaskForSpawn() const
 {
     uint32 phase = IsGameMaster() ? GetPhaseByAuras() : GetPhaseMask();
 
+    if (!phase)
+        phase = PHASEMASK_NORMAL;
+
+
     // some aura phases include 1 normal map in addition to phase itself
-    if (uint32 n_phase = phase & ~PHASEMASK_NORMAL)
+    uint32 n_phase = phase & ~PHASEMASK_NORMAL;
+    if (n_phase > 0)
         return n_phase;
 
     return phase;

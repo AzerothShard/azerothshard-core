@@ -833,7 +833,7 @@ void Spell::SelectSpellTargets()
                 if (m_auraScaleMask && ihit->effectMask == m_auraScaleMask)
                 {
                     // Do not check for selfcast
-                    if (!ihit->scaleAura /*[AZTH] && ihit->targetGUID != m_caster->GetGUID()*/)
+                    if (!ihit->scaleAura /*[AZTH] && ihit->targetGUID != m_caster->GetGUID()*/  /*[AZTH]*/ && !sAzthUtils->isSpecialSpellForTw(m_spellInfo) /*[/AZTH]*/)
                     {
                          m_UniqueTargetInfo.erase(ihit++);
                          continue;
@@ -1316,7 +1316,8 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
              float dis = (float)rand_norm() * (max_dis - min_dis) + min_dis;
              float x, y, z, angle;
              angle = (float)rand_norm() * static_cast<float>(M_PI * 35.0f / 180.0f) - static_cast<float>(M_PI * 17.5f / 180.0f);
-             m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE, dis, angle);
+            //m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE, dis, angle); this contains extra code that breaks fishing
+            m_caster->GetNearPoint(m_caster, x, y, z, DEFAULT_WORLD_OBJECT_SIZE, dis, m_caster->GetOrientation() + angle);
 
             float ground = m_caster->GetMap()->GetHeight(m_caster->GetPhaseMask(), x, y, z, true, 120.0f);
             float liquidLevel = VMAP_INVALID_HEIGHT_VALUE;
@@ -5292,6 +5293,14 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         if (((const Player*)m_caster)->IsSpectator() && m_spellInfo->Id != SPECTATOR_SPELL_BINDSIGHT)
             return SPELL_FAILED_NOT_HERE;
+        
+    //[AZTH]
+    Player *_plr = m_caster->GetSpellModOwner();
+    if (_plr && _plr->azthPlayer->isTimeWalking(true) && sAzthUtils->isNotAllowedSpellForTw(m_spellInfo)) {
+        _plr->GetSession()->SendNotification("This spell is not allowed in Timewalking");
+        return SPELL_FAILED_DONT_REPORT;
+    }     
+    //[/AZTH]
 
     // check cooldowns to prevent cheating
     if (!m_spellInfo->HasAttribute(SPELL_ATTR0_PASSIVE))
