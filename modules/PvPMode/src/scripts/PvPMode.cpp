@@ -166,7 +166,7 @@ public:
         
         MapEntry const* mEntry = sMapStore.LookupEntry(player->GetMapId());
         
-        if (player->InArena() && mEntry->IsBattleArena()) {
+        if (player->InArena() && mEntry->IsBattleArena() && !player->IsSpectator()) {
             switch(player->getClass()) {
                 case CLASS_WARLOCK:
                     player->CastSpell(player, 58889, TRIGGERED_FULL_MASK); // warlock soulwell in arena
