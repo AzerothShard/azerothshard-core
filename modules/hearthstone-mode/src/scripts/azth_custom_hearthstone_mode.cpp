@@ -378,7 +378,7 @@ public:
         }
 //endcheck
 
-        if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
+        if ((bitmask & BITMASK_PVE) == BITMASK_PVE && !player->azthPlayer->isPvP())
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVE_QUEST, GOSSIP_SENDER_MAIN, pveId);
         }
@@ -386,7 +386,7 @@ public:
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_PVP_QUEST, GOSSIP_SENDER_MAIN, pvpId);
         }
-        if ((bitmask & BITMASK_WEEKLY) == BITMASK_WEEKLY)
+        if ((bitmask & BITMASK_WEEKLY) == BITMASK_WEEKLY && !player->azthPlayer->isPvP())
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_EXTRA_QUEST, GOSSIP_SENDER_MAIN, weeklyId);
         }

@@ -75,7 +75,7 @@ class PhaseDimensions : public PlayerScript
 public:
     PhaseDimensions() : PlayerScript("PhaseDimensions") {}
 
-    bool OnBeforeTeleport(Player* player, uint32 mapid, float /*x*/, float /*y,*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit *target) override {
+    bool OnBeforeTeleport(Player* player, uint32 /*mapid*/, float /*x*/, float /*y,*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit *target) override {
         if (!target)
             return true;
 
@@ -93,7 +93,7 @@ public:
         if (targetPhaseDimension == playerPhaseDimension)
             return true;
 
-        if (targetPhaseDimension == DIMENSION_NORMAL) {               
+        if (targetPhaseDimension == DIMENSION_NORMAL || player->IsGameMaster()) {               
             if (!player->azthPlayer->changeDimension(targetPhaseDimension, true))
                 return false;
         } else {
