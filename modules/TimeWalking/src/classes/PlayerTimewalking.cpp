@@ -117,7 +117,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
 
         sAzthUtils->setTwAuras(player, stats, true);
-        if (player->GetPet() && (!player->HasAura(TIMEWALKING_AURA_VISIBLE) || player->GetPet()->GetAura(TIMEWALKING_AURA_VISIBLE)->GetStackAmount() != stats->GetLevel())) {
+        if (player->GetPet() && (!player->HasAura(TIMEWALKING_AURA_VISIBLE) || (player->GetPet()->HasAura(TIMEWALKING_AURA_VISIBLE) && player->GetPet()->GetAura(TIMEWALKING_AURA_VISIBLE)->GetStackAmount() != stats->GetLevel()))) {
             sAzthUtils->setTwAuras(player->GetPet(), stats, true);
         }
 
