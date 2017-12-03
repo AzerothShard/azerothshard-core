@@ -67,6 +67,12 @@ public:
         
         if (!scale)
             scale=1;
+        
+        if (item->GetTemplate()->RequiredLevel > player->getLevel()) {
+            player->GetSession()->SendNotification("Player level too low!");
+            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            return true;
+        }
 
         if (_summon_type != AZTH_SUMMON_COMPANION && _summon_type != AZTH_SUMMON_MORPH && (
             player->GetMap()->IsDungeon() || player->GetMap()->IsRaid() || player->GetMap()->IsBattlegroundOrArena())) {
