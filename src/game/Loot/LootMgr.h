@@ -300,6 +300,10 @@ struct Loot
     QuestItemMap const& GetPlayerQuestItems() const { return PlayerQuestItems; }
     QuestItemMap const& GetPlayerFFAItems() const { return PlayerFFAItems; }
     QuestItemMap const& GetPlayerNonQuestNonFFAConditionalItems() const { return PlayerNonQuestNonFFAConditionalItems; }
+    
+    //[AZTH]
+    bool azthSecondRound = false; 
+    //[/AZTH]
 
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;

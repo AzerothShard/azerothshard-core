@@ -530,25 +530,36 @@ class global_timewalking : public GlobalScript {
     public:
         global_timewalking() : GlobalScript("global_timewalking_script") { }
         
-        void OnBeforeItemRoll(Player const* player, Loot& /*loot*/, bool canRate, uint16 /*lootMode*/, LootStoreItem* LootStoreItem, LootStore const& store) override {
-            if (!canRate)
+        void OnItemRoll(Player const* player, LootStoreItem const *item, float &chance, Loot &loot, LootStore const& store) override {
+            // this check assume that sAzthUtils->isEligibleForBonusByArea(player) has been already checked
+            if (!loot.azthSecondRound)
+                return;
+            
+            if ((loot.quest_items.size() + loot.items.size()) >= MAX_NR_LOOT_ITEMS) {
+                chance = 0;
+                return;
+            }
+            
+            if (chance >= 100.0f || chance <= 0)
                 return;
 
+            if (!player->GetMap()->IsDungeon() && !player->GetMap()->IsRaid())
+                return;
+
+            if (item->mincountOrRef >= 0) {
+                ItemTemplate const* i = sObjectMgr->GetItemTemplate (item->itemid);
+
+                if (i && i->Quality < ITEM_QUALITY_RARE)
+                    return;
+            }
+            
             if (&store != &LootTemplates_Gameobject && &store != &LootTemplates_Creature)
                 return;
 
-            if (LootStoreItem->chance >= 100.0f)
-                    return;
-            
-            if (sAzthUtils->isEligibleForBonusByArea(player)) {
-                if (LootStoreItem->chance < 20.0f)
-                    LootStoreItem->chance += 20.0f;
-
-                // we cannot use it since it changes the value forever (address)
-                //else
-                //    LootStoreItem->chance *= 2;
-            }
-        }
+            if (chance < 20.f)
+                chance += 20.f;
+            //else
+            //    chance *= 2;
 };
 
 void AddSC_TimeWalking()
