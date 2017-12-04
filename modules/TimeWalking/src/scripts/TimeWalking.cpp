@@ -560,6 +560,7 @@ class global_timewalking : public GlobalScript {
                 chance += 20.f;
             //else
             //    chance *= 2;
+        }
 };
 
 void AddSC_TimeWalking()
