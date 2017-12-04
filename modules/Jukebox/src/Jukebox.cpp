@@ -95,6 +95,9 @@ public:
         if (creature->AI()->GetData(DATA_JUKEBOX_READY) > 0) {
             for (std::map<string, std::map<int, music>>::iterator it = musicList.begin(); it != musicList.end(); it++)
             {
+                if (genresCounter>=GOSSIP_MAX_MENU_ITEMS)
+                    break;
+                
                 string genre = it->first;
                 player->ADD_GOSSIP_ITEM(0, genre, GOSSIP_SENDER_MAIN, genresCounter);
                 genresName.push_back(genre);
@@ -115,11 +118,16 @@ public:
 
             if (action < 1000)
             {
+                uint8 count=0;
                 for (std::map<int, music>::iterator it = musicList[genresName[action]].begin(); it != musicList[genresName[action]].end(); it++)
                 {
+                    if (count>=GOSSIP_MAX_MENU_ITEMS)
+                        break;
+
                     player->ADD_GOSSIP_ITEM(0, it->second.GetAuthor() + " - " + it->second.GetTitle(), GOSSIP_SENDER_MAIN, ((action+1)*1000)+ it->first); //action +1 to avoid 0*1000 = 0
-                    player->SEND_GOSSIP_MENU(1, creature->GetGUID());
+                    count++;
                 }
+                player->SEND_GOSSIP_MENU(1, creature->GetGUID());
             }
             else
             {
