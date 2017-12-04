@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-for f in $DIR"/data/"*.dbc; do
+for f in $DIR"/"*.dbc; do
     
     OPT=""
     FILE=$f".csv.def"
