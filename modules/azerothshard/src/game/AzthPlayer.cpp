@@ -57,7 +57,7 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
 
     static const SkillSpells spells[] = { ONE_HAND_AXES, TWO_HAND_AXES, ONE_HAND_MACES,
         TWO_HAND_MACES, POLEARMS, ONE_HAND_SWORDS, TWO_HAND_SWORDS, STAVES, BOWS,
-        GUNS, DAGGERS, WANDS, CROSSBOWS, FIST_WEAPONS };
+        GUNS, DAGGERS, WANDS, CROSSBOWS, FIST_WEAPONS, THROWN };
 
     std::list<SkillSpells> learnList;
     std::size_t max=(sizeof(spells)/sizeof(spells[0]));
@@ -70,7 +70,7 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
             break;
         case CLASS_DEATH_KNIGHT:
         case CLASS_PALADIN:
-            if (spell != STAVES && spell != BOWS && spell != GUNS && spell != DAGGERS &&
+            if (spell != THROWN && spell != STAVES && spell != BOWS && spell != GUNS && spell != DAGGERS &&
                 spell != WANDS && spell != CROSSBOWS && spell != FIST_WEAPONS)
                 learnList.push_back(spell);
             break;
@@ -89,7 +89,7 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
                 learnList.push_back(spell);
             break;
         case CLASS_SHAMAN:
-            if (spell != ONE_HAND_SWORDS && spell != TWO_HAND_SWORDS && spell != POLEARMS &&
+            if (spell != THROWN && spell != ONE_HAND_SWORDS && spell != TWO_HAND_SWORDS && spell != POLEARMS &&
                 spell != BOWS && spell != GUNS && spell != WANDS && spell != CROSSBOWS)
                 learnList.push_back(spell);
             break;
@@ -100,7 +100,7 @@ bool AzthPlayer::AzthMaxPlayerSkill() {
                 learnList.push_back(spell);
             break;
         case CLASS_DRUID:
-            if (spell != ONE_HAND_SWORDS && spell != TWO_HAND_SWORDS &&
+            if (spell != THROWN && spell != ONE_HAND_SWORDS && spell != TWO_HAND_SWORDS &&
                 spell != BOWS && spell != GUNS && spell != WANDS && spell != CROSSBOWS &&
                 spell != ONE_HAND_AXES && spell != TWO_HAND_AXES)
                 learnList.push_back(spell);

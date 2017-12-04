@@ -27,7 +27,8 @@ enum SkillSpells {
     DAGGERS = 1180,
     WANDS = 5009,
     CROSSBOWS = 5011,
-    FIST_WEAPONS = 15590
+    FIST_WEAPONS = 15590,
+    THROWN = 2567,
 };
 
 enum AzthCustomLangs {

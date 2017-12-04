@@ -32,6 +32,8 @@ struct HearthstoneQuest
     uint32 flag;
     uint32 specialLevel;
     uint32 reqDimension;
+    uint32 startTime;
+    uint32 endTime;
 };
 
 struct HearthstoneVendor
@@ -46,10 +48,13 @@ struct HearthstoneVendor
 
 enum bitmasksHs
 {
-    BITMASK_NORMAL = 0, //normal quests but with hs checks
-    BITMASK_PVE    = 1, //hs daily random
-    BITMASK_PVP    = 2, //hs daily random
-    BITMASK_WEEKLY = 4  //hs weekly random
+    BITMASK_NORMAL          = 0,  //normal quests but with hs checks
+    BITMASK_PVE             = 1,  //hs daily random
+    BITMASK_PVP             = 2,  //hs daily random
+    BITMASK_WEEKLY          = 4,  //hs weekly random
+    BITMASK_TW_WEEKLY       = 8,  //hs TW weekly
+    BITMASK_TW_DAILY        = 16,  //hs TW daily
+    BITMASK_TW_DAILY_RANDOM = 32,  //hs TW daily random
 };
 
 enum miscHs
@@ -86,6 +91,10 @@ class HearthstoneMode
         UNORDERED_MAP<uint32, HearthstoneQuest> hsPveQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsPvpQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsWeeklyQuests;
+        
+        UNORDERED_MAP<uint32, HearthstoneQuest> hsTwWeeklyQuests;
+        UNORDERED_MAP<uint32, HearthstoneQuest> hsTwDailyQuests;
+        UNORDERED_MAP<uint32, HearthstoneQuest> hsTwDailyRandomQuests;
         int getQuality();
         std::vector<int> items[8];
         bool isInArray(int val);

@@ -311,14 +311,16 @@ bool AzthPlayer::itemCheckReqLevel(Item * item, bool notify) {
             }
         }
 
-        uint32 req=sAzthUtils->getCalcReqLevel(proto);
-        if (req > player->getLevel()) {
-            if (notify) {
-                player->GetSession()->SendNotification("Level Required for this item: %u", req);
-                player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
-            }
+        if (player->azthPlayer->isTimeWalking(true)) {
+            uint32 req=sAzthUtils->getCalcReqLevel(proto);
+            if (req > player->getLevel()) {
+                if (notify) {
+                    player->GetSession()->SendNotification("Level Required for this item: %u", req);
+                    player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                }
 
-            return false;
+                return false;
+            }
         }
     } else if (player->azthPlayer->isTimeWalking(true)) { // should not happen
         if (notify) {

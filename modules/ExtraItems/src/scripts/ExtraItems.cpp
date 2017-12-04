@@ -19,6 +19,7 @@
 #include "Map.h"
 #include "Pet.h"
 #include "Vehicle.h"
+#include "AzthLanguageStrings.h"
 
 class Pet;
 
@@ -57,9 +58,9 @@ public:
         _Spell _time=item->GetTemplate()->Spells[0];
         _Spell _npc=item->GetTemplate()->Spells[1];
         float scale=item->GetTemplate()->ArmorDamageModifier;
-        int32 destId = _npc.SpellCategoryCooldown;
-        int32 spawnTime = _time.SpellCategoryCooldown;
-        
+        uint32 destId = _npc.SpellCategoryCooldown > 0 ? uint32(_npc.SpellCategoryCooldown) : 0;
+        uint32 spawnTime = _time.SpellCategoryCooldown >= 0 ? uint32(_time.SpellCategoryCooldown) : 0;
+
         if (!destId) {
             player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
             return true;
@@ -67,6 +68,12 @@ public:
         
         if (!scale)
             scale=1;
+        
+        if (item->GetTemplate()->RequiredLevel > player->getLevel()) {
+            player->GetSession()->SendNotification("Player level too low!");
+            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            return true;
+        }
 
         if (_summon_type != AZTH_SUMMON_COMPANION && _summon_type != AZTH_SUMMON_MORPH && (
             player->GetMap()->IsDungeon() || player->GetMap()->IsRaid() || player->GetMap()->IsBattlegroundOrArena())) {
@@ -175,7 +182,7 @@ public:
             // category 2: SUMMON_CATEGORY_PET
             uint32 propId = _summon_type >= AZTH_SUMMON_VEHICLE_MOUNT && _summon_type <= AZTH_SUMMON_VEHICLE_GUARDIAN ? 161 : 41;
             SummonPropertiesEntry const *properties = sSummonPropertiesStore.LookupEntry(propId);
-            Minion* summon = (Minion*)player->GetMap()->SummonCreature(destId, player->GetWorldLocation(), properties, 0, player);
+            Minion* summon = (Minion*)player->GetMap()->SummonCreature(destId, player->GetWorldLocation(), properties, spawnTime, player);
 
             if (!summon) {
                 player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
@@ -229,7 +236,7 @@ public:
 
         if (_summon_type == AZTH_SUMMON_GUARDIAN) {
             TempSummon* petSummon = player->SummonCreature(destId, player->GetPositionX()+1, player->GetPositionY()+1, player->GetPositionZ(), player->GetOrientation()
-                                                , TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 0);
+                                                , TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, spawnTime);
             
             if (!petSummon) {
                 player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
@@ -269,8 +276,34 @@ private:
     AzthSummonType _summon_type;
 };
 
+class azth_mass_ress : public ItemScript {
+public:
+    azth_mass_ress(char const* name) : ItemScript(name)
+    {
+    }
+
+    bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
+        if (player->IsInCombat()) {
+            player->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT, item, NULL);
+            return true;
+        }
+        
+        if (!player->GetMap()->IsRaid() && !player->GetMap()->IsDungeon()) {
+            player->GetSession()->SendNotification("%s",sAzthLang->get(AZTH_LANG_INSTANCE_ONLY, player));
+            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            return true;
+        }
+        
+        if (item->GetSpellCharges()) // if charges remains then can cast spell
+            player->CastSpell(player, 72429, TRIGGERED_FULL_MASK); // visual but also works when player not released
+        
+        return false; // everything ok
+    }
+};
+
 void AddSC_azth_extra_items() // Add to scriptloader normally
 {
+    // vanity
     new azth_summon("azth_summon_morph", AZTH_SUMMON_MORPH);
     new azth_summon("azth_summon_mount", AZTH_SUMMON_MOUNT);
     new azth_summon("azth_summon_companion", AZTH_SUMMON_COMPANION);
@@ -282,4 +315,6 @@ void AddSC_azth_extra_items() // Add to scriptloader normally
     new azth_summon("azth_summon_vehicle", AZTH_SUMMON_VEHICLE);
     new azth_summon("azth_summon_vehicle_follow", AZTH_SUMMON_VEHICLE_FOLLOW);
     new azth_summon("azth_summon_vehicle_guardian", AZTH_SUMMON_VEHICLE_GUARDIAN);
+    // tools
+    new azth_mass_ress("azth_tools_mass_ress");
 }
