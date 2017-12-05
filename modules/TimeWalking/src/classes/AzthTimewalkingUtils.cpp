@@ -26,10 +26,13 @@ std::string AzthUtils::getLevelInfo(uint32 level) {
 
 uint32 AzthUtils::maxTwLevel(uint32 sourceLvl, uint32 compareLevel) const {
     uint32 maxLevel=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-    if (sourceLvl<=maxLevel && compareLevel <=maxLevel) {
+    
+    // normal level case (from 0 to 255)
+    if (sourceLvl<TIMEWALKING_SPECIAL_LVL_MAX_START && compareLevel <TIMEWALKING_SPECIAL_LVL_MAX_START) {
         return sourceLvl > compareLevel ? sourceLvl : compareLevel;
     }
     
+    // special level
     if (sourceLvl >= TIMEWALKING_SPECIAL_LVL_MAX_START && sourceLvl <= TIMEWALKING_SPECIAL_LVL_MAX_END) {
         if (compareLevel  >= TIMEWALKING_SPECIAL_LVL_MAX_START && compareLevel <= TIMEWALKING_SPECIAL_LVL_MAX_END) {
             return sourceLvl > compareLevel ? sourceLvl : compareLevel;
@@ -40,6 +43,10 @@ uint32 AzthUtils::maxTwLevel(uint32 sourceLvl, uint32 compareLevel) const {
         // since special levels are considered "between" maxlevel -1 and maxlevel
         return compareLevel >= maxLevel ? compareLevel : sourceLvl; 
     }
+    
+    // it should not happen but needed to avoid loop
+    if (sourceLvl > TIMEWALKING_SPECIAL_LVL_MAX_END)
+		return sourceLvl > compareLevel ? sourceLvl : compareLevel;
     
     return maxTwLevel(compareLevel, sourceLvl); // inverse case
 }
