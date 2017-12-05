@@ -1208,15 +1208,16 @@ class instance_icecrown_citadel : public InstanceMapScript
             {
                 switch (type)
                 {
-                    //[AZTH]
-                    case DATA_AZTH_HARD_MODE:
-                        azthHardMode = data > 0;
-                        break;
-                    //[/AZTH]
                     case DATA_BUFF_AVAILABLE:
                         IsBuffAvailable = (data ? true : false);
                         if (!IsBuffAvailable)
                         {
+                            //[AZTH]
+                            if (!GetCompletedEncounterMask()) {
+                                azthHardMode = true;
+                            }
+                            //[/AZTH]
+                            
                             Map::PlayerList const& plrList = instance->GetPlayers();
                             for (Map::PlayerList::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
                                 if (Player* plr = itr->GetSource())
@@ -1565,6 +1566,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                     << ColdflameJetsState << ' ' << BloodQuickeningState << ' ' << BloodQuickeningMinutes << ' ' << WeeklyQuestId10 << ' ' << PutricideEventProgress << ' ' 
                     << uint32(LichKingHeroicAvailable ? 1 : 0) << ' ' << BloodPrinceTrashCount << ' ' << uint32(IsBuffAvailable ? 1 : 0);
 
+                //[AZTH]
+                saveStream << ' ' << uint32(azthHardMode ? 1 : 0);
 
                 OUT_SAVE_INST_DATA_COMPLETE;
                 return saveStream.str();
@@ -1618,6 +1621,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                     loadStream >> BloodPrinceTrashCount;
                     loadStream >> temp;
                     SetData(DATA_BUFF_AVAILABLE, temp ? true : false);
+                    loadStream >> temp;
+                    azthHardMode = temp ? true : false;
                 }
                 else
                     OUT_LOAD_INST_DATA_FAIL;
