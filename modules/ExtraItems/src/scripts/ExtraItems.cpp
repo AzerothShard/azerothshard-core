@@ -4,6 +4,7 @@
 #include "Define.h"
 #include "GossipDef.h"
 #include "Item.h"
+#include "Group.h"
 #include "ItemPrototype.h"
 #include "Log.h"
 #include "ObjectMgr.h"
@@ -22,6 +23,7 @@
 #include "AzthLanguageStrings.h"
 
 class Pet;
+class Group;
 
 enum AzthSummonType {
     // special
@@ -283,12 +285,26 @@ public:
     }
 
     bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
-        if (player->IsInCombat()) {
+        if (player->IsInCombat() || 
+            (player->GetInstanceScript() && player->GetInstanceScript()->IsEncounterInProgress()))
+        {
             player->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT, item, NULL);
             return true;
         }
         
-        if (!player->GetMap()->IsRaid() && !player->GetMap()->IsDungeon()) {
+        if (Group* group = player->ToPlayer()->GetGroup()) {
+            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next()) {
+                if (Player* member = itr->GetSource()) {
+                    if (member->IsInMap(player) && member->IsInCombat()) {
+                        player->GetSession()->SendNotification("%s",sAzthLang->get(AZTH_LANG_RAID_COMBAT, player));
+                        player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                        return true; 
+                    }
+                }
+            }
+        }
+        
+        if (!player->GetMap()->IsDungeon()) {
             player->GetSession()->SendNotification("%s",sAzthLang->get(AZTH_LANG_INSTANCE_ONLY, player));
             player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
             return true;
