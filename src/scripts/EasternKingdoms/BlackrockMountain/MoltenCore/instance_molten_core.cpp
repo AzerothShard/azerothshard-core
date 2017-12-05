@@ -45,16 +45,13 @@ class instance_molten_core : public InstanceMapScript
                 _golemaggTheIncineratorGUID = 0;
                 _majordomoExecutusGUID = 0;
                 _cacheOfTheFirelordGUID = 0;
-                _executusSchedule = false;
                 _deadBossCount = 0;
                 _ragnarosAddDeaths = 0;
-                _isLoading = false;
-                _summonedExecutus = false;
             }
 
             void OnPlayerEnter(Player* /*player*/) override
             {
-                if (_executusSchedule)
+                if (CheckMajordomoExecutus())
                     SummonMajordomoExecutus();
             }
 
@@ -146,20 +143,19 @@ class instance_molten_core : public InstanceMapScript
                 if (!InstanceScript::SetBossState(bossId, state))
                     return false;
                 
+                if (state == DONE && bossId < BOSS_MAJORDOMO_EXECUTUS)
+                    if (CheckMajordomoExecutus())
+                        SummonMajordomoExecutus();
+                
                 if (bossId == BOSS_MAJORDOMO_EXECUTUS && state == DONE) {
-                    _majordomoExecutusGUID = 0;
                     DoRespawnGameObject(_cacheOfTheFirelordGUID, 7 * DAY);
                 }
-
-                if (CheckMajordomoExecutus())
-                    SummonMajordomoExecutus();
 
                 return true;
             }
 
             void SummonMajordomoExecutus()
             {
-                _executusSchedule = false;
                 if (_majordomoExecutusGUID)
                     return;
 
@@ -210,7 +206,6 @@ class instance_molten_core : public InstanceMapScript
                     return;
                 }
 
-                _isLoading = true;
                 OUT_LOAD_INST_DATA(data);
 
                 char dataHead1, dataHead2;
@@ -220,44 +215,31 @@ class instance_molten_core : public InstanceMapScript
 
                 if (dataHead1 == 'M' && dataHead2 == 'C')
                 {
-                    EncounterState states[MAX_ENCOUNTER];
-                    uint8 executusCounter = 0;
-
-                    // need 2 loops to check spawning executus/ragnaros
                     for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
                     {
                         uint32 tmpState;
                         loadStream >> tmpState;
                         if (tmpState == IN_PROGRESS || tmpState > TO_BE_DECIDED)
                             tmpState = NOT_STARTED;
-                        states[i] = EncounterState(tmpState);
 
-                            if (tmpState == DONE && i < BOSS_MAJORDOMO_EXECUTUS)
-                            ++executusCounter;
+                        SetBossState(i, EncounterState(tmpState));
                     }
 
-                    for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
-                        SetBossState(i, states[i]);
-                    
                     if (CheckMajordomoExecutus())
-                        _executusSchedule = true;
+                        SummonMajordomoExecutus();
                 }
                 else
                     OUT_LOAD_INST_DATA_FAIL;
 
                 OUT_LOAD_INST_DATA_COMPLETE;
-                _isLoading = false;
             }
 
         private:
             uint64 _golemaggTheIncineratorGUID;
             uint64 _majordomoExecutusGUID;
             uint64 _cacheOfTheFirelordGUID;
-            bool _executusSchedule;
             uint8 _deadBossCount;
             uint8 _ragnarosAddDeaths;
-            bool _isLoading;
-            bool _summonedExecutus;
             std::unordered_map<uint8, uint64> _circlesGUIDs;
         };
 
