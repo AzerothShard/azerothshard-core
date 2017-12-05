@@ -108,6 +108,8 @@ public:
     void setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply);
     AzthLevelStat const* getTwStats(Player *player, uint32 level);
     
+    uint32 maxTwLevel(uint32 sourceLvl, uint32 compareLevel) const;
+    
     bool disableEnchant(Player *player, SpellItemEnchantmentEntry const* pEnchant);
     // [/Timewalking]
     

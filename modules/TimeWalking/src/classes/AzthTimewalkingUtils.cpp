@@ -24,6 +24,26 @@ std::string AzthUtils::getLevelInfo(uint32 level) {
     return std::to_string(level);
 }
 
+uint32 AzthUtils::maxTwLevel(uint32 sourceLvl, uint32 compareLevel) const {
+    uint32 maxLevel=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    if (sourceLvl<=maxLevel && compareLevel <=maxLevel) {
+        return sourceLvl > compareLevel ? sourceLvl : compareLevel;
+    }
+    
+    if (sourceLvl >= TIMEWALKING_SPECIAL_LVL_MAX_START && sourceLvl <= TIMEWALKING_SPECIAL_LVL_MAX_END) {
+        if (compareLevel  >= TIMEWALKING_SPECIAL_LVL_MAX_START && compareLevel <= TIMEWALKING_SPECIAL_LVL_MAX_END) {
+            return sourceLvl > compareLevel ? sourceLvl : compareLevel;
+        }
+        
+        // if sourceLevel is a special level but
+        // compare level is not, then we must check about maxlevel
+        // since special levels are considered "between" maxlevel -1 and maxlevel
+        return compareLevel >= maxLevel ? compareLevel : sourceLvl; 
+    }
+    
+    return maxTwLevel(compareLevel, sourceLvl); // inverse case
+}
+
 bool AzthUtils::isEligibleForBonusByArea(Player const* player) {   
     WorldLocation pos = WorldLocation(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
     uint32 posLvl=sAzthUtils->getPositionLevel(true, player->GetMap(), pos);
@@ -83,13 +103,13 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
                                 ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
     
     if (group) {
-        if (group->azthGroupMgr->levelMaxGroup < levelPlayer) {
+        if (sAzthUtils->maxTwLevel(levelPlayer, group->azthGroupMgr->levelMaxGroup) != group->azthGroupMgr->levelMaxGroup) {
             group->azthGroupMgr->levelMaxGroup = levelPlayer;
             group->azthGroupMgr->saveToDb();
             
             std::string _slvl=sAzthUtils->getLevelInfo(levelPlayer);
-            string s = "|cffff0000 Il livello di " + player->GetName() +" è stato registrato all'interno del gruppo, con il valore: " + _slvl + "|r";
-            sAzthUtils->sendMessageToGroup(player, player->GetGroup(), s.c_str());
+            std::string msg = sAzthLang->getf(AZTH_LANG_GROUP_LEVEL_REG,player, player->GetName().c_str(),_slvl.c_str());
+            sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());
             result=true;
         }
     }
@@ -111,7 +131,7 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
                 updated=true;
             }
 
-            if (levelPlayer > is->azthInstMgr->levelMax) {
+            if (sAzthUtils->maxTwLevel(levelPlayer, is->azthInstMgr->levelMax) != is->azthInstMgr->levelMax) {
                 is->azthInstMgr->levelMax = levelPlayer;
                 is->InsertToDB();
                 updated=true;
@@ -119,8 +139,8 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
         
             if (updated) {
                 std::string _slvl = sAzthUtils->getLevelInfo(is->azthInstMgr->levelMax);
-                string s = "|cffff0000 Il livello di " + player->GetName() +" è stato registrato nell'instance, con il valore: " + _slvl + "|r";
-                sAzthUtils->sendMessageToGroup(player, player->GetGroup(), s.c_str());
+                std::string msg=sAzthLang->getf(AZTH_LANG_INSTANCE_LEVEL_REG, player, player->GetName().c_str(),_slvl.c_str());
+                sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());
                 result=true;
             }
         }
