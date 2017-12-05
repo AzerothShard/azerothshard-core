@@ -58,6 +58,9 @@ enum AzthCommonMaps {
 
 #define MAX_DIMENSION 9
 
+// instances
+#define DATA_AZTH_HARD_MODE 10000
+
 // Spells
 #define DIMENSION_SPELL_MARK 1000000
 #define AZTH_CUSTOM_SPELL_MIN 900000

@@ -17,6 +17,7 @@
 #include "AzthAchievement.h"
 #include "AzthUtils.h"
 #include "LFGMgr.h"
+#include "AzthFirstKills.h"
 
 class Aura;
 
@@ -349,8 +350,13 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
 }
 
 bool AzthPlayer::canCompleteCriteria(AchievementCriteriaEntry const* criteria) {
+    if (!criteria)
+        return true;
+    
+    if (!sAzthFirstKills->canCompleteAchi(player, criteria->referredAchievement))
+        return false;
+    
     uint32 currentDimension = getCurrentDimensionByAura();
-
     if (sAzthAchievementMgr->achievementList.find(criteria->ID) == sAzthAchievementMgr->achievementList.end()) {
         if (sAzthUtils->isPhasedDimension(currentDimension))
             return false;
@@ -359,7 +365,7 @@ bool AzthPlayer::canCompleteCriteria(AchievementCriteriaEntry const* criteria) {
     }
 
     AzthAchievement achi = sAzthAchievementMgr->achievementList[criteria->ID];
-    
+
     /**
     *  CHECK REQUIREMENTS
     */
@@ -391,6 +397,7 @@ bool AzthPlayer::canCompleteCriteria(AchievementCriteriaEntry const* criteria) {
 }
 
 uint32 AzthPlayer::getMaxItemLevelByStatus() {
+    // timewalking case
     if (isTimeWalking()) {
         uint32 twLvl=GetTimeWalkingLevel();
         
@@ -400,7 +407,28 @@ uint32 AzthPlayer::getMaxItemLevelByStatus() {
             return twLimit;
     }
     
-    return 0;
+    // raid case
+    if (player->GetMap()->IsDungeon() 
+        && player->GetMapId() == 631 // icc
+    ) {
+        if (InstanceScript* inst = player->GetInstanceScript()) {
+
+            //[AZTH]
+            if (inst->GetData(DATA_AZTH_HARD_MODE)) {
+                return 0;
+            }
+        }
+        
+        return 284; // 284 is the latest equippable level in wow
+    }
+    
+    if (player->GetMap()->IsBattlegroundOrArena()) {
+        // basically, even if we've an item level limit specific for arena and bg
+        // we must limit custom weapons there
+        return 284;
+    }
+
+    return 0; // no limit outside
 }
 
 bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {

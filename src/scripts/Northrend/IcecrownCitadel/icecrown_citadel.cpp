@@ -17,6 +17,9 @@
 #include "Group.h"
 #include "icecrown_citadel.h"
 
+//[AZTH]
+#include "AzthSharedDefines.h"
+
 enum Texts
 {
     // Highlord Tirion Fordring (at Light's Hammer)
@@ -3283,9 +3286,16 @@ public:
                 ChatHandler(player->GetSession()).PSendSysMessage("Only the raid leader can turn off the buff.");
                 return true;
             }
-            if (InstanceScript* inst = creature->GetInstanceScript())
+            if (InstanceScript* inst = creature->GetInstanceScript()) {
                 if (inst->GetData(DATA_BUFF_AVAILABLE))
                     inst->SetData(DATA_BUFF_AVAILABLE, 0);
+             
+                //[AZTH]
+                if (!inst->GetCompletedEncounterMask()) {
+                    inst->SetData(DATA_AZTH_HARD_MODE, 1);
+                }
+                //[/AZTH]
+            }
             if (creature->GetEntry() == NPC_GARROSH_HELLSCREAM)
             {
                 player->CLOSE_GOSSIP_MENU();

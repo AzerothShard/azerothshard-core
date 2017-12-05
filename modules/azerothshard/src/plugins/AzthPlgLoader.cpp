@@ -8,7 +8,6 @@
 void AddSC_azth_commandscript();
 void AddSC_azth_player_plg();
 void AddSC_AzthWorldScript();
-void AddSC_first_kill_achievements();
 
 
 void AddAzthScripts()
@@ -18,7 +17,6 @@ void AddAzthScripts()
     AddSC_azth_commandscript();
     AddSC_azth_player_plg();
     AddSC_AzthWorldScript();
-    AddSC_first_kill_achievements();
 }
 
 

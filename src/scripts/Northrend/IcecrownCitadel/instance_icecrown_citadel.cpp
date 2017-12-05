@@ -16,6 +16,9 @@
 #include "Group.h"
 #include "CreatureTextMgr.h"
 
+//[AZTH]
+#include "AzthSharedDefines.h"
+
 enum EventIds
 {
     EVENT_PLAYERS_GUNSHIP_SPAWN     = 22663,
@@ -207,6 +210,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                 BloodQuickeningState = NOT_STARTED;
                 BloodQuickeningMinutes = 0;
                 BloodPrinceTrashCount = 0;
+                
+                //[AZTH]
+                azthHardMode = false;
             }
 
             void FillInitialWorldStates(WorldPacket& data)
@@ -884,6 +890,10 @@ class instance_icecrown_citadel : public InstanceMapScript
             {
                 switch (type)
                 {
+                    //[AZTH]
+                    case DATA_AZTH_HARD_MODE:
+                        return azthHardMode ? 1 : 0;
+                    //[/AZTH]
                     case DATA_BUFF_AVAILABLE:
                         return (IsBuffAvailable ? 1 : 0);
                     case DATA_WEEKLY_QUEST_ID:
@@ -1198,6 +1208,11 @@ class instance_icecrown_citadel : public InstanceMapScript
             {
                 switch (type)
                 {
+                    //[AZTH]
+                    case DATA_AZTH_HARD_MODE:
+                        azthHardMode = data > 0;
+                        break;
+                    //[/AZTH]
                     case DATA_BUFF_AVAILABLE:
                         IsBuffAvailable = (data ? true : false);
                         if (!IsBuffAvailable)
@@ -1880,6 +1895,10 @@ class instance_icecrown_citadel : public InstanceMapScript
             bool IsOozeDanceEligible;
             bool IsNauseaEligible;
             bool IsOrbWhispererEligible;
+            
+            //[AZTH]
+            bool azthHardMode;
+            //[/AZTH]
         };
 
         InstanceScript* GetInstanceScript(InstanceMap* map) const
