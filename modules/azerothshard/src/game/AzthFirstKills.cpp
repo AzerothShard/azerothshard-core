@@ -6,6 +6,27 @@
 #include <time.h>
  
 class InstanceScript;
+
+// Copied from naxxramas.h
+enum NxEncouters
+{
+    BOSS_PATCHWERK                 = 0,
+    BOSS_GROBBULUS                 = 1,
+    BOSS_GLUTH                     = 2,
+    BOSS_NOTH                      = 3,
+    BOSS_HEIGAN                    = 4,
+    BOSS_LOATHEB                   = 5,
+    BOSS_ANUB                      = 6,
+    BOSS_FAERLINA                  = 7,
+    BOSS_MAEXXNA                   = 8,
+    BOSS_THADDIUS                  = 9,
+    BOSS_RAZUVIOUS                 = 10,
+    BOSS_GOTHIK                    = 11,
+    BOSS_HORSEMAN                  = 12,
+    BOSS_SAPPHIRON                 = 13,
+    BOSS_KELTHUZAD                 = 14,
+    MAX_ENCOUNTERS,
+};
  
 bool AzthFirstKills::canCompleteAchi(Player *player, uint32 achiId) {
     uint32 plLevel=player->azthPlayer->isTimeWalking() ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
@@ -15,7 +36,19 @@ bool AzthFirstKills::canCompleteAchi(Player *player, uint32 achiId) {
     
     switch (achiId) {
         case ACHI_NAXXRAMAS:
-            return level == TIMEWALKING_LVL_NAXX;
+        {
+            if (InstanceScript* iscript=player->GetInstanceScript()) {
+                if (
+                    iscript->GetBossState(BOSS_MAEXXNA) == DONE &&
+                    iscript->GetBossState(BOSS_LOATHEB) == DONE &&
+                    iscript->GetBossState(BOSS_HORSEMAN) == DONE &&
+                    iscript->GetBossState(BOSS_THADDIUS) == DONE
+                ) {
+                    return level == TIMEWALKING_LVL_NAXX;
+                }
+            }
+            return false;
+        }
         case ACHI_OBSIDIAN:
             return level == TIMEWALKING_LVL_OBSIDIAN;
         case ACHI_MAGIC_SEEKER:
