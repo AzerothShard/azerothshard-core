@@ -8,25 +8,23 @@
 class InstanceScript;
  
 bool AzthFirstKills::canCompleteAchi(Player *player, uint32 achiId) {
-    if (player->azthPlayer->isTimeWalking()) {
-        uint32 plLevel=player->azthPlayer->GetTimeWalkingLevel();
-        uint32 groupLevel=player->azthPlayer->getGroupLevel(false);
-        
-        uint32 level=sAzthUtils->maxTwLevel(groupLevel, plLevel);
-        
-        switch (achiId) {
-            case ACHI_NAXXRAMAS:
-                return level == TIMEWALKING_LVL_NAXX;
-            case ACHI_OBSIDIAN:
-                return level == TIMEWALKING_LVL_OBSIDIAN;
-            case ACHI_MAGIC_SEEKER:
-                return level == TIMEWALKING_LVL_THE_EYE;
-            case ACHI_DEATH_DEMISE:
-            case ACHI_CELESTIAL_DEFENDER:
-                return level == TIMEWALKING_LVL_ULDUAR;
-            case ACHI_GRAND_CRUSADER:
-                return level == TIMEWALKING_LVL_TOGC;
-        }
+    uint32 plLevel=player->azthPlayer->isTimeWalking() ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
+    uint32 groupLevel=player->azthPlayer->getGroupLevel(false);
+    
+    uint32 level=sAzthUtils->maxTwLevel(groupLevel, plLevel);
+    
+    switch (achiId) {
+        case ACHI_NAXXRAMAS:
+            return level == TIMEWALKING_LVL_NAXX;
+        case ACHI_OBSIDIAN:
+            return level == TIMEWALKING_LVL_OBSIDIAN;
+        case ACHI_MAGIC_SEEKER:
+            return level == TIMEWALKING_LVL_THE_EYE;
+        case ACHI_DEATH_DEMISE:
+        case ACHI_CELESTIAL_DEFENDER:
+            return level == TIMEWALKING_LVL_ULDUAR;
+        case ACHI_GRAND_CRUSADER:
+            return level == TIMEWALKING_LVL_TOGC;
     }
     
     if (achiId == ACHI_FALL_OF_LK) {

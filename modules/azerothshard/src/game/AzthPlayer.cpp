@@ -355,7 +355,7 @@ bool AzthPlayer::canCompleteCriteria(AchievementCriteriaEntry const* criteria) {
     
     if (!sAzthFirstKills->canCompleteAchi(player, criteria->referredAchievement))
         return false;
-    
+
     uint32 currentDimension = getCurrentDimensionByAura();
     if (sAzthAchievementMgr->achievementList.find(criteria->ID) == sAzthAchievementMgr->achievementList.end()) {
         if (sAzthUtils->isPhasedDimension(currentDimension))
@@ -375,20 +375,6 @@ bool AzthPlayer::canCompleteCriteria(AchievementCriteriaEntry const* criteria) {
     } else if (sAzthUtils->isPhasedDimension(currentDimension))
         return false;
 
-    uint32 groupLevel= player->azthPlayer->getGroupLevel();
-    uint32 specialGroupLevel = player->azthPlayer->getGroupLevel(false);
-    uint32 level = groupLevel > 0 ? groupLevel : player->getLevel();
-    uint32 specialLevel = specialGroupLevel > 0 ? specialGroupLevel : player->azthPlayer->GetTimeWalkingLevel();
-    
-    // skip rewards if you don't have the required special level
-    if (achi.GetSpecialLevelReq() > 0 && 
-        (!player->azthPlayer->isTimeWalking() || specialLevel != achi.GetSpecialLevelReq()) ) {
-        return false;
-    }
-    
-    if (level < achi.GetLevelMin() || level  > achi.GetLevelMax() ) {
-        return false;
-    }
     /*
     *  END 
     */
