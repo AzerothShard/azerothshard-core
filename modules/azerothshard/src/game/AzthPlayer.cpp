@@ -28,6 +28,7 @@ AzthPlayer::AzthPlayer(Player *origin) {
   std::fill_n(arena1v1Info, 7, 0);
   std::fill_n(arena3v3Info, 7, 0);
   autoScalingPending = 0;
+  m_isPvP = false;
   
   m_itemsInBank.clear();
 }
@@ -174,8 +175,8 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
     /**
      *  FULL PVP CHECK
      */
-    if (isPvP() && (entry->IsRaid() || entry->IsDungeon())) {
-        ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 I personaggi Full PvP non hanno accesso ai Dungeons e Raids|r");
+    if (isPvP() && entry->IsDungeon()) {
+        ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 PvP Characters cannot enter Dungeons and Raids|r");
         player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
         return false;
     }
