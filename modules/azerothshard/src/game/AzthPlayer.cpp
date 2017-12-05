@@ -168,8 +168,10 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
      *  CUSTOM ITEM LEVEL CHECK
      */
     
-    if (!checkItems(getMaxItemLevelByStatus()) && entry->IsDungeon() && entry->IsBattlegroundOrArena()) {
+    uint32 ilvl=getMaxItemLevelByStatus();
+    if (ilvl>0 && !checkItems(ilvl) && (entry->IsDungeon() || entry->IsBattlegroundOrArena())) {
         ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 This zone is limited to item level: %d|r",getMaxItemLevelByStatus());
+        return false;
     }
 
     /**
@@ -417,7 +419,7 @@ uint32 AzthPlayer::getMaxItemLevelByStatus() {
         return 284; // 284 is the latest equippable level in wow
     }
     
-    if (player->GetMap()->IsBattlegroundOrArena()) {
+    if (player->GetMap()->IsBattlegroundOrArena() || player->GetMap()->IsDungeon()) {
         // basically, even if we've an item level limit specific for arena and bg
         // we must limit custom weapons there
         return 284;
