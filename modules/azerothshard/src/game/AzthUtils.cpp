@@ -6,6 +6,30 @@
 #include "AzthSharedDefines.h"
 #include "GuildHouse.h"
 #include "BattlefieldWG.h"
+#include "InstanceScript.h"
+
+class InstanceScript;
+
+// Copied from naxxramas.h
+enum NxEncouters
+{
+    BOSS_PATCHWERK                 = 0,
+    BOSS_GROBBULUS                 = 1,
+    BOSS_GLUTH                     = 2,
+    BOSS_NOTH                      = 3,
+    BOSS_HEIGAN                    = 4,
+    BOSS_LOATHEB                   = 5,
+    BOSS_ANUB                      = 6,
+    BOSS_FAERLINA                  = 7,
+    BOSS_MAEXXNA                   = 8,
+    BOSS_THADDIUS                  = 9,
+    BOSS_RAZUVIOUS                 = 10,
+    BOSS_GOTHIK                    = 11,
+    BOSS_HORSEMAN                  = 12,
+    BOSS_SAPPHIRON                 = 13,
+    BOSS_KELTHUZAD                 = 14,
+    MAX_ENCOUNTERS,
+};
 
 
 AzthUtils::AzthUtils()
@@ -754,6 +778,36 @@ bool AzthUtils::canFly(Unit*const /*caster*/, Unit* originalCaster)
     // return false to continue with other checks
     return false;
 }
+
+SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell, bool notify)
+{
+    if (player->azthPlayer->isTimeWalking(true) && sAzthUtils->isNotAllowedSpellForTw(spell)) {
+        if (notify)
+            player->GetSession()->SendNotification("This spell is not allowed in Timewalking");
+        return SPELL_FAILED_DONT_REPORT;
+    }
+    
+    // naxxramas teleport disabled when timewalking
+    if (spell->Id == 72613 && player->azthPlayer->GetTimeWalkingLevel() == TIMEWALKING_LVL_NAXX) {
+        if (InstanceScript* iscript=player->GetInstanceScript()) {
+            if (
+                iscript->GetBossState(BOSS_MAEXXNA) == DONE &&
+                iscript->GetBossState(BOSS_LOATHEB) == DONE &&
+                iscript->GetBossState(BOSS_HORSEMAN) == DONE &&
+                iscript->GetBossState(BOSS_THADDIUS) == DONE
+            ) {
+                if (notify)
+                    player->GetSession()->SendNotification("TIMEWALKING: You cannot be teleported! You must kill all bosses.");
+                return SPELL_CAST_OK;
+            } else {
+                return SPELL_FAILED_DONT_REPORT;
+            }
+        }  
+    }
+    
+    return SPELL_CAST_OK;
+}
+
 
 uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zone*/, uint32 area) const {
 

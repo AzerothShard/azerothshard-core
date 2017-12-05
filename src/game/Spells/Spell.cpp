@@ -5296,9 +5296,10 @@ SpellCastResult Spell::CheckCast(bool strict)
         
     //[AZTH]
     Player *_plr = m_caster->GetSpellModOwner();
-    if (_plr && _plr->azthPlayer->isTimeWalking(true) && sAzthUtils->isNotAllowedSpellForTw(m_spellInfo)) {
-        _plr->GetSession()->SendNotification("This spell is not allowed in Timewalking");
-        return SPELL_FAILED_DONT_REPORT;
+    if (_plr) {
+        SpellCastResult res=sAzthUtils->checkSpellCast(_plr, m_spellInfo, true);
+        if (res!= SPELL_CAST_OK)
+            return res;
     }     
     //[/AZTH]
 

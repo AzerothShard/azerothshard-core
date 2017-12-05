@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "Group.h"
 #include "SpellAuras.h"
+#include "SharedDefines.h"
 #include <stdio.h>
 #include <time.h>
 #include "AzthLevelStat.h"
@@ -82,6 +83,8 @@ public:
     int32 normalizeFeralAp(int32 feralBonus, int32 extraDPS, ItemTemplate const* pProto, bool isScaling);
     
     bool isAshenBand(uint32 entry);
+    
+    SpellCastResult checkSpellCast(Player *player, SpellInfo const* spell, bool notify);
     
     // [Timewalking]
     uint32 getPositionLevel(bool includeSpecialLvl, Map *map, uint32 zone = 0, uint32 area = 0) const;
