@@ -162,6 +162,14 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
             return false;
         }
     }
+    
+    /**
+     *  CUSTOM ITEM LEVEL CHECK
+     */
+    
+    if (!checkItems(getMaxItemLevelByStatus()) && entry->IsDungeon() && entry->IsBattlegroundOrArena()) {
+        ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 This zone is limited to item level: %d|r",getMaxItemLevelByStatus());
+    }
 
     /**
      *  FULL PVP CHECK
