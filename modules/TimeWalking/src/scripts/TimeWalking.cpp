@@ -473,9 +473,9 @@ public:
                 }
 
 
-                ChatHandler(player->GetSession()).PSendSysMessage("Complimenti! hai ottenuto |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ", _proto->ItemId, _proto->Name1.c_str(), count);
+                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_TW_NEW_ITEM_OBTAINED), _proto->ItemId, _proto->Name1.c_str(), count);
                 if (mailItems > 0) {
-                    ChatHandler(player->GetSession()).PSendSysMessage("Hai le borse piene! Controlla la mailbox!");
+                    ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_BAG_FULL_SENT_TO_MAIL));
                 }
             }
         }

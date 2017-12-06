@@ -625,7 +625,7 @@ class guild_guard : public CreatureScript
 		char msg[500];
 		if (AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()))
 		{
-			_Creature->MonsterWhisper("Ciao gm!", player);
+			_Creature->MonsterWhisper("Ciao gm!", player); //solo gm traduzione non necessaria
 			if (guardguild)
 			{
 				sprintf(msg, "Il mio id di gilda: %u", guardguild);

@@ -74,7 +74,7 @@ bool Season::checkItem(ItemTemplate const* proto, Player const* player) {
                  player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_1v1)
     ) {
         if (!sAzthUtils->checkItemLvL(proto, GetItemLevel())) {
-            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.", proto->ItemId, proto->Name1.c_str());
+            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_TOURNAMENT_LEVEL_TOOHIGH), proto->ItemId, proto->Name1.c_str());
             return false;
         }
     }
@@ -92,6 +92,6 @@ bool Season::canJoinArenaOrBg(Player *pl) {
         return true;
     }
             
-    ChatHandler(pl->GetSession()).PSendSysMessage("L'attuale Season ha livello massimo |cffff0000%d|r", sASeasonMgr->GetItemLevel());
+    ChatHandler(pl->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_TOURNAMENT_LEVEL_ACTUAL), sASeasonMgr->GetItemLevel());
     return false;
 }

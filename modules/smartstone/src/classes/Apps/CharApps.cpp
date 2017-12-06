@@ -17,18 +17,18 @@ void SmartStoneApps::maxSkill(Player *player) {
 void SmartStoneApps::changeRace(Player *player) {
     player->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
     ChatHandler(player->GetSession())
-            .SendSysMessage("Rilogga per cambiare razza!");
+            .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_RACE));
 }
 
 void SmartStoneApps::changeFaction(Player *player) {
     player->SetAtLoginFlag(AT_LOGIN_CHANGE_FACTION);
     ChatHandler(player->GetSession())
-            .SendSysMessage("Rilogga per cambiare fazione!");
+            .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_FACTION));
 }
 
 void SmartStoneApps::rename(Player *player) {
     player->SetAtLoginFlag(AT_LOGIN_RENAME);
-    ChatHandler(player->GetSession()).SendSysMessage("Rilogga per cambiare nome! Attento, gli addon sono settati in base al nome!");
+    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_NAME));
 }
 
 void SmartStoneApps::resetAuras(Player *player) {

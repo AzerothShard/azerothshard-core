@@ -196,7 +196,7 @@
      static bool HandleQuestCompleterCommand(ChatHandler* handler, char const* args) {
          char* cId = handler->extractKeyFromLink((char*) args, "Hquest");
          if (!cId) {
-             handler->PSendSysMessage("Syntax: .qc $quest\n\nControlla se la $quest è buggata.");
+             handler->PSendSysMessage(sAzthLang->get(AZTH_LANG_CCOMMANDS_QUEST)); //va usato getf forse?
              handler->SetSentErrorMessage(true);
              return false;
          }
@@ -214,7 +214,7 @@
              PreparedQueryResult resultCheck = WorldDatabase.Query(stmt);
 
              if (!resultCheck) {
-                 handler->PSendSysMessage("Errore: quest non trovata.");
+                 handler->PSendSysMessage("Error: quest not found.");
                  handler->SetSentErrorMessage(true);
                  return false;
              }
@@ -233,19 +233,19 @@
 
                      Player* player = ObjectAccessor::FindPlayerByName(name);
                      if (player->GetQuestStatus(entry) != QUEST_STATUS_INCOMPLETE) {
-                         handler->PSendSysMessage("[%s] è buggata!", questTitle.c_str());
+                         handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG), questTitle.c_str());
                          return true;
                      } else {
                          HandleQuestCompleterCompHelper(player, entry, handler, args, checked);
-                         handler->PSendSysMessage("[%s] è buggata ed è stata completata!", questTitle.c_str());
+                         handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUGANDCOMPLETED), questTitle.c_str());
                          return true;
                      }
                  } else {
-                     handler->PSendSysMessage("[%s] è buggata!", questTitle.c_str());
+                     handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG), questTitle.c_str());
                      return true;
                  }
              } else {
-                 handler->PSendSysMessage("[%s] non risulta essere buggata, se ritieni che lo sia ti preghiamo di segnalarcelo utilizzando il bugtracker.", questTitle.c_str());
+                 handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_NOBUG), questTitle.c_str());
                  return true;
              }
          }
@@ -396,7 +396,7 @@
 
          if (player->HasItemCount(32547, 1U, true))
          {
-             handler->PSendSysMessage("|CFF7BBEF7[SmartStone]|r: Hai già una smartstone!");
+             handler->PSendSysMessage(sAzthLang->get(AZTH_LANG_SS_POSSES_CHECK));
              return true;
          }
          else

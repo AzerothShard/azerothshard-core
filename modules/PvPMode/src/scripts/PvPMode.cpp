@@ -24,7 +24,7 @@ public:
         if ((player->GetMap()->IsDungeon() && !player->GetMap()->IsBattlegroundOrArena()) && player->azthPlayer->isPvP())
         {
             player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);
-            ChatHandler(player->GetSession()).PSendSysMessage("Stai usando un personaggio Full-PvP, non puoi partecipare a raid/dungeons.");
+            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_PVPACCOUNT_DUNGEON));
         }
     }
 };

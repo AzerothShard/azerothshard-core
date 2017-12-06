@@ -140,7 +140,7 @@ public:
             
             if (!item)
             {
-                creature->MonsterWhisper("Questo item non è valido", player);
+                creature->MonsterWhisper(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_NOT_VALID), player);
                 player->PlayerTalkClass->SendCloseGossip();
                 return true;
             }
@@ -152,31 +152,31 @@ public:
 
             if (item->GetUInt32Value(ITEM_FIELD_DURATION))
             {
-                creature->MonsterWhisper("Non è possibile depositare items con una durata temporanea!", player);
+                creature->MonsterWhisper(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_WITH_DURATION), player);
                 return true;
             }
 
             if (item->IsNotEmptyBag())
             {
-                creature->MonsterWhisper("Non è possibile depositare borse non vuote!", player);
+                creature->MonsterWhisper(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_NOT_EMPTY_BAG), player);
                 return true;
             }
 
             if (item->GetCount() > 1)
             {
-                creature->MonsterWhisper("Non possono essere depositati item raggruppati in un unico slot (stacked).", player);
+                creature->MonsterWhisper(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_NOT_STACKED), player);
                 return true;
             }
             
             // disable ashen band
             if(sAzthUtils->isAshenBand(item->GetEntry())) {
-                creature->MonsterWhisper("Non è possibile depositare l'Ashen Band!.", player);
+                creature->MonsterWhisper(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_ASHEN_BAND), player);
                 return true;
             }
 
             if (sItemToSell->OwnItem(player, item->GetEntry()))
             {
-                creature->MonsterWhisper("Hai già depositato questo item!", player);
+                creature->MonsterWhisper(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_ALREADY_STORED), player);
                 return true;
                 //player already deposited this item
             }
@@ -198,7 +198,7 @@ public:
 
             CharacterDatabase.PQuery("INSERT INTO azth_items_bank (`guid`, `item`, `itemEntry`) VALUES (%d, %d, %d);", player->GetGUID(), item->GetGUID(), item->GetEntry());
 
-            creature->MonsterWhisper("Item depositato.", player);//, item->GetTemplate()->Name1);
+            creature->MonsterWhisper(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_STORED), player);//, item->GetTemplate()->Name1);
             
             //send menu again but it won't stop following code
             OnGossipSelect(player, creature, GOSSIP_SENDER_INFO, inventoryType);
@@ -379,7 +379,7 @@ public:
                         ChatHandler(player->GetSession()).PSendSysMessage("Item received: |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r", itemEntry, _proto->Name1.c_str());
                     }
                     else {
-                        ChatHandler(player->GetSession()).PSendSysMessage("Item non recuperato, unique? borse piene?");
+                        ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_NOT_RECOVERED));
                         sLog->outError("player can't take item back: %u", pItem->GetGUIDLow());
                     }
                 } else {

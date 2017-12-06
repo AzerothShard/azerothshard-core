@@ -153,12 +153,12 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
 
         if (curDimension == DIMENSION_60 && entry->Expansion() > 0) {
             // CLASSIC EXPANSION CHECK
-            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Sei nella dimensione Classic, non è possibile accedere a mappe di espansioni più recenti|r");
+            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CLASSIC_EXPCHECK));
             player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
             return false;
         } if (curDimension == DIMENSION_70 && entry->Expansion() > 1) {
             // TBC EXPANSION CHECK
-            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Sei nella dimensione TBC, non è possibile accedere a mappe di espansioni più recenti|r");
+            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TBC_EXPCHECK));
             player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
             return false;
         }
@@ -198,8 +198,8 @@ bool AzthPlayer::canGroup(Player* with)
 
         if (curDimPlayer == DIMENSION_GUILD || curDimWith == DIMENSION_GUILD) {
             if (player->GetGuildId() != with->GetGuildId()) {
-                ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Non è possibile entrare in gruppo con PG di altre gilde presenti nella dimensione Guild World|r");
-                ChatHandler(with->GetSession()).PSendSysMessage("|cffff0000 Non è possibile entrare in gruppo con PG di altre gilde presenti nella dimensione Guild World|r");
+                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK));
+                ChatHandler(with->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK));
                 return false;
             }
         }
@@ -287,28 +287,28 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
         
         if (dim == DIMENSION_60) {
             if (player->getLevel() > 60 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
-                ChatHandler(player->GetSession()).PSendSysMessage("E' necessario essere di livello 60 o inferiore per entrare in questa dimensione, prova ad usare il Timewalking");
+                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK60));
                 return false;
             }
         }
         
         if (dim == DIMENSION_70) {
             if (player->getLevel() > 70 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
-                ChatHandler(player->GetSession()).PSendSysMessage("E' necessario essere di livello 70 o inferiore per entrare in questa dimensione, prova ad usare il Timewalking");
+                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK70));
                 return false;
             }
         }
         
         if (dim == DIMENSION_GUILD) {
             if (!player->GetGuild()) {
-                ChatHandler(player->GetSession()).PSendSysMessage("E' necessario essere in una gilda per entrare in questa dimensione!");
+                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_ACCESSCHECK));
                 return false;
             }
         }
         
         if (dim == DIMENSION_GM) {
             if (player->GetSession()->GetSecurity() <= SEC_PLAYER) {
-                ChatHandler(player->GetSession()).PSendSysMessage("E' necessario essere un Game Master per accedere a questa dimensione!");
+                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GM_ACCESSCHECK));
                 return false;
             }
         }
@@ -349,9 +349,9 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
     
     if (changed) {
         player->CastSpell(player, 35517, true);
-        std::string msg="|cffff0000 Sei stato trasportato nella dimensione ";
+        std::string msg= sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TEMP_TELEPORT);
         std::string dimName = sAzthUtils->getDimensionName(dim);
-        std::string suffix  = temp ? "temporaneamente" : "";
+        std::string suffix  = temp ? sAzthLang->get(AZTH_LANG_COMMON_TEMPORARILY) : "";
         msg += " <"+dimName+"> "+suffix+" |r";
 
         ChatHandler(player->GetSession()).PSendSysMessage("%s", msg.c_str());
@@ -447,7 +447,7 @@ bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {
 bool AzthPlayer::checkItem(ItemTemplate const* proto) {
     uint32 _ilvl=getMaxItemLevelByStatus();
     if (_ilvl && !sAzthUtils->checkItemLvL(proto,_ilvl)) {
-        ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto!", proto->ItemId, proto->Name1.c_str());
+        ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_LEVEL_CHECK), proto->ItemId, proto->Name1.c_str());
         return false;
     }
     
@@ -476,7 +476,7 @@ bool AzthPlayer::checkItems(uint32 iLvlMax, uint8 type /*=0*/) {
             {
                 if (!sAzthUtils->checkItemLvL(itemToCheck->GetTemplate(), iLvlMax))
                 {
-                ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto!", itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str());
+                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_LEVEL_CHECK), itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str());
                 counter++;
                 }
             }
@@ -495,7 +495,7 @@ bool AzthPlayer::checkItems(uint32 iLvlMax, uint8 type /*=0*/) {
         }
         
         if (avg > iLvlMax) {
-            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 Il tuo item level medio è troppo alto: %u|r",avg);
+            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_MLEVEL_CHECK), avg);
             return false;
         } else {
             return true;

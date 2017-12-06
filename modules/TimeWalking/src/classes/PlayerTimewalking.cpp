@@ -49,7 +49,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         
         uint32 iLvl=player->azthPlayer->getTwItemLevel(itsTimeWalkingLevel);
         if (iLvl && !player->azthPlayer->checkItems(iLvl)) {
-            ChatHandler(player->GetSession()).PSendSysMessage("Questa modalità ha l'item level massimo: %u",iLvl);
+            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_TW_LEVEL_MAX), iLvl);
             return;
         }
     
@@ -125,7 +125,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
             QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_timewalking_characters_active (`id`, `level`) VALUES ('%d', '%d');"), player->GetGUID(), player->azthPlayer->GetTimeWalkingLevel());
         }
         
-        ChatHandler(player->GetSession()).PSendSysMessage("Sei in modalità |cffff0000 Timewalking livello: %s|r", lvlName.c_str());
+        ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_TW_MODE_ON), lvlName.c_str());
     }
     else
     {
@@ -158,7 +158,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         if (save) {
             QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());
             // we announce it only when not login, because TW could be removed temporary (on level switch or on login for example)
-            ChatHandler(player->GetSession()).PSendSysMessage("Sei uscito dalla modalità |cffff0000 Timewalking!|r");
+            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_TW_MODE_OFF));
         }
     }
     
