@@ -3322,6 +3322,11 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     InitExplicitTargets(*targets);
 
     //[/AZTH]
+    if (!sAzthUtils->canPrepareSpell(this, m_caster, m_spellInfo, targets, triggeredByAura)) {
+        finish(false);
+        return;
+    }
+    //[/AZTH]
     // Fill aura scaling information
     if ((m_caster->isType(TYPEMASK_PLAYER) && ((Player*)m_caster)->azthPlayer->isTimeWalking(true)) || //[AZTH] timewalking scale everything!!!
         m_caster->IsTotem() || (m_caster->IsControlledByPlayer() && !m_spellInfo->IsPassive() && m_spellInfo->SpellLevel && !m_spellInfo->IsChanneled() && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_SCALING)))
