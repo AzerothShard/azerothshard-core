@@ -364,31 +364,14 @@ bool AzthPlayer::canCompleteCriteria(AchievementCriteriaEntry const* criteria) {
     if (!criteria)
         return true;
     
+    // first kill checks for timewalking, boss state etc
     if (!sAzthFirstKills->canCompleteAchi(player, criteria->referredAchievement))
         return false;
 
+    // achievements/criteria should not be completed in dimensions
     uint32 currentDimension = getCurrentDimensionByAura();
-    if (sAzthAchievementMgr->achievementList.find(criteria->ID) == sAzthAchievementMgr->achievementList.end()) {
-        if (sAzthUtils->isPhasedDimension(currentDimension))
-            return false;
-
-        return true;
-    }
-
-    AzthAchievement achi = sAzthAchievementMgr->achievementList[criteria->ID];
-
-    /**
-    *  CHECK REQUIREMENTS
-    */
-    if (achi.GetReqDimension() > 0) {
-        if (achi.GetReqDimension() != currentDimension)
-            return false;
-    } else if (sAzthUtils->isPhasedDimension(currentDimension))
+    if (sAzthUtils->isPhasedDimension(currentDimension))
         return false;
-
-    /*
-    *  END 
-    */
 
     return true;
 }

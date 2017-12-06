@@ -4,6 +4,7 @@
 #include "SpellMgr.h"
 #include "SpellInfo.h"
 #include "AzthSharedDefines.h"
+#include "Spell.h"
 #include "GuildHouse.h"
 #include "BattlefieldWG.h"
 #include "InstanceScript.h"
@@ -787,8 +788,24 @@ SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell
         return SPELL_FAILED_DONT_REPORT;
     }
     
+    return SPELL_CAST_OK;
+}
+
+bool AzthUtils::canPrepareSpell(Spell *spell, Unit */*m_caster*/, SpellInfo const* m_spellInfo, SpellCastTargets const* targets, AuraEffect const* /*triggeredByAura*/) {
     // naxxramas teleport disabled when timewalking
-    if (spell->Id == 72613 && player->azthPlayer->GetTimeWalkingLevel() == TIMEWALKING_LVL_NAXX) {
+    Unit* target = targets->GetUnitTarget();
+    //Player *player;
+    
+    if (!target)
+        return true;
+    
+    if (!m_spellInfo)
+        return true;
+    
+    /*if (target->GetTypeId() == TYPEID_PLAYER)
+        player = target->ToPlayer();
+    
+    if (m_spellInfo->Id == 72613  && player && player->azthPlayer->GetTimeWalkingLevel() == TIMEWALKING_LVL_NAXX) {
         if (InstanceScript* iscript=player->GetInstanceScript()) {
             if (
                 iscript->GetBossState(BOSS_MAEXXNA) == DONE &&
@@ -796,18 +813,17 @@ SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell
                 iscript->GetBossState(BOSS_HORSEMAN) == DONE &&
                 iscript->GetBossState(BOSS_THADDIUS) == DONE
             ) {
-                if (notify)
-                    player->GetSession()->SendNotification("TIMEWALKING: You cannot be teleported! You must kill all bosses.");
-                return SPELL_CAST_OK;
+                player->GetSession()->SendNotification("TIMEWALKING: You cannot be teleported! You must kill all bosses.");
+                return true;
             } else {
-                return SPELL_FAILED_DONT_REPORT;
+                spell->SendCastResult(SPELL_FAILED_DONT_REPORT);
+                return false;
             }
         }  
-    }
+    }*/
     
-    return SPELL_CAST_OK;
+    return true;
 }
-
 
 uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zone*/, uint32 area) const {
 
