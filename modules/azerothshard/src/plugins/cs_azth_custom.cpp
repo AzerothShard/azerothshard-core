@@ -196,7 +196,7 @@
      static bool HandleQuestCompleterCommand(ChatHandler* handler, char const* args) {
          char* cId = handler->extractKeyFromLink((char*) args, "Hquest");
          if (!cId) {
-             handler->PSendSysMessage(sAzthLang->get(AZTH_LANG_CCOMMANDS_QUEST)); //va usato getf forse?
+             handler->SendSysMessage(sAzthLang->get(AZTH_LANG_CCOMMANDS_QUEST)); //va usato getf forse?
              handler->SetSentErrorMessage(true);
              return false;
          }
@@ -396,7 +396,7 @@
 
          if (player->HasItemCount(32547, 1U, true))
          {
-             handler->PSendSysMessage(sAzthLang->get(AZTH_LANG_SS_POSSES_CHECK));
+             handler->SendSysMessage(sAzthLang->get(AZTH_LANG_SS_POSSES_CHECK));
              return true;
          }
          else

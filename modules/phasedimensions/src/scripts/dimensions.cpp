@@ -100,8 +100,8 @@ public:
             std::string dimSource = sAzthUtils->getDimensionName(playerPhaseDimension);
             std::string dimDest = sAzthUtils->getDimensionName(targetPhaseDimension);
 
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CANNOT_BE_SUMMONED));
-            ChatHandler(pTarget->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_MULTIDIMENSION_CANNOT_BE_SUMMONED_SUMMONER), dimSource.c_str(), dimDest.c_str());
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CANNOT_BE_SUMMONED));
+            ChatHandler(pTarget->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_MULTIDIMENSION_CANNOT_BE_SUMMONED_SUMMONER, player, dimSource.c_str(), dimDest.c_str()));
             return false;
         }
 
@@ -140,21 +140,21 @@ public:
         } else if (phaseDimension == DIMENSION_60 && mEntry->Expansion() > 0) {
             // CLASSIC EXPANSION CHECK
             player->TeleportTo(AzthSharedDef::blackMarket);
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CLASSIC_EXPCHECK));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CLASSIC_EXPCHECK));
         } else if (phaseDimension == DIMENSION_70 && mEntry->Expansion() > 1) {
             // TBC EXPANSION CHECK
             player->TeleportTo(AzthSharedDef::blackMarket);
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TBC_EXPCHECK));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TBC_EXPCHECK));
         } else if (phaseDimension == DIMENSION_GM && player->GetSession()->GetSecurity() > SEC_PLAYER) {
             // GM security check
             player->TeleportTo(AzthSharedDef::blackMarket);
             player->azthPlayer->changeDimension(DIMENSION_NORMAL);
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GM_ACCESSCHECK));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GM_ACCESSCHECK));
         } else if (phaseDimension == DIMENSION_GUILD && !player->GetGuild()) {
             // GUILD security check
             player->TeleportTo(AzthSharedDef::blackMarket);
             player->azthPlayer->changeDimension(DIMENSION_NORMAL);
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_ACCESSCHECK));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_ACCESSCHECK));
         } else {
             // integrity check: re-enable temporary disabled dimensions or just fix possible exploits
             if (curDimension != aurDimension || curDimension != phaseDimension) {

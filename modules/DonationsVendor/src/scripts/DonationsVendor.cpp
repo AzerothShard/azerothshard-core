@@ -379,7 +379,7 @@ public:
                         ChatHandler(player->GetSession()).PSendSysMessage("Item received: |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r", itemEntry, _proto->Name1.c_str());
                     }
                     else {
-                        ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_NOT_RECOVERED));
+                        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_NOT_RECOVERED));
                         sLog->outError("player can't take item back: %u", pItem->GetGUIDLow());
                     }
                 } else {

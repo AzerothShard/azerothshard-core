@@ -61,7 +61,7 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_PVPACCOUNT_DUNGEON, "You are using a Full-PvP characters, you can not join raid or dungeons.", "Stai usando un personaggio Full-PvP, non puoi partecipare a raid/dungeons.");
 
     //custom commands
-    this->add(AZTH_LANG_CCOMMANDS_QUEST, "Syntax: .qc $quest\n\Check if $quest has a bug.", "Sintassi: .qc $quest\n\nControlla se la $quest è buggata.");
+    this->add(AZTH_LANG_CCOMMANDS_QUEST, "Syntax: .qc $quest\n\nCheck if $quest has a bug.", "Sintassi: .qc $quest\n\nControlla se la $quest è buggata.");
     this->add(AZTH_LANG_CCOMANDS_QUEST_HASBUG, "[%s] has a bug!", "[%s] è buggata!");
     this->add(AZTH_LANG_CCOMANDS_QUEST_HASBUGANDCOMPLETED, "[%s] has a bug so it has been completed!", "[%s] è buggata ed è stata completata!");
     this->add(AZTH_LANG_CCOMANDS_QUEST_NOBUG, "[%s] not seems to has a bug, if you think it has, report it in bugtracker, thanks.", "[%s] non risulta essere buggata, se ritieni che lo sia ti preghiamo di segnalarcelo utilizzando il bugtracker.");

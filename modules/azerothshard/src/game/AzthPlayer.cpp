@@ -153,12 +153,12 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
 
         if (curDimension == DIMENSION_60 && entry->Expansion() > 0) {
             // CLASSIC EXPANSION CHECK
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CLASSIC_EXPCHECK));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CLASSIC_EXPCHECK));
             player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
             return false;
         } if (curDimension == DIMENSION_70 && entry->Expansion() > 1) {
             // TBC EXPANSION CHECK
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TBC_EXPCHECK));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TBC_EXPCHECK));
             player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
             return false;
         }
@@ -198,8 +198,8 @@ bool AzthPlayer::canGroup(Player* with)
 
         if (curDimPlayer == DIMENSION_GUILD || curDimWith == DIMENSION_GUILD) {
             if (player->GetGuildId() != with->GetGuildId()) {
-                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK));
-                ChatHandler(with->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK));
+                ChatHandler(with->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK));
                 return false;
             }
         }
@@ -287,28 +287,28 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
         
         if (dim == DIMENSION_60) {
             if (player->getLevel() > 60 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
-                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK60));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK60));
                 return false;
             }
         }
         
         if (dim == DIMENSION_70) {
             if (player->getLevel() > 70 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
-                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK70));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK70));
                 return false;
             }
         }
         
         if (dim == DIMENSION_GUILD) {
             if (!player->GetGuild()) {
-                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_ACCESSCHECK));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_ACCESSCHECK));
                 return false;
             }
         }
         
         if (dim == DIMENSION_GM) {
             if (player->GetSession()->GetSecurity() <= SEC_PLAYER) {
-                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GM_ACCESSCHECK));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GM_ACCESSCHECK));
                 return false;
             }
         }

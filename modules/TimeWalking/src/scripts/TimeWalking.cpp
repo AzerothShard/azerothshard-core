@@ -473,9 +473,9 @@ public:
                 }
 
 
-                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_TW_NEW_ITEM_OBTAINED), _proto->ItemId, _proto->Name1.c_str(), count);
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_NEW_ITEM_OBTAINED, player, _proto->ItemId, _proto->Name1.c_str(), count));
                 if (mailItems > 0) {
-                    ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_BAG_FULL_SENT_TO_MAIL));
+                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_BAG_FULL_SENT_TO_MAIL));
                 }
             }
         }

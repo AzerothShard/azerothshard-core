@@ -158,7 +158,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         if (save) {
             QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_timewalking_characters_active WHERE  `id`=%d;"), player->GetGUID());
             // we announce it only when not login, because TW could be removed temporary (on level switch or on login for example)
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->get(AZTH_LANG_TW_MODE_OFF));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_MODE_OFF));
         }
     }
     
