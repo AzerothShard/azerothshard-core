@@ -198,7 +198,7 @@ public:
             if (!player->azthPlayer->isInBlackMarket())
                 player->ADD_GOSSIP_ITEM(teleport.icon, teleport.getText(player), GOSSIP_SENDER_MAIN, teleport.id);
             else
-                player->ADD_GOSSIP_ITEM(teleport.icon, "Riportami indietro", GOSSIP_SENDER_MAIN, teleport.id);
+                player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
 
             // menu character (rename, change faction, etc) id 4
             SmartStoneCommand characterMenu = sSmartStone->getCommandById(SMRTST_CHAR_MENU);
@@ -219,7 +219,7 @@ public:
 
             // azth xp command
             SmartStoneCommand azthXp = sSmartStone->getCommandById(SMRTST_XP_CHANGE);
-            player->ADD_GOSSIP_ITEM_EXTENDED(azthXp.icon, azthXp.getText(player), GOSSIP_SENDER_MAIN, azthXp.id, "Scrivi il valore desiderato.", 0, true);
+            player->ADD_GOSSIP_ITEM_EXTENDED(azthXp.icon, azthXp.getText(player), GOSSIP_SENDER_MAIN, azthXp.id, sAzthLang->get(AZTH_LANG_SS_VALUE, player), 0, true);
             
             // reset auras
             SmartStoneCommand resetAuras = sSmartStone->getCommandById(SMRTST_RESET_AURAS);
@@ -284,7 +284,7 @@ public:
                 if (command.type != DO_SCRIPTED_ACTION_WITH_CODE) {
                     player->ADD_GOSSIP_ITEM(command.icon, text, GOSSIP_SENDER_MAIN, command.id);
                 } else {
-                    player->ADD_GOSSIP_ITEM_EXTENDED(command.icon, text, GOSSIP_SENDER_MAIN, command.id, "Scrivi il valore desiderato.", 0, true);
+                    player->ADD_GOSSIP_ITEM_EXTENDED(command.icon, text, GOSSIP_SENDER_MAIN, command.id, sAzthLang->get(AZTH_LANG_SS_VALUE, player), 0, true);
                 }
             }
         }
@@ -298,7 +298,7 @@ public:
 
         if (parent != 1) {
             // back to main menu command
-            player->ADD_GOSSIP_ITEM(0, "Indietro", GOSSIP_SENDER_MAIN, 2001);
+            player->ADD_GOSSIP_ITEM(0, sAzthLang->get(AZTH_LANG_SS_BACK, player), GOSSIP_SENDER_MAIN, 2001);
         }
 
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());

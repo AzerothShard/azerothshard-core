@@ -30,6 +30,9 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_BAG_FULL_SENT_TO_MAIL, "Hai le borse piene! Controlla la mailbox!", "Hai le borse piene! Controlla la mailbox!");
 
     //collection npc
+    this->add(AZTH_LANG_COLLECTION_DEPOSIT_ITEMS, "Store Items", "Deposita un item");
+    this->add(AZTH_LANG_COLLECTION_SEARCH_ITEMS, "Search an item by name", "Ricerca un item per nome");
+    this->add(AZTH_LANG_COLLECTION_SEARCH_ITEMS_CODE, "Insert name, and press accept button", "Inserisci il nome e premi sul bottone accept");
     this->add(AZTH_LANG_COLLECTION_ITEM_NOT_RECOVERED, "Item not recovered, unique? bag full?", "Item non recuperato, unique? borse piene?");
     this->add(AZTH_LANG_COLLECTION_ITEM_NOT_VALID, "This item is not valid", "Questo item non è valido");
     this->add(AZTH_LANG_COLLECTION_ITEM_WITH_DURATION, "Unable to store items with a duration", "Non è possibile depositare items con una durata temporanea!");
@@ -77,6 +80,9 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_TOURNAMENT_LEVEL_ACTUAL, "Current season only allows items with |cffff0000%d|r maximum level", "L'attuale Season ha livello massimo |cffff0000%d|r");
 
     //ss
+    this->add(AZTH_LANG_SS_TELEPORT_BACK, "Teleport me back", "Riportami indietro");
+    this->add(AZTH_LANG_SS_BACK, "Back", "Indietro");
+    this->add(AZTH_LANG_SS_VALUE, "Insert a value" , "Inserisci un valore");
     this->add(AZTH_LANG_SS_POSSES_CHECK, "|CFF7BBEF7[SmartStone]|r: You already have a smartstone!", "|CFF7BBEF7[SmartStone]|r: Hai già una smartstone!");
     this->add(AZTH_LANG_SS_NEWAPP, "You have just unlocked a new app for your SmartStone", "Hai sbloccato una nuova app per la tua SmartStone!");
     this->add(AZTH_LANG_SS_CHANGE_RACE, "Relog to change race", "Rilogga per cambiare razza");
