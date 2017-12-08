@@ -60,8 +60,8 @@ bool AzthUtils::isEligibleForBonusByArea(Player const* player) {
         uint32 level = groupLevel > 0 ? groupLevel : player->getLevel();
         
         if (posLvl>TIMEWALKING_SPECIAL_LVL_MIN) {
-            if (player->azthPlayer->GetTimeWalkingLevel() == posLvl) // with special level we must have the exact value
-                return true;
+            //if (player->azthPlayer->GetTimeWalkingLevel() == posLvl) // with special level we must have the exact value
+            //    return true;
         } else if (
             level != sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && posLvl != sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) // avoid double loot and other bonuses on end-game instances
             && level<=posLvl
