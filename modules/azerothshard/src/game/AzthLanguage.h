@@ -26,8 +26,8 @@ public:
     ~AzthLang();
     
     void loadStrings();
-    virtual const char * get(uint32 strId, Player *pl=nullptr) const;
-    virtual const char * getf(uint32 strId, Player *pl=nullptr, ...) const;
+    virtual const char * get(uint32 strId, Player const* pl=nullptr) const;
+    virtual const char * getf(uint32 strId, Player const* pl=nullptr, ...) const;
     void add(uint32 strId, std::string const def, std::string const it);
 };
 

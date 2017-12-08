@@ -241,7 +241,7 @@ public:
         int itemLevel = atoi(args);
         
         if (!handler->GetSession() || handler->GetSession()->GetPlayer())
-            return;
+            return true;
 
         if (itemLevel < -1 || args == nullptr || args == NULL || strcmp(args, "") == 0)
         {

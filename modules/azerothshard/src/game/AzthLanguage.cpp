@@ -32,7 +32,7 @@ void AzthLang::add(uint32 strId, std::string const def, std::string const it)
     this->strings[strId]=new AzthLangString(def,it);
 }
 
-const char * AzthLang::get(uint32 strId,Player *pl) const {
+const char * AzthLang::get(uint32 strId,Player const* pl) const {
     AzthCustomLangs loc = AZTH_LOC_IT;
 
     if (pl)
@@ -53,7 +53,7 @@ const char * AzthLang::get(uint32 strId,Player *pl) const {
     return "Unknown Azth string";
 }
 
-const char * AzthLang::getf(uint32 strId, Player *pl, ...) const {
+const char * AzthLang::getf(uint32 strId, Player const* pl, ...) const {
     const char *format = get(strId, pl);
     va_list ap;
     char str [2048];

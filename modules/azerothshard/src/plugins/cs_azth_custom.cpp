@@ -238,19 +238,19 @@
 
                      Player* player = ObjectAccessor::FindPlayerByName(name);
                      if (player->GetQuestStatus(entry) != QUEST_STATUS_INCOMPLETE) {
-                         handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG, player, questTitle.c_str()));
+                         handler->SendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG, player, questTitle.c_str()));
                          return true;
                      } else {
                          HandleQuestCompleterCompHelper(player, entry, handler, args, checked);
-                         handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUGANDCOMPLETED, player, questTitle.c_str()));
+                         handler->SendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUGANDCOMPLETED, player, questTitle.c_str()));
                          return true;
                      }
                  } else {
-                     handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG, player, questTitle.c_str()));
+                     handler->SendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG, player, questTitle.c_str()));
                      return true;
                  }
              } else {
-                 handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_NOBUG, player, questTitle.c_str()));
+                 handler->SendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_NOBUG, player, questTitle.c_str()));
                  return true;
              }
          }
