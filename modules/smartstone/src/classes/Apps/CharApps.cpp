@@ -17,18 +17,18 @@ void SmartStoneApps::maxSkill(Player *player) {
 void SmartStoneApps::changeRace(Player *player) {
     player->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
     ChatHandler(player->GetSession())
-            .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_RACE));
+            .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_RACE, player));
 }
 
 void SmartStoneApps::changeFaction(Player *player) {
     player->SetAtLoginFlag(AT_LOGIN_CHANGE_FACTION);
     ChatHandler(player->GetSession())
-            .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_FACTION));
+            .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_FACTION, player));
 }
 
 void SmartStoneApps::rename(Player *player) {
     player->SetAtLoginFlag(AT_LOGIN_RENAME);
-    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_NAME));
+    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_SS_CHANGE_NAME, player));
 }
 
 void SmartStoneApps::resetAuras(Player *player) {
@@ -40,6 +40,6 @@ void SmartStoneApps::resetAuras(Player *player) {
 
         ChatHandler(player->GetSession()).SendSysMessage("PLEASE RELOG NOW!");
     } else {
-        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_RESET_AURAS_ADVICE));
+        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_RESET_AURAS_ADVICE, player));
     }
 }

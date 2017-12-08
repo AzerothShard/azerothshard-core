@@ -239,10 +239,13 @@ public:
     static bool HandleSetMaxItemLevelCommand(ChatHandler* handler, char const* args)
     {
         int itemLevel = atoi(args);
+        
+        if (!handler->GetSession() || handler->GetSession()->GetPlayer())
+            return;
 
         if (itemLevel < -1 || args == nullptr || args == NULL || strcmp(args, "") == 0)
         {
-            handler->PSendSysMessage(sAzthLang->get(AZTH_LANG_COMMON_NOTVALIDPARAMTER));
+            handler->SendSysMessage(sAzthLang->get(AZTH_LANG_COMMON_NOTVALIDPARAMTER, handler->GetSession()->GetPlayer()));
             return true;
         }
         
@@ -250,12 +253,12 @@ public:
         if (itemLevel == -1)
         {
             sASeasonMgr->SetItemLevel(defaultMaxItemLevel);
-            handler->PSendSysMessage("L'item level massimo è stato riportato al valore predefinito"); //solo gm
+            handler->SendSysMessage("L'item level massimo e' stato riportato al valore predefinito"); //solo gm
         }
         else
         {
             sASeasonMgr->SetItemLevel(itemLevel);
-            handler->PSendSysMessage("L'item level massimo è stato cambiato"); //solo gm
+            handler->SendSysMessage("L'item level massimo e' stato cambiato"); //solo gm
         }
 
         return true;

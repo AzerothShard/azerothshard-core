@@ -194,9 +194,14 @@
      // Based on TrueWoW code
 
      static bool HandleQuestCompleterCommand(ChatHandler* handler, char const* args) {
+        Player *player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+
+         if (!player || !player->GetSession())
+             return false;
+         
          char* cId = handler->extractKeyFromLink((char*) args, "Hquest");
          if (!cId) {
-             handler->SendSysMessage(sAzthLang->get(AZTH_LANG_CCOMMANDS_QUEST)); //va usato getf forse?
+             handler->SendSysMessage(sAzthLang->get(AZTH_LANG_CCOMMANDS_QUEST, player)); //va usato getf forse?
              handler->SetSentErrorMessage(true);
              return false;
          }
@@ -233,19 +238,19 @@
 
                      Player* player = ObjectAccessor::FindPlayerByName(name);
                      if (player->GetQuestStatus(entry) != QUEST_STATUS_INCOMPLETE) {
-                         handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG), questTitle.c_str());
+                         handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG, player, questTitle.c_str()));
                          return true;
                      } else {
                          HandleQuestCompleterCompHelper(player, entry, handler, args, checked);
-                         handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUGANDCOMPLETED), questTitle.c_str());
+                         handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUGANDCOMPLETED, player, questTitle.c_str()));
                          return true;
                      }
                  } else {
-                     handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG), questTitle.c_str());
+                     handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_HASBUG, player, questTitle.c_str()));
                      return true;
                  }
              } else {
-                 handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_NOBUG), questTitle.c_str());
+                 handler->PSendSysMessage(sAzthLang->getf(AZTH_LANG_CCOMANDS_QUEST_NOBUG, player, questTitle.c_str()));
                  return true;
              }
          }
@@ -396,7 +401,7 @@
 
          if (player->HasItemCount(32547, 1U, true))
          {
-             handler->SendSysMessage(sAzthLang->get(AZTH_LANG_SS_POSSES_CHECK));
+             handler->SendSysMessage(sAzthLang->get(AZTH_LANG_SS_POSSES_CHECK, player));
              return true;
          }
          else

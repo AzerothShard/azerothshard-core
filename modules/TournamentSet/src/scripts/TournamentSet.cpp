@@ -154,7 +154,7 @@ public:
             player->azthPlayer->SetTempGear(false);
             QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_tournamentset_active WHERE  `id`=%d;"), player->GetGUID());
             player->SaveToDB(false, false);
-            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPITEMS_REMOVED));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPITEMS_REMOVED, player));
             player->PlayerTalkClass->SendCloseGossip();
         }
 
@@ -229,7 +229,7 @@ public:
             if (msg != EQUIP_ERR_OK)
             {
                 player->SendEquipError(msg, pItem, NULL);
-                ChatHandler(player->GetSession()).PSendSysMessage("%s", sAzthLang->get(AZTH_LANG_PVP_NPC_CANNOT_EQUIP));
+                ChatHandler(player->GetSession()).PSendSysMessage("%s", sAzthLang->get(AZTH_LANG_PVP_NPC_CANNOT_EQUIP, player));
                 return;
             }
         }*/
@@ -538,7 +538,7 @@ public:
                 player->azthPlayer->SetTempGear(false);
                 QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_tournamentset_active WHERE  `id`=%d;"), player->GetGUID());
                 player->SaveToDB(false, false);
-                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPITEMS_FORCE_REMOVED));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPITEMS_FORCE_REMOVED, player));
                 // teleport to dalaran
                 player->TeleportTo(AzthSharedDef::blackMarket);
             }

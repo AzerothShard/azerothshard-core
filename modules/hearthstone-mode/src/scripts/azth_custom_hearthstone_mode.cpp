@@ -776,7 +776,7 @@ public:
         draft->SendMailTo(trans, MailReceiver(player), MailSender(player), MAIL_CHECK_MASK_RETURNED, deliverDelay);
         CharacterDatabase.CommitTransaction(trans);
 
-        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_CHECK_EMAIL));
+        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_CHECK_EMAIL, player));
 
         player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
         return true;

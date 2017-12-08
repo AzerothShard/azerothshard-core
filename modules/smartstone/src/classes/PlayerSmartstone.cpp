@@ -310,7 +310,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
         player->azthPlayer->addSmartStoneCommand(
                 sSmartStone->toPlayerCommand(command), true);
         ChatHandler(player->GetSession())
-                .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_NEWAPP));
+                .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_NEWAPP, player));
 
         sScriptMgr->OnBeforeStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, creature, crItem, false);
     }

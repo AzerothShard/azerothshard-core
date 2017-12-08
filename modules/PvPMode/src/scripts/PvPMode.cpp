@@ -24,7 +24,7 @@ public:
         if ((player->GetMap()->IsDungeon() && !player->GetMap()->IsBattlegroundOrArena()) && player->azthPlayer->isPvP())
         {
             player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);
-            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPACCOUNT_DUNGEON));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPACCOUNT_DUNGEON, player));
         }
     }
 };

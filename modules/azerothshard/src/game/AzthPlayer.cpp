@@ -155,12 +155,15 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
 
         if (curDimension == DIMENSION_60 && entry->Expansion() > 0) {
             // CLASSIC EXPANSION CHECK
-            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CLASSIC_EXPCHECK));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_CLASSIC_EXPCHECK, player));
+            
             player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
             return false;
+
         } if (curDimension == DIMENSION_70 && entry->Expansion() > 1) {
             // TBC EXPANSION CHECK
-            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TBC_EXPCHECK));
+            ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TBC_EXPCHECK, player));
+            
             player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
             return false;
         }
@@ -183,6 +186,7 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
      */
     if (isPvP() && entry->IsDungeon()) {
         ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 PvP Characters cannot enter Dungeons and Raids|r");
+        
         player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
         return false;
     }
@@ -202,8 +206,8 @@ bool AzthPlayer::canGroup(Player* with)
 
         if (curDimPlayer == DIMENSION_GUILD || curDimWith == DIMENSION_GUILD) {
             if (player->GetGuildId() != with->GetGuildId()) {
-                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK));
-                ChatHandler(with->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK, player));
+                ChatHandler(with->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_GROUPCHECK, with));
                 return false;
             }
         }
@@ -353,9 +357,9 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
     
     if (changed) {
         player->CastSpell(player, 35517, true);
-        std::string msg= sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TEMP_TELEPORT);
+        std::string msg= sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TEMP_TELEPORT, player);
         std::string dimName = sAzthUtils->getDimensionName(dim);
-        std::string suffix  = temp ? sAzthLang->get(AZTH_LANG_COMMON_TEMPORARILY) : "";
+        std::string suffix  = temp ? sAzthLang->get(AZTH_LANG_COMMON_TEMPORARILY, player) : "";
         msg += " <"+dimName+"> "+suffix+" |r";
 
         ChatHandler(player->GetSession()).PSendSysMessage("%s", msg.c_str());
@@ -451,7 +455,7 @@ bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {
 bool AzthPlayer::checkItem(ItemTemplate const* proto) {
     uint32 _ilvl=getMaxItemLevelByStatus();
     if (_ilvl && !sAzthUtils->checkItemLvL(proto,_ilvl)) {
-        ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_LEVEL_CHECK), proto->ItemId, proto->Name1.c_str());
+        ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_LEVEL_CHECK, player, proto->ItemId, proto->Name1.c_str()));
         return false;
     }
     
@@ -480,7 +484,7 @@ bool AzthPlayer::checkItems(uint32 iLvlMax, uint8 type /*=0*/) {
             {
                 if (!sAzthUtils->checkItemLvL(itemToCheck->GetTemplate(), iLvlMax))
                 {
-                ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_LEVEL_CHECK), itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str());
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_LEVEL_CHECK, player, itemToCheck->GetTemplate()->ItemId, itemToCheck->GetTemplate()->Name1.c_str()));
                 counter++;
                 }
             }
