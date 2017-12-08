@@ -791,7 +791,7 @@ SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell
     return SPELL_CAST_OK;
 }
 
-bool AzthUtils::canPrepareSpell(Spell *spell, Unit */*m_caster*/, SpellInfo const* m_spellInfo, SpellCastTargets const* targets, AuraEffect const* /*triggeredByAura*/) {
+bool AzthUtils::canPrepareSpell(Spell */*spell*/, Unit */*m_caster*/, SpellInfo const* m_spellInfo, SpellCastTargets const* targets, AuraEffect const* /*triggeredByAura*/) {
     // naxxramas teleport disabled when timewalking
     Unit* target = targets->GetUnitTarget();
     //Player *player;
@@ -823,6 +823,23 @@ bool AzthUtils::canPrepareSpell(Spell *spell, Unit */*m_caster*/, SpellInfo cons
     }*/
     
     return true;
+}
+
+void AzthUtils::onAuraRemove(AuraApplication * aurApp, AuraRemoveMode /*mode*/) {
+    Aura* aura = aurApp->GetBase();
+    if (aura->GetSpellInfo()->Id >= AZTH_RIDING_SPELL && aura->GetSpellInfo()->Id <= 1002002) {
+        Unit *caster = aura->GetCaster();
+        if (caster->GetTypeId() == TYPEID_PLAYER) {
+            Player *player = caster->ToPlayer();
+            if (player) {
+                if (player->IsMounted())
+                    player->Dismount();
+                
+                if (player->m_mover != player && player->IsOnVehicle(player->m_mover))
+                    player->ExitVehicle();
+            }
+        }
+    }
 }
 
 uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zone*/, uint32 area) const {

@@ -29,7 +29,7 @@ enum AzthSummonType {
     // special
     AZTH_SUMMON_MORPH,
     AZTH_SUMMON_MOUNT,
-    AZTH_SUMMON_FLY_MOUNT,
+    AZTH_SUMMON_MOUNT_FLY,
     // pet
     AZTH_SUMMON_GUARDIAN,
     AZTH_SUMMON_POKEMON_GUARDIAN,
@@ -38,8 +38,10 @@ enum AzthSummonType {
     AZTH_SUMMON_COMPANION,
     AZTH_SUMMON_POKEMON_COMPANION,
     AZTH_SUMMON_VEHICLE_MOUNT,
+    AZTH_SUMMON_VEHICLE_MOUNT_FLY,
     AZTH_SUMMON_VEHICLE_MORPH,
     AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW,
+    AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW_FLY,
     AZTH_SUMMON_VEHICLE_MORPH_FOLLOW,
     AZTH_SUMMON_VEHICLE,
     AZTH_SUMMON_VEHICLE_SPAWN,
@@ -62,6 +64,9 @@ public:
         float scale=item->GetTemplate()->ArmorDamageModifier;
         uint32 destId = _npc.SpellCategoryCooldown > 0 ? uint32(_npc.SpellCategoryCooldown) : 0;
         uint32 spawnTime = _time.SpellCategoryCooldown >= 0 ? uint32(_time.SpellCategoryCooldown) : 0;
+
+        bool flyingMount = _summon_type == AZTH_SUMMON_MOUNT_FLY || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT_FLY || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW_FLY;
+        bool mount = _summon_type == AZTH_SUMMON_MOUNT || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW || flyingMount;
 
         if (!destId) {
             player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
@@ -105,14 +110,14 @@ public:
         /**
          * AZTH_SUMMON_MOUNT
          */
-        if (_summon_type == AZTH_SUMMON_MOUNT) {
+        if (_summon_type == AZTH_SUMMON_MOUNT || _summon_type == AZTH_SUMMON_MOUNT_FLY) {
             CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(destId);
             if (!ci)
             {
                 player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
                 return true;
             }
-            
+
             if (player->IsMounted()) {
                 
                 if (player->GetMountID()  == ci->Modelid1 || player->GetMountID()  == ci->Modelid2 ||
@@ -127,12 +132,28 @@ public:
                 // }
   
             } else {
+                /*if (!player->IsOutdoors()) {
+                    player->GetSession()->SendNotification("Can't do indoor!");
+                    player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                    return true;
+                }*/
+                
                 uint32 displayID = ObjectMgr::ChooseDisplayId(ci);
                 sObjectMgr->GetCreatureModelRandomGender(&displayID);
 
                 player->Mount(displayID, ci->VehicleId, destId);
                 
-                player->CastSpell(player, 53708, TRIGGERED_FULL_MASK); // visual   
+                uint32 spell = flyingMount ? 1002002 : 1002001;
+                player->CastSpell(player, spell , TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE);
+
+                if (!player->HasAura(spell)) {
+                    player->Dismount();
+                    player->GetSession()->SendNotification("You can't mount now!");
+                    player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                    return true; 
+                }
+                
+                player->CastSpell(player, 53708, TRIGGERED_FULL_MASK); // visual  
 
                 return false;
             }
@@ -322,11 +343,14 @@ void AddSC_azth_extra_items() // Add to scriptloader normally
     // vanity
     new azth_summon("azth_summon_morph", AZTH_SUMMON_MORPH);
     new azth_summon("azth_summon_mount", AZTH_SUMMON_MOUNT);
+    new azth_summon("azth_summon_mount_fly", AZTH_SUMMON_MOUNT_FLY);
     new azth_summon("azth_summon_companion", AZTH_SUMMON_COMPANION);
     new azth_summon("azth_summon_guardian", AZTH_SUMMON_GUARDIAN);
     new azth_summon("azth_summon_vehicle_mount", AZTH_SUMMON_VEHICLE_MOUNT);
+    new azth_summon("azth_summon_vehicle_mount_fly", AZTH_SUMMON_VEHICLE_MOUNT_FLY);
     new azth_summon("azth_summon_vehicle_morph", AZTH_SUMMON_VEHICLE_MORPH);
     new azth_summon("azth_summon_vehicle_mount_follow", AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW);
+    new azth_summon("azth_summon_vehicle_mount_follow_fly", AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW_FLY);
     new azth_summon("azth_summon_vehicle_morph_follow", AZTH_SUMMON_VEHICLE_MORPH_FOLLOW);
     new azth_summon("azth_summon_vehicle", AZTH_SUMMON_VEHICLE);
     new azth_summon("azth_summon_vehicle_follow", AZTH_SUMMON_VEHICLE_FOLLOW);

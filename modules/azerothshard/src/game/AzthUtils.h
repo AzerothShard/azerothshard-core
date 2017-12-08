@@ -86,6 +86,7 @@ public:
     
     SpellCastResult checkSpellCast(Player *player, SpellInfo const* spell, bool notify);
     bool canPrepareSpell(Spell *spell, Unit *m_caster, SpellInfo const* m_spellInfo, SpellCastTargets const* targets, AuraEffect const* triggeredByAura);
+    void onAuraRemove(AuraApplication * aurApp, AuraRemoveMode mode);
     
     // [Timewalking]
     uint32 getPositionLevel(bool includeSpecialLvl, Map *map, uint32 zone = 0, uint32 area = 0) const;

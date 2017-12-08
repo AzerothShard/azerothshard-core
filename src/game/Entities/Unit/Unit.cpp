@@ -4167,6 +4167,10 @@ void Unit::RemoveAura(AuraApplicationMap::iterator &i, AuraRemoveMode mode)
     // Remove aura - for Area and Target auras
     if (aura->GetOwner() == this)
         aura->Remove(mode);
+    
+    //[AZTH]
+    sAzthUtils->onAuraRemove(aurApp, mode);
+    //[/AZTH]
 }
 
 void Unit::RemoveAura(uint32 spellId, uint64 caster, uint8 reqEffMask, AuraRemoveMode removeMode)

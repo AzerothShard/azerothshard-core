@@ -6974,11 +6974,6 @@ void Player::CheckAreaExploreAndOutdoor()
 
     if (IsInFlight())
         return;
-    
-    //[AZTH]
-    if (!azthPlayer->canExplore())
-        return;
-    //[/AZTH]
 
     bool isOutdoor = IsOutdoors();
     uint32 areaId = GetBaseMap()->GetAreaId(GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
@@ -6986,6 +6981,11 @@ void Player::CheckAreaExploreAndOutdoor()
  
     if (sWorld->getBoolConfig(CONFIG_VMAP_INDOOR_CHECK) && !isOutdoor)
         RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
+    
+    //[AZTH]
+    if (!azthPlayer->canExplore())
+        return;
+    //[/AZTH]
 
     if (!areaId)
         return;
