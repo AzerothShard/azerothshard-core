@@ -139,6 +139,8 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
         
     // CHECK BG or ARENA requirements (item level limit for example)
     if (entry->IsBattlegroundOrArena() && !canJoinQueue(AZTH_QUEUE_BG_OR_ARENA)) {
+        
+        player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
         return false;
     }
     
@@ -171,6 +173,8 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
     uint32 ilvl=getMaxItemLevelByStatus();
     if (ilvl>0 && !checkItems(ilvl) && (entry->IsDungeon() || entry->IsBattlegroundOrArena())) {
         ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000 This zone is limited to item level: %d|r",getMaxItemLevelByStatus());
+        
+        player->SendTransferAborted(entry->MapID, TRANSFER_ABORT_MAP_NOT_ALLOWED);
         return false;
     }
 
