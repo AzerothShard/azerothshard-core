@@ -118,13 +118,14 @@ public:
                 return true;
             }
 
-            if (player->IsMounted()) {
-                
+            if (item->azthObject->getBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS) || player->HasAuraType(SPELL_AURA_MOUNTED)) { // we cannot check isMounted because using item automatically dismount players before this hook
                 if (player->GetMountID()  == ci->Modelid1 || player->GetMountID()  == ci->Modelid2 ||
                 player->GetMountID()  == ci->Modelid3 || player->GetMountID()  == ci->Modelid4) {
                     player->Dismount();
+                    player->RemoveAurasByType(SPELL_AURA_MOUNTED);
                     player->CastSpell(player, 53708, TRIGGERED_FULL_MASK); // visual  
                     player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                    item->azthObject->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, false);
                     return true;
                 } 
                 // else {
@@ -142,7 +143,7 @@ public:
                 sObjectMgr->GetCreatureModelRandomGender(&displayID);
 
                 player->Mount(displayID, ci->VehicleId, destId);
-                
+
                 uint32 spell = flyingMount ? 1002002 : 1002001;
                 player->CastSpell(player, spell , TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE);
 
@@ -150,8 +151,11 @@ public:
                     player->Dismount();
                     player->GetSession()->SendNotification("You can't mount now!");
                     player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                    item->azthObject->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, false);
                     return true; 
                 }
+                
+                item->azthObject->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, true);
                 
                 player->CastSpell(player, 53708, TRIGGERED_FULL_MASK); // visual  
 
@@ -188,11 +192,14 @@ public:
             if (uint64 pet_guid = player->GetCritterGUID())
             {
                 if (Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*player, pet_guid)) {
+
+                    if (pet->GetTypeId() == TYPEID_UNIT && pet->ToCreature()->IsSummon())
+                        pet->ToTempSummon()->UnSummon();
+                    
+                    // if is the same item, then we're using the removing feature
+                    // otherwise remove old minion and go ahead
                     if (destId == pet->GetEntry())
-                    {
-                        if (pet->GetTypeId() == TYPEID_UNIT && pet->ToCreature()->IsSummon())
-                            pet->ToTempSummon()->UnSummon();
-                        
+                    {   
                         player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
                         return true;
                     }
@@ -243,6 +250,7 @@ public:
                     player->EnterVehicle(creature, 0);
                 }
             } else {
+                player->SetCritterGUID(creature->GetGUID()); // any kind of following creatures must be set as companion
                 // follow
                 if (!summon->IsInCombat() && !summon->IsTrigger()) {
                     // xinef: move this here, some auras are added in initstatsforlevel!
@@ -305,11 +313,17 @@ public:
     {
     }
 
-    bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
+    bool OnUse(Player *player, Item *item, SpellCastTargets const & targets) override {
         if (player->IsInCombat() || 
             (player->GetInstanceScript() && player->GetInstanceScript()->IsEncounterInProgress()))
         {
             player->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT, item, NULL);
+            return true;
+        }
+        
+        if (!player->GetMap()->IsDungeon()) {
+            player->GetSession()->SendNotification("%s",sAzthLang->get(AZTH_LANG_INSTANCE_ONLY, player));
+            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
             return true;
         }
         
@@ -325,14 +339,38 @@ public:
             }
         }
         
-        if (!player->GetMap()->IsDungeon()) {
-            player->GetSession()->SendNotification("%s",sAzthLang->get(AZTH_LANG_INSTANCE_ONLY, player));
-            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(1002003);
+        if (!spellInfo)
+        {
+            player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM, item, NULL);
             return true;
         }
         
-        if (item->GetSpellCharges()) // if charges remains then can cast spell
-            player->CastSpell(player, 72429, TRIGGERED_FULL_MASK); // visual but also works when player not released
+        if (Group* group = player->ToPlayer()->GetGroup()) {
+            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next()) {
+                if (Player* member = itr->GetSource()) {
+                    if (member->IsAlive())
+                        continue;
+
+                    Corpse* corpse = member->GetCorpse();
+
+                    if ((corpse && player->GetDistance(corpse) <= 100) || player->GetDistance(member) <= 100) {
+                        //player->CastSpell(member, 1002003, TRIGGERED_FULL_MASK);
+                        SpellCastTargets tgs;
+                        if (corpse)
+                            tgs.SetCorpseTarget(corpse);
+                        else
+                            tgs.SetUnitTarget(member);
+
+                        Spell* spell = new Spell(player, spellInfo, TRIGGERED_FULL_MASK);
+                        spell->InitExplicitTargets(tgs);
+                        //spell->SetSpellValue(SPELLVALUE_BASE_POINT0, learning_spell_id);
+                        //spell->prepare(&targets);
+                        spell->_cast(true);
+                    }
+                }
+            }
+        }
         
         return false; // everything ok
     }
