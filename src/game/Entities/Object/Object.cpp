@@ -72,6 +72,9 @@ Object::Object() : m_PackGUID(sizeof(uint64)+1)
     m_objectUpdated     = false;
 
     m_PackGUID.appendPackGUID(0);
+    
+    //[AZTH] initialization
+    azthObject = new AzthObject(this);
 }
 
 WorldObject::~WorldObject()
@@ -108,6 +111,9 @@ Object::~Object()
 
     delete [] m_uint32Values;
     m_uint32Values = 0;
+    
+    // [AZTH]
+    delete azthObject;
 }
 
 void Object::_InitValues()

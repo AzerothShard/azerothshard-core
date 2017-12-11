@@ -19,6 +19,9 @@
 #include <string>
 #include <sstream>
 
+//[AZTH]
+#include "AzthObject.h"
+
 #define CONTACT_DISTANCE            0.5f
 #define INTERACTION_DISTANCE        5.5f
 #define ATTACK_DISTANCE             5.0f
@@ -117,10 +120,13 @@ typedef UNORDERED_SET<uint32> UpdatePlayerSet;
 
 class Object
 {
+    friend class AzthObject; // [AZTH] make AzthObject friendly to Object, allowing private access
     public:
         virtual ~Object();
 
         bool IsInWorld() const { return m_inWorld; }
+        
+        AzthObject *azthObject;
 
         virtual void AddToWorld();
         virtual void RemoveFromWorld();
