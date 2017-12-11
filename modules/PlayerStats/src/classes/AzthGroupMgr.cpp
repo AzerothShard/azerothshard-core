@@ -8,7 +8,7 @@ AzthGroupMgr::AzthGroupMgr(Group* group) {
 }
 
 void AzthGroupMgr::saveToDb() {
-    CharacterDatabase.PExecute("UPDATE groups SET maxLevelGroup = %u WHERE leaderGuid = %u", this->levelMaxGroup, this->group->GetLeaderGUID());
+    CharacterDatabase.PExecute("UPDATE groups SET MaxLevelGroup = %u, MaxGroupSize = %u WHERE leaderGuid = %u", this->levelMaxGroup, this->groupSize, this->group->GetLeaderGUID());
 }
 
 AzthGroupMgr::~AzthGroupMgr() {}

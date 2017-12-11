@@ -123,7 +123,7 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
 
         if (updated) {    
             std::string _slvl=sAzthUtils->getLevelInfo(levelPlayer);
-            std::string msg = sAzthLang->getf(AZTH_LANG_GROUP_LEVEL_REG,player, player->GetName().c_str(), group->GetMembersCount(),_slvl.c_str());
+            std::string msg = sAzthLang->getf(AZTH_LANG_GROUP_LEVEL_REG,player, player->GetName().c_str(),_slvl.c_str(), group->GetMembersCount());
             sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());
             group->azthGroupMgr->saveToDb();
             result=true;
@@ -161,7 +161,7 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
             if (updated) {
                 is->InsertToDB();
                 std::string _slvl = sAzthUtils->getLevelInfo(is->azthInstMgr->levelMax);
-                std::string msg=sAzthLang->getf(AZTH_LANG_INSTANCE_LEVEL_REG, player, player->GetName().c_str(), group->GetMembersCount(), _slvl.c_str());
+                std::string msg=sAzthLang->getf(AZTH_LANG_INSTANCE_LEVEL_REG, player, player->GetName().c_str(), _slvl.c_str(), group->GetMembersCount());
                 sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());
                 result=true;
             }
