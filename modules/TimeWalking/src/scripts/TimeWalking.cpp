@@ -329,7 +329,7 @@ public:
             _autoscaling(player, area->zone, newArea);
         }
 
-        sAzthUtils->updateTwLevel(player); // needed for player stats
+        sAzthUtils->updateTwLevel(player, player->GetGroup()); // needed for player stats
     }
     
     void OnBeforeUpdate(Player *player, uint32 /*p_time*/) override {

@@ -20,8 +20,8 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_INSTANCE_ONLY, "Must be in instance!", "Devi essere in un instance!");
     this->add(AZTH_LANG_RAID_COMBAT, "One of your raid member is in combat!", "Uno dei membri del raid è in combat!");
     
-    this->add(AZTH_LANG_GROUP_LEVEL_REG, "|cffff0000 %s level has been registered in your group with value: %s|r", "|cffff0000 Il livello di %s è stato registrato all'interno del gruppo con il valore: %s|r");
-    this->add(AZTH_LANG_INSTANCE_LEVEL_REG, "|cffff0000 %s level has been registered in this instance with value: %s|r", "|cffff0000 Il livello di %s è stato registrato all'interno dell'instance con il valore: %s|r");
+    this->add(AZTH_LANG_GROUP_LEVEL_REG, "|cffff0000 %s level has been registered in group with value: %s. Group size: %u|r", "|cffff0000 Il livello di %s è stato registrato all'interno con il valore: %s. Dimensione gruppo: %u|r");
+    this->add(AZTH_LANG_INSTANCE_LEVEL_REG, "|cffff0000 %s level has been registered in this instance with value: %s. Group size: %u|r", "|cffff0000 Il livello di %s è stato registrato all'interno dell'instance con il valore: %s. Dimensione del gruppo: %u|r");
     
     //common
     this->add(AZTH_LANG_COMMON_TEMPORARILY, "temporarily", "temporaneamente");
