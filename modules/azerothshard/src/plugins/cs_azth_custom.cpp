@@ -40,12 +40,13 @@
      std::vector<ChatCommand> GetCommands() const override {
          // name , level, allowConsole, function
          static std::vector<ChatCommand> lookupAzthCommands = {
+            { "fixranks"       , SEC_PLAYER, false, &handleFixRanks,       ".azth fixranks : fix all previous not learned spell ranks, expecially used for portings" },
             { "arealevel"      , SEC_PLAYER, false, &handlePrintAreaLevel, ".azth arealevel : to show calculated level for current area" },
             { "maxskill"       , SEC_PLAYER, false, &handleAzthMaxSkill,   ".azth maxskill: if you're level 80, you can use this command to max out weapons skills"},
             { "xp"             , SEC_PLAYER, false, &handleAzthXP,         ".azth xp <rate>: you can set an arbitrary experience rate"},
             { "smartstone"     , SEC_PLAYER, false, &handleAzthSmartstone, ".azth smartstone: create a smartstone in your bag" },
             { "bonus"          , SEC_PLAYER, false, &handleAzthBonus,      ".azth bonus <rate> <bracket> :  set temp a rating bonus for brackets" },
-            { "ptype"        , SEC_PLAYER, false,   &handlePlayerType,     ".azth ptype : shows player tipology (normal,fullpvp)" },
+            { "ptype"          , SEC_PLAYER, false, &handlePlayerType,     ".azth ptype : shows player tipology (normal,fullpvp)" },
          };
 
          static std::vector<ChatCommand> commandTable = {
@@ -55,6 +56,31 @@
          return commandTable;
      }
      
+    static bool handleFixRanks(ChatHandler* handler, char const* /*args*/) {
+        Player *player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+
+        if (!player || !player->GetSession())
+            return false;
+
+        bool fixed=false;
+        PlayerSpellMap spellMap = player->GetSpellMap();
+        for (PlayerSpellMap::const_iterator iter = spellMap.begin(); iter != spellMap.end(); ++iter) {
+            uint32 prev = sSpellMgr->GetPrevSpellInChain(iter->first);
+            while (prev) {
+                if (!player->HasSpell(prev)) {
+                    player->learnSpell(prev);
+                    fixed=true;
+                }
+                prev = sSpellMgr->GetPrevSpellInChain(prev);
+
+            }
+        }
+        
+        handler->PSendSysMessage(fixed ? "Old ranks fixed!" : "No old ranks to learn");
+
+        return true;
+    }
+    
     static bool handlePlayerType(ChatHandler* handler, char const* /*args*/) {
         Player* target = handler->getSelectedPlayerOrSelf();
         
