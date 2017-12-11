@@ -11,6 +11,7 @@ public:
     void saveToDb();
 
     uint32 levelMaxGroup;
+    uint32 groupSize;
     Group* group;
 };
 #endif

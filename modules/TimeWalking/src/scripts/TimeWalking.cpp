@@ -497,7 +497,7 @@ public:
     }
     
     void OnLogin(Player *player) override {
-        sAzthUtils->updateTwLevel(player); // to fix level on instance that cannot be calculated OnLoadFromDB (too early)
+        sAzthUtils->updateTwLevel(player, player->GetGroup()); // to fix level on instance that cannot be calculated OnLoadFromDB (too early)
         player->azthPlayer->prepareTwSpells(player->getLevel());
     }
 

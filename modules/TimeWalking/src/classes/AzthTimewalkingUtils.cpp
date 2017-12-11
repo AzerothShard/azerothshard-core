@@ -110,13 +110,23 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
                                 ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
     
     if (group) {
+        bool updated=false;
         if (sAzthUtils->maxTwLevel(levelPlayer, group->azthGroupMgr->levelMaxGroup) != group->azthGroupMgr->levelMaxGroup) {
             group->azthGroupMgr->levelMaxGroup = levelPlayer;
-            group->azthGroupMgr->saveToDb();
             
             std::string _slvl=sAzthUtils->getLevelInfo(levelPlayer);
             std::string msg = sAzthLang->getf(AZTH_LANG_GROUP_LEVEL_REG,player, player->GetName().c_str(),_slvl.c_str());
             sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());
+            updated = true;
+        }
+        
+        if (group->GetMembersCount() > group->azthGroupMgr->groupSize) {
+            group->azthGroupMgr->groupSize = group->GetMembersCount();
+            updated = true;
+        }
+
+        if (updated) {
+            group->azthGroupMgr->saveToDb();
             result=true;
         }
     }
@@ -130,21 +140,27 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
             if (is->azthInstMgr->levelMax == 0) {
                 player->azthPlayer->instanceID = map->GetInstanceId();
 
-                QueryResult result = CharacterDatabase.PQuery("SELECT levelPg FROM instance WHERE id = %u", player->azthPlayer->instanceID);
+                QueryResult result = CharacterDatabase.PQuery("SELECT levelPg,groupSize FROM instance WHERE id = %u", player->azthPlayer->instanceID);
                 if (!result)
                     return result;
                 Field* fields = result->Fetch();
                 is->azthInstMgr->levelMax = fields[0].GetUInt32();
+                is->azthInstMgr->groupSize = fields[1].GetUInt32();
                 updated=true;
             }
 
             if (sAzthUtils->maxTwLevel(levelPlayer, is->azthInstMgr->levelMax) != is->azthInstMgr->levelMax) {
                 is->azthInstMgr->levelMax = levelPlayer;
-                is->InsertToDB();
                 updated=true;
+            }
+            
+            if (group && group->GetMembersCount() > is->azthInstMgr->groupSize) {
+                is->azthInstMgr->groupSize = group->GetMembersCount();
+                updated = true;
             }
         
             if (updated) {
+                is->InsertToDB();
                 std::string _slvl = sAzthUtils->getLevelInfo(is->azthInstMgr->levelMax);
                 std::string msg=sAzthLang->getf(AZTH_LANG_INSTANCE_LEVEL_REG, player, player->GetName().c_str(),_slvl.c_str());
                 sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());

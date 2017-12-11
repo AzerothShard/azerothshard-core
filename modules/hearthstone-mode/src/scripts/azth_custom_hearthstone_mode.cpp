@@ -959,7 +959,7 @@ void HearthstoneMode::loadHearthstone()
         sHearthstoneMode->hsTwDailyQuests.clear();
         sHearthstoneMode->hsTwDailyRandomQuests.clear();
 
-        QueryResult hsQuestResult = ExtraDatabase.PQuery("SELECT id, flag, specialLevel, reqDimension, startTime, endTime FROM hearthstone_quests");
+        QueryResult hsQuestResult = ExtraDatabase.PQuery("SELECT id, flag, specialLevel, reqDimension, groupLimit, startTime, endTime FROM hearthstone_quests");
 
         if (hsQuestResult)
         {
@@ -970,6 +970,7 @@ void HearthstoneMode::loadHearthstone()
                 hq.flag = (*hsQuestResult)[1].GetUInt32();
                 hq.specialLevel = (*hsQuestResult)[2].GetUInt32();
                 hq.reqDimension = (*hsQuestResult)[3].GetUInt32();
+                hq.groupLimit = (*hsQuestResult)[3].GetUInt32();
                 hq.startTime = (*hsQuestResult)[4].GetUInt32();
                 hq.endTime = (*hsQuestResult)[5].GetUInt32();
                 unsigned char bitmask = hq.flag;

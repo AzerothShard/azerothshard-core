@@ -33,3 +33,31 @@ uint32 AzthPlayer::getGroupLevel(bool normalized /*=true*/) {
 
   return groupLevel;
 }
+
+uint32 AzthPlayer::getGroupSize() {
+  uint32 groupSize = 1;
+  
+  if (!player)
+      return groupLevel;
+
+  Group *group = player->GetGroup();
+  Map *map = player->FindMap();
+  if (group) {
+    if (map->IsDungeon() || map->IsRaid()) {
+      // caso party instance
+      InstanceSave *is = sInstanceSaveMgr->PlayerGetInstanceSave(
+          GUID_LOPART(player->GetGUID()), map->GetId(),
+          player->GetDifficulty((map->IsRaid())));
+
+      if (is != NULL) {
+        groupSize = is->azthInstMgr->groupSize;
+        return groupSize;
+      }
+    }
+
+    // outworld party or limit case for dungeon
+    groupSize = group->azthGroupMgr->groupSize;
+  }
+
+  return groupSize > 0 ? groupSize : 1;
+}

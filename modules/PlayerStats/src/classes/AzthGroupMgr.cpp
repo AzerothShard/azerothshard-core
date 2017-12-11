@@ -4,6 +4,7 @@
 AzthGroupMgr::AzthGroupMgr(Group* group) {
     this->group = group;
     this->levelMaxGroup = 0;
+    this->groupSize = 1;
 }
 
 void AzthGroupMgr::saveToDb() {

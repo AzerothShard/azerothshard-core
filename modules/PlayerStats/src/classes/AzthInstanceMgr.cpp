@@ -2,10 +2,11 @@
 
  AzthInstanceMgr::AzthInstanceMgr(InstanceSave* is) {
      this->levelMax = 0;
+     this->groupSize = 1;
      this->is = is;
  }
 
  void AzthInstanceMgr::saveToDb() {
-     CharacterDatabase.PExecute("UPDATE instance SET levelPg = %u WHERE id = %u", this->levelMax, this->is->GetInstanceId());
+     CharacterDatabase.PExecute("UPDATE instance SET levelPg = %u, groupSize = %u WHERE id = %u", this->levelMax, this->groupSize, this->is->GetInstanceId());
  }
 

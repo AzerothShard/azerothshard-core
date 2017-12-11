@@ -115,6 +115,7 @@ public:
   bool canUseItem(Item *item, bool notify = false);
   bool itemCheckReqLevel(Item *item, bool notify = false);
   uint32 getGroupLevel(bool normalized = true);
+  uint32 getGroupSize();
   uint32 GetTimeWalkingLevel() const;
   bool isTimeWalking(bool skipSpecial=false) const;
   void SetTimeWalkingLevel(uint32 timeWalkingLevel, bool clearAuras = true, bool save = true, bool login = false);
