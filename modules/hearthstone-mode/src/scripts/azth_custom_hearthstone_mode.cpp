@@ -970,9 +970,9 @@ void HearthstoneMode::loadHearthstone()
                 hq.flag = (*hsQuestResult)[1].GetUInt32();
                 hq.specialLevel = (*hsQuestResult)[2].GetUInt32();
                 hq.reqDimension = (*hsQuestResult)[3].GetUInt32();
-                hq.groupLimit = (*hsQuestResult)[3].GetUInt32();
-                hq.startTime = (*hsQuestResult)[4].GetUInt32();
-                hq.endTime = (*hsQuestResult)[5].GetUInt32();
+                hq.groupLimit = (*hsQuestResult)[4].GetUInt32();
+                hq.startTime = (*hsQuestResult)[5].GetUInt32();
+                hq.endTime = (*hsQuestResult)[6].GetUInt32();
                 unsigned char bitmask = hq.flag;
 
                 sHearthstoneMode->allQuests[hq.id]=hq;
