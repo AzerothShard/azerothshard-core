@@ -827,7 +827,9 @@ bool AzthUtils::canPrepareSpell(Spell */*spell*/, Unit */*m_caster*/, SpellInfo 
 
 void AzthUtils::onAuraRemove(AuraApplication * aurApp, AuraRemoveMode /*mode*/) {
     Aura* aura = aurApp->GetBase();
-    if (aura->GetSpellInfo()->Id >= AZTH_RIDING_SPELL && aura->GetSpellInfo()->Id <= 1002002) {
+    if (aura->GetSpellInfo()->Id == AZTH_RIDE_VEHICLE_SPELL || aura->GetSpellInfo()->Id == AZTH_RIDE_VEHICLE_FLY_SPELL ||
+        aura->GetSpellInfo()->Id == AZTH_RIDE_MOUNT_SPELL   || aura->GetSpellInfo()->Id == AZTH_RIDE_MOUNT_FLY_SPELL
+    ) {
         Unit *caster = aura->GetCaster();
         if (caster->GetTypeId() == TYPEID_PLAYER) {
             Player *player = caster->ToPlayer();
