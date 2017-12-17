@@ -314,6 +314,11 @@ public:
     }
 
     bool OnUse(Player *player, Item *item, SpellCastTargets const & targets) override {
+        if (!item || !item->GetTemplate()) {
+            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            return true;
+        }
+        
         if (player->IsInCombat() || 
             (player->GetInstanceScript() && player->GetInstanceScript()->IsEncounterInProgress()))
         {
@@ -338,6 +343,22 @@ public:
                 }
             }
         }
+        
+        for (int i = 0; i < MAX_ITEM_SPELLS; ++i) {
+            if (item->GetTemplate()->Spells[i].SpellCharges)
+                if (item->GetSpellCharges(i) == 0) {
+                    player->SendEquipError(EQUIP_ERR_DONT_OWN_THAT_ITEM, item, NULL);
+                    return true;
+                }
+                
+            uint32 spellid=item->GetTemplate()->Spells[i].SpellId;
+            if (spellid && player->GetSpellCooldownDelay(spellid)) {
+                player->SendEquipError(EQUIP_ERR_OBJECT_IS_BUSY, item, NULL);
+                return true; 
+            }
+        }
+        
+
         
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(1002003);
         if (!spellInfo)
