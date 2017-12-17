@@ -177,11 +177,11 @@ public:
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
     }
 
-    void unequipItem(Player* player, uint32 invIndex) {      
+    bool unequipItem(Player* player, uint32 invIndex) {      
         Item *item=player->GetItemByPos(INVENTORY_SLOT_BAG_0, invIndex);
         
         if (item == nullptr)
-            return;
+            return false;
         
         ItemPosCountVec off_dest;
         uint8 off_msg = player->CanStoreItem(NULL_BAG, NULL_SLOT, off_dest, item, false);
@@ -189,7 +189,11 @@ public:
         {
             player->RemoveItem(INVENTORY_SLOT_BAG_0, invIndex, true);
             player->StoreItem(off_dest, item, true);
+        } else {
+            return false;
         }
+        
+        return true;
     }
     
     uint32 getFactionItem(uint32 entry, Player *player) {
@@ -357,7 +361,11 @@ public:
         //remove equipped items and send to mail
         for (uint32 INVENTORY_INDEX = EQUIPMENT_SLOT_START; INVENTORY_INDEX < EQUIPMENT_SLOT_END; INVENTORY_INDEX++)
         {
-            unequipItem(player, INVENTORY_INDEX);
+            if (!unequipItem(player, INVENTORY_INDEX)) {
+                std::string str = "Cannot unequip an item, process terminated.";
+                creature->MonsterWhisper(str.c_str(), player);
+                return false;
+            }
         }      
 
         player->RemoveItemDependentAurasAndCasts((Item*)NULL);

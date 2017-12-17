@@ -898,19 +898,33 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, WorldLocati
     return getPositionLevel(includeSpecialLvl, map, zoneid, areaid);
 }
 
-
+// not count special bags
 uint32 AzthUtils::getFreeSpaceInBags(Player *player) {
     uint32 count=0;
     
+    //main bag
     for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++) {
         Item* pItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (!pItem)
             count++;
     }
     
-    for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
-        if (Bag* pBag = player->GetBagByPos(i))
-            count+=pBag->GetFreeSlots();
+    // other bags
+    for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++) {
+        if (Bag* pBag = player->GetBagByPos(i)) {
+            switch (pBag->GetTemplate()->Class)
+            {
+                case ITEM_CLASS_CONTAINER:
+                    switch (pBag->GetTemplate()->SubClass)
+                    {
+                        case ITEM_SUBCLASS_CONTAINER:
+                            count+=pBag->GetFreeSlots();
+                        break;
+                    }
+                break;
+            }
+        }
+    }
         
     return count;
 }
