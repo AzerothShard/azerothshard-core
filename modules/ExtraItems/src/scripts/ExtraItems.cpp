@@ -50,6 +50,29 @@ enum AzthSummonType {
     AZTH_SUMMON_END_MINIONS,
 };
 
+    
+bool checkData(Player *player, Item *item) {
+    for (int i = 0; i < MAX_ITEM_SPELLS; ++i) {
+        if (item->GetTemplate()->Spells[i].SpellCharges)
+            if (item->GetSpellCharges(i) == 0) {
+                player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                player->GetSession()->SendNotification("NO CHARGE REMAINS");
+                return false;
+            }
+            
+        uint32 spellid=item->GetTemplate()->Spells[i].SpellId;
+        uint32 cd = player->GetSpellCooldownDelay(spellid);
+        if (spellid && cd) {
+            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            player->GetSession()->SendNotification("Cooldown: %d sec.",uint32(cd/1000));
+            return false; 
+        }
+    }
+    
+    return true;
+}
+
+
 class azth_summon : public ItemScript {
 public:
     azth_summon(char const* name, AzthSummonType summon_type) : ItemScript(name),
@@ -66,7 +89,7 @@ public:
         uint32 spawnTime = _time.SpellCategoryCooldown >= 0 ? uint32(_time.SpellCategoryCooldown) : 0;
 
         bool flyingMount = _summon_type == AZTH_SUMMON_MOUNT_FLY || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT_FLY || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW_FLY;
-        bool mount = _summon_type == AZTH_SUMMON_MOUNT || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW || flyingMount;
+        //bool mount = _summon_type == AZTH_SUMMON_MOUNT || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT_FOLLOW || flyingMount;
 
         if (!destId) {
             player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
@@ -139,6 +162,9 @@ public:
                     return true;
                 }*/
                 
+                if (!checkData(player, item))
+                    return true;
+                
                 uint32 displayID = ObjectMgr::ChooseDisplayId(ci);
                 sObjectMgr->GetCreatureModelRandomGender(&displayID);
 
@@ -180,6 +206,9 @@ public:
                 player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
                 return true;
             } else {
+                if (!checkData(player, item))
+                    return true;
+                
                 player->SetDisplayId(destId);
                 player->SetObjectScale(scale);
                 player->CastSpell(player, 53708, TRIGGERED_FULL_MASK); // visual   
@@ -218,6 +247,9 @@ public:
                 player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
                 return true;
             }
+            
+            if (!checkData(player, item))
+                return true;
             
             //player->SetMinion(summon, true);
 
@@ -269,6 +301,9 @@ public:
             TempSummon* petSummon = player->SummonCreature(destId, player->GetPositionX()+1, player->GetPositionY()+1, player->GetPositionZ(), player->GetOrientation()
                                                 , TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, spawnTime);
             
+            if (!checkData(player, item))
+            return true;
+            
             if (!petSummon) {
                 player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
                 return true;
@@ -313,7 +348,7 @@ public:
     {
     }
 
-    bool OnUse(Player *player, Item *item, SpellCastTargets const & targets) override {
+    bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
         if (!item || !item->GetTemplate()) {
             player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
             return true;
@@ -344,20 +379,8 @@ public:
             }
         }
         
-        for (int i = 0; i < MAX_ITEM_SPELLS; ++i) {
-            if (item->GetTemplate()->Spells[i].SpellCharges)
-                if (item->GetSpellCharges(i) == 0) {
-                    player->SendEquipError(EQUIP_ERR_DONT_OWN_THAT_ITEM, item, NULL);
-                    return true;
-                }
-                
-            uint32 spellid=item->GetTemplate()->Spells[i].SpellId;
-            if (spellid && player->GetSpellCooldownDelay(spellid)) {
-                player->SendEquipError(EQUIP_ERR_OBJECT_IS_BUSY, item, NULL);
-                return true; 
-            }
-        }
-        
+        if (!checkData(player, item))
+            return true;
 
         
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(1002003);
