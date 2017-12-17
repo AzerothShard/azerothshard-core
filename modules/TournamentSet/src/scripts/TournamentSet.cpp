@@ -181,7 +181,7 @@ public:
         Item *item=player->GetItemByPos(INVENTORY_SLOT_BAG_0, invIndex);
         
         if (item == nullptr)
-            return false;
+            return true; // true when empty because it's not a failure
         
         ItemPosCountVec off_dest;
         uint8 off_msg = player->CanStoreItem(NULL_BAG, NULL_SLOT, off_dest, item, false);
