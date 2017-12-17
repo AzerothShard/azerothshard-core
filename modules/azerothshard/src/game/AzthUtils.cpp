@@ -319,38 +319,41 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     uint32 req=getCalcReqLevel(pProto);
     if (req <= pl->getLevel()) // remove / apply
         return 0;
+    
+    bool highLevel= pl->getLevel() >= 70;
 
-    //uint32 mul = 4; // should be 1 ?
+    uint32 mul;
 
     // SHOULDERS
+    mul = highLevel ? 1 : 16; // suggested value : higher value
     if (pProto->InventoryType == INVTYPE_SHOULDERS) { 
         if (pProto->Class == ITEM_CLASS_ARMOR) {
             switch (pProto->SubClass) {
             case ITEM_SUBCLASS_ARMOR_CLOTH :
-                return 16 + 32; //return 1 + 32;
+                return mul + 32; //return 1 + 32;
             case ITEM_SUBCLASS_ARMOR_LEATHER :
-                return 16 + 64; //return 1 + 64;
+                return mul + 64; //return 1 + 64;
             case ITEM_SUBCLASS_ARMOR_MAIL :
-                return 16 + 128; //return 1 + 128;
+                return mul + 128; //return 1 + 128;
             case ITEM_SUBCLASS_ARMOR_PLATE :
-                return 16 + 128; //return 1 + 256;
+                return mul + 128; //return 1 + 256;
             }
         }
 
         return 0;
     }
     
-        
+    mul = highLevel ? 8 : 16; // suggested value : higher value
     if (pProto->InventoryType == INVTYPE_CHEST || pProto->InventoryType == INVTYPE_ROBE) {
         switch (pProto->SubClass) {
         case ITEM_SUBCLASS_ARMOR_CLOTH:
-            return 16 + 1048576; //return 8 + 1048576;
+            return mul + 1048576; //return 8 + 1048576;
         case ITEM_SUBCLASS_ARMOR_LEATHER:
-            return 16 + 2097152; //return 8 + 2097152;
+            return mul + 2097152; //return 8 + 2097152;
         case ITEM_SUBCLASS_ARMOR_MAIL :
-            return 16 + 4194304; // return 8 + 4194304;
+            return mul + 4194304; // return 8 + 4194304;
         case ITEM_SUBCLASS_ARMOR_PLATE:
-            return 16 + 8388608;  //return 8 + 8388608;
+            return mul + 8388608;  //return 8 + 8388608;
         }
         
         return 0;
@@ -372,10 +375,11 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
                 isCaster=true;
         }
 
+        mul = highLevel ? 8 : 16; // suggested value : higher value
         if ( isCaster ) { 
-            return 16 + 4096 + 32768; // return 8 + 4096 + 32768;  // 2h dps caster
+            return mul + 4096 + 32768; // return 8 + 4096 + 32768;  // 2h dps caster
         } else {
-            return 16 + 1024;         // return 8 + 1024;          // 2h weapon
+            return mul + 1024;         // return 8 + 1024;          // 2h weapon
         }
     }
 
@@ -395,10 +399,11 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
                 isCaster=true;
         }
         
+        mul = highLevel ? 8 : 16; // suggested value : higher value
         if (isCaster) {
-            return 16 + 2048 + 32768; // return 8 + 2048 + 32768;  // 1h dps caster
+            return mul + 2048 + 32768; // return 8 + 2048 + 32768;  // 1h dps caster
         } else {
-            return 16 + 512;          // return 8 + 512;           // 1h weapon
+            return mul + 512;          // return 8 + 512;           // 1h weapon
         }
     }
 
@@ -427,30 +432,34 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     // special unknown cases
     //
 
+    mul = highLevel ? 4 : 16; // suggested value : higher value
     if (pProto->InventoryType == INVTYPE_HOLDABLE || pProto->InventoryType == INVTYPE_RELIC) {
-        return 16; //return 4 + 512;
+        return mul; //return 4 + 512;
     }
     
     // CLOAK
+    mul = highLevel ? 4 : 16; // suggested value : higher value
     if (pProto->InventoryType == INVTYPE_CLOAK) {
-        return 16 + 524288; //return 4 + 524288;
+        return mul + 524288; //return 4 + 524288;
     }
     
     // ARMOR
+    mul = highLevel ? 4 : 16; // suggested value : higher value
     if (pProto->InventoryType == INVTYPE_SHIELD) {
-        return 16 + 8388608; // return 4 + 8388608;
+        return mul + 8388608; // return 4 + 8388608;
     }
     
+    mul = highLevel ? 4 : 16; // suggested value : higher value
     if (pProto->Class == ITEM_CLASS_ARMOR) {
         switch (pProto->SubClass) {
         case ITEM_SUBCLASS_ARMOR_CLOTH:
-            return 16 + 1048576; // return 4 + 1048576;
+            return mul + 1048576; // return 4 + 1048576;
         case ITEM_SUBCLASS_ARMOR_LEATHER:
-            return 16 + 2097152; //return 4 + 2097152;
+            return mul + 2097152; //return 4 + 2097152;
         case ITEM_SUBCLASS_ARMOR_MAIL :
-            return 16 + 4194304; //return 4 + 4194304;
+            return mul + 4194304; //return 4 + 4194304;
         case ITEM_SUBCLASS_ARMOR_PLATE:
-            return 16 + 8388608; //return 4 + 8388608;
+            return mul + 8388608; //return 4 + 8388608;
         }
     }
 
