@@ -1846,7 +1846,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
         Player* member = itr->GetSource();
         
         //[AZTH]
-        if (!member->azthPlayer->canJoinQueue(AZTH_QUEUE_BG))
+        if (!member->azthPlayer->canJoinQueue(bgTemplate->isArena() ? AZTH_QUEUE_ARENA : AZTH_QUEUE_BG))
             return ERR_BATTLEGROUND_JOIN_FAILED;
         //[/AZTH]
 

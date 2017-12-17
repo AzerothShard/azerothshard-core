@@ -75,7 +75,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recvData)
     
     //[AZTH]
     if (!GetPlayer()->azthPlayer->canGroup(player)) {
-        SendPartyResult(PARTY_OP_INVITE, membername, ERR_INVITE_RESTRICTED);
+        SendPartyResult(PARTY_OP_INVITE, membername, ERR_PARTY_TARGET_AMBIGUOUS);
         return;
     }
     //[/AZTH]
@@ -226,7 +226,7 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket& recvData)
     
     //[AZTH]
     if (!GetPlayer()->azthPlayer->canGroup()) {
-        SendPartyResult(PARTY_OP_INVITE, "", ERR_INVITE_RESTRICTED);
+        SendPartyResult(PARTY_OP_INVITE, "", ERR_PARTY_TARGET_AMBIGUOUS);
         return;
     }
     //[/AZTH]
