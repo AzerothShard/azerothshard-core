@@ -291,7 +291,7 @@ public:
             seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + player->GetGUID();
             srand(seed);
                 
-            index=sHearthstoneMode->hsPvpQuests.size() > 1 ? rand() % (sHearthstoneMode->hsPvpQuests.size() - 1) : 0;
+            index=sHearthstoneMode->hsPvpQuests.size() > 1 ? rand() % (sHearthstoneMode->hsPvpQuests.size()) : 0;
             
             _tmpItr = sHearthstoneMode->hsPvpQuests.begin();
             std::advance( _tmpItr, index );
@@ -305,7 +305,7 @@ public:
             seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
             srand(seed);
                 
-            index=sHearthstoneMode->hsPveQuests.size() > 1 ? rand() % (sHearthstoneMode->hsPveQuests.size() - 1) : 0;
+            index=sHearthstoneMode->hsPveQuests.size() > 1 ? rand() % (sHearthstoneMode->hsPveQuests.size()) : 0;
             
             _tmpItr = sHearthstoneMode->hsPveQuests.begin();
             std::advance( _tmpItr, index );
@@ -320,7 +320,7 @@ public:
             seed = (((1609909200 - firstTuesday )/60/60/24))/7;
             srand(seed);
                 
-            uint32 count= (sHearthstoneMode->hsWeeklyQuests.size() - 1);
+            uint32 count= (sHearthstoneMode->hsWeeklyQuests.size());
             index=count > 0 ? rand() % count : 0;
             
             _tmpItr = sHearthstoneMode->hsWeeklyQuests.begin();
@@ -361,7 +361,8 @@ public:
             seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
             srand(seed);
                 
-            index=_dailyRandomTwList.size() > 1 ? rand() % (_dailyRandomTwList.size() - 1) : 0;
+            size_t sz=_dailyRandomTwList.size();
+            index= sz > 1 ? rand() % (sz) : 0;
             
             std::list<uint32>::iterator _tmpListItr =_dailyRandomTwList.begin();
             std::advance( _tmpListItr, index );
