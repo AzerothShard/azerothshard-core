@@ -30,11 +30,11 @@ enum AzthSummonType {
     AZTH_SUMMON_MORPH,
     AZTH_SUMMON_MOUNT,
     AZTH_SUMMON_MOUNT_FLY,
+    AZTH_SUMMON_START_MINIONS,
     // pet
     AZTH_SUMMON_GUARDIAN,
     AZTH_SUMMON_POKEMON_GUARDIAN,
     // temp summons
-    AZTH_SUMMON_START_MINIONS,
     AZTH_SUMMON_COMPANION,
     AZTH_SUMMON_POKEMON_COMPANION,
     AZTH_SUMMON_VEHICLE_MOUNT,
@@ -234,12 +234,23 @@ public:
                     }
                 }
             }
+       
+            if (!checkData(player, item))
+                return true;
  
             // 161 -> category 4 : SUMMON_CATEGORY_VEHICLE
             // 65  -> category 3 : SUMMON_CATEGORY_PUPPET (it's controllable. you can move with keyboard)
             // 41  -> category 1 : SUMMON_CATEGORY_ALLY  + TYPE 5 + SLOT 5 (critter/minipet)
-            // category 2: SUMMON_CATEGORY_PET
-            uint32 propId = _summon_type >= AZTH_SUMMON_VEHICLE_MOUNT && _summon_type <= AZTH_SUMMON_VEHICLE_GUARDIAN ? 161 : 41;
+            // 67  -> category 2 : SUMMON_CATEGORY_PET
+            uint32 propId;
+            if (_summon_type >= AZTH_SUMMON_VEHICLE_MOUNT && _summon_type <= AZTH_SUMMON_VEHICLE_GUARDIAN) {
+                propId = 161;
+            } else if (_summon_type == AZTH_SUMMON_GUARDIAN) {
+                propId = 67;
+            } else {
+                propId = 41;
+            }
+
             SummonPropertiesEntry const *properties = sSummonPropertiesStore.LookupEntry(propId);
             Minion* summon = (Minion*)player->GetMap()->SummonCreature(destId, player->GetWorldLocation(), properties, spawnTime, player);
 
@@ -247,9 +258,6 @@ public:
                 player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
                 return true;
             }
-            
-            if (!checkData(player, item))
-                return true;
             
             //player->SetMinion(summon, true);
 
@@ -297,7 +305,7 @@ public:
         }
         
 
-        if (_summon_type == AZTH_SUMMON_GUARDIAN) {
+        /*if (_summon_type == AZTH_SUMMON_GUARDIAN) {
             TempSummon* petSummon = player->SummonCreature(destId, player->GetPositionX()+1, player->GetPositionY()+1, player->GetPositionZ(), player->GetOrientation()
                                                 , TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, spawnTime);
             
@@ -332,7 +340,7 @@ public:
             
             pet->CastSpell(pet, 53708, TRIGGERED_FULL_MASK); // visual   
             return false; // continue with item process (spells)
-        }
+        }*/
         
         return false; // continue with item process (spells)
     }
