@@ -65,6 +65,9 @@
         bool fixed=false;
         PlayerSpellMap spellMap = player->GetSpellMap();
         for (PlayerSpellMap::const_iterator iter = spellMap.begin(); iter != spellMap.end(); ++iter) {
+            if (!iter->second->IsInSpec(player->GetActiveSpec()))
+                continue;
+            
             uint32 prev = sSpellMgr->GetPrevSpellInChain(iter->first);
             while (prev) {
                 if (!player->HasSpell(prev)) {
