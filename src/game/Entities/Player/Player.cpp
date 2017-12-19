@@ -6778,7 +6778,7 @@ void Player::SendActionButtons(uint32 state) const
     {
         for (uint8 button = 0; button < MAX_ACTION_BUTTONS; ++button)
         {
-            //[AZTH] Timewalking
+            /*[AZTH] Timewalking this code fuck-up the action bar when you move lowered rank spell from a slot to another
             if (azthPlayer->isTimeWalking(true)) {
                 ActionButtonList::const_iterator itr = m_actionButtons.find(button);
                 if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED && itr->second.GetType() == ACTION_BUTTON_SPELL) { 
@@ -6797,7 +6797,7 @@ void Player::SendActionButtons(uint32 state) const
                     }
                 }
             }
-            //[/AZTH] Timewalking
+            //[/AZTH] Timewalking*/
             
             ActionButtonList::const_iterator itr = m_actionButtons.find(button);
             if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED)
