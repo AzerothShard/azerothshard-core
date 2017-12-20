@@ -344,13 +344,13 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
         spellLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL); // assume that spell is max level
         //return -1; // not valid and not scalable. Use reduction pct from TW table
         
-    // apply a default reduction from 30% (lvl 1) to 6% (lvl 80) 
-    int32 baseReduction = 30 - ceil((player->getLevel()/10) * 3);
-    
+    // apply a default reduction from 50% (lvl 1) to 36% (lvl 80) 
+    int32 baseReduction = 50 - ceil((player->getLevel()/10) * 2);
+
     // proportional reduction with ranked spells
     if (spellLevel > player->getLevel()) {
 
-        if (spellLevel>70) {
+        /*if (spellLevel>70) {
             // end-game spell must be reduced more 
             // 1 level from 70 to 80 is comparable to 2 level from 1 to 70
             // after a calculation via graph based on some spell coefficient
@@ -359,9 +359,11 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
             // classic end-game and tbc spells must be reduced  
             // too (we can use a different formula eventually, test needed)
             spellLevel=ceil(50+((spellLevel-50)*2));
-        }
-        
-        uint8 diff = uint8(spellLevel - player->getLevel());
+        }*/
+
+        uint32 _slvl =  spellLevel*2;
+
+        uint8 diff = uint8(_slvl - player->getLevel());
         int32 pct = ceil((diff*100)/sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) + baseReduction;
 
         return pct > 99 ? 99 : pct;
