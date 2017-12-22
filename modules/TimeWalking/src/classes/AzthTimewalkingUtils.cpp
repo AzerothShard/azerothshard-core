@@ -103,7 +103,7 @@ AzthLevelStat const* AzthUtils::getTwStats(Player *player, uint32 level) {
 bool AzthUtils::updateTwLevel(Player *player,Group *group) {
     bool result = false;
     
-    if (!player || !player->azthPlayer)
+    if (!player || !player->azthPlayer || player->IsGameMaster())
         return result;
     
     uint32 levelPlayer = player->azthPlayer->isTimeWalking() && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO 
