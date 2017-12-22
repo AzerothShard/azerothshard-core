@@ -320,12 +320,27 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     if (req <= pl->getLevel()) // remove / apply
         return 0;
     
-    bool highLevel= pl->getLevel() >= 70;
+    uint8 lowLevel = 0; // Default stats progression by item type
+    
+    /* Mul values
+     * 1 Normal stats progression
+       2 Trinket stats progression (only seen on trinkets)
+       4 Low stats progression
+       8 Boosted stats progression
+       16 Very low stats progression
+     */
+    if (pl->getLevel() + 10 > req) {        // from 19 to 10 level diff
+        lowLevel = 0;  // Default stats progression by item type
+    } else if (pl->getLevel() + 20 >= req) { // from max to 20 level diff
+        lowLevel = 4;  // Low Stats progression
+    } else {
+        lowLevel = 16; // Very low stats progression
+    }
 
     uint32 mul;
 
     // SHOULDERS
-    mul = highLevel ? 1 : 16; // suggested value : higher value
+    mul = lowLevel ? lowLevel :  1;
     if (pProto->InventoryType == INVTYPE_SHOULDERS) { 
         if (pProto->Class == ITEM_CLASS_ARMOR) {
             switch (pProto->SubClass) {
@@ -343,7 +358,7 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
         return 0;
     }
     
-    mul = highLevel ? 8 : 16; // suggested value : higher value
+    mul = lowLevel ? lowLevel :  8;
     if (pProto->InventoryType == INVTYPE_CHEST || pProto->InventoryType == INVTYPE_ROBE) {
         switch (pProto->SubClass) {
         case ITEM_SUBCLASS_ARMOR_CLOTH:
@@ -375,7 +390,7 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
                 isCaster=true;
         }
 
-        mul = highLevel ? 8 : 16; // suggested value : higher value
+        mul = lowLevel ? lowLevel :  8;
         if ( isCaster ) { 
             return mul + 4096 + 32768; // return 8 + 4096 + 32768;  // 2h dps caster
         } else {
@@ -399,7 +414,7 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
                 isCaster=true;
         }
         
-        mul = highLevel ? 8 : 16; // suggested value : higher value
+        mul = lowLevel ? lowLevel :  8;
         if (isCaster) {
             return mul + 2048 + 32768; // return 8 + 2048 + 32768;  // 1h dps caster
         } else {
@@ -432,24 +447,24 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
     // special unknown cases
     //
 
-    mul = highLevel ? 4 : 16; // suggested value : higher value
+    mul = lowLevel ? lowLevel :  4;
     if (pProto->InventoryType == INVTYPE_HOLDABLE || pProto->InventoryType == INVTYPE_RELIC) {
         return mul; //return 4 + 512;
     }
     
     // CLOAK
-    mul = highLevel ? 4 : 16; // suggested value : higher value
+    mul = lowLevel ? lowLevel :  4;
     if (pProto->InventoryType == INVTYPE_CLOAK) {
         return mul + 524288; //return 4 + 524288;
     }
     
     // ARMOR
-    mul = highLevel ? 4 : 16; // suggested value : higher value
+    mul = lowLevel ? lowLevel :  4;
     if (pProto->InventoryType == INVTYPE_SHIELD) {
         return mul + 8388608; // return 4 + 8388608;
     }
     
-    mul = highLevel ? 4 : 16; // suggested value : higher value
+    mul = lowLevel ? lowLevel :  4;
     if (pProto->Class == ITEM_CLASS_ARMOR) {
         switch (pProto->SubClass) {
         case ITEM_SUBCLASS_ARMOR_CLOTH:
