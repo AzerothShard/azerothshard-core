@@ -343,34 +343,27 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
     if (spellLevel <= 1 && spellProto->MaxLevel == 0 && spellProto->GetNextRankSpell() == NULL)
         spellLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL); // assume that spell is max level
         //return -1; // not valid and not scalable. Use reduction pct from TW table
-        
-    // apply a default reduction from 50% (lvl 1) to 36% (lvl 80) 
-    int32 baseReduction = 50 - ceil((player->getLevel()/10) * 2);
 
     // proportional reduction with ranked spells
     if (spellLevel > player->getLevel()) {
-
-        /*if (spellLevel>70) {
-            // end-game spell must be reduced more 
-            // 1 level from 70 to 80 is comparable to 2 level from 1 to 70
-            // after a calculation via graph based on some spell coefficient
-            spellLevel=70+((spellLevel-70)*2);
-        } else if (spellLevel>50) {
-            // classic end-game and tbc spells must be reduced  
-            // too (we can use a different formula eventually, test needed)
-            spellLevel=ceil(50+((spellLevel-50)*2));
-        }*/
-
-        uint32 _slvl =  spellLevel*2;
-
-        uint8 diff = uint8(_slvl - player->getLevel());
-        int32 pct = ceil((diff*100)/sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) + baseReduction;
+        // when spell rank has an higher level
+        // then player we must consider a special reduction
+        float rate = 3; // higher values means higher reduction
+        // the most spell level is higher related to player level
+        // the more the reduction is high
+        uint32 diff = uint8(spellLevel - player->getLevel());
+        int32 pct = ceil((diff * rate * 100) / spellLevel);
 
         return pct > 99 ? 99 : pct;
+    } else {
+        // if low rank exist then
+        float rate = 2; // higher values means higher reduction
+        // apply a default reduction (max 50%) that is higher if the player level is lower and the rank
+        // is not too much lower than player level
+        uint32 diff = uint8(player->getLevel() - spellLevel);
+        uint32 pct = ceil((diff * rate * 50) / player->getLevel());
+        return pct >= 50 ? 50 : pct;
     }
-
-    
-    return baseReduction; // only base reduction
 }
 
 // SPELLS TO DISABLE IN TW
