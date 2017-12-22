@@ -72,8 +72,8 @@ void AzthLang::loadStrings() {
     //timewalking
     this->add(AZTH_LANG_TW_LEVEL_MAX, "This mode has maximum item level: %u", "Questa modalità ha l'item level massimo: %u");
     this->add(AZTH_LANG_TW_MODE_ON, "You are in |cffff0000 Timewalking level: %s|r mode", "Sei in modalità |cffff0000 Timewalking livello: %s|r");
-    this->add(AZTH_LANG_TW_MODE_OFF, "You are exited from |cffff0000 Timewalking|r mode!", "Sei uscito dalla modalità |cffff0000 Timewalking!|r");
-    this->add(AZTH_LANG_TW_NEW_ITEM_OBTAINED, "Grats! you got |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ", "Complimenti! hai ottenuto |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ");
+    this->add(AZTH_LANG_TW_MODE_OFF, "You exited from |cffff0000 Timewalking|r mode!", "Sei uscito dalla modalità |cffff0000 Timewalking!|r");
+    this->add(AZTH_LANG_TW_NEW_ITEM_OBTAINED, "Congrats! you got |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ", "Complimenti! hai ottenuto |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ");
 
     //season tournament
     this->add(AZTH_LANG_TOURNAMENT_LEVEL_TOOHIGH, "|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r has a too high level! Remove it to play this season.", "|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.");
