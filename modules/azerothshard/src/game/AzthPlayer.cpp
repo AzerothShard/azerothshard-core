@@ -430,6 +430,17 @@ bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {
     if (!checkItem(proto))
         return false;
     
+    // do not allow to equip items with too high item level 
+    // when not in timewalking: some items doesn't have a required level and can potentially equipped by low level players.
+    // excluding heirlooms
+    uint32 calcLevel = sAzthUtils->getCalcReqLevel(proto);
+    if (!isTimeWalking(true)
+        && proto->ScalingStatDistribution == 0
+        && player->getLevel()+5 < calcLevel) {
+        ChatHandler(player->GetSession()).PSendSysMessage("Cannot equip this item. Its level is too high");
+        return false;
+    }
+    
     //Double ashen block system
     if(sAzthUtils->isAshenBand(proto->ItemId)) {
         // finger slots
@@ -455,7 +466,7 @@ bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {
 bool AzthPlayer::checkItem(ItemTemplate const* proto) {
     uint32 _ilvl=getMaxItemLevelByStatus();
     if (_ilvl && !sAzthUtils->checkItemLvL(proto,_ilvl)) {
-        ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_LEVEL_CHECK, player, proto->ItemId, proto->Name1.c_str()));
+        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_LEVEL_CHECK, player, proto->ItemId, proto->Name1.c_str()));
         return false;
     }
     
