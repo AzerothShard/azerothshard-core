@@ -238,6 +238,11 @@ uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
             return 60;
         }
         
+        // classic / dk
+        if (pProto->ItemLevel > 60 && pProto->ItemLevel <= 81) {
+            return 60;
+        }
+        
         // tbc low level items
         if (pProto->ItemLevel > 81 && pProto->ItemLevel <= 92) {
             return 60;

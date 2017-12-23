@@ -8058,7 +8058,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     uint32 ssd_level = getLevel();
 
     // [AZTH] Timewalking
-    uint32 azthScalingStatValue = sAzthUtils->calculateItemScalingValue(proto, this);
+    uint32 azthScalingStatValue = azthPlayer->isTimeWalking(true) ? sAzthUtils->calculateItemScalingValue(proto, this) : 0;
     azthScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : azthScalingStatValue;
 
     if (ssd && ssd_level > ssd->MaxLevel)
