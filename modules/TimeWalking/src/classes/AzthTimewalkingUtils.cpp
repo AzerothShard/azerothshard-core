@@ -74,11 +74,24 @@ bool AzthUtils::isEligibleForBonusByArea(Player const* player) {
 }
 
 // used for pet and players
-void AzthUtils::setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply) {
+void AzthUtils::setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply, bool skipDefense) {
     if (apply) {
         for ( auto& a : stats->pctMap) {
             if (a.first != TIMEWALKING_AURA_VISIBLE)
                 unit->SetAuraStack(a.first, unit, a.second);
+        }
+        
+        if (sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) > stats->GetLevel()) {
+            // reduce melee damage based on level diff
+            unit->SetAuraStack(TIMEWALKING_AURA_MOD_MELEE_DAMAGE_PCT, unit, ceil(((sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)- stats->GetLevel())*100 / sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) / 2));
+            
+            // defense aura mod must not be applied in this context when login
+            // because skill is not calculated correctly.
+            // This code is called on loadFromDb but defense must be calculated after login instead
+            // so we need to call it separately
+            if (!skipDefense && unit->GetTypeId() == TYPEID_PLAYER) {
+                setTwDefense(unit->ToPlayer(), true);
+            }
         }
 
         unit->SetAuraStack(TIMEWALKING_AURA_VISIBLE, unit, stats->GetLevel());
@@ -87,7 +100,26 @@ void AzthUtils::setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply) {
             unit->RemoveAura(a.first);
         }
 
+        unit->RemoveAura(TIMEWALKING_AURA_MOD_MELEE_DAMAGE_PCT);
+        // defense aura mod must not be applied in this context when login
+        // because skill is not calculated correctly.
+        // This code is called on loadFromDb but defense must be calculated after login instead
+        // so we need to call it separately
+        if (!skipDefense && unit->GetTypeId() == TYPEID_PLAYER) {
+            setTwDefense(unit->ToPlayer(), false);
+        }
         unit->RemoveAura(TIMEWALKING_AURA_VISIBLE);
+    }
+}
+
+// used for pet and players
+void AzthUtils::setTwDefense(Player *player, bool apply) {
+    player->RemoveAura(TIMEWALKING_AURA_MOD_DEFENSE_SKILL);
+
+    if (apply) {
+        uint32 reduction= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) - player->getLevel();
+        // 1 stack = 5 defense skill reduction
+        player->SetAuraStack(TIMEWALKING_AURA_MOD_DEFENSE_SKILL, player, reduction);
     }
 }
 
@@ -349,20 +381,23 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
         // when spell rank has an higher level
         // then player we must consider a special reduction
         float rate = 3; // higher values means higher reduction
+        uint32 base = 20; // base reduction
         // the most spell level is higher related to player level
         // the more the reduction is high
         uint32 diff = uint8(spellLevel - player->getLevel());
-        int32 pct = ceil((diff * rate * 100) / spellLevel);
+        int32 pct = ceil((diff * rate * 100) / spellLevel) + base;
 
-        return pct > 99 ? 99 : pct;
+        return pct > 95 ? 95 : pct;
     } else {
         // if low rank exist then
-        float rate = 2; // higher values means higher reduction
-        // apply a default reduction (max 50%) that is higher if the player level is lower and the rank
-        // is not too much lower than player level
+        /*float rate = 4; // higher values means lower reduction
+        uint32 base = 20; // base reduction
+        // apply a default reduction that is higher if the player level is lower and the rank
+        // is not too much lower than player level*/
         uint32 diff = uint8(player->getLevel() - spellLevel);
-        uint32 pct = ceil((diff * rate * 50) / player->getLevel());
-        return pct >= 50 ? 50 : pct;
+        //uint32 pct = ceil((diff * rate * 100) / player->getLevel());
+        uint32 bonus = ceil(player->getLevel() + diff / 10 / 2);
+        return bonus >= 60 ? 0 : 60 - bonus;
     }
 }
 

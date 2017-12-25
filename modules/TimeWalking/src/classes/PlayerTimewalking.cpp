@@ -116,9 +116,9 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         player->SetUInt32Value(PLAYER_XP, 0);
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
 
-        sAzthUtils->setTwAuras(player, stats, true);
+        sAzthUtils->setTwAuras(player, stats, true, login);
         if (player->GetPet() && (!player->HasAura(TIMEWALKING_AURA_VISIBLE) || (player->GetPet()->HasAura(TIMEWALKING_AURA_VISIBLE) && player->GetPet()->GetAura(TIMEWALKING_AURA_VISIBLE)->GetStackAmount() != stats->GetLevel()))) {
-            sAzthUtils->setTwAuras(player->GetPet(), stats, true);
+            sAzthUtils->setTwAuras(player->GetPet(), stats, true, login);
         }
 
         if (save) {
@@ -147,9 +147,9 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
         player->SetUInt32Value(PLAYER_XP, 0);
         player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN); 
         
-        sAzthUtils->setTwAuras(player, stats, false);
+        sAzthUtils->setTwAuras(player, stats, false, login);
         if (player->GetPet()) {
-            sAzthUtils->setTwAuras(player->GetPet(), stats, false);
+            sAzthUtils->setTwAuras(player->GetPet(), stats, false, login);
         }
 
         // reset must be after givelevel allowing make the check inside givelevel to avoid level mail

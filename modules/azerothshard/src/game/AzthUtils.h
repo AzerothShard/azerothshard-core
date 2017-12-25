@@ -82,6 +82,10 @@ public:
     uint32 calculateItemScalingValue(ItemTemplate const* pProto, Player *pl = NULL);    
     int32 normalizeFeralAp(int32 feralBonus, int32 extraDPS, ItemTemplate const* pProto, bool isScaling);
     
+    uint32 getMaxWeaponSkillByLevel(uint32 level) {
+        return level * 5;
+    }
+    
     bool isAshenBand(uint32 entry);
     
     SpellCastResult checkSpellCast(Player *player, SpellInfo const* spell, bool notify);
@@ -110,7 +114,8 @@ public:
     
     bool isNotAllowedSpellForTw(SpellInfo const* spellProto);
     
-    void setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply);
+    void setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply, bool skipDefense);
+    void setTwDefense(Player *player, bool apply);
     AzthLevelStat const* getTwStats(Player *player, uint32 level);
     
     uint32 maxTwLevel(uint32 sourceLvl, uint32 compareLevel) const;

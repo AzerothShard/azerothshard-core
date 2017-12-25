@@ -1021,7 +1021,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         if (_plr->azthPlayer->isTimeWalking(true)) {
             AzthLevelStat const *stats = sAzthUtils->getTwStats(_plr, _plr->getLevel());
             if (stats) {
-                sAzthUtils->setTwAuras(this, stats, true);
+                sAzthUtils->setTwAuras(this, stats, true, true);
             }
         }
     }
