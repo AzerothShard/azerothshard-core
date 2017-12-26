@@ -667,6 +667,31 @@ public:
     }
 };
 
+#define GOSSIP_ITEM_RESS_ME     "Vorrei resuscitare, per favore."
+
+class npc_azth_resser : public CreatureScript
+{
+public:
+    npc_azth_resser() : CreatureScript("npc_azth_resser") { }
+
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    {
+        if (action == 50001) {
+            player->ResurrectPlayer(100.f, false);
+        }
+        player->PlayerTalkClass->ClearMenus();
+        return false;
+    }
+
+    bool OnGossipHello(Player* player, Creature* creature)
+    {
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_RESS_ME, GOSSIP_SENDER_MAIN, 50001);
+        // 83 spirit healer gossip
+        player->SEND_GOSSIP_MENU(310262, creature->GetGUID());
+        return true;
+    }
+};
+
 class item_azth_hearthstone_loot_sack : public ItemScript
 {
 public:
@@ -1032,6 +1057,7 @@ void AddSC_hearthstone()
     new npc_han_al();
     new npc_azth_vendor();
     new item_azth_hearthstone_loot_sack();
+    new npc_azth_resser();
     //new azth_hearthstone_world();
 }
 
