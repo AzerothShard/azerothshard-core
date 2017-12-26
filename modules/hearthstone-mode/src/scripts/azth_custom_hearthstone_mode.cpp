@@ -676,8 +676,14 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
     {
+        if (!player) {
+            return false;
+        }
+        
         if (action == 50001) {
-            player->ResurrectPlayer(100.f, false);
+            player->ResurrectPlayer(1.f, false);
+            player->SpawnCorpseBones();
+            player->SaveToDB(false, false);
         }
         player->PlayerTalkClass->ClearMenus();
         return false;
