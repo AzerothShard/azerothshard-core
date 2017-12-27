@@ -438,7 +438,7 @@ bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {
         && proto->InventoryType != INVTYPE_BAG
         && proto->InventoryType != INVTYPE_QUIVER
         && proto->ScalingStatDistribution == 0
-        && player->getLevel()+5 < calcLevel) {
+        && player->getLevel()+15 < calcLevel) {
         ChatHandler(player->GetSession()).PSendSysMessage("Cannot equip this item. Its level is too high");
         return false;
     }
