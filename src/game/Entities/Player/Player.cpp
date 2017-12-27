@@ -8801,7 +8801,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
 {    
     ItemTemplate const* proto = item->GetTemplate();
     
-    // [AZTH]
+    // [AZTH] Timewalking
     if (!azthPlayer->canUseItem(item, true))
         return;
     //[/AZTH]
@@ -14497,7 +14497,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
     if (!pEnchant)
         return;
 
-    //[AZTH]
+    //[AZTH] Timewalking
     if (sAzthUtils->disableEnchant(this, pEnchant))
         return;
     

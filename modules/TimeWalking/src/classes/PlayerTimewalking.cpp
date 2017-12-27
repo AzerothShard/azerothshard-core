@@ -266,14 +266,18 @@ void AzthPlayer::prepareTwSpells(uint32 oldLevel) {
 
 bool AzthPlayer::canUseItem(Item * item, bool notify) {
     if (!item)
-        return false;
+        return true; // we are not responsible, so continue
     
     if (!itemCheckReqLevel(item, notify))
         return false;
     
     ItemTemplate const* proto=item->GetTemplate();
     
-    if (player->azthPlayer->isTimeWalking(true)) {
+    uint32 level = player->getLevel();
+    
+    // we must check also level because
+    // this is called even when timewalking is set but level is not changed yet (when removing item bonuses)
+    if (level < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && player->azthPlayer->isTimeWalking(true)) {
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
         {
             _Spell const& spellData = proto->Spells[i];
@@ -294,6 +298,7 @@ bool AzthPlayer::canUseItem(Item * item, bool notify) {
 }
 
 bool AzthPlayer::itemCheckReqLevel(Item * item, bool notify) {
+    uint32 level = player->getLevel();
 
     if (item) {
         ItemTemplate const* proto=item->GetTemplate();
@@ -311,9 +316,11 @@ bool AzthPlayer::itemCheckReqLevel(Item * item, bool notify) {
             }
         }
 
-        if (player->azthPlayer->isTimeWalking(true)) {
+        // we must check also level because
+        // this is called even when timewalking is set but level is not changed yet (when removing item bonuses)
+        if (level < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && player->azthPlayer->isTimeWalking(true)) {
             uint32 req=sAzthUtils->getCalcReqLevel(proto);
-            if (req > player->getLevel()) {
+            if (req > level) {
                 if (notify) {
                     player->GetSession()->SendNotification("Level Required for this item: %u", req);
                     player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
@@ -327,6 +334,8 @@ bool AzthPlayer::itemCheckReqLevel(Item * item, bool notify) {
             player->GetSession()->SendNotification("Cannot use this item in Timewalking! Unkown reason");
             player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
         }
+        
+        sLog->outError("AZTH ERROR: cannot use an item in timewalking, unknown reason but missing item pointer!");
 
         return false;
     }

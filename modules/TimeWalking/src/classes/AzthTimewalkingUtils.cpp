@@ -330,8 +330,8 @@ void AzthUtils::removeTimewalkingAura(Unit *unit) {
             }
         }
 
-        pl->_ApplyAllLevelScaleItemMods(false);
-        pl->_ApplyAllLevelScaleItemMods(true);
+        //pl->_ApplyAllLevelScaleItemMods(false);
+        //pl->_ApplyAllLevelScaleItemMods(true);
         
         //pl->InitStatsForLevel(true);
     }
@@ -544,7 +544,12 @@ bool AzthUtils::canScaleSpell(SpellInfo const* spellProto) {
 }
 
 bool AzthUtils::disableEnchant(Player *player, SpellItemEnchantmentEntry const* pEnchant) {
-    if (!player->azthPlayer->isTimeWalking(true))
+    uint32 level = player->getLevel();
+    
+    // we can't only check isTimeWalking here because
+    // at this time timewalking variable has been already set when switching to timewalking
+    // so we need just to check also appropriate level
+    if (level >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) || !player->azthPlayer->isTimeWalking(true))
         return false;
     
     if (pEnchant->GemID) {
@@ -571,9 +576,7 @@ bool AzthUtils::disableEnchant(Player *player, SpellItemEnchantmentEntry const* 
         }
     }
     
-    if (pEnchant->requiredSkillValue) {
-        uint32 level = player->getLevel();
-        
+    if (pEnchant->requiredSkillValue) {        
         if (pEnchant->requiredSkillValue >= 350 && level < 65) {
             return true;
         } else if (pEnchant->requiredSkillValue >= 275 && level < 50) {
