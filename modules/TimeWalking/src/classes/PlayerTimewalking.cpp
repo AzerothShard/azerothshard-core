@@ -267,17 +267,23 @@ void AzthPlayer::prepareTwSpells(uint32 oldLevel) {
 bool AzthPlayer::canUseItem(Item * item, bool notify) {
     if (!item)
         return true; // we are not responsible, so continue
+        
+    ItemTemplate const* proto=item->GetTemplate();
+    
+    if (!proto)
+        return true;
     
     if (!itemCheckReqLevel(item, notify))
         return false;
-    
-    ItemTemplate const* proto=item->GetTemplate();
     
     uint32 level = player->getLevel();
     
     // we must check also level because
     // this is called even when timewalking is set but level is not changed yet (when removing item bonuses)
     if (level < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && player->azthPlayer->isTimeWalking(true)) {
+        if (proto->ItemLevel == AZTH_TW_ILVL_NORMAL_ONLY)
+            return true;
+        
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
         {
             _Spell const& spellData = proto->Spells[i];
