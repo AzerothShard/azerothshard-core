@@ -260,6 +260,9 @@ uint32 AzthUtils::getCalcReqLevel(ItemTemplate const* pProto) {
             return req > 70 ? 70 : req;
         }
         
+        if (pProto->ItemLevel == AZTH_TW_ILVL_NORMAL_ONLY)
+            return 1;
+        
         //if (pProto->ItemLevel > 130 && pProto->ItemLevel <= 284)
         //    return 80;
         
