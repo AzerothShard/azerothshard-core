@@ -83,7 +83,8 @@ void AzthUtils::setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply, b
         
         if (sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) > stats->GetLevel()) {
             // reduce melee damage based on level diff
-            unit->SetAuraStack(TIMEWALKING_AURA_MOD_MELEE_DAMAGE_PCT, unit, ceil(((sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)- stats->GetLevel())*100 / sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) / 2));
+            unit->SetAuraStack(TIMEWALKING_AURA_MOD_MELEE_DAMAGE_PCT, unit, 
+                               ceil(((sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)- stats->GetLevel())*100 / sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) / 2)+30); // scaling by level + 30% base
             
             // defense aura mod must not be applied in this context when login
             // because skill is not calculated correctly.
@@ -380,24 +381,21 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
     if (spellLevel > player->getLevel()) {
         // when spell rank has an higher level
         // then player we must consider a special reduction
-        float rate = 3; // higher values means higher reduction
-        uint32 base = 20; // base reduction
+
+        float rate = 2; // higher values means higher reduction
+        uint32 min = 30; // min reduction
+        uint32 max = 95; // max reduction
+
         // the most spell level is higher related to player level
         // the more the reduction is high
         uint32 diff = uint8(spellLevel - player->getLevel());
-        int32 pct = ceil((diff * rate * 100) / spellLevel) + base;
+        uint32 pct = ceil((diff * rate * 100) / spellLevel);
 
-        return pct > 95 ? 95 : pct;
+        return pct > max ? max : ( pct < min ? min : pct );
     } else {
-        // if low rank exist then
-        /*float rate = 4; // higher values means lower reduction
-        uint32 base = 20; // base reduction
-        // apply a default reduction that is higher if the player level is lower and the rank
-        // is not too much lower than player level*/
         uint32 diff = uint8(player->getLevel() - spellLevel);
-        //uint32 pct = ceil((diff * rate * 100) / player->getLevel());
-        uint32 bonus = ceil(player->getLevel() + diff / 10 / 2);
-        return bonus >= 60 ? 0 : 60 - bonus;
+        uint32 bonus = ceil((player->getLevel() + diff) / 10 / 2);
+        return bonus >= 30 ? 0 : 30 - bonus;
     }
 }
 
@@ -462,6 +460,7 @@ bool AzthUtils::isSpecialSpellForTw(SpellInfo const* spellProto) {
         case 22812: // barkskin
         case 53251: // wild Growth
         case 62071: // savage roar
+        case 53201: // starfall
             
         // DK
         case 48263: // Frost Presence
