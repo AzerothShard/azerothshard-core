@@ -279,7 +279,8 @@ public:
 
         uint32 index;
         uint64 seed;
-        uint32 pveId=0,pvpId=0,weeklyId=0, weeklyTwId=0,dailyRandomTwId=0;
+        bool isEmpty=true;
+        uint32 pveId=0, pvpId=0, weeklyClassicId=0, weeklyTBCId=0, weeklyWotlkId=0, weeklyTwId=0, dailyRandomTwId=0;
         std::list<uint32> dailyTwIds;
         UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
         
@@ -314,21 +315,53 @@ public:
 
         Quest const * questPve = sObjectMgr->GetQuestTemplate(pveId);
         
-        // WEEKLY RANDOM
-        if (sHearthstoneMode->hsWeeklyQuests.size() > 0) {
+        // WEEKLY CLASSIC RANDOM
+        if (sHearthstoneMode->hsWeeklyClassicQuests.size() > 0) {
             int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
             seed = (((1609909200 - firstTuesday )/60/60/24))/7;
             srand(seed);
                 
-            uint32 count= (sHearthstoneMode->hsWeeklyQuests.size());
+            uint32 count= (sHearthstoneMode->hsWeeklyClassicQuests.size());
             index=count > 0 ? rand() % count : 0;
             
-            _tmpItr = sHearthstoneMode->hsWeeklyQuests.begin();
+            _tmpItr = sHearthstoneMode->hsWeeklyClassicQuests.begin();
             std::advance( _tmpItr, index );
-            weeklyId = _tmpItr->second.id;
+            weeklyClassicId = _tmpItr->second.id;
         }
 
-        Quest const * questWeekly = sObjectMgr->GetQuestTemplate(weeklyId);
+        Quest const * questClassicWeekly = sObjectMgr->GetQuestTemplate(weeklyClassicId);
+        
+        // WEEKLY TBC RANDOM
+        if (sHearthstoneMode->hsWeeklyTBCQuests.size() > 0) {
+            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
+            seed = (((1609909200 - firstTuesday )/60/60/24))/7;
+            srand(seed);
+                
+            uint32 count= (sHearthstoneMode->hsWeeklyTBCQuests.size());
+            index=count > 0 ? rand() % count : 0;
+            
+            _tmpItr = sHearthstoneMode->hsWeeklyTBCQuests.begin();
+            std::advance( _tmpItr, index );
+            weeklyTBCId = _tmpItr->second.id;
+        }
+
+        Quest const * questTBCWeekly = sObjectMgr->GetQuestTemplate(weeklyTBCId);
+        
+        // WEEKLY WOTLK RANDOM
+        if (sHearthstoneMode->hsWeeklyWotlkQuests.size() > 0) {
+            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
+            seed = (((1609909200 - firstTuesday )/60/60/24))/7;
+            srand(seed);
+                
+            uint32 count= (sHearthstoneMode->hsWeeklyWotlkQuests.size());
+            index=count > 0 ? rand() % count : 0;
+            
+            _tmpItr = sHearthstoneMode->hsWeeklyWotlkQuests.begin();
+            std::advance( _tmpItr, index );
+            weeklyWotlkId = _tmpItr->second.id;
+        }
+
+        Quest const * questWotlkWeekly = sObjectMgr->GetQuestTemplate(weeklyWotlkId);
         
         // WEEKLY TW
         for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwWeeklyQuests.begin(); it != sHearthstoneMode->hsTwWeeklyQuests.end(); it++ )
@@ -384,6 +417,7 @@ public:
         }
         if (questPvp && player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false) && PvpMaxCheck < MAX_PVP_QUEST_NUMBER)
         {
+            isEmpty = false;
             bitmask = bitmask | BITMASK_PVP;
         }
 //endcheck
@@ -401,32 +435,70 @@ public:
         }
         if (questPve && player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false) && PveMaxCheck < MAX_PVE_QUEST_NUMBER)
         {
+            isEmpty = false;
             bitmask = bitmask | BITMASK_PVE;
         }
 //endcheck
 
-//"Weekly Quest Check"
-        int WeeklyMaxCheck = 0;
-        _tmpItr = sHearthstoneMode->hsWeeklyQuests.begin();
-        while (_tmpItr != sHearthstoneMode->hsWeeklyQuests.end() && WeeklyMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
+//"Weekly Classic Quest Check"
+        int WeeklyClassicMaxCheck = 0;
+        _tmpItr = sHearthstoneMode->hsWeeklyClassicQuests.begin();
+        while (_tmpItr != sHearthstoneMode->hsWeeklyClassicQuests.end() && WeeklyClassicMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
         {
             if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
             {
-                WeeklyMaxCheck = WeeklyMaxCheck + 1;
+                WeeklyClassicMaxCheck = WeeklyClassicMaxCheck + 1;
             }
             _tmpItr++;
         }
-        if (questWeekly && player->CanAddQuest(questWeekly, false) && player->CanTakeQuest(questWeekly, false) && WeeklyMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        if (questClassicWeekly && player->CanAddQuest(questClassicWeekly, false) && player->CanTakeQuest(questClassicWeekly, false) && WeeklyClassicMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
         {
-            bitmask = bitmask | BITMASK_WEEKLY;
+            isEmpty = false;
+            bitmask = bitmask | BITMASK_WEEKLY_CLASSIC;
+        }
+//endcheck
+
+//"Weekly TBC Quest Check"
+        int WeeklyTBCMaxCheck = 0;
+        _tmpItr = sHearthstoneMode->hsWeeklyTBCQuests.begin();
+        while (_tmpItr != sHearthstoneMode->hsWeeklyTBCQuests.end() && WeeklyTBCMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
+        {
+            if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
+            {
+                WeeklyTBCMaxCheck = WeeklyTBCMaxCheck + 1;
+            }
+            _tmpItr++;
+        }
+        if (questTBCWeekly && player->CanAddQuest(questTBCWeekly, false) && player->CanTakeQuest(questTBCWeekly, false) && WeeklyTBCMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        {
+            isEmpty = false;
+            bitmask = bitmask | BITMASK_WEEKLY_TBC;
+        }
+//endcheck
+
+//"Weekly WOTLK Quest Check"
+        int WeeklyWotlkMaxCheck = 0;
+        _tmpItr = sHearthstoneMode->hsWeeklyWotlkQuests.begin();
+        while (_tmpItr != sHearthstoneMode->hsWeeklyWotlkQuests.end() && WeeklyWotlkMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
+        {
+            if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
+            {
+                WeeklyWotlkMaxCheck = WeeklyWotlkMaxCheck + 1;
+            }
+            _tmpItr++;
+        }
+        if (questWotlkWeekly && player->CanAddQuest(questWotlkWeekly, false) && player->CanTakeQuest(questWotlkWeekly, false) && WeeklyWotlkMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        {
+            isEmpty = false;
+            bitmask = bitmask | BITMASK_WEEKLY_WOTLK;
         }
 //endcheck
 
 
 //"TW Weekly Quest Check"
         int TwWeeklyMaxCheck = 0;
-        _tmpItr = sHearthstoneMode->hsWeeklyQuests.begin();
-        while (_tmpItr != sHearthstoneMode->hsWeeklyQuests.end() && TwWeeklyMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
+        _tmpItr = sHearthstoneMode->hsTwWeeklyQuests.begin();
+        while (_tmpItr != sHearthstoneMode->hsTwWeeklyQuests.end() && TwWeeklyMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
         {
             if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
             {
@@ -436,23 +508,25 @@ public:
         }
         if (questWeeklyTw && player->CanAddQuest(questWeeklyTw, false) && player->CanTakeQuest(questWeeklyTw, false) && TwWeeklyMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
         {
+            isEmpty = false;
             bitmask = bitmask | BITMASK_TW_WEEKLY;
         }
 //endcheck
 
 //"TW Daily Random Quest Check"
-        int TwDailyMaxCheck = 0;
+        int TwDailyRandMaxCheck = 0;
         _tmpItr = sHearthstoneMode->hsTwDailyRandomQuests.begin();
-        while (_tmpItr != sHearthstoneMode->hsTwDailyRandomQuests.end() && TwDailyMaxCheck <= MAX_PVE_QUEST_NUMBER)
+        while (_tmpItr != sHearthstoneMode->hsTwDailyRandomQuests.end() && TwDailyRandMaxCheck <= MAX_PVE_QUEST_NUMBER)
         {
             if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
             {
-                TwDailyMaxCheck = TwDailyMaxCheck + 1;
+                TwDailyRandMaxCheck = TwDailyRandMaxCheck + 1;
             }
             _tmpItr++;
         }
-        if (questDailyRandomTw && player->CanAddQuest(questDailyRandomTw, false) && player->CanTakeQuest(questDailyRandomTw, false) && TwDailyMaxCheck < MAX_PVE_QUEST_NUMBER)
+        if (questDailyRandomTw && player->CanAddQuest(questDailyRandomTw, false) && player->CanTakeQuest(questDailyRandomTw, false) && TwDailyRandMaxCheck < MAX_PVE_QUEST_NUMBER)
         {
+            isEmpty = false;
             bitmask = bitmask | BITMASK_TW_DAILY_RANDOM;
         }
 //endcheck
@@ -474,10 +548,22 @@ public:
             }
             
 
-            if ((bitmask & BITMASK_WEEKLY) == BITMASK_WEEKLY)
+            if ((bitmask & BITMASK_WEEKLY_CLASSIC) == BITMASK_WEEKLY_CLASSIC)
             {
-                if (questWeekly)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, questWeekly->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyId);
+                if (questClassicWeekly)
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, questClassicWeekly->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyClassicId);
+            }
+            
+            if ((bitmask & BITMASK_WEEKLY_TBC) == BITMASK_WEEKLY_TBC)
+            {
+                if (questTBCWeekly)
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, questTBCWeekly->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyTBCId);
+            }
+            
+            if ((bitmask & BITMASK_WEEKLY_WOTLK) == BITMASK_WEEKLY_WOTLK)
+            {
+                if (questWotlkWeekly)
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, questWotlkWeekly->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyWotlkId);
             }
             
             if (bitmask>0)
@@ -506,8 +592,10 @@ public:
                 Quest const *quest = sObjectMgr->GetQuestTemplate(*it);
                 if (quest && player->CanAddQuest(quest, false) && player->CanTakeQuest(quest, false) && dailyTwMaxCheck < MAX_PVE_QUEST_NUMBER)
                 {
-                    if (quest)
+                    if (quest) {
+                        isEmpty = false;
                         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_DAILY_QUEST, player, quest->GetTitle().c_str()), GOSSIP_SENDER_MAIN, *it);
+                    }
                 }
             }
 //endcheck
@@ -520,12 +608,15 @@ public:
 
         if (bitmask == 0)
         {
-            if (player->hasQuest(pveId) && player->hasQuest(pvpId) && player->hasQuest(weeklyId))
-                gossip = 100001;
-            else { gossip = 100002; }
+            gossip = isEmpty ? 100001 : 100002;
         }
-        if (PveMaxCheck >= MAX_PVE_QUEST_NUMBER && PvpMaxCheck >= MAX_PVP_QUEST_NUMBER && WeeklyMaxCheck >= MAX_WEEKLY_QUEST_NUMBER)
+        
+        /*if (PveMaxCheck >= MAX_PVE_QUEST_NUMBER && 
+            PvpMaxCheck >= MAX_PVP_QUEST_NUMBER && 
+            WeeklyClassicMaxCheck >= MAX_WEEKLY_QUEST_NUMBER
+        )
             gossip = 100003;
+        */
 
         player->SEND_GOSSIP_MENU(gossip, creature->GetGUID());
         return true;
@@ -986,7 +1077,9 @@ void HearthstoneMode::loadHearthstone()
         uint32 questCount = 0;
         sHearthstoneMode->hsPveQuests.clear();
         sHearthstoneMode->hsPvpQuests.clear();
-        sHearthstoneMode->hsWeeklyQuests.clear();
+        sHearthstoneMode->hsWeeklyClassicQuests.clear();
+        sHearthstoneMode->hsWeeklyTBCQuests.clear();
+        sHearthstoneMode->hsWeeklyWotlkQuests.clear();
         sHearthstoneMode->hsTwWeeklyQuests.clear();
         sHearthstoneMode->hsTwDailyQuests.clear();
         sHearthstoneMode->hsTwDailyRandomQuests.clear();
@@ -1014,8 +1107,12 @@ void HearthstoneMode::loadHearthstone()
                 // PVE
                 if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
                     sHearthstoneMode->hsPveQuests[hq.id]=hq; 
-                if ((bitmask & BITMASK_WEEKLY) == BITMASK_WEEKLY)
-                    sHearthstoneMode->hsWeeklyQuests[hq.id]=hq;
+                if ((bitmask & BITMASK_WEEKLY_CLASSIC) == BITMASK_WEEKLY_CLASSIC)
+                    sHearthstoneMode->hsWeeklyClassicQuests[hq.id]=hq;
+                if ((bitmask & BITMASK_WEEKLY_TBC) == BITMASK_WEEKLY_TBC)
+                    sHearthstoneMode->hsWeeklyTBCQuests[hq.id]=hq;
+                if ((bitmask & BITMASK_WEEKLY_WOTLK) == BITMASK_WEEKLY_WOTLK)
+                    sHearthstoneMode->hsWeeklyWotlkQuests[hq.id]=hq;
                 
                 // TIMEWALKING
                 if ((bitmask & BITMASK_TW_WEEKLY) == BITMASK_TW_WEEKLY)
