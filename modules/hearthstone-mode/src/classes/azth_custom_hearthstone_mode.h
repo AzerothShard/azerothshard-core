@@ -49,15 +49,16 @@ struct HearthstoneVendor
 
 enum bitmasksHs
 {
-    BITMASK_NORMAL          = 0,  //normal quests but with hs checks
-    BITMASK_PVE             = 1,  //hs daily random
-    BITMASK_PVP             = 2,  //hs daily random
-    BITMASK_WEEKLY_CLASSIC  = 4,  //hs classic weekly random
-    BITMASK_TW_WEEKLY       = 8,  //hs TW weekly
-    BITMASK_TW_DAILY        = 16,  //hs TW daily
-    BITMASK_TW_DAILY_RANDOM = 32,  //hs TW daily random
-    BITMASK_WEEKLY_TBC      = 64,  //hs tbc weekly random
-    BITMASK_WEEKLY_WOTLK    = 128,  //hs wotlk weekly random
+    BITMASK_NORMAL              = 0,    //normal quests but with hs checks
+    BITMASK_PVE                 = 1,    //hs daily random
+    BITMASK_PVP                 = 2,    //hs daily random
+    BITMASK_WEEKLY_CLASSIC      = 4,    //hs classic weekly random
+    BITMASK_TW_WEEKLY           = 8,    //hs TW weekly
+    BITMASK_TW_DAILY            = 16,   //hs TW daily
+    BITMASK_TW_DAILY_RANDOM     = 32,   //hs TW daily random
+    BITMASK_WEEKLY_TBC          = 64,   //hs tbc weekly random
+    BITMASK_WEEKLY_WOTLK        = 128,  //hs wotlk weekly random
+    BITMASK_TW_WEEKLY_RANDOM    = 256,
 };
 
 enum miscHs
@@ -97,6 +98,7 @@ class HearthstoneMode
         UNORDERED_MAP<uint32, HearthstoneQuest> hsWeeklyTBCQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsWeeklyWotlkQuests;
         
+        UNORDERED_MAP<uint32, HearthstoneQuest> hsTwWeeklyRandomQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsTwWeeklyQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsTwDailyQuests;
         UNORDERED_MAP<uint32, HearthstoneQuest> hsTwDailyRandomQuests;

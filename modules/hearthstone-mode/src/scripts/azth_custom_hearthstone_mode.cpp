@@ -274,14 +274,14 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature) override
     {
-        unsigned char bitmask = 0;
+        uint32 bitmask = 0;
         int gossip = 100000;
 
         uint32 index;
         uint64 seed;
         bool isEmpty=true;
-        uint32 pveId=0, pvpId=0, weeklyClassicId=0, weeklyTBCId=0, weeklyWotlkId=0, weeklyTwId=0, dailyRandomTwId=0;
-        std::list<uint32> dailyTwIds;
+        uint32 pveId=0, pvpId=0, weeklyClassicId=0, weeklyTBCId=0, weeklyWotlkId=0, weeklyRandomTwId=0, dailyRandomTwId=0;
+        std::list<uint32> dailyTwIds, weeklyTwIds;
         UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
         
         time_t t = time(NULL);
@@ -367,11 +367,9 @@ public:
         for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwWeeklyQuests.begin(); it != sHearthstoneMode->hsTwWeeklyQuests.end(); it++ )
         {
             if (t >= it->second.startTime  &&  t <= it->second.endTime) {
-                weeklyTwId = it->second.id;
+                weeklyTwIds.push_back(it->second.id);
             }
         }
-
-        Quest const * questWeeklyTw = sObjectMgr->GetQuestTemplate(weeklyTwId);
         
         // DAILY TW
         for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwDailyQuests.begin(); it != sHearthstoneMode->hsTwDailyQuests.end(); it++ )
@@ -403,6 +401,30 @@ public:
         }
         
         Quest const * questDailyRandomTw = sObjectMgr->GetQuestTemplate(dailyRandomTwId);
+        
+        // WEEKLY RANDOM TW
+        std::list<uint32> _weeklyRandomTwList;
+        for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwWeeklyRandomQuests.begin(); it != sHearthstoneMode->hsTwWeeklyRandomQuests.end(); it++ )
+        {
+            if (t >= it->second.startTime  &&  t <= it->second.endTime) {
+                _weeklyRandomTwList.push_back(it->second.id);
+            }
+        }
+        
+        if (_weeklyRandomTwList.size() > 0) {
+            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
+            seed = (((1609909200 - firstTuesday )/60/60/24))/7;
+            srand(seed);
+                
+            uint32 count= (_weeklyRandomTwList.size());
+            index=count > 0 ? rand() % count : 0;
+            
+            std::list<uint32>::iterator _tmpListItr =_weeklyRandomTwList.begin();
+            std::advance( _tmpListItr, index );
+            weeklyRandomTwId = *_tmpListItr;
+        }
+        
+        Quest const * questWeeklyRandomTw = sObjectMgr->GetQuestTemplate(weeklyRandomTwId);
 
 //"Pvp Quest Check"
         int PvpMaxCheck = 0;
@@ -495,21 +517,21 @@ public:
 //endcheck
 
 
-//"TW Weekly Quest Check"
-        int TwWeeklyMaxCheck = 0;
+//"TW Weekly Random Quest Check"
+        int TwWeeklyRandomMaxCheck = 0;
         _tmpItr = sHearthstoneMode->hsTwWeeklyQuests.begin();
-        while (_tmpItr != sHearthstoneMode->hsTwWeeklyQuests.end() && TwWeeklyMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
+        while (_tmpItr != sHearthstoneMode->hsTwWeeklyRandomQuests.end() && TwWeeklyRandomMaxCheck <= MAX_WEEKLY_QUEST_NUMBER)
         {
             if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
             {
-                TwWeeklyMaxCheck = TwWeeklyMaxCheck + 1;
+                TwWeeklyRandomMaxCheck = TwWeeklyRandomMaxCheck + 1;
             }
             _tmpItr++;
         }
-        if (questWeeklyTw && player->CanAddQuest(questWeeklyTw, false) && player->CanTakeQuest(questWeeklyTw, false) && TwWeeklyMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        if (questWeeklyRandomTw && player->CanAddQuest(questWeeklyRandomTw, false) && player->CanTakeQuest(questWeeklyRandomTw, false) && TwWeeklyRandomMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
         {
             isEmpty = false;
-            bitmask = bitmask | BITMASK_TW_WEEKLY;
+            bitmask = bitmask | BITMASK_TW_WEEKLY_RANDOM;
         }
 //endcheck
 
@@ -569,11 +591,35 @@ public:
             if (bitmask>0)
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, sAzthLang->get(AZTH_LANG_HS_TW_QUESTS, player), GOSSIP_SENDER_MAIN, 0);
 
+            
+            //"TW Weekly Quest Check & gossip"
+            for (std::list<uint32>::const_iterator it = weeklyTwIds.begin(), end = weeklyTwIds.end(); it != end; ++it) {
+                int weeklyTwMaxCheck = 0;
+                _tmpItr = sHearthstoneMode->hsTwWeeklyQuests.begin();
+                while (_tmpItr != sHearthstoneMode->hsTwWeeklyQuests.end() && weeklyTwMaxCheck <= MAX_PVE_QUEST_NUMBER)
+                {
+                    if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
+                    {
+                        weeklyTwMaxCheck = weeklyTwMaxCheck + 1;
+                    }
+                    _tmpItr++;
+                }
 
-            if ((bitmask & BITMASK_TW_WEEKLY) == BITMASK_TW_WEEKLY)
+                Quest const *quest = sObjectMgr->GetQuestTemplate(*it);
+                if (quest && player->CanAddQuest(quest, false) && player->CanTakeQuest(quest, false) && weeklyTwMaxCheck < MAX_PVE_QUEST_NUMBER)
+                {
+                    if (quest) {
+                        isEmpty = false;
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_WEEKLY_QUEST, player, quest->GetTitle().c_str()), GOSSIP_SENDER_MAIN, *it);
+                    }
+                }
+            }
+//endcheck
+            
+            if ((bitmask & BITMASK_TW_WEEKLY_RANDOM) == BITMASK_TW_WEEKLY_RANDOM)
             {
-                if (questWeeklyTw)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_WEEKLY_QUEST, player, questWeeklyTw->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyTwId);
+                if (questWeeklyRandomTw)
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_WEEKLY_RANDOM_QUEST, player, questWeeklyRandomTw->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyRandomTwId);
             }
             
 //"TW Daily Quest Check & gossip"
@@ -1080,6 +1126,7 @@ void HearthstoneMode::loadHearthstone()
         sHearthstoneMode->hsWeeklyClassicQuests.clear();
         sHearthstoneMode->hsWeeklyTBCQuests.clear();
         sHearthstoneMode->hsWeeklyWotlkQuests.clear();
+        sHearthstoneMode->hsTwWeeklyRandomQuests.clear();
         sHearthstoneMode->hsTwWeeklyQuests.clear();
         sHearthstoneMode->hsTwDailyQuests.clear();
         sHearthstoneMode->hsTwDailyRandomQuests.clear();
@@ -1098,7 +1145,7 @@ void HearthstoneMode::loadHearthstone()
                 hq.groupLimit = (*hsQuestResult)[4].GetUInt32();
                 hq.startTime = (*hsQuestResult)[5].GetUInt32();
                 hq.endTime = (*hsQuestResult)[6].GetUInt32();
-                unsigned char bitmask = hq.flag;
+                uint32 bitmask = hq.flag;
 
                 sHearthstoneMode->allQuests[hq.id]=hq;
                 // PVP
@@ -1115,6 +1162,8 @@ void HearthstoneMode::loadHearthstone()
                     sHearthstoneMode->hsWeeklyWotlkQuests[hq.id]=hq;
                 
                 // TIMEWALKING
+                if ((bitmask & BITMASK_TW_WEEKLY_RANDOM) == BITMASK_TW_WEEKLY_RANDOM)
+                    sHearthstoneMode->hsTwWeeklyRandomQuests[hq.id]=hq;
                 if ((bitmask & BITMASK_TW_WEEKLY) == BITMASK_TW_WEEKLY)
                     sHearthstoneMode->hsTwWeeklyQuests[hq.id]=hq;
                 if ((bitmask & BITMASK_TW_DAILY) == BITMASK_TW_DAILY)

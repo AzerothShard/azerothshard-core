@@ -94,8 +94,9 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_HS_PVP_QUEST,"PvP Daily Quest: %s","Missione PvP giornaliera: %s");
     this->add(AZTH_LANG_HS_DAILY_QUEST,"PvE Daily Quest: %s","Missione PvE giornaliera: %s");
     this->add(AZTH_LANG_HS_WEEKLY_QUEST,"Weekly Quest: %s","Missione settimanale: %s");
-    this->add(AZTH_LANG_HS_TW_QUESTS,"===== Timewalking Quests: =====","===== Missioni Timewalking: =====");
+    this->add(AZTH_LANG_HS_TW_QUESTS,"===== Adventure Quests: =====","===== Missioni Adventure: =====");
     this->add(AZTH_LANG_HS_TW_WEEKLY_QUEST,"Raid: %s","Incursione: %s");
+    this->add(AZTH_LANG_HS_TW_WEEKLY_RANDOM_QUEST,"Random Raid: %s","Incursione casuale: %s");
     this->add(AZTH_LANG_HS_TW_DAILY_QUEST,"Daily quest: %s","Missione giornaliera: %s");
     this->add(AZTH_LANG_HS_TW_DAILY_RANDOM_QUEST,"Random Daily quest: %s","Missione giornaliera casuale: %s");
 }
