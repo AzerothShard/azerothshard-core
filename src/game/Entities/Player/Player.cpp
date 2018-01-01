@@ -8369,7 +8369,24 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingStatValuesEntry const* ssv, bool apply)
 {
     // [AZTH] Timewalking
-    uint32 azthScalingStatValue = proto->ScalingStatValue ? proto->ScalingStatValue : sAzthUtils->calculateItemScalingValue(proto, this);
+    uint32 azthScalingStatValue = azthPlayer->isTimeWalking(true) ? sAzthUtils->calculateItemScalingValue(proto, this) : 0;
+    azthScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : azthScalingStatValue;
+    
+    // following part fix disarm issue
+    // that doesn't apply the scaling after disarmed
+    if (!ssv) {
+        ScalingStatDistributionEntry const* ssd = proto->ScalingStatDistribution ? sScalingStatDistributionStore.LookupEntry(proto->ScalingStatDistribution) : NULL;
+
+        // req. check at equip, but allow use for extended range if range limit max level, set proper level
+        uint32 ssd_level = getLevel();
+
+        if (ssd && ssd_level > ssd->MaxLevel)
+            ssd_level = ssd->MaxLevel;
+
+        ssv = azthScalingStatValue > 0 ? sScalingStatValuesStore.LookupEntry(ssd_level) : NULL;
+    }
+    
+    //[/AZTH]
 
     WeaponAttackType attType = BASE_ATTACK;
     float damage = 0.0f;
