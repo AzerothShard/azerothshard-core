@@ -253,12 +253,12 @@ public:
         if (itemLevel == -1)
         {
             sASeasonMgr->SetItemLevel(defaultMaxItemLevel);
-            handler->SendSysMessage("L'item level massimo e' stato riportato al valore predefinito"); //solo gm
+            handler->SendSysMessage(sAzthLang->get(AZTH_LANG_BG_ITEM_LEVEL_RESET, handler->GetSession()->GetPlayer())); //solo gm
         }
         else
         {
             sASeasonMgr->SetItemLevel(itemLevel);
-            handler->SendSysMessage("L'item level massimo e' stato cambiato"); //solo gm
+            handler->SendSysMessage(sAzthLang->get(AZTH_LANG_BG_ITEM_LEVEL_CHANGED, handler->GetSession()->GetPlayer())); //solo gm
         }
 
         return true;

@@ -22,32 +22,33 @@ public:
 
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, msg.c_str(), GOSSIP_SENDER_MAIN, 0);
 
-        if (currDimension != uint32(DIMENSION_NORMAL))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "[PRINCIPALE] Illusory World: Dimensione standard.", GOSSIP_SENDER_MAIN, DIMENSION_NORMAL);
+
+        if (!player->azthPlayer->isPvP() && currDimension != uint32(DIMENSION_NORMAL))
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_ILLUSORY), GOSSIP_SENDER_MAIN, DIMENSION_NORMAL);
 
         if (currDimension != uint32(DIMENSION_GUILD))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Guild World: Dimensione delle case di gilda.", GOSSIP_SENDER_MAIN, DIMENSION_GUILD);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_GUILD), GOSSIP_SENDER_MAIN, DIMENSION_GUILD);
 
         if (currDimension != uint32(DIMENSION_PVP))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Corrupted World: Dimensione riservata al pvp", GOSSIP_SENDER_MAIN, DIMENSION_PVP);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_PVP), GOSSIP_SENDER_MAIN, DIMENSION_PVP);
 
         if (currDimension != uint32(DIMENSION_ENTERTAINMENT))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Toys Land: Dimensione dedicata agli eventi di intrattenimento", GOSSIP_SENDER_MAIN, DIMENSION_ENTERTAINMENT);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_ENTERTAIN), GOSSIP_SENDER_MAIN, DIMENSION_ENTERTAINMENT);
 
         if (currDimension != uint32(DIMENSION_RPG))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Warcraft Tales: Dimensione dedicata al GDR", GOSSIP_SENDER_MAIN, DIMENSION_RPG);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_GDR), GOSSIP_SENDER_MAIN, DIMENSION_RPG);
 
         if (currDimension != uint32(DIMENSION_60))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Classic World: Dimensione con livello limite 60", GOSSIP_SENDER_MAIN, DIMENSION_60);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_LVL60), GOSSIP_SENDER_MAIN, DIMENSION_60);
 
         if (currDimension != uint32(DIMENSION_70))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "TBC World: Dimensione con livello limite 70", GOSSIP_SENDER_MAIN, DIMENSION_70);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_LVL70), GOSSIP_SENDER_MAIN, DIMENSION_70);
         
         if (currDimension != uint32(DIMENSION_TEST))
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Test World: Dimensione riservata ai test (siate cauti!)", GOSSIP_SENDER_MAIN, DIMENSION_TEST);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_TEST), GOSSIP_SENDER_MAIN, DIMENSION_TEST);
         
         if (currDimension != uint32(DIMENSION_GM) && player->GetSession()->GetSecurity() > SEC_PLAYER)
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "GameMaster World: Benvenuti GM e Developers, questo è il vostro mondo!", GOSSIP_SENDER_MAIN, DIMENSION_GM);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_GM), GOSSIP_SENDER_MAIN, DIMENSION_GM);
 
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
         return true;

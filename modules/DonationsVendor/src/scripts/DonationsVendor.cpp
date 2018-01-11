@@ -104,8 +104,8 @@ public:
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/" + categoryIcon + ":30:30:-18:0|t" + categoryName, GOSSIP_SENDER_INFO, inventoryType);
                 }
             }
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", GOSSIP_SENDER_MAIN, action);
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", GOSSIP_SENDER_MAIN, 300);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, sAzthLang->get(AZTH_LANG_DONATION_UPDATE_MENU, player), GOSSIP_SENDER_MAIN, action);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, sAzthLang->get(AZTH_LANG_DONATION_BACK, player), GOSSIP_SENDER_MAIN, 300);
             player->SEND_GOSSIP_MENU(2, creature->GetGUID());
         }
         else if (sender == GOSSIP_SENDER_INFO)
@@ -126,8 +126,8 @@ public:
                 }
             }
 
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", GOSSIP_SENDER_INFO, action);
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", GOSSIP_SENDER_MAIN, 301);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, sAzthLang->get(AZTH_LANG_DONATION_UPDATE_MENU, player), GOSSIP_SENDER_INFO, action);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, sAzthLang->get(AZTH_LANG_DONATION_BACK, player), GOSSIP_SENDER_MAIN, 301);
             player->SEND_GOSSIP_MENU(10, creature->GetGUID());
         }
         else if (sender == GOSSIP_SENDER_SEC_BANK)
@@ -376,14 +376,14 @@ public:
                         data << uint32(1); // count
                         player->GetSession()->SendPacket(&data);
                         //player->SendNewItem(pItem, 1, true, false, false); <-- crash when we separate stacked items and then we get again
-                        ChatHandler(player->GetSession()).PSendSysMessage("Item received: |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r", itemEntry, _proto->Name1.c_str());
+                        ChatHandler(player->GetSession()).PSendSysMessage("%s", sAzthLang->getf(AZTH_LANG_DONATION_ITEM_RECEIVED,player, itemEntry, _proto->Name1.c_str()));
                     }
                     else {
                         ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_COLLECTION_ITEM_NOT_RECOVERED, player));
                         sLog->outError("player can't take item back: %u", pItem->GetGUIDLow());
                     }
                 } else {
-                    ChatHandler(player->GetSession()).PSendSysMessage("Error: item doesn't exist in database");
+                    ChatHandler(player->GetSession()).PSendSysMessage("%s", sAzthLang->get(AZTH_LANG_DONATION_ITEM_NO_DB,player));
                     sLog->outError("Error: item doesn't exist in database: %u", guid);
                 }
 

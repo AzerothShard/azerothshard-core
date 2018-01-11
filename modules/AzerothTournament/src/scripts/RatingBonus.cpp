@@ -78,12 +78,12 @@ void BonusRating::printBonusesToPlayer(ChatHandler * handler, uint32 bracket)
 	{
 		if (bonuses[i].type == bracket || bracket == 0)
 		{
-			handler->PSendSysMessage("|CFF7BBEF7[Rating Bonus]|r: Active bonus on %s %.2fx.", brackets[bonuses[i].type - 1], bonuses[i].multiplier);
+			handler->PSendSysMessage("%s", sAzthLang->getf(AZTH_LANG_BR_ACTIVE_BONUS , handler->GetSession()->GetPlayer(), brackets[bonuses[i].type - 1], bonuses[i].multiplier));
 		}
 	}
 	if (bonuses.size() == 0)
 	{
-		handler->PSendSysMessage("|CFF7BBEF7[Rating Bonus]|r: There are no bonuses right now!.");
+		handler->PSendSysMessage("%s", sAzthLang->get(AZTH_LANG_BR_NO_BONUS, handler->GetSession()->GetPlayer()));
 	}
 }
 

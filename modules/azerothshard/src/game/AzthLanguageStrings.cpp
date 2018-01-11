@@ -99,4 +99,29 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_HS_TW_WEEKLY_RANDOM_QUEST,"Random Raid: %s","Incursione casuale: %s");
     this->add(AZTH_LANG_HS_TW_DAILY_QUEST,"Daily quest: %s","Missione giornaliera: %s");
     this->add(AZTH_LANG_HS_TW_DAILY_RANDOM_QUEST,"Random Daily quest: %s","Missione giornaliera casuale: %s");
+    
+    //bg item level
+    this->add(AZTH_LANG_BG_ITEM_LEVEL_RESET, "Max item level set to its default value.","L'item level massimo e' stato riportato al valore predefinito.");
+    this->add(AZTH_LANG_BG_ITEM_LEVEL_CHANGED, "Max item level changed.", "L'item level massimo e' stato cambiato.");
+    
+    //rating bonus
+    this->add(AZTH_LANG_BR_ACTIVE_BONUS,"|CFF7BBEF7[Rating Bonus]|r: Active bonus on %s %.2fx.","|CFF7BBEF7[Rating Bonus]|r: Bonus attivo in %s %.2fx.");
+    this->add(AZTH_LANG_BR_NO_BONUS,"|CFF7BBEF7[Rating Bonus]|r: There are no bonuses right now!.","|CFF7BBEF7[Rating Bonus]|r: Non ci sono bonus attivi!.");
+    
+    //donation vendor
+    this->add(AZTH_LANG_DONATION_UPDATE_MENU, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tAggiorna");
+    this->add(AZTH_LANG_DONATION_BACK, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tIndietro..");
+    this->add(AZTH_LANG_DONATION_ITEM_RECEIVED, "Item received: |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r", "Item ricevuto: |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r");
+    this->add(AZTH_LANG_DONATION_ITEM_NO_DB, "Error: item doesn't exist in database!", "Errore: l'item non esiste nel database!");
+    
+    //dimension npc
+    this->add(AZTH_LANG_DIMENSION_ILLUSORY, "Illusory World: Standard Dimension", "[PRINCIPALE] Illusory World: Dimensione standard.");
+    this->add(AZTH_LANG_DIMENSION_GUILD, "Guild World: Guild Houses dimension", "Guild World: Dimensione delle case di gilda.");
+    this->add(AZTH_LANG_DIMENSION_PVP, "Corrupted World: PvP Dimension", "Corrupted World: Dimensione riservata al pvp");
+    this->add(AZTH_LANG_DIMENSION_ENTERTAIN, "Toys Land: Entertaining World events", "Toys Land: Dimensione dedicata agli eventi di intrattenimento");
+    this->add(AZTH_LANG_DIMENSION_GDR, "Warcraft Tales: RPG Dimension", "Warcraft Tales: Dimensione dedicata al GDR");
+    this->add(AZTH_LANG_DIMENSION_LVL60, "Classic World: Level 60 Dimension", "Classic World: Dimensione con livello limite 60");
+    this->add(AZTH_LANG_DIMENSION_LVL70, "TBC World: Level 70 Dimension", "TBC World: Dimensione con livello limite 70");
+    this->add(AZTH_LANG_DIMENSION_TEST, "Test World: Dimension reserverd for test (be careful!)", "Test World: Dimensione riservata ai test (siate cauti!)");
+    this->add(AZTH_LANG_DIMENSION_GM, "GameMaster World: Dimension for GM and Developers", "GameMaster World: Benvenuti GM e Developers, questo è il vostro mondo!");
 }
