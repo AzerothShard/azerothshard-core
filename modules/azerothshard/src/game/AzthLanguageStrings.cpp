@@ -74,6 +74,8 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_TW_MODE_ON, "You are in |cffff0000 Timewalking level: %s|r mode", "Sei in modalità |cffff0000 Timewalking livello: %s|r");
     this->add(AZTH_LANG_TW_MODE_OFF, "You exited from |cffff0000 Timewalking|r mode!", "Sei uscito dalla modalità |cffff0000 Timewalking!|r");
     this->add(AZTH_LANG_TW_NEW_ITEM_OBTAINED, "Congrats! you got |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ", "Complimenti! hai ottenuto |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ");
+    this->add(AZTH_LANG_TW_GROUP_CHECK_LEADER, "|cffff0000 Invited Player is not at your same Timewalking Level!|r", "|cffff0000 Il Player invitato non è al tuo stesso livello di Timewalking!|r");
+    this->add(AZTH_LANG_TW_GROUP_CHECK_PLAYER, "|cffff0000 The Leader is in Timewalking, you must set Timewalking at same level of the leader party to join|r", "|cffff0000 Il Leader del party è in Timewalking. Devi settare il suo stesso livello per poter entrare nel party!|r");
 
     //season tournament
     this->add(AZTH_LANG_TOURNAMENT_LEVEL_TOOHIGH, "|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r has a too high level! Remove it to play this season.", "|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.");

@@ -25,6 +25,8 @@ AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
   player = origin;
   customLang = AZTH_LOC_IT;
+  groupLevel = 0;
+  tmpLevelPg = 0;
   std::fill_n(arena1v1Info, 7, 0);
   std::fill_n(arena3v3Info, 7, 0);
   autoScalingPending = 0;
@@ -196,6 +198,34 @@ bool AzthPlayer::canEnterMap(MapEntry const* entry, InstanceTemplate const* /*in
 
 bool AzthPlayer::canGroup(Player* with)
 {
+    // player -> who invites
+    // with -> the invited player
+
+    Group* group = player->GetGroupInvite() != NULL ? player->GetGroupInvite() : player->GetGroup();
+    
+
+    Player* leader = NULL;
+    Player* invited = NULL;
+
+    if (group) {
+        leader =  ObjectAccessor::FindPlayerInOrOutOfWorld(group->GetLeaderGUID());
+    }
+
+    if (with) {
+        invited = with;
+
+        if (!leader)
+            leader = player;
+    } else {
+        invited = player;
+    }
+    
+    if (leader && leader->azthPlayer->isTimeWalking() && invited->azthPlayer->GetTimeWalkingLevel() != leader->azthPlayer->GetTimeWalkingLevel()) {
+        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_GROUP_CHECK_LEADER, player));
+        ChatHandler(with->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_GROUP_CHECK_PLAYER, with));
+        return false;
+    }
+    
     if (with) {
         uint32 curDimPlayer=player->azthPlayer->getCurrentDimensionByPhase();
         uint32 curDimWith=with->azthPlayer->getCurrentDimensionByPhase();

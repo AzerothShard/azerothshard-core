@@ -5,6 +5,8 @@
 #include "ScriptMgr.h"
 #include "RatingBonus.h"
 #include "Battleground.h"
+#include "AzthLanguage.h"
+#include "AzthLanguageStrings.h"
 
 class RatingBonus : public FormulaScript{
 public:

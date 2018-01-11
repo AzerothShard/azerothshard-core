@@ -4,8 +4,6 @@
 #include "Define.h"
 #include "Common.h"
 #include "Chat.h"
-#include "AzthLanguage.h"
-#include "AzthLanguageStrings.h"
 
 struct Bonus
 {
