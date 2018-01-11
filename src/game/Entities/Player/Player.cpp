@@ -8568,7 +8568,7 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change)
 void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change)
 {
     // [AZTH] Timewalking
-    if (!azthPlayer->itemCheckReqLevel(item))
+    if (item && !azthPlayer->itemCheckReqLevel(item->GetTemplate()))
         return;
 
     if (apply)
@@ -8689,7 +8689,7 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item* item, ItemTemplate const* proto)
 {
     // [AZTH] Timewalking
-    if (!azthPlayer->itemCheckReqLevel(item))
+    if (!azthPlayer->itemCheckReqLevel(proto))
         return;
     
     // Can do effect if any damage done to target
@@ -9085,6 +9085,11 @@ void Player::_ApplyAmmoBonuses()
         currentAmmoDPS = 0.0f;
     else
         currentAmmoDPS = (ammo_proto->Damage[0].DamageMin + ammo_proto->Damage[0].DamageMax) / 2;
+    
+    //[AZTH] Timewalking
+    if (!azthPlayer->itemCheckReqLevel(ammo_proto)) {
+        currentAmmoDPS=0;
+    }
 
     if (currentAmmoDPS == GetAmmoDPS())
         return;
@@ -12212,7 +12217,7 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
 InventoryResult Player::CanUnequipItem(uint16 pos, bool swap) const
 {
     //[AZTH]
-    if (azthPlayer->hasGear())
+    if (IsEquipmentPos(pos) && azthPlayer->hasGear())
         return EQUIP_ERR_CANT_DO_RIGHT_NOW;
     //[/AZTH]
 
@@ -12893,7 +12898,7 @@ Item* Player::EquipNewItem(uint16 pos, uint32 item, bool update)
 {
     if (Item* pItem = Item::CreateItem(item, 1, this))
     {
-        if (!azthPlayer->hasGear()) //AZTH dosnt save items if they are temp item for tournament
+        if (!IsEquipmentPos(pos) || !azthPlayer->hasGear()) //AZTH dosnt save equip if they are temp item for tournament
         {
             // pussywizard: obtaining blue or better items saves to db
             if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item))
@@ -14503,7 +14508,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
         return;
 
     //[AZTH] Timewalking
-    if (!azthPlayer->itemCheckReqLevel(item))
+    if (!azthPlayer->itemCheckReqLevel(item->GetTemplate()))
         return;
 
     uint32 enchant_id = item->GetEnchantmentId(slot);

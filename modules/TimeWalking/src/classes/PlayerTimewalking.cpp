@@ -27,11 +27,11 @@ uint32 AzthPlayer::getTwItemLevel(uint32 twLevel) {
         case TIMEWALKING_LVL_NAXX:
         case TIMEWALKING_LVL_OBSIDIAN:
         case TIMEWALKING_LVL_THE_EYE:
-            return 213;
+            return 219;
         break;
         case TIMEWALKING_LVL_ULDUAR:
         case TIMEWALKING_LVL_TOGC:
-            return 232;
+            return 239;
         break;
     }
     
@@ -273,7 +273,7 @@ bool AzthPlayer::canUseItem(Item * item, bool notify) {
     if (!proto)
         return true;
     
-    if (!itemCheckReqLevel(item, notify))
+    if (!itemCheckReqLevel(proto, notify))
         return false;
     
     uint32 level = player->getLevel();
@@ -303,17 +303,15 @@ bool AzthPlayer::canUseItem(Item * item, bool notify) {
     return true;
 }
 
-bool AzthPlayer::itemCheckReqLevel(Item * item, bool notify) {
+bool AzthPlayer::itemCheckReqLevel(ItemTemplate const* proto, bool notify) {
     uint32 level = player->getLevel();
 
-    if (item) {
-        ItemTemplate const* proto=item->GetTemplate();
-        
+    if (proto) {
         if (proto->ItemLevel == AZTH_TW_ILVL_NORMAL_ONLY) {
             if (!player->azthPlayer->isTimeWalking(true)) {
                 if (notify) {
                     player->GetSession()->SendNotification("This item can be used only with Timewalking level 1 to 79");
-                    player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                    player->SendEquipError(EQUIP_ERR_NONE, NULL, NULL);
                 }
 
                 return false;
@@ -329,7 +327,7 @@ bool AzthPlayer::itemCheckReqLevel(Item * item, bool notify) {
             if (req > level) {
                 if (notify) {
                     player->GetSession()->SendNotification("Level Required for this item: %u", req);
-                    player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+                    player->SendEquipError(EQUIP_ERR_NONE, NULL, NULL);
                 }
 
                 return false;
@@ -338,7 +336,7 @@ bool AzthPlayer::itemCheckReqLevel(Item * item, bool notify) {
     } else if (player->azthPlayer->isTimeWalking(true)) { // should not happen
         if (notify) {
             player->GetSession()->SendNotification("Cannot use this item in Timewalking! Unkown reason");
-            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            player->SendEquipError(EQUIP_ERR_NONE, NULL, NULL);
         }
         
         sLog->outError("AZTH ERROR: cannot use an item in timewalking, unknown reason but missing item pointer!");

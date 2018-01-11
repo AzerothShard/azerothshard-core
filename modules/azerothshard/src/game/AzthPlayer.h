@@ -113,7 +113,7 @@ public:
 
   //TIMEWALKING
   bool canUseItem(Item *item, bool notify = false);
-  bool itemCheckReqLevel(Item *item, bool notify = false);
+  bool itemCheckReqLevel(ItemTemplate const* item, bool notify = false);
   uint32 getGroupLevel(bool normalized = true);
   uint32 getGroupSize();
   uint32 GetTimeWalkingLevel() const;
