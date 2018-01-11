@@ -9088,7 +9088,13 @@ void Player::_ApplyAmmoBonuses()
     
     //[AZTH] Timewalking
     if (!azthPlayer->itemCheckReqLevel(ammo_proto)) {
-        currentAmmoDPS=0;
+        uint32 reqLevel = sAzthUtils->getCalcReqLevel(ammo_proto);
+        if (getLevel() < reqLevel) {
+            uint32 red=ceil(getLevel() * 100 / reqLevel / 2);
+            uint32 malus = ceil((reqLevel - getLevel()) / 10);
+            float pRed = float(red > malus ? red - malus : 1) / 100.0f; // convert to fraction
+            currentAmmoDPS=ceil(currentAmmoDPS * pRed);
+        }
     }
 
     if (currentAmmoDPS == GetAmmoDPS())
