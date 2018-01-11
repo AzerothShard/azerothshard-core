@@ -814,6 +814,16 @@ bool AzthUtils::canFly(Unit*const /*caster*/, Unit* originalCaster)
 
 SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell, bool notify)
 {
+    // Great feast and Fish Feast must be blocked for level < 70
+    // they have been fixed in cataclysm but on wotlk it can be used
+    // as exploit with low level players
+    if (player->getLevel() < 70 && (
+        spell->Id == 57399 // Well Fed - Fish Feast
+        || spell->Id == 57294 // Well Fed - Great Feast
+    )) {
+        return SPELL_FAILED_LOWLEVEL;
+    }
+    
     if (player->azthPlayer->isTimeWalking(true) && sAzthUtils->isNotAllowedSpellForTw(spell)) {
         if (notify)
             player->GetSession()->SendNotification("This spell is not allowed in Timewalking");
