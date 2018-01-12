@@ -16,7 +16,7 @@ public:
     bool OnGossipHello(Player* player, Creature* creature) override
     {
         uint32 currDimension=player->azthPlayer->getCurrentDimensionByMark();
-        std::string msg="Attualmente sei nella dimensione: ";
+        std::string msg=sAzthLang->get(AZTH_LANG_DIMENSION_CURRENT, player);
         std::string dimName= sAzthUtils->getDimensionName(currDimension);
         msg +=  dimName;
 

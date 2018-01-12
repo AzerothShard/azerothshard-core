@@ -117,6 +117,7 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_DONATION_ITEM_NO_DB, "Error: item doesn't exist in database!", "Errore: l'item non esiste nel database!");
     
     //dimension npc
+    this->add(AZTH_LANG_DIMENSION_CURRENT, "Currenlty you are on dimension: ", "Attualmente sei nella dimensione: ");
     this->add(AZTH_LANG_DIMENSION_ILLUSORY, "Illusory World: Standard Dimension", "[PRINCIPALE] Illusory World: Dimensione standard.");
     this->add(AZTH_LANG_DIMENSION_GUILD, "Guild World: Guild Houses dimension", "Guild World: Dimensione delle case di gilda.");
     this->add(AZTH_LANG_DIMENSION_PVP, "Corrupted World: PvP Dimension", "Corrupted World: Dimensione riservata al pvp");
