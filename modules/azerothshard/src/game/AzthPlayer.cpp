@@ -325,28 +325,28 @@ bool AzthPlayer::changeDimension(uint32 dim, bool validate /* = false*/, bool te
         
         if (dim == DIMENSION_60) {
             if (player->getLevel() > 60 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
-                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK60));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK60, player));
                 return false;
             }
         }
         
         if (dim == DIMENSION_70) {
             if (player->getLevel() > 70 && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO) {
-                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK70));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_TW_CHECK70, player));
                 return false;
             }
         }
         
         if (dim == DIMENSION_GUILD) {
             if (!player->GetGuild()) {
-                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_ACCESSCHECK));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_ACCESSCHECK, player));
                 return false;
             }
         }
         
         if (dim == DIMENSION_GM) {
             if (player->GetSession()->GetSecurity() <= SEC_PLAYER) {
-                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GM_ACCESSCHECK));
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GM_ACCESSCHECK, player));
                 return false;
             }
         }
@@ -548,7 +548,7 @@ bool AzthPlayer::checkItems(uint32 iLvlMax, uint8 type /*=0*/) {
         }
         
         if (avg > iLvlMax) {
-            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_MLEVEL_CHECK), avg);
+            ChatHandler(player->GetSession()).PSendSysMessage(sAzthLang->getf(AZTH_LANG_PVPITEMS_MLEVEL_CHECK, player), avg);
             return false;
         } else {
             return true;

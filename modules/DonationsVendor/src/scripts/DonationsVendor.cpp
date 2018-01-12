@@ -53,9 +53,9 @@ public:
         //                              icon            text                           sender      action   popup message    money  code
         //if (!player->azthPlayer->isTimeWalking() && !player->azthPlayer->hasGear())
         //{
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, sAzthLang->get(AZTH_LANG_COLLECTION_DEPOSIT_ITEMS), GOSSIP_SENDER_MAIN, 501);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, sAzthLang->get(AZTH_LANG_COLLECTION_DEPOSIT_ITEMS, player), GOSSIP_SENDER_MAIN, 501);
         //}
-        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, sAzthLang->get(AZTH_LANG_COLLECTION_SEARCH_ITEMS), GOSSIP_SENDER_MAIN, 500, sAzthLang->get(AZTH_LANG_COLLECTION_SEARCH_ITEMS_CODE), 0, true);
+        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, sAzthLang->get(AZTH_LANG_COLLECTION_SEARCH_ITEMS, player), GOSSIP_SENDER_MAIN, 500, sAzthLang->get(AZTH_LANG_COLLECTION_SEARCH_ITEMS_CODE, player), 0, true);
         
         // from 1 to 150
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, sAzthLang->getf(AZTH_LANG_SHOW_BANK_ITEMS,player,1,150), GOSSIP_SENDER_MAIN, AZTH_ITEMBANK_START_ACTION);

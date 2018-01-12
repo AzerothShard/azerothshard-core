@@ -27,7 +27,7 @@ uint32 AzthPlayer::getTwItemLevel(uint32 twLevel) {
         case TIMEWALKING_LVL_NAXX:
         case TIMEWALKING_LVL_OBSIDIAN:
         case TIMEWALKING_LVL_THE_EYE:
-            return 219;
+            return 213;
         break;
         case TIMEWALKING_LVL_ULDUAR:
         case TIMEWALKING_LVL_TOGC:
