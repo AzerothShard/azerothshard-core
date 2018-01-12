@@ -27,7 +27,8 @@ enum npc_timewalking_enum
     TIMEWALKING_GOSSIP_NPC_TEXT_PHASE = 50103,
     TIMEWALKING_GOSSIP_NPC_TEXT_RAID = 50104,
     TIMEWALKING_GOSSIP_NPC_TEXT_ALREADYAPPLIED = 50105,
-	TIMEWALKING_GOSSIP_NPC_TEXT_ACTIVELFG = 50106
+	TIMEWALKING_GOSSIP_NPC_TEXT_ACTIVELFG = 50106,
+	TIMEWALKING_GOSSIP_NPC_TEXT_INGROUP = 50107
 };
 
 class loadTimeWalkingRaid : public WorldScript
@@ -135,6 +136,12 @@ public:
 			player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_ACTIVELFG, creature->GetGUID());
 			return true;
 		}
+		
+        if (player->GetGroup())
+        {
+            player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_INGROUP, creature->GetGUID());
+            return true;
+        }
 
         if (!player->azthPlayer->isTimeWalking() && player->getLevel()<sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
             return false;
