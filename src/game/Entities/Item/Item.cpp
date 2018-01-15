@@ -91,7 +91,9 @@ void AddItemsSetItem(Player* player, Item* item)
                 }
 
                 // spell casted only if fit form requirement, in other case will casted at form change
-                player->ApplyEquipSpell(spellInfo, NULL, true);
+                // [AZTH] Timewalking
+                if (player->azthPlayer->itemCheckReqLevel(proto))
+                    player->ApplyEquipSpell(spellInfo, NULL, true);
                 eff->spells[y] = spellInfo;
                 break;
             }

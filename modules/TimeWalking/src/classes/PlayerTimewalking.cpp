@@ -161,7 +161,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
             ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_MODE_OFF, player));
         }
     }
-    
+
     prepareTwSpells(oldLevel);
     
     sAzthUtils->updateTwLevel(player, player->GetGroup());
@@ -172,6 +172,59 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
             sAzthUtils->removeTimewalkingAura(player->GetPet());
         }
     }
+    
+    // START: RESET EQUIP SPELLS
+    player->UpdateEquipSpellsAtFormChange();
+    
+    // unapply and reapply equip spells
+    for (uint8 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
+    {
+        if (player->m_items[i] && !player->m_items[i]->IsBroken() && player->CanUseAttackType(player->GetAttackBySlot(i)))
+        {
+            player->ApplyItemEquipSpell(player->m_items[i], false);
+            player->ApplyItemEquipSpell(player->m_items[i], true);
+        }
+    }
+
+    // unapply and reapply set bonuses
+    for (size_t setindex = 0; setindex < player->ItemSetEff.size(); ++setindex)
+    {
+        ItemSetEffect* eff = player->ItemSetEff[setindex];
+        if (!eff)
+            continue;
+
+        for (uint32 y = 0; y < MAX_ITEM_SET_SPELLS; ++y)
+        {
+            SpellInfo const* spellInfo = eff->spells[y];
+            if (!spellInfo)
+                continue;
+
+            player->ApplyEquipSpell(spellInfo, NULL, false);
+            
+            // [AZTH] Timewalking
+            bool found=false;
+            for (uint8 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
+            {
+                if (player->m_items[i])
+                {
+                    ItemTemplate const* proto = player->m_items[i]->GetTemplate();
+                    if (proto->ItemSet == eff->setid) {
+                        if (proto && !player->azthPlayer->itemCheckReqLevel(proto)) {
+                            found=true;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (found)
+                break;
+            
+            //[/AZTH]
+            
+            player->ApplyEquipSpell(spellInfo, NULL, true);
+        }
+    }
+    // END: RESET EQUIP SPELLS
     
     /*if (save) {
         player->SaveToDB(false, false);
@@ -306,42 +359,31 @@ bool AzthPlayer::canUseItem(Item * item, bool notify) {
 bool AzthPlayer::itemCheckReqLevel(ItemTemplate const* proto, bool notify) {
     uint32 level = player->getLevel();
 
-    if (proto) {
-        if (proto->ItemLevel == AZTH_TW_ILVL_NORMAL_ONLY) {
-            if (!player->azthPlayer->isTimeWalking(true)) {
-                if (notify) {
-                    player->GetSession()->SendNotification("This item can be used only with Timewalking level 1 to 79");
-                    player->SendEquipError(EQUIP_ERR_NONE, NULL, NULL);
-                }
-
-                return false;
-            } else {
-                return true; // in this case we know what we're doing with this items, so we can return true directly
+    if (proto->ItemLevel == AZTH_TW_ILVL_NORMAL_ONLY) {
+        if (!player->azthPlayer->isTimeWalking(true)) {
+            if (notify) {
+                player->GetSession()->SendNotification("This item can be used only with Timewalking level 1 to 79");
+                player->SendEquipError(EQUIP_ERR_NONE, NULL, NULL);
             }
+
+            return false;
+        } else {
+            return true; // in this case we know what we're doing with this items, so we can return true directly
         }
+    }
 
-        // we must check also level because
-        // this is called even when timewalking is set but level is not changed yet (when removing item bonuses)
-        if (level < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && player->azthPlayer->isTimeWalking(true)) {
-            uint32 req=sAzthUtils->getCalcReqLevel(proto);
-            if (req > level) {
-                if (notify) {
-                    player->GetSession()->SendNotification("Level Required for this item: %u", req);
-                    player->SendEquipError(EQUIP_ERR_NONE, NULL, NULL);
-                }
-
-                return false;
+    // we must check also level because
+    // this is called even when timewalking is set but level is not changed yet (when removing item bonuses)
+    if (level < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && player->azthPlayer->isTimeWalking(true)) {
+        uint32 req=sAzthUtils->getCalcReqLevel(proto);
+        if (req > level) {
+            if (notify) {
+                player->GetSession()->SendNotification("Level Required for this item: %u", req);
+                player->SendEquipError(EQUIP_ERR_NONE, NULL, NULL);
             }
-        }
-    } else if (player->azthPlayer->isTimeWalking(true)) { // should not happen
-        if (notify) {
-            player->GetSession()->SendNotification("Cannot use this item in Timewalking! Unkown reason");
-            player->SendEquipError(EQUIP_ERR_NONE, NULL, NULL);
-        }
-        
-        sLog->outError("AZTH ERROR: cannot use an item in timewalking, unknown reason but missing item pointer!");
 
-        return false;
+            return false;
+        }
     }
     
     return true;

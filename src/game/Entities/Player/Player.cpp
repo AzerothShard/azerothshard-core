@@ -8567,12 +8567,12 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change)
 
 void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change)
 {
-    // [AZTH] Timewalking
-    if (item && !azthPlayer->itemCheckReqLevel(item->GetTemplate()))
-        return;
-
     if (apply)
     {
+        // [AZTH] Timewalking
+        if (item && !azthPlayer->itemCheckReqLevel(item->GetTemplate()))
+            return;
+        
         // Cannot be used in this stance/form
         if (spellInfo->CheckShapeshift(GetShapeshiftForm()) != SPELL_CAST_OK)
             return;
@@ -8644,6 +8644,26 @@ void Player::UpdateEquipSpellsAtFormChange()
                 continue;
 
             ApplyEquipSpell(spellInfo, NULL, false, true);       // remove spells that not fit to form
+            
+            // [AZTH] Timewalking
+            bool found=false;
+            for (uint8 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
+            {
+                if (m_items[i])
+                {
+                    ItemTemplate const* proto = m_items[i]->GetTemplate();
+                    if (proto->ItemSet == eff->setid) {
+                        if (proto && !azthPlayer->itemCheckReqLevel(proto)) {
+                            found=true;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (found)
+                break;
+            //[/AZTH]
+            
             ApplyEquipSpell(spellInfo, NULL, true, true);        // add spells that fit form but not active
         }
     }
