@@ -8093,13 +8093,22 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
                 ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(sAzthUtils->getCalcReqLevel(proto));
                 if (maxSSV) {
                     float mulMax = sAzthUtils->getCustomMultiplier(proto, (float)maxSSV->getssdMultiplier(azthScalingStatValue));
-                    uint32 modifier = (mulMax / (float)posVal) * 10000;
+                    uint32 modifier = ((float)posVal / mulMax ) * 10000;
 
                     float mul = sAzthUtils->getCustomMultiplier(proto, (float)ssv->getssdMultiplier(azthScalingStatValue));
                     val = (mul * modifier) / 10000;
 
                     if (proto->ItemStat[i].ItemStatValue < 0)
                         val *= -1;
+
+                    //[AZTH] avoid higher values than stats. This means that there's an
+                    // uncorrect scaling calculation
+                    if (proto->ScalingStatValue == 0) {
+                        val = val / 3; // constant reduction since even with scaling, stats are too large
+                        
+                        if (abs(val) > abs(proto->ItemStat[i].ItemStatValue))
+                            val = proto->ItemStat[i].ItemStatValue;
+                    }
                 }
                 else {
                     val = proto->ItemStat[i].ItemStatValue;
@@ -8280,6 +8289,8 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     if (ssv)
     {
         if (uint32 ssvarmor = ssv->getArmorMod(azthScalingStatValue))
+            //[AZTH] check to avoid higher values than stat itself (heirloom OR azth items with correct armor value)
+            if (proto->ScalingStatValue > 0 || ssvarmor < proto->Armor)
             armor = ssvarmor;
     }
     else if (armor && proto->ArmorDamageModifier)

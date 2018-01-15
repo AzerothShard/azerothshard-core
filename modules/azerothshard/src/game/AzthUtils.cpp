@@ -284,7 +284,7 @@ float AzthUtils::getCustomMultiplier(ItemTemplate const * pProto,uint32 multipli
     }
     else {
         // ex: 131 ( boost ) / ( 80 - 60 )
-        return ( (float)multiplier / float( maxLevel - req ) ) * 6;
+        return ( (float)multiplier / float( maxLevel - req ) ) * 5;
     }
 }
 
@@ -337,14 +337,14 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
        8 Boosted stats progression
        16 Very low stats progression
      */
-    if (pl->getLevel() + 10 > req) {        // from 19 to 10 level diff
+
+    /*if (pl->getLevel() + 10 > req) {        // from 19 to 10 level diff
         lowLevel = 0;  // Default stats progression by item type
     } else if (pl->getLevel() + 20 >= req) { // from max to 20 level diff
         lowLevel = 4;  // Low Stats progression
-    } else {
+    } else {*/
         lowLevel = 16; // Very low stats progression
-    }
-
+    //}
     uint32 mul;
 
     // SHOULDERS
