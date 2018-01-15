@@ -89,19 +89,7 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
      * check for quests that require timewalking
      */
     // normal timewalking
-    if (qInfo->GetQuestLevel() < 80) {
-        uint32 groupLevel=this->getGroupLevel();
-        uint32 level = groupLevel > 0 ? groupLevel : this->player->getLevel();
-        
-        if (level >= qInfo->GetMinLevel() && qInfo->GetQuestLevel() > 0 && level <= uint32(qInfo->GetQuestLevel())) {
-            for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
-                if (qInfo->RequiredNpcOrGo[j] > 0 && uint32(qInfo->RequiredNpcOrGo[j]) == entry)
-                    realEntry = entry;
-            }
-
-            return true;
-        }
-    } else  if (hsQuest->specialLevel>0) {
+    if (hsQuest->specialLevel>0) {
         //special timewalking
         uint32 groupLevel=this->getGroupLevel(false);
         uint32 specialLevel =  groupLevel > 0 ? groupLevel : GetTimeWalkingLevel();
@@ -114,11 +102,20 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
 
             return true;
         }
-    } else {
-        // normal case
-        return true;
+    } else if (qInfo->GetQuestLevel() <= 80) {
+        uint32 groupLevel=this->getGroupLevel();
+        uint32 level = groupLevel > 0 ? groupLevel : this->player->getLevel();
+        
+        if (level >= qInfo->GetMinLevel() && qInfo->GetQuestLevel() > 0 && level <= uint32(qInfo->GetQuestLevel())) {
+            for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
+                if (qInfo->RequiredNpcOrGo[j] > 0 && uint32(qInfo->RequiredNpcOrGo[j]) == entry)
+                    realEntry = entry;
+            }
+
+            return true;
+        }
     }
-    
+
     // in this case conditions above are negative
     // so check has not passed
     return false;
