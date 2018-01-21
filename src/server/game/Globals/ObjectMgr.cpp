@@ -2381,54 +2381,6 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.MaxMoneyLoot            = fields[136].GetUInt32();
         itemTemplate.FlagsCu                 = fields[137].GetUInt32();
 
-        ItemEntry const* dbcitem = sItemStore.LookupEntry(entry);
-
-        if (dbcitem)
-        {
-            if (itemTemplate.Class != dbcitem->Class)
-            {
-                sLog->outErrorDb("Item (Entry: %u) does not have a correct class %u, must be %u .", entry, itemTemplate.Class, dbcitem->Class);
-                if (enforceDBCAttributes)
-                    itemTemplate.Class = dbcitem->Class;
-            }
-
-            if (itemTemplate.SoundOverrideSubclass != dbcitem->SoundOverrideSubclass)
-            {
-                sLog->outError("Item (Entry: %u) does not have a correct SoundOverrideSubclass (%i), must be %i .", entry, itemTemplate.SoundOverrideSubclass, dbcitem->SoundOverrideSubclass);
-                if (enforceDBCAttributes)
-                    itemTemplate.SoundOverrideSubclass = dbcitem->SoundOverrideSubclass;
-            }
-            if (itemTemplate.Material != dbcitem->Material)
-            {
-                sLog->outErrorDb("Item (Entry: %u) does not have a correct material (%i), must be %i .", entry, itemTemplate.Material, dbcitem->Material);
-                if (enforceDBCAttributes)
-                    itemTemplate.Material = dbcitem->Material;
-            }
-            if (itemTemplate.InventoryType != dbcitem->InventoryType)
-            {
-                sLog->outErrorDb("Item (Entry: %u) does not have a correct inventory type (%u), must be %u .", entry, itemTemplate.InventoryType, dbcitem->InventoryType);
-                if (enforceDBCAttributes)
-                    itemTemplate.InventoryType = dbcitem->InventoryType;
-            }
-            if (itemTemplate.DisplayInfoID != dbcitem->DisplayId)
-            {
-                sLog->outErrorDb("Item (Entry: %u) does not have a correct display id (%u), must be %u .", entry, itemTemplate.DisplayInfoID, dbcitem->DisplayId);
-                if (enforceDBCAttributes)
-                    itemTemplate.DisplayInfoID = dbcitem->DisplayId;
-            }
-            if (itemTemplate.Sheath != dbcitem->Sheath)
-            {
-                sLog->outErrorDb("Item (Entry: %u) does not have a correct sheathid (%u), must be %u .", entry, itemTemplate.Sheath, dbcitem->Sheath);
-                if (enforceDBCAttributes)
-                    itemTemplate.Sheath = dbcitem->Sheath;
-            }
-
-        }
-        // Checks
-        //[AZTH] disabled error mainly for Hearthstone Mode and custom items 
-        //else
-        //    sLog->outErrorDb("Item (Entry: %u) does not exist in item.dbc! (not correct id?).", entry);
-
         if (itemTemplate.Class >= MAX_ITEM_CLASS)
         {
             sLog->outErrorDb("Item (Entry: %u) has wrong Class value (%u)", entry, itemTemplate.Class);

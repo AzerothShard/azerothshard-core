@@ -78,6 +78,14 @@ include_directories(
   ${MYSQL_INCLUDE_DIR}
 )
 
+
+#[AZTH]
+include_directories(
+  ${CMAKE_SOURCE_DIR}/modules/azerothshard/src/game/
+)
+#[/AZTH]
+
+
 add_library(collision STATIC
   ${collision_STAT_SRCS}
   ${collision_STAT_PCH_SRC}
