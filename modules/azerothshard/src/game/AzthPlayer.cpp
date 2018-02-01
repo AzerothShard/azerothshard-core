@@ -520,10 +520,10 @@ bool AzthPlayer::checkItems(uint32 iLvlMax, uint8 type /*=0*/) {
 
         for (uint32 INVENTORY_INDEX = 0; INVENTORY_INDEX <= INVENTORY_END; INVENTORY_INDEX++)
         {
-            // don't check tabard, ranged, offhand or shirt
-            if (INVENTORY_INDEX == EQUIPMENT_SLOT_TABARD || INVENTORY_INDEX == EQUIPMENT_SLOT_RANGED || INVENTORY_INDEX == EQUIPMENT_SLOT_OFFHAND || INVENTORY_INDEX == EQUIPMENT_SLOT_BODY)
+            // don't check tabard or shirt
+            if (INVENTORY_INDEX == EQUIPMENT_SLOT_TABARD || INVENTORY_INDEX == EQUIPMENT_SLOT_BODY)
                 continue;
-            
+
             Item* itemToCheck = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX);
             if (itemToCheck != nullptr)
             {
@@ -557,7 +557,9 @@ bool AzthPlayer::checkItems(uint32 iLvlMax, uint8 type /*=0*/) {
 }
 
 bool AzthPlayer::isPvPFlagOn(bool def) {
-    if (getCurrentDimensionByPhase() == DIMENSION_PVP || getCurrentDimensionByPhase() == DIMENSION_ENTERTAINMENT) {
+    if (getCurrentDimensionByPhase() == DIMENSION_PVP 
+        //|| getCurrentDimensionByPhase() == DIMENSION_ENTERTAINMENT
+    ) {
         player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
         return true;
     }
