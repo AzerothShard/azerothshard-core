@@ -30,7 +30,7 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_BAG_FULL_SENT_TO_MAIL, "Hai le borse piene! Controlla la mailbox!", "Hai le borse piene! Controlla la mailbox!");
 
     //collection npc
-    this->add(AZTH_LANG_COLLECTION_DEPOSIT_ITEMS, "Store Items", "Deposita un item");
+    this->add(AZTH_LANG_COLLECTION_DEPOSIT_ITEMS, "Store Items from your main backpack", "Deposita un item dalla tua borsa principale");
     this->add(AZTH_LANG_COLLECTION_SEARCH_ITEMS, "Search an item by name", "Ricerca un item per nome");
     this->add(AZTH_LANG_COLLECTION_SEARCH_ITEMS_CODE, "Insert name, and press accept button", "Inserisci il nome e premi sul bottone accept");
     this->add(AZTH_LANG_COLLECTION_ITEM_NOT_RECOVERED, "Item not recovered, unique? bag full?", "Item non recuperato, unique? borse piene?");
