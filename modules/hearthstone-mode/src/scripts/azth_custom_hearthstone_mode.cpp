@@ -251,15 +251,17 @@ class npc_han_al : public CreatureScript
 public:
     npc_han_al() : CreatureScript("npc_han_al") { }
 
-    bool OnGossipSelect(Player* player, Creature*  /*creature*/, uint32 sender, uint32 action) override
+    bool OnGossipSelect(Player* player, Creature*  creature, uint32 sender, uint32 action) override
     {    
         player->PlayerTalkClass->SendCloseGossip();
         
         if (sender != GOSSIP_SENDER_MAIN)
             return true;
         
-        if (!action)
+        if (!action) {
+            creature->MonsterWhisper(sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_REACHED, player), player);
             return true;
+        }
         
         Quest const * quest = sObjectMgr->GetQuestTemplate(action);
 
@@ -437,8 +439,11 @@ public:
             }
             _tmpItr++;
         }
-        if (questPvp && player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false) && PvpMaxCheck < MAX_PVP_QUEST_NUMBER)
+        if (questPvp && player->CanAddQuest(questPvp, false) && player->CanTakeQuest(questPvp, false))
         {
+            if (PvpMaxCheck >= MAX_PVP_QUEST_NUMBER)
+                pvpId = 0;  // it means this player reached the limit
+            
             isEmpty = false;
             bitmask = bitmask | BITMASK_PVP;
         }
@@ -455,8 +460,11 @@ public:
             }
             _tmpItr++;
         }
-        if (questPve && player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false) && PveMaxCheck < MAX_PVE_QUEST_NUMBER)
+        if (questPve && player->CanAddQuest(questPve, false) && player->CanTakeQuest(questPve, false))
         {
+            if (PveMaxCheck >= MAX_PVE_QUEST_NUMBER)
+                pveId = 0;  // it means this player reached the limit
+            
             isEmpty = false;
             bitmask = bitmask | BITMASK_PVE;
         }
@@ -473,8 +481,11 @@ public:
             }
             _tmpItr++;
         }
-        if (questClassicWeekly && player->CanAddQuest(questClassicWeekly, false) && player->CanTakeQuest(questClassicWeekly, false) && WeeklyClassicMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        if (questClassicWeekly && player->CanAddQuest(questClassicWeekly, false) && player->CanTakeQuest(questClassicWeekly, false))
         {
+            if (WeeklyClassicMaxCheck >= MAX_WEEKLY_QUEST_NUMBER)
+                weeklyClassicId = 0;  // it means this player reached the limit
+            
             isEmpty = false;
             bitmask = bitmask | BITMASK_WEEKLY_CLASSIC;
         }
@@ -491,8 +502,11 @@ public:
             }
             _tmpItr++;
         }
-        if (questTBCWeekly && player->CanAddQuest(questTBCWeekly, false) && player->CanTakeQuest(questTBCWeekly, false) && WeeklyTBCMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        if (questTBCWeekly && player->CanAddQuest(questTBCWeekly, false) && player->CanTakeQuest(questTBCWeekly, false))
         {
+            if ( WeeklyTBCMaxCheck >= MAX_WEEKLY_QUEST_NUMBER)
+                weeklyTBCId = 0;  // it means this player reached the limit
+            
             isEmpty = false;
             bitmask = bitmask | BITMASK_WEEKLY_TBC;
         }
@@ -509,8 +523,11 @@ public:
             }
             _tmpItr++;
         }
-        if (questWotlkWeekly && player->CanAddQuest(questWotlkWeekly, false) && player->CanTakeQuest(questWotlkWeekly, false) && WeeklyWotlkMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        if (questWotlkWeekly && player->CanAddQuest(questWotlkWeekly, false) && player->CanTakeQuest(questWotlkWeekly, false))
         {
+            if (WeeklyWotlkMaxCheck >= MAX_WEEKLY_QUEST_NUMBER)
+                weeklyWotlkId = 0;  // it means this player reached the limit
+            
             isEmpty = false;
             bitmask = bitmask | BITMASK_WEEKLY_WOTLK;
         }
@@ -528,8 +545,11 @@ public:
             }
             _tmpItr++;
         }
-        if (questWeeklyRandomTw && player->CanAddQuest(questWeeklyRandomTw, false) && player->CanTakeQuest(questWeeklyRandomTw, false) && TwWeeklyRandomMaxCheck < MAX_WEEKLY_QUEST_NUMBER)
+        if (questWeeklyRandomTw && player->CanAddQuest(questWeeklyRandomTw, false) && player->CanTakeQuest(questWeeklyRandomTw, false))
         {
+            if (TwWeeklyRandomMaxCheck >= MAX_WEEKLY_QUEST_NUMBER)
+                weeklyRandomTwId = 0; // it means this player reached the limit
+            
             isEmpty = false;
             bitmask = bitmask | BITMASK_TW_WEEKLY_RANDOM;
         }
@@ -546,8 +566,11 @@ public:
             }
             _tmpItr++;
         }
-        if (questDailyRandomTw && player->CanAddQuest(questDailyRandomTw, false) && player->CanTakeQuest(questDailyRandomTw, false) && TwDailyRandMaxCheck < MAX_PVE_QUEST_NUMBER)
+        if (questDailyRandomTw && player->CanAddQuest(questDailyRandomTw, false) && player->CanTakeQuest(questDailyRandomTw, false))
         {
+            if (TwDailyRandMaxCheck >= MAX_WEEKLY_QUEST_NUMBER)
+                dailyRandomTwId = 0;  // it means this player reached the limit
+                
             isEmpty = false;
             bitmask = bitmask | BITMASK_TW_DAILY_RANDOM;
         }
@@ -559,33 +582,33 @@ public:
         if ((bitmask & BITMASK_PVP) == BITMASK_PVP)
         {
             if (questPvp)
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, sAzthLang->getf(AZTH_LANG_HS_PVP_QUEST, player, questPvp->GetTitle().c_str()), GOSSIP_SENDER_MAIN, pvpId);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, sAzthLang->getf(AZTH_LANG_HS_PVP_QUEST, player, (questPvp->GetTitle() + (pvpId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, pvpId);
         }
 
         if (!player->azthPlayer->isPvP()) {
             if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
             {
                 if (questPve)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_DAILY_QUEST, player, questPve->GetTitle().c_str()), GOSSIP_SENDER_MAIN, pveId);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_DAILY_QUEST, player, (questPve->GetTitle() + (pveId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, pveId);
             }
             
 
             if ((bitmask & BITMASK_WEEKLY_CLASSIC) == BITMASK_WEEKLY_CLASSIC)
             {
                 if (questClassicWeekly)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, questClassicWeekly->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyClassicId);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, (questClassicWeekly->GetTitle() + (weeklyClassicId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, weeklyClassicId);
             }
             
             if ((bitmask & BITMASK_WEEKLY_TBC) == BITMASK_WEEKLY_TBC)
             {
                 if (questTBCWeekly)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, questTBCWeekly->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyTBCId);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, (questTBCWeekly->GetTitle() + (weeklyTBCId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, weeklyTBCId);
             }
             
             if ((bitmask & BITMASK_WEEKLY_WOTLK) == BITMASK_WEEKLY_WOTLK)
             {
                 if (questWotlkWeekly)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, questWotlkWeekly->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyWotlkId);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, (questWotlkWeekly->GetTitle()+ (weeklyWotlkId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player) )).c_str()), GOSSIP_SENDER_MAIN, weeklyWotlkId);
             }
             
             if (bitmask>0)
@@ -596,7 +619,7 @@ public:
             for (std::list<uint32>::const_iterator it = weeklyTwIds.begin(), end = weeklyTwIds.end(); it != end; ++it) {
                 int weeklyTwMaxCheck = 0;
                 _tmpItr = sHearthstoneMode->hsTwWeeklyQuests.begin();
-                while (_tmpItr != sHearthstoneMode->hsTwWeeklyQuests.end() && weeklyTwMaxCheck <= MAX_PVE_QUEST_NUMBER)
+                while (_tmpItr != sHearthstoneMode->hsTwWeeklyQuests.end())
                 {
                     if (player->GetQuestStatus(_tmpItr->second.id) != QUEST_STATUS_NONE)
                     {
@@ -610,7 +633,7 @@ public:
                 {
                     if (quest) {
                         isEmpty = false;
-                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_WEEKLY_QUEST, player, quest->GetTitle().c_str()), GOSSIP_SENDER_MAIN, *it);
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_WEEKLY_QUEST, player, (quest->GetTitle() + (weeklyTwMaxCheck <= MAX_PVE_QUEST_NUMBER ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player) )).c_str()), GOSSIP_SENDER_MAIN, weeklyTwMaxCheck <= MAX_PVE_QUEST_NUMBER ? *it : 0);
                     }
                 }
             }
@@ -619,7 +642,7 @@ public:
             if ((bitmask & BITMASK_TW_WEEKLY_RANDOM) == BITMASK_TW_WEEKLY_RANDOM)
             {
                 if (questWeeklyRandomTw)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_WEEKLY_RANDOM_QUEST, player, questWeeklyRandomTw->GetTitle().c_str()), GOSSIP_SENDER_MAIN, weeklyRandomTwId);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_WEEKLY_RANDOM_QUEST, player, (questWeeklyRandomTw->GetTitle() + (weeklyRandomTwId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, weeklyRandomTwId);
             }
             
 //"TW Daily Quest Check & gossip"
@@ -636,11 +659,11 @@ public:
                 }
 
                 Quest const *quest = sObjectMgr->GetQuestTemplate(*it);
-                if (quest && player->CanAddQuest(quest, false) && player->CanTakeQuest(quest, false) && dailyTwMaxCheck < MAX_PVE_QUEST_NUMBER)
+                if (quest && player->CanAddQuest(quest, false) && player->CanTakeQuest(quest, false))
                 {
                     if (quest) {
                         isEmpty = false;
-                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_DAILY_QUEST, player, quest->GetTitle().c_str()), GOSSIP_SENDER_MAIN, *it);
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_DAILY_QUEST, player, (quest->GetTitle() + (dailyTwMaxCheck <= MAX_PVE_QUEST_NUMBER ? "" :  sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, dailyTwMaxCheck <= MAX_PVE_QUEST_NUMBER ? *it : 0);
                     }
                 }
             }
@@ -648,7 +671,7 @@ public:
             if ((bitmask & BITMASK_TW_DAILY_RANDOM) == BITMASK_TW_DAILY_RANDOM)
             {
                 if (questDailyRandomTw)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_DAILY_RANDOM_QUEST, player, questDailyRandomTw->GetTitle().c_str()), GOSSIP_SENDER_MAIN, dailyRandomTwId);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_TW_DAILY_RANDOM_QUEST, player, (questDailyRandomTw->GetTitle() + (dailyRandomTwId ? "" :  sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, dailyRandomTwId);
             }
         }
 

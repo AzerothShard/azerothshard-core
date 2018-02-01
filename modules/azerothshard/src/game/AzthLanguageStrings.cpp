@@ -82,6 +82,7 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_TOURNAMENT_LEVEL_ACTUAL, "Current season only allows items with |cffff0000%d|r maximum level", "L'attuale Season ha livello massimo |cffff0000%d|r");
 
     //ss
+    this->add(AZTH_LANG_SS_README, "THINGS TO KNOW!", "COSE DA SAPERE!");
     this->add(AZTH_LANG_SS_TELEPORT_BACK, "Teleport me back", "Riportami indietro");
     this->add(AZTH_LANG_SS_BACK, "Back", "Indietro");
     this->add(AZTH_LANG_SS_VALUE, "Insert a value" , "Inserisci un valore");
@@ -101,6 +102,9 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_HS_TW_WEEKLY_RANDOM_QUEST,"Random Raid: %s","Incursione casuale: %s");
     this->add(AZTH_LANG_HS_TW_DAILY_QUEST,"Daily quest: %s","Missione giornaliera: %s");
     this->add(AZTH_LANG_HS_TW_DAILY_RANDOM_QUEST,"Random Daily quest: %s","Missione giornaliera casuale: %s");
+    
+    this->add(AZTH_LANG_HS_QUEST_LIMIT_REACHED,"You reached the limit of this quest category in your quest log, remove or complete one before.","Hai raggiunto il limite massimo di quest di tale categoria nel tuo quest log, rimuovine o completane una prima.");
+    this->add(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX,"[LIMIT REACHED]","[LIMITE RAGGIUNTO]");
     
     //bg item level
     this->add(AZTH_LANG_BG_ITEM_LEVEL_RESET, "Max item level set to its default value.","L'item level massimo e' stato riportato al valore predefinito.");

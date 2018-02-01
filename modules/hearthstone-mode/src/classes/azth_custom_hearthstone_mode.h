@@ -58,7 +58,7 @@ enum bitmasksHs
     BITMASK_TW_DAILY_RANDOM     = 32,   //hs TW daily random
     BITMASK_WEEKLY_TBC          = 64,   //hs tbc weekly random
     BITMASK_WEEKLY_WOTLK        = 128,  //hs wotlk weekly random
-    BITMASK_TW_WEEKLY_RANDOM    = 256,
+    BITMASK_TW_WEEKLY_RANDOM    = 256,  //hs tw weekly random
 };
 
 enum miscHs
