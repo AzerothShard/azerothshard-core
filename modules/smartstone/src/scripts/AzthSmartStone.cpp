@@ -39,6 +39,8 @@ enum SmartStoneCommands {
     SMRTST_TELEPORT_HOUSE=14,
     SMRTST_SHOP_MENU=2000, //unused
     SMRTST_BACK_MENU=2001,
+    SMRTST_README=60402,
+    SMRTST_README_CHILD=60400,
 };
 
 std::string SmartStoneCommand::getText(Player *pl) {
@@ -84,20 +86,61 @@ public:
     
     void OnGossipSelect(Player *player, Item *item, uint32  /*sender*/,
             uint32 action) override {
+                        
         player->PlayerTalkClass->ClearMenus();
+            
+        // hack for readme gossip menu
+        if (action>=SMRTST_README_CHILD || player->PlayerTalkClass->GetGossipMenu().GetMenuId() >=SMRTST_README_CHILD) {
+            uint32 menuId= action; //action >= SMRTST_README_CHILD ? action : player->PlayerTalkClass->GetGossipMenu().GetItemData(action)->GossipActionMenuId;
+            player->PlayerTalkClass->GetGossipMenu().SetMenuId(menuId);
+
+            GossipMenuItemsMapBounds menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(menuId);
+            uint32 textId = DEFAULT_GOSSIP_MESSAGE;
+            
+            GossipMenusMapBounds menuBounds = sObjectMgr->GetGossipMenusMapBounds(menuId);
+
+            for (GossipMenusContainer::const_iterator itr = menuBounds.first; itr != menuBounds.second; ++itr)
+            {
+                textId = itr->second.text_id;
+            }
+
+            for (GossipMenuItemsContainer::const_iterator itr = menuItemBounds.first; itr != menuItemBounds.second; ++itr)
+            {
+                std::string strOptionText = itr->second.OptionText;
+                std::string strBoxText = itr->second.BoxText;
+
+                int32 locale = player->GetSession()->GetSessionDbLocaleIndex();
+                if (locale >= 0)
+                {
+                    uint32 idxEntry = MAKE_PAIR32(menuId, itr->second.OptionIndex);
+                    if (GossipMenuItemsLocale const* no = sObjectMgr->GetGossipMenuItemsLocale(idxEntry))
+                    {
+                        ObjectMgr::GetLocaleString(no->OptionText, locale, strOptionText);
+                        ObjectMgr::GetLocaleString(no->BoxText, locale, strBoxText);
+                    }
+                }
+
+                player->PlayerTalkClass->GetGossipMenu().AddMenuItem(itr->second.OptionIndex, itr->second.OptionIcon, strOptionText, 0, itr->second.ActionMenuId, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+                player->PlayerTalkClass->GetGossipMenu().AddGossipMenuItemData(itr->second.OptionIndex, itr->second.ActionMenuId, itr->second.ActionPoiId);
+            }
+             
+            player->SEND_GOSSIP_MENU(textId, item->GetGUID());
+            return;
+        }
 
         // back to main menu command
         if (action == 2001) {
             parent = 1;
             player->CLOSE_GOSSIP_MENU();
             OnUse(player, item, SpellCastTargets());
+            return;
         }
 
         SmartStoneCommand selectedCommand = sSmartStone->getCommandById(action);
 
         // scripted action
         if (selectedCommand.type == DO_SCRIPTED_ACTION ||
-                action == 2000) // azeroth store
+                action >= 2000) // azeroth store
         {
             switch (action) {
                 case SMRTST_SHOP_MENU: // store
@@ -195,10 +238,19 @@ public:
         {
             // black market teleport id 1
             SmartStoneCommand teleport = sSmartStone->getCommandById(SMRTST_BLACK_MARKET);
-            if (!player->azthPlayer->isInBlackMarket())
+            if (!player->azthPlayer->isInBlackMarket()) {
+                /*if (player->azthPlayer->isPvP()) {
+                    player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
+                }*/
+
                 player->ADD_GOSSIP_ITEM(teleport.icon, teleport.getText(player), GOSSIP_SENDER_MAIN, teleport.id);
-            else
+            } else {
                 player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
+            }
+            
+            if (!player->azthPlayer->isPvP()) {
+                player->PlayerTalkClass->GetGossipMenu().AddMenuItem(SMRTST_README, 0, GOSSIP_SENDER_MAIN, SMRTST_README_CHILD);
+            }
 
             // menu character (rename, change faction, etc) id 4
             SmartStoneCommand characterMenu = sSmartStone->getCommandById(SMRTST_CHAR_MENU);
