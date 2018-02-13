@@ -338,12 +338,12 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
        16 Very low stats progression
      */
 
-    /*if (pl->getLevel() + 10 > req) {        // from 19 to 10 level diff
+    /*if (pl->getLevel() + 10 > req) {        // from 0 to 9 level diff
         lowLevel = 0;  // Default stats progression by item type
-    } else if (pl->getLevel() + 20 >= req) { // from max to 20 level diff
+    } else if (pl->getLevel() + 20 >= req) {  // from 10 to 20 level diff
         lowLevel = 4;  // Low Stats progression
-    } else {*/
-        lowLevel = 16; // Very low stats progression
+    } else {*/                                // from 21 to max level diff
+        //lowLevel = 16; // Very low stats progression
     //}
     uint32 mul;
 

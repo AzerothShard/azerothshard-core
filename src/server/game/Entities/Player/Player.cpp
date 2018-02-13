@@ -8090,7 +8090,8 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
                 uint32 posVal = proto->ItemStat[i].ItemStatValue < 0 ? -(proto->ItemStat[i].ItemStatValue) : proto->ItemStat[i].ItemStatValue;
 
                 // hack for items that don't have a required level
-                ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(sAzthUtils->getCalcReqLevel(proto));
+                uint32 req=sAzthUtils->getCalcReqLevel(proto);
+                ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(req);
                 if (maxSSV) {
                     float mulMax = sAzthUtils->getCustomMultiplier(proto, (float)maxSSV->getssdMultiplier(azthScalingStatValue));
                     uint32 modifier = ((float)posVal / mulMax ) * 10000;
@@ -8104,7 +8105,14 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
                     //[AZTH] avoid higher values than stats. This means that there's an
                     // uncorrect scaling calculation
                     if (proto->ScalingStatValue == 0) {
-                        val = val / 3; // constant reduction since even with scaling, stats are too large
+                        // constant reduction since even with scaling, stats are too large
+                        if (getLevel() + 10 > req) {         // from 0 to 9 level diff
+                            // val = val;
+                        } else if (getLevel() + 20 >= req) { // from 10 to 20 level diff
+                            val = val / 2;
+                        } else {                             // from 21 to max level diff
+                            val = val / 3;
+                        }
                         
                         if (abs(val) > abs(proto->ItemStat[i].ItemStatValue))
                             val = proto->ItemStat[i].ItemStatValue;
