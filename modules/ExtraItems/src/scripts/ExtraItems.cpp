@@ -150,7 +150,7 @@ public:
                     player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
                     item->azthObject->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, false);
                     return true;
-                } 
+                }
                 // else {
                 //      do nothing and go ahead with the mount check below
                 // }
@@ -350,6 +350,30 @@ private:
     AzthSummonType _summon_type;
 };
 
+class azth_aura : public ItemScript {
+public:
+    azth_aura(char const* name) : ItemScript(name)
+    {
+    }
+
+    bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
+        if (!item || !item->GetTemplate()) {
+            player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            return true;
+        }
+        
+        _Spell _effect=item->GetTemplate()->Spells[0];
+        _Spell _aura=item->GetTemplate()->Spells[1];
+        
+        if (player->HasAura(_aura.SpellId)) {
+            player->RemoveAurasDueToSpell(_aura.SpellId);
+            return true;
+        }
+        
+        return false; // everything ok
+    }
+};
+
 class azth_mass_ress : public ItemScript {
 public:
     azth_mass_ress(char const* name) : ItemScript(name)
@@ -445,6 +469,8 @@ void AddSC_azth_extra_items() // Add to scriptloader normally
     new azth_summon("azth_summon_vehicle", AZTH_SUMMON_VEHICLE);
     new azth_summon("azth_summon_vehicle_follow", AZTH_SUMMON_VEHICLE_FOLLOW);
     new azth_summon("azth_summon_vehicle_guardian", AZTH_SUMMON_VEHICLE_GUARDIAN);
+    // vanity auras
+    new azth_aura("azth_aura");
     // tools
     new azth_mass_ress("azth_tools_mass_ress");
 }
