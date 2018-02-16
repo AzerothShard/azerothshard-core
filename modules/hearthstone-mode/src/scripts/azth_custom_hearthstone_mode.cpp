@@ -268,7 +268,7 @@ public:
 
         if (player->CanAddQuest(quest, false) && player->CanTakeQuest(quest, false))
         {
-            player->AddQuest(quest, NULL);
+            player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, creature->GetGUID(), true);
         }
 
         return true;
