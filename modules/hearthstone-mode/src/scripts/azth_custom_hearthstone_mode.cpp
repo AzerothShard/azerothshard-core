@@ -250,6 +250,43 @@ class npc_han_al : public CreatureScript
 {
 public:
     npc_han_al() : CreatureScript("npc_han_al") { }
+    
+    uint32 _weeklyRandom(UNORDERED_MAP<uint32, HearthstoneQuest> &list) {
+            time_t t = time(NULL);
+
+            uint32 index;
+            uint64 seed;
+            UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
+        
+            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
+            seed = (((t - firstTuesday )/60/60/24))/7;
+            srand(seed);
+                
+            uint32 count= list.size();
+            index=count > 0 ? rand() % count : 0;
+            
+            _tmpItr = list.begin();
+            std::advance( _tmpItr, index );
+            return _tmpItr->second.id;
+    }
+    
+    uint32 _dailyRandom(UNORDERED_MAP<uint32, HearthstoneQuest> &list, Player *player = NULL) {
+            time_t t = time(NULL);
+            tm *lt = localtime(&t);
+
+            uint32 index;
+            uint64 seed;
+            UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
+
+            seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + (player ? player->GetGUID() : 0);
+            srand(seed);
+                
+            index=list.size() > 1 ? rand() % (list.size()) : 0;
+            
+            _tmpItr = list.begin();
+            std::advance( _tmpItr, index );
+            return _tmpItr->second.id;
+    }
 
     bool OnGossipSelect(Player* player, Creature*  creature, uint32 sender, uint32 action) override
     {    
@@ -279,88 +316,44 @@ public:
         uint32 bitmask = 0;
         int gossip = 100000;
 
-        uint32 index;
-        uint64 seed;
+        time_t t = time(NULL);
+        
         bool isEmpty=true;
         uint32 pveId=0, pvpId=0, weeklyClassicId=0, weeklyTBCId=0, weeklyWotlkId=0, weeklyRandomTwId=0, dailyRandomTwId=0;
         std::list<uint32> dailyTwIds, weeklyTwIds;
         UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
-        
-        time_t t = time(NULL);
-        tm *lt = localtime(&t);
 
         // PVP
         if (sHearthstoneMode->hsPvpQuests.size() > 0) {
-            seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + player->GetGUID();
-            srand(seed);
-                
-            index=sHearthstoneMode->hsPvpQuests.size() > 1 ? rand() % (sHearthstoneMode->hsPvpQuests.size()) : 0;
-            
-            _tmpItr = sHearthstoneMode->hsPvpQuests.begin();
-            std::advance( _tmpItr, index );
-            pvpId = _tmpItr->second.id;
+            pvpId = _dailyRandom(sHearthstoneMode->hsPvpQuests, player);
         }
         
         Quest const * questPvp = sObjectMgr->GetQuestTemplate(pvpId);
         
         // PVE RANDOM
         if (sHearthstoneMode->hsPveQuests.size() > 0) {
-            seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
-            srand(seed);
-                
-            index=sHearthstoneMode->hsPveQuests.size() > 1 ? rand() % (sHearthstoneMode->hsPveQuests.size()) : 0;
-            
-            _tmpItr = sHearthstoneMode->hsPveQuests.begin();
-            std::advance( _tmpItr, index );
-            pveId = _tmpItr->second.id;
+            pveId = _dailyRandom(sHearthstoneMode->hsPveQuests);
         }
 
         Quest const * questPve = sObjectMgr->GetQuestTemplate(pveId);
         
         // WEEKLY CLASSIC RANDOM
         if (sHearthstoneMode->hsWeeklyClassicQuests.size() > 0) {
-            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
-            seed = (((1609909200 - firstTuesday )/60/60/24))/7;
-            srand(seed);
-                
-            uint32 count= (sHearthstoneMode->hsWeeklyClassicQuests.size());
-            index=count > 0 ? rand() % count : 0;
-            
-            _tmpItr = sHearthstoneMode->hsWeeklyClassicQuests.begin();
-            std::advance( _tmpItr, index );
-            weeklyClassicId = _tmpItr->second.id;
+            weeklyClassicId = _weeklyRandom(sHearthstoneMode->hsWeeklyClassicQuests);
         }
 
         Quest const * questClassicWeekly = sObjectMgr->GetQuestTemplate(weeklyClassicId);
         
         // WEEKLY TBC RANDOM
         if (sHearthstoneMode->hsWeeklyTBCQuests.size() > 0) {
-            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
-            seed = (((1609909200 - firstTuesday )/60/60/24))/7;
-            srand(seed);
-                
-            uint32 count= (sHearthstoneMode->hsWeeklyTBCQuests.size());
-            index=count > 0 ? rand() % count : 0;
-            
-            _tmpItr = sHearthstoneMode->hsWeeklyTBCQuests.begin();
-            std::advance( _tmpItr, index );
-            weeklyTBCId = _tmpItr->second.id;
+            weeklyTBCId =  _weeklyRandom(sHearthstoneMode->hsWeeklyTBCQuests);
         }
 
         Quest const * questTBCWeekly = sObjectMgr->GetQuestTemplate(weeklyTBCId);
         
         // WEEKLY WOTLK RANDOM
         if (sHearthstoneMode->hsWeeklyWotlkQuests.size() > 0) {
-            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
-            seed = (((1609909200 - firstTuesday )/60/60/24))/7;
-            srand(seed);
-                
-            uint32 count= (sHearthstoneMode->hsWeeklyWotlkQuests.size());
-            index=count > 0 ? rand() % count : 0;
-            
-            _tmpItr = sHearthstoneMode->hsWeeklyWotlkQuests.begin();
-            std::advance( _tmpItr, index );
-            weeklyWotlkId = _tmpItr->second.id;
+            weeklyWotlkId = _weeklyRandom(sHearthstoneMode->hsWeeklyWotlkQuests);
         }
 
         Quest const * questWotlkWeekly = sObjectMgr->GetQuestTemplate(weeklyWotlkId);
@@ -382,48 +375,31 @@ public:
         }
         
         // DAILY RANDOM TW
-        std::list<uint32> _dailyRandomTwList;
+        UNORDERED_MAP<uint32, HearthstoneQuest> _dailyRandomTwList;
         for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwDailyRandomQuests.begin(); it != sHearthstoneMode->hsTwDailyRandomQuests.end(); it++ )
         {
             if (t >= it->second.startTime  &&  t <= it->second.endTime) {
-                _dailyRandomTwList.push_back(it->second.id);
+                _dailyRandomTwList[it->second.id] = it->second;
             }
         }
         
         if (_dailyRandomTwList.size() > 0) {
-            seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900;
-            srand(seed);
-                
-            size_t sz=_dailyRandomTwList.size();
-            index= sz > 1 ? rand() % (sz) : 0;
-            
-            std::list<uint32>::iterator _tmpListItr =_dailyRandomTwList.begin();
-            std::advance( _tmpListItr, index );
-            dailyRandomTwId = *_tmpListItr;
+            dailyRandomTwId = _dailyRandom(_dailyRandomTwList);
         }
         
         Quest const * questDailyRandomTw = sObjectMgr->GetQuestTemplate(dailyRandomTwId);
         
         // WEEKLY RANDOM TW
-        std::list<uint32> _weeklyRandomTwList;
+        UNORDERED_MAP<uint32, HearthstoneQuest> _weeklyRandomTwList;
         for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwWeeklyRandomQuests.begin(); it != sHearthstoneMode->hsTwWeeklyRandomQuests.end(); it++ )
         {
             if (t >= it->second.startTime  &&  t <= it->second.endTime) {
-                _weeklyRandomTwList.push_back(it->second.id);
+                _weeklyRandomTwList[it->second.id] = it->second;
             }
         }
         
         if (_weeklyRandomTwList.size() > 0) {
-            int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
-            seed = (((1609909200 - firstTuesday )/60/60/24))/7;
-            srand(seed);
-                
-            uint32 count= (_weeklyRandomTwList.size());
-            index=count > 0 ? rand() % count : 0;
-            
-            std::list<uint32>::iterator _tmpListItr =_weeklyRandomTwList.begin();
-            std::advance( _tmpListItr, index );
-            weeklyRandomTwId = *_tmpListItr;
+            weeklyRandomTwId = _weeklyRandom(_weeklyRandomTwList);
         }
         
         Quest const * questWeeklyRandomTw = sObjectMgr->GetQuestTemplate(weeklyRandomTwId);
@@ -687,6 +663,7 @@ public:
             gossip = 100003;
         */
 
+        player->SendPreparedQuest(creature->GetGUID());
         player->SEND_GOSSIP_MENU(gossip, creature->GetGUID());
         return true;
     }
