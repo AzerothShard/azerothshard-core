@@ -663,7 +663,6 @@ public:
             gossip = 100003;
         */
 
-        player->SendPreparedQuest(creature->GetGUID());
         player->SEND_GOSSIP_MENU(gossip, creature->GetGUID());
         return true;
     }
