@@ -1528,9 +1528,9 @@ void ScriptMgr::OnItemRoll(Player const* player, LootStoreItem const* LootStoreI
     FOREACH_SCRIPT(GlobalScript)->OnItemRoll(player, LootStoreItem,  chance, loot, store);
 }
 
-void ScriptMgr::OnInitializeLockedDungeons(Player* player, uint8& level, uint32& lockData)
+void ScriptMgr::OnInitializeLockedDungeons(Player* player, uint8& level, uint32& lockData, lfg::LFGDungeonData const* dungeon)
 {
-    FOREACH_SCRIPT(GlobalScript)->OnInitializeLockedDungeons(player, level, lockData);
+    FOREACH_SCRIPT(GlobalScript)->OnInitializeLockedDungeons(player, level, lockData, dungeon);
 }
 
 void ScriptMgr::OnAfterInitializeLockedDungeons(Player* player)
