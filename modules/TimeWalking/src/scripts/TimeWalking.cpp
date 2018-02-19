@@ -569,6 +569,23 @@ class global_timewalking : public GlobalScript {
             //else
             //    chance *= 2;
         }
+        
+        void OnInitializeLockedDungeons(Player* player, uint8& /*level*/, uint32& lockData, lfg::LFGDungeonData const* dungeon) override {
+            switch(lockData){
+                case lfg::LFG_LOCKSTATUS_MISSING_ACHIEVEMENT:
+                case lfg::LFG_LOCKSTATUS_QUEST_NOT_COMPLETED:
+                case lfg::LFG_LOCKSTATUS_MISSING_ITEM:
+                    Player* leader = player;
+                    uint64 leaderGuid = player->GetGroup() ? player->GetGroup()->GetLeaderGUID() : player->GetGUID();
+                    if (leaderGuid != player->GetGUID())
+                        leader = HashMapHolder<Player>::Find(leaderGuid);
+
+                    if (leader->azthPlayer->isTimeWalking() && dungeon->minlevel<=70) {
+                        lockData = 0;
+                    }
+                break;
+            }
+        }
 };
 
 void AddSC_TimeWalking()

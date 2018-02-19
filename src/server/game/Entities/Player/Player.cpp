@@ -19708,6 +19708,12 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
         MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(target_map, target_difficulty);
         if (LevelMin || LevelMax || missingItem || missingQuest || missingAchievement)
         {
+            //[AZTH] Timewalking, avoid attunement for TBC & Classic
+            if (ar->levelMin<=70 && leader->azthPlayer->isTimeWalking()){
+                return true;
+            }
+            //[/AZTH]
+            
             if (report)
             {
                 if (missingQuest && !ar->questFailedText.empty())
