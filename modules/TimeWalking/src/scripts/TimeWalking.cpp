@@ -575,12 +575,16 @@ class global_timewalking : public GlobalScript {
                 case lfg::LFG_LOCKSTATUS_MISSING_ACHIEVEMENT:
                 case lfg::LFG_LOCKSTATUS_QUEST_NOT_COMPLETED:
                 case lfg::LFG_LOCKSTATUS_MISSING_ITEM:
-                    Player* leader = player;
+                    Player* leader;
                     uint64 leaderGuid = player->GetGroup() ? player->GetGroup()->GetLeaderGUID() : player->GetGUID();
                     if (leaderGuid != player->GetGUID())
                         leader = HashMapHolder<Player>::Find(leaderGuid);
+                        
+                    if (!leader || !leader->IsInWorld())
+                        leader=player;
 
-                    if (leader->azthPlayer->isTimeWalking() && dungeon->minlevel<=70) {
+                    if (sWorld && leader->IsInWorld() &&
+                    leader->azthPlayer && leader->azthPlayer->isTimeWalking() && dungeon && dungeon->minlevel<=70) {
                         lockData = 0;
                     }
                 break;
