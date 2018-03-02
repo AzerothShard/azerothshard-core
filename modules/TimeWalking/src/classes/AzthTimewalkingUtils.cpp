@@ -77,10 +77,12 @@ bool AzthUtils::isEligibleForBonusByArea(Player const* player) {
 void AzthUtils::setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply, bool skipDefense) {
     if (apply) {
         for ( auto& a : stats->pctMap) {
-            if (a.first != TIMEWALKING_AURA_VISIBLE)
+            if (a.first != TIMEWALKING_AURA_VISIBLE && a.second > 0)
                 unit->SetAuraStack(a.first, unit, a.second);
         }
         
+        // stats->GetLevel is equal or higher only when special levels
+        // are used (except TIMEWALKING_LVL_AUTO)
         if (sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) > stats->GetLevel()) {
             // reduce melee damage based on level diff
             unit->SetAuraStack(TIMEWALKING_AURA_MOD_MELEE_DAMAGE_PCT, unit, 
@@ -368,9 +370,9 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
     // we need to use damage/heal reduction from TW table when in TW 
     // at 80 special levels
     uint32 twLevel=player->azthPlayer->GetTimeWalkingLevel();
-    if (twLevel >= TIMEWALKING_SPECIAL_LVL_MIN && twLevel <= TIMEWALKING_SPECIAL_LVL_MAX)
+    if (twLevel != TIMEWALKING_LVL_AUTO && twLevel >= TIMEWALKING_SPECIAL_LVL_MIN && twLevel <= TIMEWALKING_SPECIAL_LVL_MAX)
         return -1;
-    
+
     uint32 spellLevel = spellProto->SpellLevel == 0 ? spellProto->BaseLevel : spellProto->SpellLevel;
 
     if (spellLevel <= 1 && spellProto->MaxLevel == 0 && spellProto->GetNextRankSpell() == NULL)

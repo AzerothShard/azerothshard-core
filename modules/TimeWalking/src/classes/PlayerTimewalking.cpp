@@ -83,7 +83,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
             }
             
         } else {
-            realLevel=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+            realLevel =  player->getLevel();
         }
     }
 
