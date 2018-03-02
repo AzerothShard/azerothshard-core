@@ -32,7 +32,7 @@ struct HearthstoneQuest
     uint32 flag;
     uint32 specialLevel;
     uint32 reqDimension;
-    uint32 groupLimit;
+    int32 groupLimit;
     uint32 startTime;
     uint32 endTime;
 };

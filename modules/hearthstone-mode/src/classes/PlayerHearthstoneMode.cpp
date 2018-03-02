@@ -82,7 +82,10 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
     if (hsQuest->reqDimension > 0 && hsQuest->reqDimension != currentDimension)
         return false;
     
-    if (hsQuest->groupLimit > 0 && this->getGroupSize() > hsQuest->groupLimit )
+    // positive value: return false if groupsize is higher than groupLimit
+    // negative value: return false if groupsize is lower than groupLimit
+    if ((hsQuest->groupLimit > 0 && this->getGroupSize() > uint8(hsQuest->groupLimit)) 
+        || (hsQuest->groupLimit < 0 && this->getGroupSize() < uint8(abs(hsQuest->groupLimit))))
         return false;
 
     /*

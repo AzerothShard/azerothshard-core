@@ -13,6 +13,7 @@
 #include "ScriptedGossip.h"
 #include "LFG.h"
 #include "LFGMgr.h"
+#include "VASAutoBalance.h"
 
 typedef std::map<uint32, TwRaid> RaidList;
 RaidList raidList;
@@ -29,6 +30,46 @@ enum npc_timewalking_enum
     TIMEWALKING_GOSSIP_NPC_TEXT_ALREADYAPPLIED = 50105,
 	TIMEWALKING_GOSSIP_NPC_TEXT_ACTIVELFG = 50106,
 	TIMEWALKING_GOSSIP_NPC_TEXT_INGROUP = 50107
+};
+
+class TWVasScript: public VasModuleScript {
+public:
+    TWVasScript(): VasModuleScript("TWVasScript") {
+    }
+    
+    bool OnBeforeModifyAttributes(Creature* creature, uint32 & instancePlayerCount) override {
+        // it doesn't mean that we're allowing it when not in dungeon
+        // but we're letting module to decide via its config.
+        if (!creature->GetMap()->IsDungeon())
+            return true;
+        
+        if (creature->GetMap()->GetEntry()->Expansion() >= 2)
+            return false;
+        
+        // Flexible content is allowed only for pre-wotlk instances
+        if (sAzthUtils->getPositionLevel(false, creature->GetMap(), creature->GetZoneId(), creature->GetAreaId()) > 70)
+            return false;
+
+        Map::PlayerList const &playerList = creature->GetMap()->GetPlayers();
+        if (!playerList.isEmpty())
+        {
+            for (Map::PlayerList::const_iterator playerIteration = playerList.begin(); playerIteration != playerList.end(); ++playerIteration)
+            {
+                if (Player* playerHandle = playerIteration->GetSource())
+                {
+                    //instancePlayerCount = playerHandle->azthPlayer->getGroupSize();
+                    
+                    uint32 groupLevel=playerHandle->azthPlayer->getGroupLevel(false);
+                    uint32 specialLevel =  groupLevel > 0 ? groupLevel : playerHandle->azthPlayer->GetTimeWalkingLevel();
+                    
+                    if (specialLevel == TIMEWALKING_LVL_VAS)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
 };
 
 class loadTimeWalkingRaid : public WorldScript
@@ -143,16 +184,16 @@ public:
             return true;
         }
 
-        if (!player->azthPlayer->isTimeWalking() && player->getLevel()<sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
-            return false;
-
         if (!player->azthPlayer->isTimeWalking()) {
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Fase Attuale ( Bonus )", GOSSIP_SENDER_MAIN, 4);
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
-            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
-            //if (player->IsGameMaster()) {
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, 8);
-            //}
+            if (player->getLevel()>=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) {
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Fase Attuale ( Bonus )", GOSSIP_SENDER_MAIN, 4);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
+                //if (player->IsGameMaster()) {
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, 8);
+                //}
+            }
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Modalità Flessibile (beta)", GOSSIP_SENDER_MAIN, 9);
         } else {
             player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
         }
@@ -171,6 +212,7 @@ public:
     void setTimeWalking(Player* player,uint32 level)
     {        
         player->azthPlayer->SetTimeWalkingLevel(level, true, true, false);
+        player->CastSpell(player, 47292, TRIGGERED_FULL_MASK); // visual
     }
 
     bool OnGossipSelectCode(Player* player, Creature*  /*creature*/, uint32 sender, uint32 action, const char* code) override
@@ -270,9 +312,21 @@ public:
             }
             player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_RAID, creature->GetGUID());
         }
-        else if (action >= 10000 || action == 8) //apply level
+        else if (action >= 10000 || action == 8 || action == 9) //apply level
         {
-            uint32 level = action == 8 ? TIMEWALKING_LVL_AUTO : action - 10000;
+            uint32 level;
+            switch (action) {
+                case 9:
+                    level = TIMEWALKING_LVL_VAS;
+                    break;
+                case 8:
+                    level = TIMEWALKING_LVL_AUTO;
+                    break;
+                default:
+                    level = action - 10000;
+                    break;
+            }
+
             if (player->azthPlayer->GetTimeWalkingLevel() == 0)
             {
                 setTimeWalking(player, level);
@@ -575,7 +629,7 @@ class global_timewalking : public GlobalScript {
                 case lfg::LFG_LOCKSTATUS_MISSING_ACHIEVEMENT:
                 case lfg::LFG_LOCKSTATUS_QUEST_NOT_COMPLETED:
                 case lfg::LFG_LOCKSTATUS_MISSING_ITEM:
-                    Player* leader;
+                    Player* leader = nullptr;
                     uint64 leaderGuid = player->GetGroup() ? player->GetGroup()->GetLeaderGUID() : player->GetGUID();
                     if (leaderGuid != player->GetGUID())
                         leader = HashMapHolder<Player>::Find(leaderGuid);
@@ -599,4 +653,5 @@ void AddSC_TimeWalking()
     new TimeWalkingGossip();
     new timeWalkingPlayer();
     new achievement_timewalking_check("achievement_timewalking_check");
+    new TWVasScript();
 }

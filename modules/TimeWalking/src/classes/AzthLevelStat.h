@@ -57,6 +57,7 @@ enum TWSpecialLevels
     // 400 <= lvl <= 500 : special levels <= max_level
     // other
     TIMEWALKING_LVL_AUTO=400,
+    TIMEWALKING_LVL_VAS=401, // VAS Autobalancing
     TIMEWALKING_SPECIAL_LVL_MAX=555,
 };
 

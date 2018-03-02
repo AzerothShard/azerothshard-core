@@ -19,6 +19,8 @@ std::string AzthUtils::getLevelInfo(uint32 level) {
             return "Ulduar";
         case TIMEWALKING_LVL_AUTO:
             return "Auto scaling";
+        case TIMEWALKING_LVL_VAS:
+            return "Modalità Flessibile";
     }
 
     return std::to_string(level);
