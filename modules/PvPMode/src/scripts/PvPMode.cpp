@@ -11,7 +11,7 @@ class PvPMode : public GlobalScript
 public:
     PvPMode() : GlobalScript("PvPMode") {}
 
-    void OnInitializeLockedDungeons(Player* player, uint8&  /*level*/, uint32& lockData)
+    void OnInitializeLockedDungeons(Player* player, uint8&  /*level*/, uint32& lockData, lfg::LFGDungeonData const* /*dungeon*/) override
     {
         if (player->azthPlayer->isPvP())
         {
@@ -19,7 +19,7 @@ public:
         }
     }
 
-    void OnAfterInitializeLockedDungeons(Player* player)
+    void OnAfterInitializeLockedDungeons(Player* player) override
     {
         if ((player->GetMap()->IsDungeon() && !player->GetMap()->IsBattlegroundOrArena()) && player->azthPlayer->isPvP())
         {
