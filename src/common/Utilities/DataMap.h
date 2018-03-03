@@ -44,8 +44,15 @@ public:
     template<class T, typename std::enable_if<std::is_default_constructible<T>::value, int>::type = 0>
     T* GetDefault(std::string const & k) {
         static_assert(std::is_base_of<Base, T>::value, "T must derive from Base");
-        if (T* v = Get<T>(k))
-            return v;
+        if (!Container.empty()) {
+            try {
+                if (T* v = Get<T>(k))
+                    return v;
+            } catch (std::exception& e) {
+                printf("Exception <%s> when calling Get<T>(k)", e.what());
+            }
+        }
+
         T* v = new T();
         Container.emplace(k, std::unique_ptr<T>(v));
         return v;
