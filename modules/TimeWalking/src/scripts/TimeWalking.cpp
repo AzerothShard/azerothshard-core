@@ -37,7 +37,7 @@ public:
     TWVasScript(): VasModuleScript("TWVasScript") {
     }
     
-    bool OnBeforeModifyAttributes(Creature* creature, uint32 & instancePlayerCount) override {
+    bool OnBeforeModifyAttributes(Creature* creature, uint32 & /*instancePlayerCount*/) override {
         // it doesn't mean that we're allowing it when not in dungeon
         // but we're letting module to decide via its config.
         if (!creature->GetMap()->IsDungeon())
@@ -193,7 +193,7 @@ public:
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, 8);
                 //}
             }
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Modalità Flessibile (beta)", GOSSIP_SENDER_MAIN, 9);
+            player->ADD_GOSSIP_ITEM(0, "Modalità Flessibile (beta)", GOSSIP_SENDER_MAIN, 9); // we can't use another icon otherwise will be automatically selected on gossip hello
         } else {
             player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
         }
