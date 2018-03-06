@@ -362,7 +362,7 @@ public:
             return true;
         }
         
-        _Spell _effect=item->GetTemplate()->Spells[0];
+        //_Spell _effect=item->GetTemplate()->Spells[0];
         _Spell _aura=item->GetTemplate()->Spells[1];
         
         if (player->HasAura(_aura.SpellId)) {
