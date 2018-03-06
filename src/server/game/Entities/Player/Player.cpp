@@ -19695,10 +19695,13 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
             missingQuest = ar->quest_H;
 
         uint32 missingAchievement = 0;
-        Player* leader = this;
+        Player* leader = nullptr;
         uint64 leaderGuid = GetGroup() ? GetGroup()->GetLeaderGUID() : GetGUID();
         if (leaderGuid != GetGUID())
             leader = HashMapHolder<Player>::Find(leaderGuid);
+        
+        if (!leader || !leader->IsInWorld())
+            leader=this;
 
         if (ar->achievement)
             if (!leader || !leader->HasAchieved(ar->achievement))
