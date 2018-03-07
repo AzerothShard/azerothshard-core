@@ -62,8 +62,7 @@ public:
                     uint32 groupLevel=playerHandle->azthPlayer->getGroupLevel(false);
                     uint32 specialLevel =  groupLevel > 0 ? groupLevel : playerHandle->azthPlayer->GetTimeWalkingLevel();
                     
-                    if (specialLevel == TIMEWALKING_LVL_VAS)
-                        return true;
+                    return specialLevel == TIMEWALKING_LVL_VAS;
                 }
             }
         }
