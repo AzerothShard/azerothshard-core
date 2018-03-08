@@ -565,7 +565,8 @@ public:
     
     void OnBeforeInitTalentForLevel(Player* player, uint8&  /*level*/, uint32& talentPointsForLevel) override
     {
-        if (player->azthPlayer->isTimeWalking())
+        if (player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_VAS // redundant (?)
+            && (player->azthPlayer->isTimeWalking(true) || player->azthPlayer->GetTimeWalkingLevel() == TIMEWALKING_LVL_AUTO) )
         {
             talentPointsForLevel = 71; // to avoid talent points reset after relog in timewalking
         }
