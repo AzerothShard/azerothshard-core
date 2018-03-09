@@ -59,8 +59,10 @@ public:
         
         // from 1 to 150
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, sAzthLang->getf(AZTH_LANG_SHOW_BANK_ITEMS,player,1,150), GOSSIP_SENDER_MAIN, AZTH_ITEMBANK_START_ACTION);
-        // from 150 to 300
+        // from 151 to 300
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, sAzthLang->getf(AZTH_LANG_SHOW_BANK_ITEMS,player,150,300), GOSSIP_SENDER_MAIN, AZTH_ITEMBANK_START_ACTION + (AZTH_ITEMBANK_RANGE*1));
+        // from 301 to 450
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, sAzthLang->getf(AZTH_LANG_SHOW_BANK_ITEMS,player,300,450), GOSSIP_SENDER_MAIN, AZTH_ITEMBANK_START_ACTION + (AZTH_ITEMBANK_RANGE*2));
         
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
         return true;
