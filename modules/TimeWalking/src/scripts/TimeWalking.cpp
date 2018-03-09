@@ -66,6 +66,9 @@ public:
             {
                 if (Player* playerHandle = playerIteration->GetSource())
                 {
+                    if (playerHandle->IsGameMaster())
+                        continue;
+
                     //instancePlayerCount = playerHandle->azthPlayer->getGroupSize();
                     
                     uint32 groupLevel=playerHandle->azthPlayer->getGroupLevel(false);
