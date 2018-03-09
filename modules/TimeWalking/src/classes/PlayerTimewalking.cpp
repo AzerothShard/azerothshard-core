@@ -44,9 +44,9 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
     
     if (!login) {
         // hacking attempt?
-        if (timeWalkingLevel==0 && itsTimeWalkingLevel != TIMEWALKING_LVL_VAS && player->getLevel()<sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+        if (timeWalkingLevel==0 && !sAzthUtils->isMythicLevel(timeWalkingLevel) && player->getLevel()<sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
             return;
-        
+
         uint32 iLvl=player->azthPlayer->getTwItemLevel(itsTimeWalkingLevel);
         if (iLvl && !player->azthPlayer->checkItems(iLvl)) {
             ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_LEVEL_MAX, player, iLvl));
@@ -113,7 +113,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
             }
         }
 
-        if (timeWalkingLevel != TIMEWALKING_LVL_VAS)
+        if (!sAzthUtils->isMythicLevel(timeWalkingLevel))
             player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN);
 
         sAzthUtils->setTwAuras(player, stats, true, login);
@@ -135,17 +135,17 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
             return;
         
         if (save) {
-            if (timeWalkingLevel != TIMEWALKING_LVL_VAS)
+            if (!sAzthUtils->isMythicLevel(timeWalkingLevel))
                 player->GiveLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
             
             player->SendActionButtons(1);
 
-            if (player->GetPet() && timeWalkingLevel != TIMEWALKING_LVL_VAS) {
+            if (player->GetPet() && !sAzthUtils->isMythicLevel(timeWalkingLevel)) {
                 player->GetPet()->GivePetLevel(sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
             }
         }
 
-        if (timeWalkingLevel != TIMEWALKING_LVL_VAS)
+        if (!sAzthUtils->isMythicLevel(timeWalkingLevel))
             player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN); 
         
         sAzthUtils->setTwAuras(player, stats, false, login);

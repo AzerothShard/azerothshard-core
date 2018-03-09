@@ -1006,3 +1006,9 @@ bool AzthUtils::isAshenBand(uint32 entry) {
 
     return false;
 }
+
+bool AzthUtils::isMythicLevel(uint32 level)
+{
+    return level >= TIMEWALKING_LVL_VAS_START && level <= TIMEWALKING_LVL_VAS_END; 
+}
+

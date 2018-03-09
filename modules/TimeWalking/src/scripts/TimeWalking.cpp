@@ -32,6 +32,15 @@ enum npc_timewalking_enum
 	TIMEWALKING_GOSSIP_NPC_TEXT_INGROUP = 50107
 };
 
+class MapMythicInfo : public DataMap::Base
+{
+public:
+    MapMythicInfo() {}
+    MapMythicInfo(uint32 level) : mythicLevel(level){}
+    uint32 mythicLevel = 0;
+};
+
+
 class TWVasScript: public VasModuleScript {
 public:
     TWVasScript(): VasModuleScript("TWVasScript") {
@@ -62,12 +71,34 @@ public:
                     uint32 groupLevel=playerHandle->azthPlayer->getGroupLevel(false);
                     uint32 specialLevel =  groupLevel > 0 ? groupLevel : playerHandle->azthPlayer->GetTimeWalkingLevel();
                     
-                    return specialLevel == TIMEWALKING_LVL_VAS;
+                    if (sAzthUtils->isMythicLevel(specialLevel)) {
+                        MapMythicInfo *myth=creature->GetMap()->CustomData.GetDefault<MapMythicInfo>("AZTH_Mythic_Info");
+                        myth->mythicLevel = specialLevel;
+                        return true;
+                    }
                 }
             }
         }
 
         return false;
+    }
+    
+    bool OnBeforeUpdateStats(Creature* creature, uint32 &scaledHealth, uint32 &scaledMana, float &damageMultiplier, uint32 &newBaseArmor) override { 
+        MapMythicInfo *myth=creature->GetMap()->CustomData.GetDefault<MapMythicInfo>("AZTH_Mythic_Info");
+        
+        
+        if (myth->mythicLevel) {
+            float rate = myth->mythicLevel - TIMEWALKING_LVL_VAS_START + 1;
+
+            scaledHealth += rate > 1 ? scaledHealth*float(rate/10) : 1;
+            scaledMana += rate > 1 ? scaledMana*float(rate/10) : 1;
+            newBaseArmor += rate > 1 ? newBaseArmor*float(rate/10) : 1;
+            damageMultiplier *= rate;
+
+            return true;
+        }
+        
+        return false; // something wrong....
     }
 };
 
@@ -189,10 +220,10 @@ public:
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
                 player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
                 //if (player->IsGameMaster()) {
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, 8);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, TIMEWALKING_LVL_AUTO+10000);
                 //}
             }
-            player->ADD_GOSSIP_ITEM(0, "Modalità Flessibile (beta)", GOSSIP_SENDER_MAIN, 9); // we can't use another icon otherwise will be automatically selected on gossip hello
+            player->ADD_GOSSIP_ITEM(0, "Flex Mythic+ (Beta)", GOSSIP_SENDER_MAIN, 9); // we can't use another icon otherwise will be automatically selected on gossip hello
         } else {
             player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
         }
@@ -281,6 +312,14 @@ public:
             }
             player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_EXP, creature->GetGUID());
         }
+        
+        if (action == 9) {
+            for (uint32 i=TIMEWALKING_LVL_VAS_START; i<=TIMEWALKING_LVL_VAS_LVL4; i++) {
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Flex Mythic Level "+std::to_string(i-TIMEWALKING_LVL_VAS_START+1), GOSSIP_SENDER_MAIN, i+10000); 
+            }
+            
+            player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_MAIN, creature->GetGUID());
+        }
 
         if (action <= 3) //generate phase menu
         {
@@ -311,20 +350,9 @@ public:
             }
             player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_RAID, creature->GetGUID());
         }
-        else if (action >= 10000 || action == 8 || action == 9) //apply level
+        else if (action >= 10000) //apply level
         {
-            uint32 level;
-            switch (action) {
-                case 9:
-                    level = TIMEWALKING_LVL_VAS;
-                    break;
-                case 8:
-                    level = TIMEWALKING_LVL_AUTO;
-                    break;
-                default:
-                    level = action - 10000;
-                    break;
-            }
+            uint32 level = action - 10000;
 
             if (player->azthPlayer->GetTimeWalkingLevel() == 0)
             {
@@ -565,7 +593,7 @@ public:
     
     void OnBeforeInitTalentForLevel(Player* player, uint8&  /*level*/, uint32& talentPointsForLevel) override
     {
-        if (player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_VAS // redundant (?)
+        if (sAzthUtils->isMythicLevel(player->azthPlayer->GetTimeWalkingLevel()) // redundant (?)
             && (player->azthPlayer->isTimeWalking(true) || player->azthPlayer->GetTimeWalkingLevel() == TIMEWALKING_LVL_AUTO) )
         {
             talentPointsForLevel = 71; // to avoid talent points reset after relog in timewalking

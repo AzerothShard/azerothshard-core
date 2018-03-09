@@ -130,6 +130,10 @@ public:
     bool dimIntegrityCheck(Unit *target, uint32 phasemask);
     bool isSharedArea(Player *player, MapEntry const *mEntry, uint32 zone, uint32 area);
     // /DIMENSIONS
+    
+    // [Flex Mythic]
+    bool isMythicLevel(uint32 level);
+    // [/Flex Mythic]
 
     // horde version of objectmgr factionchangeitems map
     ObjectMgr::CharacterConversionMap FactionChangeItemsHorde;

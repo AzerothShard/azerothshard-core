@@ -19,11 +19,13 @@ std::string AzthUtils::getLevelInfo(uint32 level) {
             return "Ulduar";
         case TIMEWALKING_LVL_AUTO:
             return "Auto scaling";
-        case TIMEWALKING_LVL_VAS:
-            return "Modalità Flessibile";
+        default:
+            if (sAzthUtils->isMythicLevel(level)) {
+                return "Flex Mythic+ level "+std::to_string(level-TIMEWALKING_LVL_VAS_START+1);
+            } else {
+                return std::to_string(level);
+            }
     }
-
-    return std::to_string(level);
 }
 
 uint32 AzthUtils::maxTwLevel(uint32 sourceLvl, uint32 compareLevel) const {
