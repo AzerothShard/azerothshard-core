@@ -97,7 +97,9 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
         uint32 groupLevel=this->getGroupLevel(false);
         uint32 specialLevel =  groupLevel > 0 ? groupLevel : GetTimeWalkingLevel();
         
-        if (specialLevel == hsQuest->specialLevel) {
+        if (specialLevel == hsQuest->specialLevel
+            || (sAzthUtils->isMythicLevel(hsQuest->specialLevel) && sAzthUtils->isMythicLevel(specialLevel) && specialLevel >= hsQuest->specialLevel)) { // Mythic Quests case
+
             for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
                 if (qInfo->RequiredNpcOrGo[j] > 0 && uint32(qInfo->RequiredNpcOrGo[j]) == entry)
                     realEntry = entry;
