@@ -91,6 +91,10 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_SS_CHANGE_RACE, "Relog to change race", "Rilogga per cambiare razza");
     this->add(AZTH_LANG_SS_CHANGE_FACTION, "Relog to change faction", "Rilogga per cambiare fazione");
     this->add(AZTH_LANG_SS_CHANGE_NAME, "Relog to change name!", "Rilogga per cambiare nome!");
+    
+    //mythic
+    this->add(AZTH_LANG_MYTHIC_MOA_BONUS, "Mythic+ lvl %u bonus gained! %u extra MoA", "Ottenuto Mythic+ lvl %u bonus! %u MoA extra");
+    this->add(AZTH_LANG_MYTHIC_ASREP_BONUS, "Mythic+  lvl %u bonus gained! %u extra AS Rep", "Ottenuto Mythic+  lvl %u bonus! %u Reputazione con AS extra");
 
     //hs
     this->add(AZTH_LANG_HS_QUESTS,"===== Quests: =====", "===== Missioni: =====");

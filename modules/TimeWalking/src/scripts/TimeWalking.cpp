@@ -101,11 +101,18 @@ public:
         
         
         if (myth->mythicLevel) {
-            float rate = myth->mythicLevel - TIMEWALKING_LVL_VAS_START + 1;
 
-            scaledHealth += rate > 1 ? scaledHealth*float(rate/10) : 1;
-            scaledMana += rate > 1 ? scaledMana*float(rate/10) : 1;
-            newBaseArmor += rate > 1 ? newBaseArmor*float(rate/10) : 1;
+            
+            uint32 mythicLvl = myth->mythicLevel - TIMEWALKING_LVL_VAS_START + 1;
+
+            // mythic 1: 1 normal vas rate
+            // mythic 13: 3.13 (214%) (for ulduar)
+            // mythic 16: 4.17 (318%) (for naxx, eye and obsidian)
+            float rate = std::pow(1.1f, mythicLvl-1); // formula from 7.2.5 patch
+
+            scaledHealth *= rate;
+            scaledMana   *= rate;
+            newBaseArmor *= rate;
             damageMultiplier *= rate;
 
             return true;
@@ -328,8 +335,11 @@ public:
         
         if (action == 9) {
             for (uint32 i=TIMEWALKING_LVL_VAS_START; i<=TIMEWALKING_LVL_VAS_LVL4; i++) {
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Flex Mythic Level "+std::to_string(i-TIMEWALKING_LVL_VAS_START+1), GOSSIP_SENDER_MAIN, i+10000); 
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Flex Mythic+ "+std::to_string(i-TIMEWALKING_LVL_VAS_START+1), GOSSIP_SENDER_MAIN, i+10000); 
             }
+
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Flex Mythic+ 13 Epic", GOSSIP_SENDER_MAIN, 10413);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Flex Mythic+ 16 Heroic", GOSSIP_SENDER_MAIN, 10416);
             
             player->SEND_GOSSIP_MENU(TIMEWALKING_GOSSIP_NPC_TEXT_MAIN, creature->GetGUID());
         }
@@ -573,8 +583,7 @@ public:
         uint32 guid,quest,sLevel,nLevel, instanceStart=0, questEnd, groupId;
         uint8 gSize;
         uint64 id=0;
-        
-        //Quest *questTmpl = sObjectMgr->GetQuestTemplate(quest_id);
+
         QuestStatusMap::iterator qsitr = player->getQuestStatusMap().find(quest_id);
         if (qsitr == player->getQuestStatusMap().end()) // should always be true in this moment
             return true;
@@ -598,6 +607,24 @@ public:
         sLevel = player->azthPlayer->getPStatsLevel(false);
         nLevel = player->azthPlayer->getPStatsLevel(true);
         gSize = player->azthPlayer->getGroupSize();
+        
+        Quest *questTmpl = sObjectMgr->GetQuestTemplate(quest_id);
+        if (questTmpl && sAzthUtils->isMythicLevel(sLevel) && sLevel > TIMEWALKING_LVL_VAS_LVL1) {
+            for (int i=0;i<4;i++) {
+                if (questTmpl->RewardItemId[i] == AZTH_MARK_OF_AZEROTH) {
+                    uint32 bonus=sLevel;
+                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_MYTHIC_MOA_BONUS, player, bonus));
+                    player->AddItem(AZTH_MARK_OF_AZEROTH, bonus);
+                }
+            }
+            
+            for (int i=0;i<5;i++) {
+                if (questTmpl->RewardFactionId[i] == AZTH_AS_REP && questTmpl->RewardFactionValueIdOverride[i] > 0) {
+                    uint32 bonus = questTmpl->RewardFactionValueIdOverride[i] * std::pow(1.1, sLevel-1); // proportional to mythic
+                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_MYTHIC_ASREP_BONUS, player, ));
+                }
+            }
+        }
         
         groupId = is->GetInstanceId();
 

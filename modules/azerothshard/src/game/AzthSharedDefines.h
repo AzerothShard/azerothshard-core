@@ -78,6 +78,7 @@ enum AzthCommonMaps {
 
 
 #define AZTH_MARK_OF_AZEROTH 37711
+#define AZTH_AS_REP 948
 
 class AzthSharedDef {
 public:

@@ -50,14 +50,14 @@ bool AzthFirstKills::canCompleteAchi(Player *player, uint32 achiId) {
             return false;
         }
         case ACHI_OBSIDIAN:
-            return level == TIMEWALKING_LVL_OBSIDIAN;
+            return level == TIMEWALKING_LVL_VAS_LVL16;
         case ACHI_MAGIC_SEEKER:
-            return level == TIMEWALKING_LVL_THE_EYE;
+            return level == TIMEWALKING_LVL_VAS_LVL16;
         case ACHI_DEATH_DEMISE:
         case ACHI_CELESTIAL_DEFENDER:
-            return level == TIMEWALKING_LVL_ULDUAR;
+            return level == TIMEWALKING_LVL_VAS_LVL13;
         case ACHI_GRAND_CRUSADER:
-            return level == TIMEWALKING_LVL_TOGC;
+            return level == TIMEWALKING_LVL_VAS_LVL13;
     }
     
     if (achiId == ACHI_FALL_OF_LK) {

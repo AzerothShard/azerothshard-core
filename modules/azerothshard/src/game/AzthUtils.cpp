@@ -893,17 +893,17 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zo
     if (includeSpecialLvl) {       
         switch(map->GetId()) {
             case NAXXRAMS_RAID:
-                level = TIMEWALKING_LVL_NAXX;
-            break;
-            case ULDUAR_RAID:
-                level = TIMEWALKING_LVL_ULDUAR;
+                level = TIMEWALKING_LVL_NAXX; // keep old TW level for now
             break;
             case OBSIDIAN_RAID:
-                level = TIMEWALKING_LVL_OBSIDIAN;
+                level = TIMEWALKING_LVL_VAS_LVL16;
             break;
             case THE_EYE_OF_ETERNITY_RAID:
-                level = TIMEWALKING_LVL_THE_EYE;
+                level = TIMEWALKING_LVL_VAS_LVL16;
             break;
+            case ULDUAR_RAID:
+                level = TIMEWALKING_LVL_VAS_LVL13;
+                break;
             case TRIAL_OF_THE_CRUSADRE_RAID:
                 level = TIMEWALKING_LVL_TOGC;
             break;
