@@ -522,9 +522,6 @@ class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
         // Called when a player selects a quest in the creature's quest menu.
         virtual bool OnQuestSelect(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/) { return false; }
 
-        // Called when a player completes a quest with the creature.
-        virtual bool OnQuestComplete(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/) { return false; }
-
         // Called when a player selects a quest reward.
         virtual bool OnQuestReward(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
 
@@ -909,6 +906,9 @@ class PlayerScript : public ScriptObject
         //After receiving item as a quest reward
         virtual void OnQuestRewardItem(Player* /*player*/, Item* /*item*/, uint32 /*count*/) { }
         
+        //After completed a quest
+        virtual bool OnBeforeQuestComplete(Player* /*player*/, uint32 /*quest_id*/) { return true; }
+        
         //Before durability repair action, you can even modify the discount value 
         virtual void OnBeforeDurabilityRepair(Player* /*player*/, uint64 /*npcGUID*/, uint64 /*itemGUID*/, float &/*discountMod*/, uint8 /*guildBank*/) { }
 
@@ -1134,7 +1134,6 @@ class ScriptMgr
         bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code);
         bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest);
         bool OnQuestSelect(Player* player, Creature* creature, Quest const* quest);
-        bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest);
         bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt);
         uint32 GetDialogStatus(Player* player, Creature* creature);
         CreatureAI* GetCreatureAI(Creature* creature);
@@ -1264,6 +1263,7 @@ class ScriptMgr
         void OnLootItem(Player* player, Item* item, uint32 count, uint64 lootguid);
         void OnCreateItem(Player* player, Item* item, uint32 count);
         void OnQuestRewardItem(Player* player, Item* item, uint32 count);
+        bool OnBeforePlayerQuestComplete(Player* player, uint32 quest_id);
         void OnBeforePlayerDurabilityRepair(Player *player, uint64 npcGUID, uint64 itemGUID, float &discountMod, uint8 guildBank);
         void OnBeforeBuyItemFromVendor(Player * player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot);
         void OnBeforeStoreOrEquipNewItem(Player* player, uint32 vendorslot, uint32 &item, uint8 count, uint8 bag, uint8 slot, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore);

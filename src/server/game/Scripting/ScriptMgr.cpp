@@ -780,17 +780,6 @@ bool ScriptMgr::OnQuestSelect(Player* player, Creature* creature, Quest const* q
     return tmpscript->OnQuestSelect(player, creature, quest);
 }
 
-bool ScriptMgr::OnQuestComplete(Player* player, Creature* creature, Quest const* quest)
-{
-    ASSERT(player);
-    ASSERT(creature);
-    ASSERT(quest);
-
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
-    return tmpscript->OnQuestComplete(player, creature, quest);
-}
-
 bool ScriptMgr::OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt)
 {
     ASSERT(player);
@@ -1402,6 +1391,16 @@ void ScriptMgr::OnCreateItem(Player* player, Item* item, uint32 count)
 void ScriptMgr::OnQuestRewardItem(Player* player, Item* item, uint32 count)
 {
     FOREACH_SCRIPT(PlayerScript)->OnQuestRewardItem(player, item, count);
+}
+
+bool ScriptMgr::OnBeforePlayerQuestComplete(Player* player, uint32 quest_id)
+{
+    bool ret=true;
+    FOR_SCRIPTS_RET(PlayerScript, itr, end, ret) // return true by default if not scripts
+    if (!itr->second->OnBeforeQuestComplete(player, quest_id))
+        ret=false; // we change ret value only when scripts return false
+        
+    return ret;
 }
 
 void ScriptMgr::OnBeforePlayerDurabilityRepair(Player *player, uint64 npcGUID, uint64 itemGUID, float &discountMod, uint8 guildBank)
