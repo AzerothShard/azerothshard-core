@@ -666,11 +666,6 @@ public:
         player->SEND_GOSSIP_MENU(gossip, creature->GetGUID());
         return true;
     }
-
-    bool OnQuestComplete(Player*  /*pPlayer*/, Creature*  /*pCreature*/, Quest const*  /*pQuest*/) override
-    {
-        return true;
-    }
 };
 
 #define GOSSIP_ITEM_SHOW_ACCESS     "Vorrei vedere la tua merce, per favore."

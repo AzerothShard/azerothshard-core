@@ -71,6 +71,8 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
 
     HearthstoneQuest *hsQuest=sHearthstoneMode->getHeartstoneQuestInfo(qId);
 
+    // if no data present in hearthstone table
+    // then use normal behaviour
     if (!hsQuest) {
         // Do not allow official quest completition in empty/custom dimensions
         if (sAzthUtils->isPhasedDimension(currentDimension))
@@ -97,8 +99,7 @@ bool AzthPlayer::passHsChecks(Quest const* qInfo, uint32 entry, uint32 &realEntr
         uint32 groupLevel=this->getGroupLevel(false);
         uint32 specialLevel =  groupLevel > 0 ? groupLevel : GetTimeWalkingLevel();
         
-        if (specialLevel == hsQuest->specialLevel
-            || (sAzthUtils->isMythicLevel(hsQuest->specialLevel) && sAzthUtils->isMythicLevel(specialLevel) && specialLevel >= hsQuest->specialLevel)) { // Mythic Quests case
+        if (specialLevel == hsQuest->specialLevel || sAzthUtils->isMythicCompLvl(hsQuest->specialLevel,specialLevel)) {
 
             for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j) {
                 if (qInfo->RequiredNpcOrGo[j] > 0 && uint32(qInfo->RequiredNpcOrGo[j]) == entry)

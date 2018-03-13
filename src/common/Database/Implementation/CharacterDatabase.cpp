@@ -566,7 +566,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // [AZTH]
 
     // PvEStats
-    PrepareStatement(CHAR_INS_PVESTATS, "INSERT INTO azth_achievement_stats (playerGuid, achievement, type, level, levelParty, date) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_INS_PVESTATS, "INSERT INTO azth_achievement_stats (playerGuid, achievement, type, level, levelParty, specialLevel, date) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_INS_INDIVIDUAL_XP_RATE, "INSERT INTO character_xp_rate (guid, xp_rate) VALUES (?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_INDIVIDUAL_XP_RATE, "DELETE FROM character_xp_rate WHERE guid = ?", CONNECTION_ASYNC);

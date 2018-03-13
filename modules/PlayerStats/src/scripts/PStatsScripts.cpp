@@ -41,7 +41,8 @@ public:
     void OnAchiComplete(Player *player, AchievementEntry const* achievement) override {
         AzthPlayer::AzthAchiData it = {
             player->getLevel(),
-            player->azthPlayer->getGroupLevel()
+            player->azthPlayer->getGroupLevel(),
+            player->azthPlayer->getPStatsLevel(false)
         };
         
         player->azthPlayer->m_completed_achievement_map[achievement->ID] = it;
@@ -50,7 +51,8 @@ public:
     void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override {
         AzthPlayer::AzthAchiData it = {
             player->getLevel(),
-            player->azthPlayer->getGroupLevel()
+            player->azthPlayer->getGroupLevel(),
+            player->azthPlayer->getPStatsLevel(false)
         };
         
         player->azthPlayer->m_completed_criteria_map[criteria->ID] = it;
@@ -69,6 +71,7 @@ public:
             stmt->setUInt32(index++, ACHIEVEMENT_TYPE);
             stmt->setUInt32(index++, it.level);
             stmt->setUInt32(index++, it.levelParty);
+            stmt->setUInt32(index++, it.specialLevel);
             stmt->setUInt32(index++, achiData.date);
             trans->Append(stmt);
 
@@ -87,6 +90,7 @@ public:
             stmt->setUInt32(index++, CRITERIA_TYPE);
             stmt->setUInt32(index++, it.level);
             stmt->setUInt32(index++, it.levelParty);
+            stmt->setUInt32(index++, it.specialLevel);
             stmt->setUInt32(index++, criteriaData.date);
             trans->Append(stmt);
 

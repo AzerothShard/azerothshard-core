@@ -19,6 +19,8 @@ std::string AzthUtils::getLevelInfo(uint32 level) {
             return "Ulduar";
         case TIMEWALKING_LVL_AUTO:
             return "Auto scaling";
+        case TIMEWALKING_SPECIAL_LVL_MIXED:
+            return "Mixed level";
         default:
             if (sAzthUtils->isMythicLevel(level)) {
                 return "Flex Mythic+ level "+std::to_string(level-TIMEWALKING_LVL_VAS_START+1);
@@ -28,30 +30,78 @@ std::string AzthUtils::getLevelInfo(uint32 level) {
     }
 }
 
+// This function is used to decide which level must prevail
+// on another when select the group level for example.
 uint32 AzthUtils::maxTwLevel(uint32 sourceLvl, uint32 compareLevel) const {
     uint32 maxLevel=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
     
+    if (sourceLvl == compareLevel || compareLevel<=0)
+        return sourceLvl;
+    
     // normal level case (from 0 to 255)
-    if (sourceLvl<TIMEWALKING_SPECIAL_LVL_MAX_START && compareLevel <TIMEWALKING_SPECIAL_LVL_MAX_START) {
+    if (sourceLvl < TIMEWALKING_SPECIAL_LVL_MIN && compareLevel < TIMEWALKING_SPECIAL_LVL_MIN) {
         return sourceLvl > compareLevel ? sourceLvl : compareLevel;
     }
+    //else  special level >= TIMEWALKING_SPECIAL_LVL_MIN || compareLevel >= TIMEWALKING_SPECIAL_LVL_MIN
     
-    // special level
-    if (sourceLvl >= TIMEWALKING_SPECIAL_LVL_MAX_START && sourceLvl <= TIMEWALKING_SPECIAL_LVL_MAX_END) {
-        if (compareLevel  >= TIMEWALKING_SPECIAL_LVL_MAX_START && compareLevel <= TIMEWALKING_SPECIAL_LVL_MAX_END) {
+
+    //1) TW Wotlk level case
+    if (sourceLvl >= TIMEWALKING_SPECIAL_LVL_WOTLK_START && sourceLvl <= TIMEWALKING_SPECIAL_LVL_WOTLK_END) {
+        // TW Wotlk vs TW Wotlk
+        if (compareLevel  >= TIMEWALKING_SPECIAL_LVL_WOTLK_START && compareLevel <= TIMEWALKING_SPECIAL_LVL_WOTLK_END) {
             return sourceLvl > compareLevel ? sourceLvl : compareLevel;
         }
         
+        // TW Wotlk vs lower than endlevels
+        // a level lower than maxlevel is also
+        // lower than special wotlk, so sourceLevel will prevail
+        if (compareLevel < maxLevel) {
+            return sourceLvl; 
+        }
+        
+        // TW Wotlk vs endlevels
         // if sourceLevel is a special level but
-        // compare level is not, then we must check about maxlevel
-        // since special levels are considered "between" maxlevel -1 and maxlevel
-        return compareLevel >= maxLevel ? compareLevel : sourceLvl; 
+        // compare level is not and it's range is from 80 to TIMEWALKING_SPECIAL_LVL_MIN -1
+        // then compareLevel must prevail because TW Wotlk levels
+        // are something between maxlevel and maxlevel -1
+        if (compareLevel >= maxLevel && compareLevel < TIMEWALKING_SPECIAL_LVL_MIN)
+            return compareLevel;
+        
+        // TW Wotlk vs others
+        // comparing another level with TW Wotlk
+        // it must be considered a not compatible
+        // case, so mixed level is used
+        return TIMEWALKING_SPECIAL_LVL_MIXED;
     }
     
-    // it should not happen but needed to avoid loop
-    if (sourceLvl > TIMEWALKING_SPECIAL_LVL_MAX_END)
-		return sourceLvl > compareLevel ? sourceLvl : compareLevel;
-    
+    //2) Mythic case
+    if (sourceLvl >= TIMEWALKING_LVL_VAS_START && sourceLvl <= TIMEWALKING_LVL_VAS_END) {
+        if (compareLevel  >= TIMEWALKING_LVL_VAS_START && compareLevel <= TIMEWALKING_LVL_VAS_END) {
+            return sourceLvl > compareLevel ? sourceLvl : compareLevel;
+        }
+
+        // comparing another level with mythic
+        // it must be considered a not compatible
+        // case, so mixed level is used
+        return TIMEWALKING_SPECIAL_LVL_MIXED;
+    }
+
+    //3) AUTO Scaling
+    if (sourceLvl == TIMEWALKING_LVL_AUTO) {
+        // already handled at beginning of this function
+        // if (compareLevel == TIMEWALKING_LVL_AUTO)
+        //    return TIMEWALKING_LVL_AUTO;
+        
+        // autoscaling is compatible only with itself
+        // so if compareLevel is different, we will use mixed case
+        return TIMEWALKING_SPECIAL_LVL_MIXED;
+    }
+   
+    // special level not handled, must be always considered a mixed case
+    // NOTE: it will avoid loops
+    if (sourceLvl > TIMEWALKING_SPECIAL_LVL_MIN && compareLevel < TIMEWALKING_SPECIAL_LVL_MIN)
+        return TIMEWALKING_SPECIAL_LVL_MIXED;
+
     return maxTwLevel(compareLevel, sourceLvl); // inverse case
 }
 
@@ -60,14 +110,13 @@ bool AzthUtils::isEligibleForBonusByArea(Player const* player) {
     uint32 posLvl=sAzthUtils->getPositionLevel(true, player->GetMap(), pos);
     
     if (posLvl>0) {
-        uint32 groupLevel = player->azthPlayer->getGroupLevel();
-        uint32 level = groupLevel > 0 ? groupLevel : player->getLevel();
+        uint32 level = player->azthPlayer->getPStatsLevel();
         
         if (posLvl>TIMEWALKING_SPECIAL_LVL_MIN) {
             //if (player->azthPlayer->GetTimeWalkingLevel() == posLvl) // with special level we must have the exact value
             //    return true;
         } else if (
-            level != sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && posLvl != sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) // avoid double loot and other bonuses on end-game instances
+            level < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && posLvl < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) // avoid double loot and other bonuses on end-game instances
             && level<=posLvl
         ) {
             return true;
@@ -85,7 +134,7 @@ void AzthUtils::setTwAuras(Unit *unit, AzthLevelStat const *stats, bool apply, b
                 unit->SetAuraStack(a.first, unit, a.second);
         }
         
-        // stats->GetLevel is equal or higher only when special levels
+        // stats->GetLevel is higher only when special levels
         // are used (except TIMEWALKING_LVL_AUTO)
         if (sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) > stats->GetLevel()) {
             // reduce melee damage based on level diff
@@ -145,13 +194,13 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
     if (!player || !player->azthPlayer || player->IsGameMaster())
         return result;
     
-    uint32 levelPlayer = player->azthPlayer->isTimeWalking() && player->azthPlayer->GetTimeWalkingLevel() != TIMEWALKING_LVL_AUTO 
-                                ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
+    uint32 levelPlayer = player->azthPlayer->isTimeWalking() ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
     
     if (group) {
         bool updated=false;
-        if (sAzthUtils->maxTwLevel(levelPlayer, group->azthGroupMgr->levelMaxGroup) != group->azthGroupMgr->levelMaxGroup) {
-            group->azthGroupMgr->levelMaxGroup = levelPlayer;
+        uint32 maxLevel = sAzthUtils->maxTwLevel(levelPlayer, group->azthGroupMgr->levelMaxGroup);
+        if (maxLevel != group->azthGroupMgr->levelMaxGroup) {
+            group->azthGroupMgr->levelMaxGroup = maxLevel;
             updated = true;
         }
         
@@ -161,7 +210,7 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
         }
 
         if (updated) {    
-            std::string _slvl=sAzthUtils->getLevelInfo(levelPlayer);
+            std::string _slvl=sAzthUtils->getLevelInfo(group->azthGroupMgr->levelMaxGroup);
             std::string msg = sAzthLang->getf(AZTH_LANG_GROUP_LEVEL_REG,player, player->GetName().c_str(),_slvl.c_str(), group->GetMembersCount());
             sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());
             group->azthGroupMgr->saveToDb();
@@ -178,22 +227,27 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
             if (is->azthInstMgr->levelMax == 0) {
                 player->azthPlayer->instanceID = map->GetInstanceId();
 
-                QueryResult result = CharacterDatabase.PQuery("SELECT levelPg,groupSize FROM instance WHERE id = %u", player->azthPlayer->instanceID);
+                QueryResult result = CharacterDatabase.PQuery("SELECT levelPg,groupSize,startTime FROM instance WHERE id = %u", player->azthPlayer->instanceID);
                 if (!result)
                     return result;
                 Field* fields = result->Fetch();
                 is->azthInstMgr->levelMax = fields[0].GetUInt32();
                 is->azthInstMgr->groupSize = fields[1].GetUInt32();
+                uint32 startTime = fields[2].GetUInt32();
+                if (startTime)
+                    is->azthInstMgr->startTime = startTime; 
                 updated=true;
             }
 
-            if (sAzthUtils->maxTwLevel(levelPlayer, is->azthInstMgr->levelMax) != is->azthInstMgr->levelMax) {
-                is->azthInstMgr->levelMax = levelPlayer;
+            uint32 maxLevel = sAzthUtils->maxTwLevel(levelPlayer, is->azthInstMgr->levelMax);
+            if (maxLevel != is->azthInstMgr->levelMax) {
+                is->azthInstMgr->levelMax = maxLevel;
                 updated=true;
             }
             
-            if (group && group->GetMembersCount() > is->azthInstMgr->groupSize) {
-                is->azthInstMgr->groupSize = group->GetMembersCount();
+            uint32 cnt=map->GetPlayersCountExceptGMs();
+            if (cnt > is->azthInstMgr->groupSize) {
+                is->azthInstMgr->groupSize = cnt;
                 updated = true;
             }
         

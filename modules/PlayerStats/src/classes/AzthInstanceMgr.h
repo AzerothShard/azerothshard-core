@@ -15,5 +15,6 @@ class AzthInstanceMgr {
         InstanceSave* is;
         uint32 levelMax;
         uint32 groupSize;
+        uint32 startTime;
 };
 #endif

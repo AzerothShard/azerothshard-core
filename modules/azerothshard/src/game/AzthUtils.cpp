@@ -1012,3 +1012,7 @@ bool AzthUtils::isMythicLevel(uint32 level)
     return level >= TIMEWALKING_LVL_VAS_START && level <= TIMEWALKING_LVL_VAS_END; 
 }
 
+bool AzthUtils::isMythicCompLvl(uint32 reqLvl, uint32 checkLvl) {
+    return isMythicLevel(reqLvl) && isMythicLevel(checkLvl) && reqLvl <= checkLvl;
+}
+

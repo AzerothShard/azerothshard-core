@@ -3,61 +3,148 @@
 #include "Group.h"
 #include "Player.h"
 
-uint32 AzthPlayer::getGroupLevel(bool normalized /*=true*/) {
-  uint32 groupLevel = 0;
-  
-  if (!player)
-      return groupLevel;
-
-  Group *group = player->GetGroup();
-  Map *map = player->FindMap();
-  if (group) {
-    if (map->IsDungeon() || map->IsRaid()) {
-      // caso party instance
-      InstanceSave *is = sInstanceSaveMgr->PlayerGetInstanceSave(
-          GUID_LOPART(player->GetGUID()), map->GetId(),
-          player->GetDifficulty((map->IsRaid())));
-
-      if (is != NULL) {
-        groupLevel = is->azthInstMgr->levelMax;
-        return groupLevel;
-      }
+uint32 AzthPlayer::normalizeLvl(uint32 level) {
+    if (level>=TIMEWALKING_SPECIAL_LVL_WOTLK_START && level<=TIMEWALKING_SPECIAL_LVL_WOTLK_END)
+        return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    
+    if (!player)
+        return level;
+    
+    uint32 rLevel = level;
+    // to normalize level auto or vas we need to get the max level of the group or the level of player
+    // however since the special level is related to a dynamic real level (that can be increased/decreased)
+    // we need to get the max level in a specific time (for now, should be avoided when possible)
+    if (level==TIMEWALKING_LVL_AUTO || (level>=TIMEWALKING_LVL_VAS_START && level<=TIMEWALKING_LVL_VAS_END)) {
+        Group *group = player->GetGroup();
+        if (group) {
+            for (Group::member_citerator mitr = group->GetMemberSlots().begin(); mitr != group->GetMemberSlots().end(); ++mitr)
+            {
+                if (const GlobalPlayerData* gpd = sWorld->GetGlobalPlayerData(mitr->guid))
+                {
+                    if (groupLevel < gpd->level)
+                        rLevel = gpd->level;
+                }
+            }
+        } else {
+            rLevel = player->getLevel();
+        }
     }
-
-    // outworld party or limit case for dungeon
-    groupLevel = group->azthGroupMgr->levelMaxGroup;
-  }
-  
-  if (normalized && groupLevel>=TIMEWALKING_SPECIAL_LVL_MAX_START && groupLevel<=TIMEWALKING_SPECIAL_LVL_MAX_END)
-      groupLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-
-  return groupLevel;
+    
+    return rLevel;
 }
 
-uint32 AzthPlayer::getGroupSize() {
-  uint32 groupSize = 1;
-  
-  if (!player)
-      return groupLevel;
-
-  Group *group = player->GetGroup();
-  Map *map = player->FindMap();
-  if (group) {
-    if (map->IsDungeon() || map->IsRaid()) {
-      // caso party instance
-      InstanceSave *is = sInstanceSaveMgr->PlayerGetInstanceSave(
-          GUID_LOPART(player->GetGUID()), map->GetId(),
-          player->GetDifficulty((map->IsRaid())));
-
-      if (is != NULL) {
-        groupSize = is->azthInstMgr->groupSize;
-        return groupSize;
-      }
+uint32 AzthPlayer::getGroupLevel(bool normalize /*=true*/, bool checkInstance /*=true*/) {
+    if (!player)
+        return 0;
+    
+    uint32 groupLevel = 0;
+    
+    if (checkInstance) {
+        groupLevel = getInstanceLevel(normalize);
     }
 
-    // outworld party or limit case for dungeon
-    groupSize = group->azthGroupMgr->groupSize;
-  }
+    Group *group = player->GetGroup();
+    if (group && !groupLevel) {
+        // outworld party or limit case for dungeon
+        groupLevel = group->azthGroupMgr->levelMaxGroup;
+        
+        if (normalize)
+            groupLevel = normalizeLvl(groupLevel);
+    }
 
-  return groupSize > 0 ? groupSize : 1;
+    return groupLevel;
+}
+
+uint32 AzthPlayer::getInstanceLevel(bool normalize /*=true*/) {
+    if (!player)
+        return 0;
+    
+    uint32 instanceLevel=0;
+    
+    Map *map = player->FindMap();
+    if (map && (map->IsDungeon() || map->IsRaid())) {
+        // when in instance
+        InstanceSave *is = sInstanceSaveMgr->PlayerGetInstanceSave(
+            GUID_LOPART(player->GetGUID()), map->GetId(),player->GetDifficulty((map->IsRaid())));
+        
+        if (is != NULL) {
+            instanceLevel = is->azthInstMgr->levelMax;
+            
+            if (normalize)
+                instanceLevel = normalizeLvl(instanceLevel);
+        }
+    }
+    
+    return instanceLevel;
+}
+
+// this function help to find the current level for player stats and timewalking
+// in order of importance: instance -> group -> player
+// but you can disable instance or group check or both in special situations
+uint32 AzthPlayer::getPStatsLevel(bool normalize /*=true*/, bool checkInstance /*=true*/, bool checkGroup /*=true*/) {    
+    if (!player)
+        return 0;
+    
+    uint32 level=0;
+    
+    // instance
+    if (checkInstance)
+        level=getInstanceLevel(normalize);
+    
+    // group
+    if (checkGroup && !level)
+        level = getGroupLevel(normalize);
+    
+    // player
+    if (!level) {
+        level = isTimeWalking() ? GetTimeWalkingLevel() : player->getLevel();
+    
+        if (normalize)
+            level = normalizeLvl(level);
+    }
+    
+    return level;
+}
+
+uint32 AzthPlayer::getGroupSize(bool checkInstance /*=true*/) {
+    if (!player)
+        return 0;
+
+    uint32 groupSize=0;
+    
+
+
+  
+    if (checkInstance) {
+        groupSize = getInstanceSize();
+    }
+
+    if (!groupSize) {
+        Group *group = player->GetGroup();
+        if (group) {
+            // outworld party or limit case for dungeon
+            groupSize = group->azthGroupMgr->groupSize;
+        }
+    }
+
+    return groupSize;
+}
+
+uint32 AzthPlayer::getInstanceSize() {
+    if (!player)
+        return 0;
+
+    Map *map = player->FindMap();
+    if (map && (map->IsDungeon() || map->IsRaid())) {
+        // caso party instance
+        InstanceSave *is = sInstanceSaveMgr->PlayerGetInstanceSave(
+            GUID_LOPART(player->GetGUID()), map->GetId(),
+                                                                   player->GetDifficulty((map->IsRaid())));
+        
+        if (is != NULL) {
+            return is->azthInstMgr->groupSize;
+        }
+    }
+    
+    return 0;
 }

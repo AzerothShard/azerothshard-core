@@ -40,13 +40,14 @@
      std::vector<ChatCommand> GetCommands() const override {
          // name , level, allowConsole, function
          static std::vector<ChatCommand> lookupAzthCommands = {
-            { "fixranks"       , SEC_PLAYER, false, &handleFixRanks,       ".azth fixranks : fix all previous not learned spell ranks, expecially used for portings" },
-            { "arealevel"      , SEC_PLAYER, false, &handlePrintAreaLevel, ".azth arealevel : to show calculated level for current area" },
-            { "maxskill"       , SEC_PLAYER, false, &handleAzthMaxSkill,   ".azth maxskill: if you're level 80, you can use this command to max out weapons skills"},
-            { "xp"             , SEC_PLAYER, false, &handleAzthXP,         ".azth xp <rate>: you can set an arbitrary experience rate"},
-            { "smartstone"     , SEC_PLAYER, false, &handleAzthSmartstone, ".azth smartstone: create a smartstone in your bag" },
-            { "bonus"          , SEC_PLAYER, false, &handleAzthBonus,      ".azth bonus <rate> <bracket> :  set temp a rating bonus for brackets" },
-            { "ptype"          , SEC_PLAYER, false, &handlePlayerType,     ".azth ptype : shows player tipology (normal,fullpvp)" },
+            { "fixranks"       , SEC_PLAYER, false, &handleFixRanks,           ".azth fixranks : fix all previous not learned spell ranks, expecially used for portings" },
+            { "arealevel"      , SEC_PLAYER, false, &handlePrintAreaLevel,     ".azth arealevel : to show calculated level for current area" },
+            { "maxskill"       , SEC_PLAYER, false, &handleAzthMaxSkill,       ".azth maxskill: if you're level 80, you can use this command to max out weapons skills"},
+            { "xp"             , SEC_PLAYER, false, &handleAzthXP,             ".azth xp <rate>: you can set an arbitrary experience rate"},
+            { "pstatinfo"      , SEC_PLAYER, false, &handleAzthCurrLevel,      ".azth pstatinfo: show info about level of selected player and size&level of its group if exists)"},
+            { "smartstone"     , SEC_PLAYER, false, &handleAzthSmartstone,     ".azth smartstone: create a smartstone in your bag" },
+            { "bonus"          , SEC_ADMINISTRATOR, false, &handleAzthBonus,   ".azth bonus <rate> <bracket> :  set temp a rating bonus for brackets" },
+            { "ptype"          , SEC_PLAYER, false, &handlePlayerType,         ".azth ptype : shows player tipology (normal,fullpvp)" },
          };
 
          static std::vector<ChatCommand> commandTable = {
@@ -55,6 +56,50 @@
          };
          return commandTable;
      }
+     
+    static bool handleAzthCurrLevel(ChatHandler* handler, char const* /*args*/) {
+        Player* target = handler->getSelectedPlayerOrSelf();
+        
+        if (!target)
+            target = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+        
+        if (!target || !target->GetSession())
+            return false;
+        
+        
+        uint32 finalLevel = target->azthPlayer->getPStatsLevel(false);
+        uint32 nFinalLevel = target->azthPlayer->getPStatsLevel(true);
+        uint32 level = target->azthPlayer->getPStatsLevel(false, false, false);
+        uint32 nLevel = target->azthPlayer->getPStatsLevel(true, false, false);
+        uint32 groupLevel = target->azthPlayer->getGroupLevel(false, false);
+        uint32 nGroupLevel = target->azthPlayer->getGroupLevel(true, false);
+        uint32 instanceLevel = target->azthPlayer->getInstanceLevel(false);
+        uint32 nInstanceLevel = target->azthPlayer->getInstanceLevel(true);
+        uint32 groupSize = target->azthPlayer->getGroupSize(false);
+        uint32 instanceSize = target->azthPlayer->getInstanceSize();
+        
+        std::string finalLevelInfo = sAzthUtils->getLevelInfo(finalLevel);
+        std::string nFinalLevelInfo = sAzthUtils->getLevelInfo(nFinalLevel);
+        std::string levelInfo = sAzthUtils->getLevelInfo(level);
+        std::string nLevelInfo = sAzthUtils->getLevelInfo(nLevel);
+        std::string groupLevelInfo = sAzthUtils->getLevelInfo(groupLevel);
+        std::string nGroupLevelInfo = sAzthUtils->getLevelInfo(nGroupLevel);
+        std::string instanceLevelInfo = sAzthUtils->getLevelInfo(instanceLevel);
+        std::string nInstanceLevelInfo = sAzthUtils->getLevelInfo(nInstanceLevel);
+        
+        handler->PSendSysMessage("PStat Level: %s", finalLevelInfo.c_str());
+        handler->PSendSysMessage("PStat Level (Normalized): %s", nFinalLevelInfo.c_str());
+        handler->PSendSysMessage("Player Level: %s", levelInfo.c_str());
+        handler->PSendSysMessage("Player Level (Normalized): %s", nLevelInfo.c_str());
+        handler->PSendSysMessage("Group Level: %s", groupLevelInfo.c_str());
+        handler->PSendSysMessage("Group Level (Normalized): %s", nGroupLevelInfo.c_str());
+        handler->PSendSysMessage("Instance Level: %s", instanceLevelInfo.c_str());
+        handler->PSendSysMessage("Instance Level (Normalized): %s", nInstanceLevelInfo.c_str());
+        handler->PSendSysMessage("Group Size: %u", groupSize);
+        handler->PSendSysMessage("Instance Members Size: %u", instanceSize);
+        
+        return true;
+    }
      
     static bool handleFixRanks(ChatHandler* handler, char const* /*args*/) {
         Player *player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;

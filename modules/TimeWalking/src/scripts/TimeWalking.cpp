@@ -14,6 +14,7 @@
 #include "LFG.h"
 #include "LFGMgr.h"
 #include "VASAutoBalance.h"
+#include "MapManager.h"
 
 typedef std::map<uint32, TwRaid> RaidList;
 RaidList raidList;
@@ -51,12 +52,18 @@ public:
         // but we're letting module to decide via its config.
         if (!creature->GetMap()->IsDungeon())
             return true;
-        
-        if (creature->GetMap()->GetEntry()->Expansion() >= 2)
-            return false;
-        
-        // Flexible content is allowed only for pre-wotlk instances
-        if (sAzthUtils->getPositionLevel(false, creature->GetMap(), creature->GetZoneId(), creature->GetAreaId()) > 70)
+
+        // Flexible content is allowed only for pre-wotlk instances and some specific wotlk
+        uint32 expansion = creature->GetMap()->GetEntry()->Expansion();        
+        uint32 mapId=creature->GetMap()->GetId();
+        uint32 posLvl = sAzthUtils->getPositionLevel(false, creature->GetMap(), creature->GetZoneId(), creature->GetAreaId());
+        if ((posLvl > 70 || expansion >= 2)
+            && mapId != 603 // Ulduar
+            && mapId != 533 // Naxxramas
+            && mapId != 616 // The Eye of Eternity
+            && mapId != 615 // Obsidian Sanctum
+            && mapId != 249 // Onyxia's Lair
+        )
             return false;
 
         Map::PlayerList const &playerList = creature->GetMap()->GetPlayers();
@@ -68,11 +75,14 @@ public:
                 {
                     if (playerHandle->IsGameMaster())
                         continue;
+                    
+                    //uint32 maxNumberOfPlayers = ((InstanceMap*)sMapMgr->FindMap(creature->GetMapId(), creature->GetInstanceId()))->GetMaxPlayers();
+                    
+                    //if (
 
                     //instancePlayerCount = playerHandle->azthPlayer->getGroupSize();
-                    
-                    uint32 groupLevel=playerHandle->azthPlayer->getGroupLevel(false);
-                    uint32 specialLevel =  groupLevel > 0 ? groupLevel : playerHandle->azthPlayer->GetTimeWalkingLevel();
+
+                    uint32 specialLevel =  playerHandle->azthPlayer->getPStatsLevel(false);
                     
                     if (sAzthUtils->isMythicLevel(specialLevel)) {
                         MapMythicInfo *myth=creature->GetMap()->CustomData.GetDefault<MapMythicInfo>("AZTH_Mythic_Info");
@@ -219,14 +229,14 @@ public:
 
         if (!player->azthPlayer->isTimeWalking()) {
             if (player->getLevel()>=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) {
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Fase Attuale ( Bonus )", GOSSIP_SENDER_MAIN, 4);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
+                //player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
                 player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
                 //if (player->IsGameMaster()) {
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, TIMEWALKING_LVL_AUTO+10000);
                 //}
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "TimeWalking (Wotlk)", GOSSIP_SENDER_MAIN, 4);
             }
-            player->ADD_GOSSIP_ITEM(0, "Flex Mythic+ (Beta)", GOSSIP_SENDER_MAIN, 9); // we can't use another icon otherwise will be automatically selected on gossip hello
+            player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_01:30|tFlex Mythic+ (Beta)", GOSSIP_SENDER_MAIN, 9); // we can't use another icon otherwise will be automatically selected on gossip hello
         } else {
             player->ADD_GOSSIP_ITEM(0, "Esci dalla modalità TimeWalking", GOSSIP_SENDER_MAIN, 7);
         }
@@ -481,18 +491,15 @@ public:
         if (achi.GetReqDimension() > 0 && achi.GetReqDimension() != player->azthPlayer->getCurrentDimensionByAura())
             return;
 
-        uint32 groupLevel= player->azthPlayer->getGroupLevel();
-        uint32 specialGroupLevel = player->azthPlayer->getGroupLevel(false);
-        uint32 level = groupLevel > 0 ? groupLevel : player->getLevel();
-        uint32 specialLevel = specialGroupLevel > 0 ? specialGroupLevel : player->azthPlayer->GetTimeWalkingLevel();
+        uint32 level = player->azthPlayer->getPStatsLevel(false);
         
         // skip rewards if you don't have the required special level
-        if (achi.GetSpecialLevelReq() > 0 && 
-            (!player->azthPlayer->isTimeWalking() || specialLevel != achi.GetSpecialLevelReq()) ) {
-            return;
+        if (achi.GetSpecialLevelReq() > 0 && !sAzthUtils->isMythicCompLvl(achi.GetSpecialLevelReq(), level) && level != achi.GetSpecialLevelReq()) {
+                return;
         }
-        
-        if (level < achi.GetLevelMin() || level  > achi.GetLevelMax() ) {
+
+        // if levelMin and Level max has been set, then the level must be in this range
+        if (achi.GetLevelMin() && achi.GetLevelMax() && (level < achi.GetLevelMin() || level  > achi.GetLevelMax())) {
             return;
         }
         /*
@@ -507,24 +514,9 @@ public:
             
             if (_proto->IsCurrencyToken()) {                
                 if (player->GetMap()->IsDungeon() || player->GetMap()->IsRaid()) {
-                    bool hasBonus = false;
-                    RaidList rList = sAzthRaid->GetRaidList();
-                    for (RaidList::iterator itr = rList.begin(); itr != rList.end(); itr++) {
-                        if ((*itr).second.GetCriteria() == criteria->ID && (*itr).second.hasBonus()) {
-                            hasBonus = true;
-                            break;
-                        }
-                    }
-                    
-                    // if bonus is active then you'll get x2 tokens
-                    // moreover if you have the level <= of suggested
-                    // then you'll get x6 tokens instead
-                    if (hasBonus) {
+                    // bonus for who complete that achievement with a recommended level
+                    if (level <= achi.GetLevel())
                         count *= 2;
-
-                        if (level <= achi.GetLevel())
-                            count *= 3;
-                    }
                 }
 
                 player->AddItem(reward, count);
@@ -577,6 +569,50 @@ public:
 
     }
     
+    bool OnBeforeQuestComplete(Player *player, uint32 quest_id) override {
+        uint32 guid,quest,sLevel,nLevel, instanceStart=0, questEnd, groupId;
+        uint8 gSize;
+        uint64 id=0;
+        
+        //Quest *questTmpl = sObjectMgr->GetQuestTemplate(quest_id);
+        QuestStatusMap::iterator qsitr = player->getQuestStatusMap().find(quest_id);
+        if (qsitr == player->getQuestStatusMap().end()) // should always be true in this moment
+            return true;
+        
+        //if (player->GetGroup())
+        //    groupId=player->GetGroup()->GetLowGUID();
+
+        Map* map = player->FindMap();        
+        if (!map->IsDungeon())
+            return true;
+
+        InstanceSave* is = sInstanceSaveMgr->PlayerGetInstanceSave(GUID_LOPART(player->GetGUID()), map->GetId(), player->GetDifficulty(map->IsRaid()));
+        if (!is)
+            return true;
+        
+        if (is->azthInstMgr->startTime == 0)
+            return true;
+        
+        guid = player->GetGUIDLow();
+        quest = quest_id;
+        sLevel = player->azthPlayer->getPStatsLevel(false);
+        nLevel = player->azthPlayer->getPStatsLevel(true);
+        gSize = player->azthPlayer->getGroupSize();
+        
+        groupId = is->GetInstanceId();
+
+        instanceStart = is->azthInstMgr->startTime;
+    
+        questEnd = static_cast<uint32>(time(NULL));
+        
+        id = MAKE_NEW_GUID(guid, groupId, instanceStart);
+        
+        CharacterDatabase.PExecute("INSERT INTO azth_quest_log (guid, groupId, quest, sLevel, nLevel, gSize, instanceStartTime, endTime) VALUES(%u,%u,%u,%u,%u,%u,%u,%u);", 
+                                guid, id, quest, sLevel,nLevel,gSize,instanceStart,questEnd);
+
+        return true;
+    }
+
     void OnLoadFromDB(Player *player) override {
         QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("SELECT id,level FROM azth_timewalking_characters_active WHERE id = %d;"), player->GetGUID());
         if (timewalkingCharactersActive_table) //if is in timewalking mode apply debuff
@@ -592,7 +628,10 @@ public:
         player->azthPlayer->prepareTwSpells(player->getLevel());
         sAzthUtils->setTwDefense(player, player->azthPlayer->isTimeWalking(true));
     }
-
+    
+    void OnLevelChanged(Player* player, uint8 /*oldlevel*/) override { 
+        sAzthUtils->updateTwLevel(player, player->GetGroup());
+    }
     
     void OnBeforeInitTalentForLevel(Player* player, uint8&  /*level*/, uint32& talentPointsForLevel) override
     {

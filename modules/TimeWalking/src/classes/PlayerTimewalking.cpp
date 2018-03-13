@@ -44,7 +44,7 @@ void AzthPlayer::SetTimeWalkingLevel(uint32 itsTimeWalkingLevel, bool clearAuras
     
     if (!login) {
         // hacking attempt?
-        if (timeWalkingLevel==0 && !sAzthUtils->isMythicLevel(timeWalkingLevel) && player->getLevel()<sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+        if (timeWalkingLevel==0 && !sAzthUtils->isMythicLevel(itsTimeWalkingLevel) && player->getLevel()<sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
             return;
 
         uint32 iLvl=player->azthPlayer->getTwItemLevel(itsTimeWalkingLevel);
