@@ -15,6 +15,9 @@
 #include "LFGMgr.h"
 #include "VASAutoBalance.h"
 #include "MapManager.h"
+#include "ReputationMgr.h"
+
+class ReputationMgr;
 
 typedef std::map<uint32, TwRaid> RaidList;
 RaidList raidList;
@@ -112,7 +115,7 @@ public:
 
             scaledHealth *= rate;
             scaledMana   *= rate;
-            newBaseArmor *= rate;
+            newBaseArmor += newBaseArmor * (rate / 10);
             damageMultiplier *= rate;
 
             return true;
@@ -608,20 +611,21 @@ public:
         nLevel = player->azthPlayer->getPStatsLevel(true);
         gSize = player->azthPlayer->getGroupSize();
         
-        Quest *questTmpl = sObjectMgr->GetQuestTemplate(quest_id);
+        const Quest *questTmpl = sObjectMgr->GetQuestTemplate(quest_id);
         if (questTmpl && sAzthUtils->isMythicLevel(sLevel) && sLevel > TIMEWALKING_LVL_VAS_LVL1) {
             for (int i=0;i<4;i++) {
                 if (questTmpl->RewardItemId[i] == AZTH_MARK_OF_AZEROTH) {
-                    uint32 bonus=sLevel;
-                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_MYTHIC_MOA_BONUS, player, bonus));
+                    uint32 bonus=sLevel-TIMEWALKING_LVL_VAS_LVL1;
+                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_MYTHIC_MOA_BONUS, player,sLevel-TIMEWALKING_LVL_VAS_LVL1+1, bonus));
                     player->AddItem(AZTH_MARK_OF_AZEROTH, bonus);
                 }
             }
             
             for (int i=0;i<5;i++) {
                 if (questTmpl->RewardFactionId[i] == AZTH_AS_REP && questTmpl->RewardFactionValueIdOverride[i] > 0) {
-                    uint32 bonus = questTmpl->RewardFactionValueIdOverride[i] * std::pow(1.1, sLevel-1); // proportional to mythic
-                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_MYTHIC_ASREP_BONUS, player, ));
+                    uint32 bonus = (questTmpl->RewardFactionValueIdOverride[i] * std::pow(1.1, sLevel-TIMEWALKING_LVL_VAS_LVL1-1)) / 100; // proportional to mythic
+                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_MYTHIC_ASREP_BONUS, player, sLevel-TIMEWALKING_LVL_VAS_LVL1+1, bonus));
+                    player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), bonus);
                 }
             }
         }
