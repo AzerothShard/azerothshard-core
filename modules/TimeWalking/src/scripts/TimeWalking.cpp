@@ -636,7 +636,7 @@ public:
     
         questEnd = static_cast<uint32>(time(NULL));
         
-        id = MAKE_NEW_GUID(guid, groupId, instanceStart);
+        id = MAKE_NEW_GUID(quest, groupId, instanceStart);
         
         CharacterDatabase.PExecute("INSERT INTO azth_quest_log (guid, groupId, quest, sLevel, nLevel, gSize, instanceStartTime, endTime) VALUES(%u,%u,%u,%u,%u,%u,%u,%u);", 
                                 guid, id, quest, sLevel,nLevel,gSize,instanceStart,questEnd);
