@@ -8,6 +8,7 @@
 #include "GuildHouse.h"
 #include "BattlefieldWG.h"
 #include "InstanceScript.h"
+#include <ctime>
 
 class InstanceScript;
 
@@ -710,7 +711,7 @@ bool AzthUtils::isPhasedDimension(uint32 dim) {
     return dim > DIMENSION_NORMAL;
 }
 
-bool AzthUtils::isSharedArea(Player */*player*/, MapEntry const *mEntry, uint32 zone, uint32 /*area*/) {
+bool AzthUtils::isSharedArea(Player* /*player*/, MapEntry const *mEntry, uint32 zone, uint32 /*area*/) {
     return 
     mEntry->IsBattlegroundOrArena() // all bg and arena
     || mEntry->IsDungeon()          // is dungeon
@@ -833,7 +834,7 @@ SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell
     return SPELL_CAST_OK;
 }
 
-bool AzthUtils::canPrepareSpell(Spell */*spell*/, Unit */*m_caster*/, SpellInfo const* m_spellInfo, SpellCastTargets const* targets, AuraEffect const* /*triggeredByAura*/) {
+bool AzthUtils::canPrepareSpell(Spell* /*spell*/, Unit* /*m_caster*/, SpellInfo const* m_spellInfo, SpellCastTargets const* targets, AuraEffect const* /*triggeredByAura*/) {
     // naxxramas teleport disabled when timewalking
     Unit* target = targets->GetUnitTarget();
     //Player *player;

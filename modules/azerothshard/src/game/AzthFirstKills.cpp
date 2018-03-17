@@ -4,6 +4,7 @@
 #include "InstanceScript.h"
 #include <stdio.h>
 #include <time.h>
+#include <ctime>
  
 class InstanceScript;
 
