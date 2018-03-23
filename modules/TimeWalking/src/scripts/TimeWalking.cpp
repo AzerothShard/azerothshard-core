@@ -50,7 +50,7 @@ public:
     TWVasScript(): VasModuleScript("TWVasScript") {
     }
     
-    bool OnBeforeModifyAttributes(Creature* creature, uint32 & /*instancePlayerCount*/) override {
+    bool OnBeforeModifyAttributes(Creature* creature, uint32 & instancePlayerCount) override {
         // it doesn't mean that we're allowing it when not in dungeon
         // but we're letting module to decide via its config.
         if (!creature->GetMap()->IsDungeon())
@@ -87,9 +87,13 @@ public:
 
                     uint32 specialLevel =  playerHandle->azthPlayer->getPStatsLevel(false);
                     
+                    MapMythicInfo *myth=creature->GetMap()->CustomData.GetDefault<MapMythicInfo>("AZTH_Mythic_Info");
+                    
                     if (sAzthUtils->isMythicLevel(specialLevel)) {
-                        MapMythicInfo *myth=creature->GetMap()->CustomData.GetDefault<MapMythicInfo>("AZTH_Mythic_Info");
                         myth->mythicLevel = specialLevel;
+                        return true;
+                    } else if (specialLevel == TIMEWALKING_SPECIAL_LVL_MIXED && myth->mythicLevel) {
+                        instancePlayerCount = 100; // workaround to break "Flex modality" with mixed group
                         return true;
                     }
                 }
@@ -611,7 +615,7 @@ public:
         nLevel = player->azthPlayer->getPStatsLevel(true);
         gSize = player->azthPlayer->getGroupSize();
         
-        const Quest *questTmpl = sObjectMgr->GetQuestTemplate(quest_id);
+        /*const Quest *questTmpl = sObjectMgr->GetQuestTemplate(quest_id);
         if (questTmpl && sAzthUtils->isMythicLevel(sLevel) && sLevel > TIMEWALKING_LVL_VAS_LVL1) {
             for (int i=0;i<4;i++) {
                 if (questTmpl->RewardItemId[i] == AZTH_MARK_OF_AZEROTH) {
@@ -628,7 +632,7 @@ public:
                     player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), bonus);
                 }
             }
-        }
+        }*/
         
         groupId = is->GetInstanceId();
 
@@ -636,7 +640,7 @@ public:
     
         questEnd = static_cast<uint32>(time(NULL));
         
-        id = MAKE_NEW_GUID(quest, groupId, instanceStart);
+        id = MAKE_NEW_GUID(0, groupId, instanceStart);
         
         CharacterDatabase.PExecute("INSERT INTO azth_quest_log (guid, groupId, quest, sLevel, nLevel, gSize, instanceStartTime, endTime) VALUES(%u,%u,%u,%u,%u,%u,%u,%u);", 
                                 guid, id, quest, sLevel,nLevel,gSize,instanceStart,questEnd);
