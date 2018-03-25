@@ -658,30 +658,34 @@ public:
         player->azthPlayer->prepareTwSpells(player->getLevel());
         sAzthUtils->setTwDefense(player, player->azthPlayer->isTimeWalking(true));
         
-        QueryResult last_activity_rep = CharacterDatabase.PQuery("SELECT c.logout_time,MAX(questEndTime),MAX(instanceEndTime),MAX(instanceStartTime) FROM azth_quest_log AS q LEFT JOIN characters AS c ON q.guid=c.guid WHERE q.guid = %d;", player->GetGUID());
-        if (last_activity_rep)
-        {
-            Field* last_activity_fields = last_activity_rep->Fetch();
-            
-            uint32 logoutTime=last_activity_fields[0].GetUInt32();
-            uint32 lastQuestEnd=last_activity_fields[1].GetUInt32();
-            uint32 lastInstanceEnd=last_activity_fields[2].GetUInt32();
-            uint32 lastInstanceStart=last_activity_fields[3].GetUInt32();
-            
-            uint32 lastActivity = lastQuestEnd ? lastQuestEnd : (lastInstanceEnd ? lastInstanceEnd : lastInstanceStart);
+        int32 rep=player->GetReputationMgr().GetReputation(AZTH_AS_REP);
+        // reduce only if positive reputation
+        if (rep > 0) {
+            QueryResult last_activity_rep = CharacterDatabase.PQuery("SELECT c.logout_time,MAX(questEndTime),MAX(instanceEndTime),MAX(instanceStartTime) FROM azth_quest_log AS q LEFT JOIN characters AS c ON q.guid=c.guid WHERE q.guid = %d;", player->GetGUID());
+            if (last_activity_rep)
+            {
+                Field* last_activity_fields = last_activity_rep->Fetch();
+                
+                uint32 logoutTime=last_activity_fields[0].GetUInt32();
+                uint32 lastQuestEnd=last_activity_fields[1].GetUInt32();
+                uint32 lastInstanceEnd=last_activity_fields[2].GetUInt32();
+                uint32 lastInstanceStart=last_activity_fields[3].GetUInt32();
+                
+                uint32 lastActivity = lastQuestEnd ? lastQuestEnd : (lastInstanceEnd ? lastInstanceEnd : lastInstanceStart);
 
-            if (lastActivity) {
-                uint32 now = static_cast<uint32>(time(NULL));
-                uint32 diffActivity = now > lastActivity ? now - lastActivity : 0;
-                uint32 diffLogout = now > logoutTime ? now - logoutTime : 0;
-                uint32 daysActivity=diffActivity/60/60/24;
-                uint32 daysLogout=diffLogout/60/60/24;
-                if (daysActivity>5 && daysLogout > 1) {
-                    // Gompertz formula for rep reduction growt
-                    uint32 repRed=43000*std::exp(-4*std::exp(-float(daysLogout)/100))-810;
-
-                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_REP_REMOVED_LOGOUT, player, daysActivity ));
-                    player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), -repRed);
+                if (lastActivity) {
+                    uint32 now = static_cast<uint32>(time(NULL));
+                    uint32 diffActivity = now > lastActivity ? now - lastActivity : 0;
+                    uint32 diffLogout = now > logoutTime ? now - logoutTime : 0;
+                    uint32 daysActivity=diffActivity/60/60/24;
+                    uint32 daysLogout=diffLogout/60/60/24;
+                    if (daysActivity>5 && daysLogout > 1) {
+                        // Gompertz formula for rep reduction growt
+                        uint32 repRed=43000*std::exp(-4*std::exp(-float(daysLogout)/100))-810;
+                        repRed = repRed > rep ? rep : repRed; // never go below 0
+                        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_REP_REMOVED_LOGOUT, player, daysActivity ));
+                        player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), -repRed);
+                    }
                 }
             }
         }
@@ -773,6 +777,7 @@ class global_timewalking : public GlobalScript {
 
                 uint32 posLevel=sAzthUtils->getPositionLevel(true, map, player->GetZoneId(), player->GetAreaId());
                 if ((sAzthUtils->canMythicHere(player) && sAzthUtils->isMythicLevel(sLevel)) || // MYTHIC CASE
+                    (nLevel<=70 && sLevel == TIMEWALKING_LVL_AUTO && nLevel <= posLevel) || // TW Auto CASE
                     (sLevel<=70 && sLevel <= posLevel) || // TIMEWALKING NORMAL LEVELS (AVOID ENDGAME CONTENTS)
                     (sLevel > 80 && sLevel == posLevel)) // TIMEWALKING SPECIAL LEVELS
                 {
@@ -791,12 +796,12 @@ class global_timewalking : public GlobalScript {
                     ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_BOSS_KILLED, player, count, total, uint32(round(float(now-instanceStart)/60))));
                     
                     if (count>=total) {
-                        player->GetSession()->SendNotification(sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));
+                        player->GetSession()->SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));
                         ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));    
                     }
                     
                     if (dungeonCompleted) {
-                        player->GetSession()->SendNotification(sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));
+                        player->GetSession()->SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));
                         ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));    
                     }
                     

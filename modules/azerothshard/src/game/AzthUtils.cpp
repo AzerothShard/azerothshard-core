@@ -887,7 +887,7 @@ void AzthUtils::onAuraRemove(AuraApplication * aurApp, AuraRemoveMode /*mode*/) 
     }
 }
 
-uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zone*/, uint32 area) const {
+uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 zone, uint32 area) const {
 
     uint32 level=0;
     
@@ -934,10 +934,27 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zo
     
     if (!level) {
         // some area entry doesn't have the area_level defined, so we can try
-        // again with LFGDungeonEntry that stores some information about outworld zones
-        LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty());
-        if (dungeon)
-            level  = dungeon->recminlevel ? dungeon->recminlevel : ( dungeon->reclevel ?  dungeon->reclevel : dungeon->minlevel);
+        // a workaround with LFGDungeon list on outworld zones
+        MapEntry const* mapEntry = sMapStore.LookupEntry(map->GetId());
+        AreaTableEntry const* zoneEntry = sAreaTableStore.LookupEntry(zone);
+        AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(area);
+
+        std::string mapName = mapEntry->name[0];
+        std::string zoneName = zoneEntry->area_name[0];
+        std::string areaName = areaEntry->area_name[0];
+        
+        
+        for (uint32 i = 0; i < sLFGDungeonStore.GetNumRows(); ++i)
+        {
+            LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(i);
+            if (!dungeon)
+                continue;
+            
+            if (areaName == dungeon->name[0] || zoneName == dungeon->name[0] || mapName == dungeon->name[0]) {
+                level  = dungeon->recminlevel ? dungeon->recminlevel : ( dungeon->reclevel ?  dungeon->reclevel : (dungeon->maxlevel+dungeon->minlevel)/2);
+                break;
+            }
+        }
     }
 
     return level;
