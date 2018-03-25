@@ -897,16 +897,16 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zo
                 level = TIMEWALKING_LVL_NAXX; // keep old TW level for now
             break;
             case OBSIDIAN_RAID:
-                level = TIMEWALKING_LVL_VAS_LVL16;
+                level = TIMEWALKING_LVL_VAS_LVL13;
             break;
             case THE_EYE_OF_ETERNITY_RAID:
-                level = TIMEWALKING_LVL_VAS_LVL16;
+                level = TIMEWALKING_LVL_VAS_LVL13;
             break;
             case ULDUAR_RAID:
-                level = TIMEWALKING_LVL_VAS_LVL13;
+                level = TIMEWALKING_LVL_VAS_LVL4;
                 break;
             case TRIAL_OF_THE_CRUSADRE_RAID:
-                level = TIMEWALKING_LVL_TOGC;
+                level = TIMEWALKING_LVL_VAS_LVL4;
             break;
         }
     }
@@ -914,8 +914,9 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zo
     // before area table because more accurate in dungeon case
     if (!level) {
         LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty());
-        if (dungeon && (map->IsDungeon() || map->IsRaid()))
-            level  = dungeon->minlevel;
+        if (dungeon && (map->IsDungeon() || map->IsRaid())) {
+            level  = dungeon->recminlevel ? dungeon->recminlevel : ( dungeon->reclevel ?  dungeon->reclevel : dungeon->minlevel);
+        }
     }
 
     if (!level) {
@@ -930,7 +931,14 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 /*zo
         if (areaEntry && areaEntry->area_level > 0)
             level = areaEntry->area_level;
     }
-
+    
+    if (!level) {
+        // some area entry doesn't have the area_level defined, so we can try
+        // again with LFGDungeonEntry that stores some information about outworld zones
+        LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty());
+        if (dungeon)
+            level  = dungeon->recminlevel ? dungeon->recminlevel : ( dungeon->reclevel ?  dungeon->reclevel : dungeon->minlevel);
+    }
 
     return level;
 }
@@ -1017,3 +1025,22 @@ bool AzthUtils::isMythicCompLvl(uint32 reqLvl, uint32 checkLvl) {
     return isMythicLevel(reqLvl) && isMythicLevel(checkLvl) && reqLvl <= checkLvl;
 }
 
+
+bool AzthUtils::canMythicHere(Unit const* source) {
+    if (!source->GetMap()->IsDungeon())
+        return false;
+    
+    uint32 expansion = source->GetMap()->GetEntry()->Expansion();        
+    uint32 mapId=source->GetMap()->GetId();
+    uint32 posLvl = sAzthUtils->getPositionLevel(false, source->GetMap(), source->GetZoneId(), source->GetAreaId());
+    if ((posLvl > 70 || expansion >= 2)
+        && mapId != 603 // Ulduar
+        && mapId != 533 // Naxxramas
+        && mapId != 616 // The Eye of Eternity
+        && mapId != 615 // Obsidian Sanctum
+        && mapId != 249 // Onyxia's Lair
+    )
+        return false;
+        
+    return true;
+}

@@ -116,7 +116,6 @@ bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool 
                 AchievementEntry const* achievement = sAchievementStore.LookupEntry(ACHI_MAGIC_SEEKER);
                 if (isRealmCompleted(achievement, false))
                     return false;
-                return false;
             }
         break;
         case ACHI_CELESTIAL_DEFENDER:

@@ -76,6 +76,13 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_TW_NEW_ITEM_OBTAINED, "Congrats! you got |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ", "Complimenti! hai ottenuto |cffff0000|Hitem:%u::::::::::::|h[%s]|h|r x%d|r ");
     this->add(AZTH_LANG_TW_GROUP_CHECK_LEADER, "|cffff0000 Invited Player is not at your same Timewalking Level!|r", "|cffff0000 Il Player invitato non è al tuo stesso livello di Timewalking!|r");
     this->add(AZTH_LANG_TW_GROUP_CHECK_PLAYER, "|cffff0000 The Leader is in Timewalking, you must set Timewalking at same level of the leader party to join|r", "|cffff0000 Il Leader del party è in Timewalking. Devi settare il suo stesso livello per poter entrare nel party!|r");
+    this->add(AZTH_LANG_TW_MOA_BONUS, "Marks of Azeroth bonus gained for level %s!", "Ottenuto bonus Marks of Azeroth per il livello %s!");
+    this->add(AZTH_LANG_TW_ASREP_BONUS, "AzerothShard reputation bonus gained for level: %s!", "Ottenuto bonus reputazione con AzerothShard per il livello %s!");
+    this->add(AZTH_LANG_TW_BOSS_KILLED, "Defeated %u of %u Bosses in this instance in %u minutes", "Sconfitti %u su %u Bosses in questa incursione. Tempo impiegato: %u minuti.");
+    this->add(AZTH_LANG_TW_LAST_BOSS_KILLED, "Congratulations! Final Boss Defeated!", "Congratulazioni! Boss finale SCONFITTO!");
+    this->add(AZTH_LANG_TW_INSTANCE_COMPLETED, "AMAZING! All bosses has been defeated!", "SBALORDITIVO! Tutti i boss sono stati sconfitti!");
+    this->add(AZTH_LANG_TW_REP_REMOVED_KILL, "|cffff0000 AzerothShard Reputation Lost:|r you've killed a low level boss, shame on you!", "|cffff0000 Reputazione con AzerothShard persa:|r vergognati! hai ucciso un boss di basso livello!");
+    this->add(AZTH_LANG_TW_REP_REMOVED_LOGOUT, "|cffff0000 AzerothShard Reputation Lost.|r last Adventure activity: %d days", "|cffff0000 Reputazione con AzerothShard persa.|r Ultima attività dell'Adventure: %d giorni.");
 
     //season tournament
     this->add(AZTH_LANG_TOURNAMENT_LEVEL_TOOHIGH, "|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r has a too high level! Remove it to play this season.", "|cffff0000|Hitem:%u::::::::::::|h[%s]|h|r ha un livello troppo alto! Rimuovilo per poter giocare questa season.");
@@ -91,10 +98,6 @@ void AzthLang::loadStrings() {
     this->add(AZTH_LANG_SS_CHANGE_RACE, "Relog to change race", "Rilogga per cambiare razza");
     this->add(AZTH_LANG_SS_CHANGE_FACTION, "Relog to change faction", "Rilogga per cambiare fazione");
     this->add(AZTH_LANG_SS_CHANGE_NAME, "Relog to change name!", "Rilogga per cambiare nome!");
-    
-    //mythic
-    this->add(AZTH_LANG_MYTHIC_MOA_BONUS, "Mythic+ lvl %u bonus gained! %u extra MoA", "Ottenuto Mythic+ lvl %u bonus! %u MoA extra");
-    this->add(AZTH_LANG_MYTHIC_ASREP_BONUS, "Mythic+  lvl %u bonus gained! %u extra AS Rep", "Ottenuto Mythic+  lvl %u bonus! %u Reputazione con AS extra");
 
     //hs
     this->add(AZTH_LANG_HS_QUESTS,"===== Quests: =====", "===== Missioni: =====");

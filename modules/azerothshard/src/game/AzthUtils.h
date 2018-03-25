@@ -134,6 +134,7 @@ public:
     // [Flex Mythic]
     bool isMythicLevel(uint32 level);
     bool isMythicCompLvl(uint32 reqLvl, uint32 checkLvl);
+    bool canMythicHere(Unit const* source);
     // [/Flex Mythic]
 
     // horde version of objectmgr factionchangeitems map

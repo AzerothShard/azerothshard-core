@@ -442,7 +442,7 @@ public:
                 pveId = 0;  // it means this player reached the limit
             
             isEmpty = false;
-            bitmask = bitmask | BITMASK_PVE;
+            bitmask = bitmask | BITMASK_DAILY_RANDOM;
         }
 //endcheck
 
@@ -463,7 +463,7 @@ public:
                 weeklyClassicId = 0;  // it means this player reached the limit
             
             isEmpty = false;
-            bitmask = bitmask | BITMASK_WEEKLY_CLASSIC;
+            bitmask = bitmask | BITMASK_WEEKLY_RND1;
         }
 //endcheck
 
@@ -484,7 +484,7 @@ public:
                 weeklyTBCId = 0;  // it means this player reached the limit
             
             isEmpty = false;
-            bitmask = bitmask | BITMASK_WEEKLY_TBC;
+            bitmask = bitmask | BITMASK_WEEKLY_RND2;
         }
 //endcheck
 
@@ -505,7 +505,7 @@ public:
                 weeklyWotlkId = 0;  // it means this player reached the limit
             
             isEmpty = false;
-            bitmask = bitmask | BITMASK_WEEKLY_WOTLK;
+            bitmask = bitmask | BITMASK_WEEKLY_RND3;
         }
 //endcheck
 
@@ -562,26 +562,26 @@ public:
         }
 
         if (!player->azthPlayer->isPvP()) {
-            if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
+            if ((bitmask & BITMASK_DAILY_RANDOM) == BITMASK_DAILY_RANDOM)
             {
                 if (questPve)
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_DAILY_QUEST, player, (questPve->GetTitle() + (pveId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, pveId);
             }
             
 
-            if ((bitmask & BITMASK_WEEKLY_CLASSIC) == BITMASK_WEEKLY_CLASSIC)
+            if ((bitmask & BITMASK_WEEKLY_RND1) == BITMASK_WEEKLY_RND1)
             {
                 if (questClassicWeekly)
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, (questClassicWeekly->GetTitle() + (weeklyClassicId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, weeklyClassicId);
             }
             
-            if ((bitmask & BITMASK_WEEKLY_TBC) == BITMASK_WEEKLY_TBC)
+            if ((bitmask & BITMASK_WEEKLY_RND2) == BITMASK_WEEKLY_RND2)
             {
                 if (questTBCWeekly)
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, (questTBCWeekly->GetTitle() + (weeklyTBCId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, weeklyTBCId);
             }
             
-            if ((bitmask & BITMASK_WEEKLY_WOTLK) == BITMASK_WEEKLY_WOTLK)
+            if ((bitmask & BITMASK_WEEKLY_RND3) == BITMASK_WEEKLY_RND3)
             {
                 if (questWotlkWeekly)
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, sAzthLang->getf(AZTH_LANG_HS_WEEKLY_QUEST, player, (questWotlkWeekly->GetTitle()+ (weeklyWotlkId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player) )).c_str()), GOSSIP_SENDER_MAIN, weeklyWotlkId);
@@ -1146,13 +1146,13 @@ void HearthstoneMode::loadHearthstone()
                 if ((bitmask & BITMASK_PVP) == BITMASK_PVP)
                     sHearthstoneMode->hsPvpQuests[hq.id]=hq; 
                 // PVE
-                if ((bitmask & BITMASK_PVE) == BITMASK_PVE)
+                if ((bitmask & BITMASK_DAILY_RANDOM) == BITMASK_DAILY_RANDOM)
                     sHearthstoneMode->hsPveQuests[hq.id]=hq; 
-                if ((bitmask & BITMASK_WEEKLY_CLASSIC) == BITMASK_WEEKLY_CLASSIC)
+                if ((bitmask & BITMASK_WEEKLY_RND1) == BITMASK_WEEKLY_RND1)
                     sHearthstoneMode->hsWeeklyClassicQuests[hq.id]=hq;
-                if ((bitmask & BITMASK_WEEKLY_TBC) == BITMASK_WEEKLY_TBC)
+                if ((bitmask & BITMASK_WEEKLY_RND2) == BITMASK_WEEKLY_RND2)
                     sHearthstoneMode->hsWeeklyTBCQuests[hq.id]=hq;
-                if ((bitmask & BITMASK_WEEKLY_WOTLK) == BITMASK_WEEKLY_WOTLK)
+                if ((bitmask & BITMASK_WEEKLY_RND3) == BITMASK_WEEKLY_RND3)
                     sHearthstoneMode->hsWeeklyWotlkQuests[hq.id]=hq;
                 
                 // TIMEWALKING

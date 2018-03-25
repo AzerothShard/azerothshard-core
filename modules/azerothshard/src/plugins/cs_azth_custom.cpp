@@ -155,7 +155,7 @@
         uint32 posLvl=sAzthUtils->getPositionLevel(true, target->GetMap(), pos);
 
         if (posLvl)
-            handler->PSendSysMessage("Current area is level: %d", posLvl);
+            handler->PSendSysMessage("Current area level: %d", posLvl);
         else
             handler->PSendSysMessage("No level for this area");
 
