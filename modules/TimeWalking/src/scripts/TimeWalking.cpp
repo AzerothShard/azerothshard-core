@@ -472,7 +472,7 @@ public:
             /* initialize random seed: */
             srand (time(NULL));
             /* generate secret number between 3 and 10: */
-            uint8 moaBonus = 1 + rand() % static_cast<int>(4 - 1 + 1);
+            uint8 moaBonus = 1 + rand() % static_cast<int>(2 - 1 + 1);
 
             if (player->GetGroup()) {
                 std::list<Group::MemberSlot> memberSlots = player->GetGroup()->GetMemberSlots();
