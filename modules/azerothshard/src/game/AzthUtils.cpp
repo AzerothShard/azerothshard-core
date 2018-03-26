@@ -938,21 +938,22 @@ uint32 AzthUtils::getPositionLevel(bool includeSpecialLvl, Map *map, uint32 zone
         MapEntry const* mapEntry = sMapStore.LookupEntry(map->GetId());
         AreaTableEntry const* zoneEntry = sAreaTableStore.LookupEntry(zone);
         AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(area);
-
-        std::string mapName = mapEntry->name[0];
-        std::string zoneName = zoneEntry->area_name[0];
-        std::string areaName = areaEntry->area_name[0];
         
+        std::string mapName  = mapEntry ? mapEntry->name[0] : "";
+        std::string zoneName = zoneEntry ? zoneEntry->area_name[0] : "";
+        std::string areaName = areaEntry ? areaEntry->area_name[0] : "";
         
-        for (uint32 i = 0; i < sLFGDungeonStore.GetNumRows(); ++i)
-        {
-            LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(i);
-            if (!dungeon)
-                continue;
-            
-            if (areaName == dungeon->name[0] || zoneName == dungeon->name[0] || mapName == dungeon->name[0]) {
-                level  = dungeon->recminlevel ? dungeon->recminlevel : ( dungeon->reclevel ?  dungeon->reclevel : (dungeon->maxlevel+dungeon->minlevel)/2);
-                break;
+        if (mapName != "" || zoneName != "" || areaName != "") {
+            for (uint32 i = 0; i < sLFGDungeonStore.GetNumRows(); ++i)
+            {
+                LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(i);
+                if (!dungeon)
+                    continue;
+                
+                if (areaName == dungeon->name[0] || zoneName == dungeon->name[0] || mapName == dungeon->name[0]) {
+                    level  = dungeon->recminlevel ? dungeon->recminlevel : ( dungeon->reclevel ?  dungeon->reclevel : (dungeon->maxlevel+dungeon->minlevel)/2);
+                    break;
+                }
             }
         }
     }
