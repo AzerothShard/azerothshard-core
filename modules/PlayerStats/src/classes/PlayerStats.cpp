@@ -14,7 +14,7 @@ uint32 AzthPlayer::normalizeLvl(uint32 level) {
     // to normalize level auto or vas we need to get the max level of the group or the level of player
     // however since the special level is related to a dynamic real level (that can be increased/decreased)
     // we need to get the max level in a specific time (for now, should be avoided when possible)
-    if (level==TIMEWALKING_LVL_AUTO || (level>=TIMEWALKING_LVL_VAS_START && level<=TIMEWALKING_LVL_VAS_END)) {
+    if (level>= TIMEWALKING_SPECIAL_LVL_MIN) {
         Group *group = player->GetGroup();
         if (group) {
             for (Group::member_citerator mitr = group->GetMemberSlots().begin(); mitr != group->GetMemberSlots().end(); ++mitr)

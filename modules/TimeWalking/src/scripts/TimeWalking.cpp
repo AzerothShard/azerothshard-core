@@ -763,6 +763,13 @@ class global_timewalking : public GlobalScript {
                         count++;
                     total++;
                 }
+                
+                // Special cases where we should reward only when instance is completed
+                // because bosses can srespawn
+                // - Obsidian Sanctum (615)
+                if (dungeon == 615 && count < total) {
+                    return;
+                }
 
                 guid = player->GetGUIDLow();
                 sLevel = player->azthPlayer->getPStatsLevel(false);
@@ -790,8 +797,10 @@ class global_timewalking : public GlobalScript {
                     // if time is lower it will gain more points
                     float timeBonus = count / (float(now-instanceStart)/60/10);
                     uint32 repBonus = 3 * mythBonus * timeBonus * ((map->IsRaid() ? (difficulty+1) * 3 : difficulty+1));
-                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_ASREP_BONUS, player, lvlTxt.c_str(), repBonus));
-                    player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), repBonus);
+                    if (repBonus) {
+                        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_ASREP_BONUS, player, lvlTxt.c_str(), repBonus));
+                        player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), repBonus);
+                    }
 
                     ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_BOSS_KILLED, player, count, total, uint32(round(float(now-instanceStart)/60))));
                     
