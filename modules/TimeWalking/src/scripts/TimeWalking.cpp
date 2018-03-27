@@ -635,7 +635,7 @@ public:
     
         questEnd = static_cast<uint32>(time(NULL));
         
-        id = MAKE_NEW_GUID(0, groupId, instanceStart);
+        id = MAKE_NEW_GUID(instanceStart, groupId, 0);
         
         CharacterDatabase.PExecute("INSERT INTO azth_quest_log (guid, groupId, quest, dungeon, difficulty, sLevel, nLevel, gSize, instanceStartTime, questEndTime) VALUES(%u,%u,%u,%u,%u,%u,%u,%u,%u,%u);", 
                                 guid, id, quest, dungeon, difficulty, sLevel,nLevel,gSize,instanceStart,questEnd);
@@ -820,7 +820,7 @@ class global_timewalking : public GlobalScript {
                 }
 
                 if (count>=total) {
-                    id = MAKE_NEW_GUID(0, groupId, instanceStart);
+                    id = MAKE_NEW_GUID(instanceStart, groupId, 0);
 
                     CharacterDatabase.PExecute("INSERT INTO azth_quest_log (guid, groupId, quest, dungeon, difficulty, sLevel, nLevel, gSize, instanceStartTime, instanceEndTime) VALUES(%u,%u,%u,%u,%u,%u,%u,%u,%u,%u);", 
                                                guid, id, 0, dungeon, difficulty, sLevel,nLevel,gSize,instanceStart,now);
