@@ -31,7 +31,7 @@ void AzthPlayer::addSmartStoneCommand(SmartStonePlayerCommand command, bool quer
 
 void AzthPlayer::addSmartStoneCommand(uint32 id, bool /*query*/, uint64 dateExpired,
         int32 charges) {
-    if (uint64(time(NULL)) <= dateExpired)
+    if (static_cast<uint32>(time(NULL)) >= dateExpired)
         return;
 
     SmartStonePlayerCommand command;

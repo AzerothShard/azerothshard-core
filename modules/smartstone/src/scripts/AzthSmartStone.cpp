@@ -306,7 +306,7 @@ public:
                     sSmartStone->getCommandById(playerCommands[i].id);
 
             // if expired or no charges
-            if ((playerCommands[i].duration <= uint32(time(NULL)) &&
+            if ((playerCommands[i].duration <= static_cast<uint32>(time(NULL)) &&
                     playerCommands[i].duration != 0) ||
                     playerCommands[i].charges == 0) {
                 player->azthPlayer->removeSmartStoneCommand(playerCommands[i], true);
