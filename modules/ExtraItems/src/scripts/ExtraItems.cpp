@@ -287,7 +287,7 @@ public:
                 || _summon_type == AZTH_SUMMON_VEHICLE_MOUNT || _summon_type == AZTH_SUMMON_VEHICLE_SPAWN) {
                 // enter
                 if (creature && _summon_type != AZTH_SUMMON_VEHICLE_SPAWN) {
-                    player->EnterVehicle(creature, 0);
+                    creature->HandleSpellClick(player);
                 }
             } else {
                 player->SetCritterGUID(creature->GetGUID()); // any kind of following creatures must be set as companion

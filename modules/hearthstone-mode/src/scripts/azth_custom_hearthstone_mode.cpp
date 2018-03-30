@@ -127,11 +127,10 @@ bool HearthstoneMode::isInArray(int val)
 
 int HearthstoneMode::getQuality()
 {
-    double c = rand_chance();
+    float c = (float)rand_chance();
     //float chance = (float)c;
     float i = CHANCES[0];
     int quality = 0;
-
     while (i < c)
     {
         quality = quality + 1;
@@ -880,7 +879,7 @@ public:
         {
             //srand(seed + 3);
             int quality = 1;
-            if (rand_chance() > 80)
+            if ((float)rand_chance() > 80.f)
             {
                 quality = 0;
             }

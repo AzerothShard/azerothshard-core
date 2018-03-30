@@ -74,10 +74,10 @@ enum miscHs
 
 enum otherMiscHs
 {
-    QUALITY_TO_FILL_PERCENTAGE  = 1,
-    ONLY_COMMON                 = 2,
-    NOT_COMMON                  = 1,
-    EVERYTHING                  = 2,
+    QUALITY_TO_FILL_PERCENTAGE  = 1, // if percentage "explode", then use quality 1
+    ONLY_COMMON                 = 2, // number of common item (grey, white)
+    NOT_COMMON                  = 1, // number of rare items
+    EVERYTHING                  = 2, // number of items of any quality
     TIME_TO_RECEIVE_MAIL        = 0,
     SUPPORTED_CRITERIA_NUMBER   = 15,
     MAX_RETRY_GET_ITEM          = 30
