@@ -723,11 +723,14 @@ class global_timewalking : public GlobalScript {
     public:
         global_timewalking() : GlobalScript("global_timewalking_script") { }
 
-        void OnAfterUpdateEncounterState(Map* map, EncounterCreditType /*type*/,  uint32 /*creditEntry*/, Unit* /*source*/, Difficulty difficulty_fixed, DungeonEncounterList const* encounters, uint32 dungeonCompleted) override {
+        void OnAfterUpdateEncounterState(Map* map, EncounterCreditType /*type*/,  uint32 /*creditEntry*/, Unit* /*source*/, Difficulty difficulty_fixed, DungeonEncounterList const* encounters, uint32 dungeonCompleted, bool updated) override {
             if (!map->IsDungeon())
                 return;
 
             if (!encounters)
+                return;
+            
+            if (!updated)
                 return;
 
             std::vector<Player*> list = map->GetPlayerListExceptGMs();
@@ -763,13 +766,9 @@ class global_timewalking : public GlobalScript {
                         count++;
                     total++;
                 }
-                
-                // Special cases where we should reward only when instance is completed
-                // because bosses can srespawn
-                // - Obsidian Sanctum (615)
-                if (dungeon == 615 && count < total) {
+
+                if (!count)
                     return;
-                }
 
                 guid = player->GetGUIDLow();
                 sLevel = player->azthPlayer->getPStatsLevel(false);
