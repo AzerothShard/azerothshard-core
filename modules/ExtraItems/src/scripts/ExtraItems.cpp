@@ -21,6 +21,7 @@
 #include "Pet.h"
 #include "Vehicle.h"
 #include "AzthLanguageStrings.h"
+#include "BattlefieldMgr.h"
 
 class Pet;
 class Group;
@@ -170,7 +171,7 @@ public:
 
                 player->Mount(displayID, ci->VehicleId, destId);
 
-                uint32 spell = flyingMount ? 1002002 : 1002001;
+                uint32 spell = flyingMount ? AZTH_RIDE_MOUNT_FLY_SPELL : AZTH_RIDE_MOUNT_SPELL;
                 player->CastSpell(player, spell , TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE);
 
                 if (!player->HasAura(spell)) {
@@ -236,6 +237,13 @@ public:
             }
        
             if (!checkData(player, item))
+                return true;
+            
+            if (_summon_type == AZTH_SUMMON_VEHICLE_MOUNT && !player->IsOutdoors())
+                return true;
+            
+            Battlefield* Bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId());
+            if (_summon_type == AZTH_SUMMON_VEHICLE_MOUNT_FLY && Bf && !Bf->CanFlyIn())
                 return true;
  
             // 161 -> category 4 : SUMMON_CATEGORY_VEHICLE
