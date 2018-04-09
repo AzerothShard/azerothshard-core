@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-git subtree pull --prefix=modules/mod-transmog https://github.com/azerothcore/mod-transmog master
+git subtree pull --prefix=modules/mod-transm https://github.com/azerothcore/mod-transmog master
 
 git subtree pull --prefix=modules/mod-duelreset https://github.com/azerothcore/mod-duelreset master
 
