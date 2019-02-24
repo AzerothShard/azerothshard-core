@@ -30,6 +30,8 @@ enum NxEncouters
 };
  
 bool AzthFirstKills::canCompleteAchi(Player *player, uint32 achiId) {
+    return true;
+    /*
     uint32 plLevel=player->azthPlayer->isTimeWalking() ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
     uint32 groupLevel=player->azthPlayer->getGroupLevel(false);
     
@@ -70,6 +72,7 @@ bool AzthFirstKills::canCompleteAchi(Player *player, uint32 achiId) {
     }   
     
     return true;
+    * */
 }
 
 void AzthFirstKills::setRealmCompleted(const AchievementEntry* achievement)
@@ -87,7 +90,10 @@ bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool 
     if (itr!=this->currentFirstKills.end() 
         && (std::chrono::system_clock::now() - itr->second) > std::chrono::minutes(1))
         return true;
-
+        
+    // if the first kill does not exists in our map, it is not completed
+    return false;
+/*
     time_t now = time(0);
     struct tm * tnow = std::gmtime(&now);
     
@@ -144,6 +150,7 @@ bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool 
     // we assume that the achievement 
     // has been completed (not available) at this point
     return true;
+    */
 }
 
 
