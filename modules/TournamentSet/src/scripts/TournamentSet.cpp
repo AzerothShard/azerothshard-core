@@ -85,6 +85,12 @@ public:
             return true;
         }
         
+        if (!player->azthPlayer->isPvP())
+        {
+            ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000You need a PvP account to use this NPC!|r");
+            return true;
+        }
+        
         if (player->getLevel()>=80) {
             if (!player->azthPlayer->hasGear())
             {

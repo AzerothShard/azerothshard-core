@@ -372,16 +372,16 @@ bool AzthPlayer::isInBlackMarket() {
     if (player->GetMapId() != 1)
         return false;
     
-    if (player->GetZoneId() != 616)
+    if (player->GetZoneId() != 331)
         return false;
 
-    if (pos[0] < 4500.f || pos[0] > 4950.f)
+    if (pos[0] < 2650.f || pos[0] > 3100.f)
         return false;
 
-    if (pos[1] < -2100.f || pos[1] > -1700.f)
+    if (pos[1] < 2250.f || pos[1] > -2800.f)
         return false;
     
-    if (pos[2] < 1000.f || pos[2] > 1150.f)
+    if (pos[2] < 80.f || pos[2] > 180.f)
         return false;
 
     return true;
