@@ -24,7 +24,7 @@ class Aura;
 AzthPlayer::AzthPlayer(Player *origin) {
   playerQuestRate = sWorld->getRate(RATE_XP_QUEST);
   player = origin;
-  customLang = AZTH_LOC_IT;
+  customLang = AZTH_LOC_EN;
   groupLevel = 0;
   tmpLevelPg = 0;
   std::fill_n(arena1v1Info, 7, 0);

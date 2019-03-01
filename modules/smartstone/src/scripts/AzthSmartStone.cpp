@@ -233,6 +233,13 @@ public:
 
     bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
         player->PlayerTalkClass->ClearMenus();
+        
+        if (true) {
+            player->ADD_GOSSIP_ITEM(0, "SOON AVAILABLE!", GOSSIP_SENDER_MAIN, 0);
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
+            return false;
+        }
+            
 
         if (parent == 1) // not-to-buy commands for the main menu
         {

@@ -33,7 +33,7 @@ void AzthLang::add(uint32 strId, std::string const def, std::string const it)
 }
 
 const char * AzthLang::get(uint32 strId,Player const* pl) const {
-    AzthCustomLangs loc = AZTH_LOC_IT;
+    AzthCustomLangs loc = AZTH_LOC_EN;
 
     if (pl)
         loc = pl->azthPlayer->getCustLang();

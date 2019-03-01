@@ -32,8 +32,8 @@ enum SkillSpells {
 };
 
 enum AzthCustomLangs {
-    AZTH_LOC_IT = 0,
-    AZTH_LOC_EN = 1,
+    AZTH_LOC_IT = 1,
+    AZTH_LOC_EN = 0,
 };
 
 enum PhaseDimensionsEnum {
