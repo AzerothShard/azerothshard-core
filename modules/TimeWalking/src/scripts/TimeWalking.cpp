@@ -236,9 +236,9 @@ public:
             if (player->getLevel()>=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) {
                 //player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
                 player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
-                //if (player->IsGameMaster()) {
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, TIMEWALKING_LVL_AUTO+10000);
-                //}
+                if (player->IsGameMaster()) {
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Scaling automatico (beta)", GOSSIP_SENDER_MAIN, TIMEWALKING_LVL_AUTO+10000);
+                }
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "TimeWalking (Wotlk)", GOSSIP_SENDER_MAIN, 4);
             }
             player->ADD_GOSSIP_ITEM(0, "|TInterface/ICONS/INV_Misc_Coin_01:30|tFlex Mythic+ (Beta)", GOSSIP_SENDER_MAIN, 9); // we can't use another icon otherwise will be automatically selected on gossip hello
