@@ -317,6 +317,8 @@ public:
             ss << std::endl;
             if (sT->GetRequireToken())
                 ss << std::endl << std::endl << sT->GetTokenAmount() << " x " << sT->GetItemLink(sT->GetTokenEntry(), session);
+            if (sT->GetRequireArena())
+                ss << std::endl << std::endl << sT->GetArenaAmount() << " Arena Points";
 
             for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
             {

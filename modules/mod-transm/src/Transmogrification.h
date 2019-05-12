@@ -84,6 +84,8 @@ public:
     bool RequireToken;
     uint32 TokenEntry;
     uint32 TokenAmount;
+    bool RequireArena;
+    uint32 ArenaAmount;
 
     bool AllowPoor;
     bool AllowCommon;
@@ -137,6 +139,9 @@ public:
     bool GetRequireToken() const;
     uint32 GetTokenEntry() const;
     uint32 GetTokenAmount() const;
+    
+    bool GetRequireArena() const;
+    uint32 GetArenaAmount() const;
 
     bool GetAllowMixedArmorTypes() const;
     bool GetAllowMixedWeaponTypes() const;

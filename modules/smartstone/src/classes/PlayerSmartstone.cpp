@@ -369,10 +369,10 @@ void AzthPlayer::saveLastPositionInfoToDB(Player *pl) {
 bool AzthPlayer::isInBlackMarket() {
     std::vector<float> pos = {player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()};
     // (1, 4818.27f, -1971.3f, 1069.75f, 0.174f, 0);
-    if (player->GetMapId() != 1)
+    if (player->GetMapId() != 37)
         return false;
     
-    if (player->GetZoneId() != 331)
+    /*if (player->GetZoneId() != 331)
         return false;
 
     if (pos[0] < 2650.f || pos[0] > 3100.f)
@@ -383,6 +383,6 @@ bool AzthPlayer::isInBlackMarket() {
     
     if (pos[2] < 80.f || pos[2] > 180.f)
         return false;
-
+    */
     return true;
 };

@@ -357,6 +357,14 @@ TransmogTrinityStrings Transmogrification::Transmogrify(Player* player, uint64 i
                     player->ModifyMoney(-cost, false);
                 }
             }
+            
+            if (RequireArena)
+            {
+                if (player->GetArenaPoints() >= ArenaAmount)
+                    player->SetArenaPoints(player->GetArenaPoints() - ArenaAmount);
+                else
+                    return LANG_ERR_TRANSMOG_NOT_ENOUGH_MONEY;
+            }
         }
 
         // Custom
@@ -622,6 +630,9 @@ void Transmogrification::LoadConfig(bool reload)
     RequireToken = sConfigMgr->GetBoolDefault("Transmogrification.RequireToken", false);
     TokenEntry = uint32(sConfigMgr->GetIntDefault("Transmogrification.TokenEntry", 49426));
     TokenAmount = uint32(sConfigMgr->GetIntDefault("Transmogrification.TokenAmount", 1));
+    
+    RequireArena = sConfigMgr->GetBoolDefault("Transmogrification.RequireArena", false);
+    ArenaAmount = uint32(sConfigMgr->GetIntDefault("Transmogrification.ArenaAmount", 1));
 
     AllowPoor = sConfigMgr->GetBoolDefault("Transmogrification.AllowPoor", false);
     AllowCommon = sConfigMgr->GetBoolDefault("Transmogrification.AllowCommon", false);
@@ -700,6 +711,14 @@ uint32 Transmogrification::GetTokenEntry() const
 uint32 Transmogrification::GetTokenAmount() const
 {
     return TokenAmount;
+}
+bool Transmogrification::GetRequireArena() const
+{
+    return RequireArena;
+}
+uint32 Transmogrification::GetArenaAmount() const
+{
+    return ArenaAmount;
 }
 bool Transmogrification::GetAllowMixedArmorTypes() const
 {

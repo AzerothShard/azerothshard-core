@@ -332,7 +332,7 @@ public:
         }
         
         if (action == 9) {
-            for (uint32 i=TIMEWALKING_LVL_VAS_START; i<=TIMEWALKING_LVL_VAS_LVL4; i++) {
+            for (uint32 i=TIMEWALKING_LVL_VAS_START; i<=TIMEWALKING_LVL_VAS_LVL7; i++) {
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Flex Mythic+ "+std::to_string(i-TIMEWALKING_LVL_VAS_START+1), GOSSIP_SENDER_MAIN, i+10000); 
             }
 

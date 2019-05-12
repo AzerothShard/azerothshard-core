@@ -23,6 +23,8 @@ namespace AccountMgr
         normalizeString(username);
         normalizeString(password);
 
+        std::cout << password;
+
         if (GetId(username))
             return AOR_NAME_ALREDY_EXIST;                       // username does already exist
 

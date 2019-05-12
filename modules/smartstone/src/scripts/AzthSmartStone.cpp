@@ -234,13 +234,6 @@ public:
     bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
         player->PlayerTalkClass->ClearMenus();
         
-        if (true) {
-            player->ADD_GOSSIP_ITEM(0, "SOON AVAILABLE!", GOSSIP_SENDER_MAIN, 0);
-            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
-            return false;
-        }
-            
-
         if (parent == 1) // not-to-buy commands for the main menu
         {
             // black market teleport id 1
@@ -332,7 +325,7 @@ public:
                 uint64 hours = floor(timeDiff / 3600);
                 uint64 days = floor(timeDiff / 3600 / 24);
                 if (days >= 1) {
-                    text = text + " (" + std::to_string(days) + " giorni)";
+                    text = text + " (" + std::to_string(days) + " days)";
                 } else {
                     text = text + " (" + std::to_string(hours) + ":" +
                             std::to_string(minutes) + ":" + std::to_string(seconds) + ")";
@@ -481,6 +474,7 @@ public:
             item = 0;
         }
     }
+    
 };
 
 class smartstone_vendor : public CreatureScript {
@@ -492,7 +486,7 @@ public:
     bool OnGossipHello(Player* player, Creature* creature) override {
         player->PlayerTalkClass->ClearMenus();
 
-        player->ADD_GOSSIP_ITEM(0, "Salve, vorrei comprare nuove app!", GOSSIP_SENDER_MAIN, 1);
+        player->ADD_GOSSIP_ITEM(0, "Hello, I would like to buy new apps!", GOSSIP_SENDER_MAIN, 1);
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
         return true;
     }

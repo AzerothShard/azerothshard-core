@@ -5628,6 +5628,16 @@ void Player::RepopAtGraveyard()
 
     AreaTableEntry const* zone = sAreaTableStore.LookupEntry(GetAreaId());
 
+    // [AZTH] 
+    if (azthPlayer->isInBlackMarket()) { 
+        if (!IsAlive()) { 
+            ResurrectPlayer(0.5f);
+            SpawnCorpseBones();
+        }
+        TeleportTo(AzthSharedDef::blackMarket);
+        return;
+    }
+
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
     // Xinef: Get Transport Check is not needed
     if ((!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) /*|| GetTransport()*/ || GetPositionZ() < GetMap()->GetMinHeight(GetPositionX(), GetPositionY()))
