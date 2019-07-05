@@ -645,6 +645,8 @@ m_caster((info->HasAttribute(SPELL_ATTR6_CAST_BY_CHARMER) && caster->GetCharmerO
 
     m_channelTargetEffectMask = 0;
 
+    m_spellFlags = SPELL_FLAG_NORMAL;
+
     // Determine if spell can be reflected back to the caster
     // Patch 1.2 notes: Spell Reflection no longer reflects abilities
     m_canReflect = m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !m_spellInfo->HasAttribute(SPELL_ATTR0_ABILITY)
@@ -784,7 +786,11 @@ void Spell::SelectExplicitTargets()
                     break;
             }
             if (redirect && (redirect != target))
+            {
                 m_targets.SetUnitTarget(redirect);
+                m_spellFlags |= SPELL_FLAG_REDIRECTED;
+            }
+               
         }
     }
 }
@@ -2195,7 +2201,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
                 if (Unit* unit = (*itr)->ToUnit())
                 {
                     uint32 deficit = unit->GetMaxHealth() - unit->GetHealth();
-                    if ((deficit > maxHPDeficit || foundItr == tempTargets.end()) && target->IsWithinDist(unit, jumpRadius) && target->IsWithinLOSInMap(unit))
+                    if ((deficit > maxHPDeficit || foundItr == tempTargets.end()) && target->IsWithinDist(unit, jumpRadius) && target->IsWithinLOSInMap(unit, LINEOFSIGHT_ALL_CHECKS))
                     {
                         foundItr = itr;
                         maxHPDeficit = deficit;
@@ -2210,10 +2216,10 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
             {
                 if (foundItr == tempTargets.end())
                 {
-                    if ((!isBouncingFar || target->IsWithinDist(*itr, jumpRadius)) && target->IsWithinLOSInMap(*itr))
+                    if ((!isBouncingFar || target->IsWithinDist(*itr, jumpRadius)) && target->IsWithinLOSInMap(*itr, LINEOFSIGHT_ALL_CHECKS))
                         foundItr = itr;
                 }
-                else if (target->GetDistanceOrder(*itr, *foundItr) && target->IsWithinLOSInMap(*itr))
+                else if (target->GetDistanceOrder(*itr, *foundItr) && target->IsWithinLOSInMap(*itr, LINEOFSIGHT_ALL_CHECKS))
                     foundItr = itr;
             }
         }
@@ -2416,6 +2422,8 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
         // Increase time interval for reflected spells by 1.5
         m_caster->m_Events.AddEvent(new ReflectEvent(m_caster->GetGUID(), targetInfo.targetGUID, m_spellInfo), m_caster->m_Events.CalculateTime(targetInfo.timeDelay));
         targetInfo.timeDelay += targetInfo.timeDelay >> 1;
+
+        m_spellFlags |= SPELL_FLAG_REFLECTED;
         
         // HACK: workaround check for succubus seduction case
         // TODO: seduction should be casted only on humanoids (not demons)
@@ -2974,11 +2982,15 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         if (effectMask & (1 << i) && m_spellInfo->Effects[i].IsUnitOwnedAuraEffect())
             aura_effmask |= 1 << i;
 
+    Unit * originalCaster = GetOriginalCaster();
+    if (!originalCaster)
+        originalCaster = m_caster;
+
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
     // Xinef: Do not increase diminishing level for self cast
     m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell);
     // xinef: do not increase diminish level for bosses (eg. Void Reaver silence is never diminished)
-    if (aura_effmask && m_diminishGroup && unit != m_caster && (m_caster->GetTypeId() != TYPEID_UNIT || !m_caster->ToCreature()->isWorldBoss()))
+    if (((m_spellFlags & SPELL_FLAG_REFLECTED) && !(unit->HasAuraType(SPELL_AURA_REFLECT_SPELLS))) || (aura_effmask && m_diminishGroup && unit != m_caster && (m_caster->GetTypeId() != TYPEID_UNIT || !m_caster->ToCreature()->isWorldBoss())))
     {
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
@@ -3432,6 +3444,8 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if (m_CastItem)
     {
         bool selectTargets = false;
+        bool nearbyDest = false;
+
         for (uint8 i = EFFECT_0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if (!m_spellInfo->Effects[i].IsEffect())
@@ -3443,6 +3457,11 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
                 break;
             }
 
+            if (m_spellInfo->Effects[i].TargetA.GetObjectType() == TARGET_OBJECT_TYPE_DEST)
+            {
+                nearbyDest = true;
+            }
+
             // xinef: by default set it to false, and to true if any valid target is found
             selectTargets = true;
         }
@@ -3451,8 +3470,26 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
         {
             SelectSpellTargets();
             _spellTargetsSelected = true;
+            bool spellFailed = false;
 
             if (m_UniqueTargetInfo.empty() && m_UniqueGOTargetInfo.empty())
+            {
+                // no valid nearby target unit or game object found; check if nearby destination type
+                if (nearbyDest)
+                {
+                    if (!m_targets.HasDst())
+                    {
+                        // no valid target destination
+                        spellFailed = true;
+                    }
+                }
+                else
+                {
+                    spellFailed = true;
+                }
+            }
+
+            if (spellFailed)
             {
                 SendCastResult(SPELL_FAILED_CASTER_AURASTATE);
                 finish(false);
@@ -5552,7 +5589,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_NOT_INFRONT;
 
             if (m_caster->GetEntry() != WORLD_TRIGGER) // Ignore LOS for gameobjects casts (wrongly casted by a trigger)
-                if ((!m_caster->IsTotem() || !m_spellInfo->IsPositive()) && !m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && !m_spellInfo->HasAttribute(SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK) && !m_caster->IsWithinLOSInMap(target))
+                if ((!m_caster->IsTotem() || !m_spellInfo->IsPositive()) && !m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && !m_spellInfo->HasAttribute(SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK) && !m_caster->IsWithinLOSInMap(target, LINEOFSIGHT_ALL_CHECKS) && !(m_spellFlags & SPELL_FLAG_REDIRECTED))
                     return SPELL_FAILED_LINE_OF_SIGHT;
         }
     }
@@ -5563,7 +5600,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         float x, y, z;
         m_targets.GetDstPos()->GetPosition(x, y, z);
 
-        if ((!m_caster->IsTotem() || !m_spellInfo->IsPositive()) && !m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && !m_spellInfo->HasAttribute(SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK) && !m_caster->IsWithinLOS(x, y, z))
+        if ((!m_caster->IsTotem() || !m_spellInfo->IsPositive()) && !m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && !m_spellInfo->HasAttribute(SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK) && !m_caster->IsWithinLOS(x, y, z, LINEOFSIGHT_ALL_CHECKS))
             return SPELL_FAILED_LINE_OF_SIGHT;
     }
 
@@ -5742,7 +5779,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (!target || !pet || pet->isDead() || target->isDead())
                         return SPELL_FAILED_BAD_TARGETS;
                     
-                    if (!pet->IsWithinLOSInMap(target))
+                    if (!pet->IsWithinLOSInMap(target, LINEOFSIGHT_ALL_CHECKS))
                         return SPELL_FAILED_LINE_OF_SIGHT;
                 }
                 break;
@@ -7479,7 +7516,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             z = m_targets.GetDstPos()->GetPositionZ();
         }
 
-        if ((!m_caster->IsTotem() || !m_spellInfo->IsPositive()) && !target->IsWithinLOS(x, y, z))
+        if ((!m_caster->IsTotem() || !m_spellInfo->IsPositive()) && !target->IsWithinLOS(x, y, z, LINEOFSIGHT_ALL_CHECKS))
             return false;
 
         return true;
@@ -7491,7 +7528,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
     {
         case SPELL_EFFECT_RESURRECT_NEW:
             // player far away, maybe his corpse near?
-            if (target != m_caster && !target->IsWithinLOSInMap(m_caster))
+            if (target != m_caster && !target->IsWithinLOSInMap(m_caster, LINEOFSIGHT_ALL_CHECKS))
             {
                 if (!m_targets.GetCorpseTargetGUID())
                     return false;
@@ -7503,7 +7540,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
                 if (target->GetGUID() != corpse->GetOwnerGUID())
                     return false;
 
-                if (!corpse->IsWithinLOSInMap(m_caster))
+                if (!corpse->IsWithinLOSInMap(m_caster, LINEOFSIGHT_ALL_CHECKS) && !(m_spellFlags & SPELL_FLAG_REDIRECTED))
                     return false;
             }
             break;
@@ -7511,7 +7548,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             {
                 if (!m_targets.GetCorpseTargetGUID())
                 {
-                    if (target->IsWithinLOSInMap(m_caster) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
+                    if (target->IsWithinLOSInMap(m_caster, LINEOFSIGHT_ALL_CHECKS) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
                         return true;
 
                     return false;
@@ -7527,7 +7564,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
                 if (!corpse->HasFlag(CORPSE_FIELD_FLAGS, CORPSE_FLAG_LOOTABLE))
                     return false;
 
-                if (!corpse->IsWithinLOSInMap(m_caster))
+                if (!corpse->IsWithinLOSInMap(m_caster, LINEOFSIGHT_ALL_CHECKS))
                     return false;
             }
             break;
@@ -7564,7 +7601,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
                     z = m_targets.GetDstPos()->GetPositionZ();
                 }
 
-                if (!target->IsInMap(caster) || !target->IsWithinLOS(x, y, z))
+                if (!target->IsInMap(caster) || !target->IsWithinLOS(x, y, z, LINEOFSIGHT_ALL_CHECKS))
                     return false;
             }
             break;
@@ -8300,13 +8337,6 @@ void Spell::PrepareTriggersExecutedOnHit()
             if( m_spellInfo->Id == 16857 && (m_caster->GetShapeshiftForm() == FORM_BEAR || m_caster->GetShapeshiftForm() == FORM_DIREBEAR) )
                 m_preCastSpell = 60089;
 
-            break;
-        }
-        case SPELLFAMILY_MAGE:
-        {
-            // Permafrost
-            if (m_spellInfo->SpellFamilyFlags[1] & 0x00001000 ||  m_spellInfo->SpellFamilyFlags[0] & 0x00100220)
-            m_preCastSpell = 68391;
             break;
         }
     }

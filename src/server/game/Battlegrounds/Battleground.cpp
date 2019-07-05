@@ -32,6 +32,10 @@
 #include "BattlegroundRV.h"
 #include "Transport.h"
 #include "ScriptMgr.h"
+#include "GameGraveyard.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 
 //[AZTH]
 #include "ArenaTeamMgr.h"
@@ -43,7 +47,7 @@ namespace Trinity
     class BattlegroundChatBuilder
     {
         public:
-            BattlegroundChatBuilder(ChatMsg msgtype, int32 textId, Player const* source, va_list* args = NULL)
+            BattlegroundChatBuilder(ChatMsg msgtype, uint32 textId, Player const* source, va_list* args = NULL)
                 : _msgtype(msgtype), _textId(textId), _source(source), _args(args) { }
 
             void operator()(WorldPacket& data, LocaleConstant loc_idx)
@@ -72,7 +76,7 @@ namespace Trinity
             }
 
             ChatMsg _msgtype;
-            int32 _textId;
+            uint32 _textId;
             Player const* _source;
             va_list* _args;
     };
@@ -80,7 +84,7 @@ namespace Trinity
     class Battleground2ChatBuilder
     {
         public:
-            Battleground2ChatBuilder(ChatMsg msgtype, int32 textId, Player const* source, int32 arg1, int32 arg2)
+            Battleground2ChatBuilder(ChatMsg msgtype, uint32 textId, Player const* source, int32 arg1, int32 arg2)
                 : _msgtype(msgtype), _textId(textId), _source(source), _arg1(arg1), _arg2(arg2) {}
 
             void operator()(WorldPacket& data, LocaleConstant loc_idx)
@@ -97,10 +101,10 @@ namespace Trinity
 
         private:
             ChatMsg _msgtype;
-            int32 _textId;
+            uint32 _textId;
             Player const* _source;
-            int32 _arg1;
-            int32 _arg2;
+            uint32 _arg1;
+            uint32 _arg2;
     };
 }                                                           // namespace Trinity
 
@@ -212,6 +216,10 @@ Battleground::~Battleground()
     for (uint32 i = 0; i < size; ++i)
         DelObject(i);
 
+#ifdef ELUNA
+    sEluna->OnBGDestroy(this, GetBgTypeID(), GetInstanceID());
+#endif
+
     sBattlegroundMgr->RemoveBattleground(GetBgTypeID(), GetInstanceID());
     // unload map
     if (m_Map)
@@ -286,6 +294,8 @@ void Battleground::Update(uint32 diff)
     m_ResetStatTimer += diff;
 
     PostUpdateImpl(diff);
+
+    sScriptMgr->OnBattlegroundUpdate(this, diff);
 }
 
 inline void Battleground::_CheckSafePositions(uint32 diff)
@@ -511,6 +521,10 @@ inline void Battleground::_ProcessJoin(uint32 diff)
 
         StartingEventOpenDoors();
 
+#ifdef ELUNA
+        sEluna->OnBGStart(this, GetBgTypeID(), GetInstanceID());
+#endif
+
         SendWarningToAll(StartMessageIds[BG_STARTING_EVENT_FOURTH]);
         SetStatus(STATUS_IN_PROGRESS);
         SetStartDelayTime(StartDelayTimes[BG_STARTING_EVENT_FOURTH]);
@@ -591,6 +605,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
             // Announce BG starting
             if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
                 sWorld->SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName(), std::min(GetMinLevel(), (uint32)80), std::min(GetMaxLevel(), (uint32)80));
+
+            sScriptMgr->OnBattlegroundStart(this);
         }
     }
 }
@@ -988,6 +1004,8 @@ void Battleground::EndBattleground(TeamId winnerTeamId)
         uint32 loser_kills = player->GetRandomWinner() ? BG_REWARD_LOSER_HONOR_LAST : BG_REWARD_LOSER_HONOR_FIRST;
         uint32 winner_arena = player->GetRandomWinner() ? BG_REWARD_WINNER_ARENA_LAST : BG_REWARD_WINNER_ARENA_FIRST;
 
+        sScriptMgr->OnBattlegroundEndReward(this, player, winnerTeamId);
+
         // Reward winner team
         if (bgTeamId == winnerTeamId)
         {
@@ -1061,6 +1079,10 @@ void Battleground::EndBattleground(TeamId winnerTeamId)
 
     if (winmsg_id)
         SendMessageToAll(winmsg_id, CHAT_MSG_BG_SYSTEM_NEUTRAL);
+
+#ifdef ELUNA
+    sEluna->OnBGEnd(this, GetBgTypeID(), GetInstanceID(), winnerTeamId);
+#endif
 }
 
 uint32 Battleground::GetBonusHonorFromKill(uint32 kills) const
@@ -1264,6 +1286,8 @@ void Battleground::AddPlayer(Player* player)
     // setup BG group membership
     PlayerAddedToBGCheckIfBGIsRunning(player);
     AddOrSetPlayerToCorrectBgGroup(player, teamId);
+
+    sScriptMgr->OnBattlegroundAddPlayer(this, player);
     
     sScriptMgr->OnPlayerAddToBattleground(player, this);
     // Log
@@ -1525,7 +1549,7 @@ void Battleground::RelocateDeadPlayers(uint64 queueIndex)
     std::vector<uint64>& ghostList = m_ReviveQueue[queueIndex];
     if (!ghostList.empty())
     {
-        WorldSafeLocsEntry const* closestGrave = NULL;
+        GraveyardStruct const* closestGrave = NULL;
         for (std::vector<uint64>::const_iterator itr = ghostList.begin(); itr != ghostList.end(); ++itr)
         {
             Player* player = ObjectAccessor::FindPlayer(*itr);
@@ -1783,7 +1807,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
     return false;
 }
 
-void Battleground::SendMessageToAll(int32 entry, ChatMsg type, Player const* source)
+void Battleground::SendMessageToAll(uint32 entry, ChatMsg type, Player const* source)
 {
     if (!entry)
         return;
@@ -1793,7 +1817,7 @@ void Battleground::SendMessageToAll(int32 entry, ChatMsg type, Player const* sou
     BroadcastWorker(bg_do);
 }
 
-void Battleground::PSendMessageToAll(int32 entry, ChatMsg type, Player const* source, ...)
+void Battleground::PSendMessageToAll(uint32 entry, ChatMsg type, Player const* source, ...)
 {
     if (!entry)
         return;
@@ -1808,7 +1832,7 @@ void Battleground::PSendMessageToAll(int32 entry, ChatMsg type, Player const* so
     va_end(ap);
 }
 
-void Battleground::SendWarningToAll(int32 entry, ...)
+void Battleground::SendWarningToAll(uint32 entry, ...)
 {
     if (!entry)
         return;
@@ -1833,7 +1857,7 @@ void Battleground::SendWarningToAll(int32 entry, ...)
     }
 }
 
-void Battleground::SendMessage2ToAll(int32 entry, ChatMsg type, Player const* source, int32 arg1, int32 arg2)
+void Battleground::SendMessage2ToAll(uint32 entry, ChatMsg type, Player const* source, uint32 arg1, uint32 arg2)
 {
     Trinity::Battleground2ChatBuilder bg_builder(type, entry, source, arg1, arg2);
     Trinity::LocalizedPacketDo<Trinity::Battleground2ChatBuilder> bg_do(bg_builder);
@@ -2005,9 +2029,9 @@ void Battleground::SetBgRaid(TeamId teamId, Group* bg_raid)
     old_raid = bg_raid;
 }
 
-WorldSafeLocsEntry const* Battleground::GetClosestGraveyard(Player* player)
+GraveyardStruct const* Battleground::GetClosestGraveyard(Player* player)
 {
-    return sObjectMgr->GetClosestGraveyard(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), player->GetBgTeamId());
+    return sGraveyard->GetClosestGraveyard(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), player->GetBgTeamId());
 }
 
 void Battleground::StartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry)

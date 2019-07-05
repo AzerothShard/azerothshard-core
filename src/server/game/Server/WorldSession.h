@@ -185,7 +185,7 @@ class CharacterCreateInfo
 class WorldSession
 {
     public:
-        WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool skipQueue);
+        WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool skipQueue, uint32 TotalTime);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -222,6 +222,9 @@ class WorldSession
         std::string const& GetRemoteAddress() { return m_Address; }
         void SetPlayer(Player* player);
         uint8 Expansion() const { return m_expansion; }
+
+        void SetTotalTime(uint32 TotalTime) { m_total_time = TotalTime; }
+        uint32 GetTotalTime() const { return m_total_time; }
 
         void InitWarden(BigNumber* k, std::string const& os);
 
@@ -338,7 +341,7 @@ class WorldSession
         // Locales
         LocaleConstant GetSessionDbcLocale() const { return m_sessionDbcLocale; }
         LocaleConstant GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
-        const char *GetTrinityString(int32 entry) const;
+        char const* GetTrinityString(uint32 entry) const;
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
@@ -352,9 +355,12 @@ class WorldSession
             else
                 m_timeOutTime -= diff;
         }
-        void ResetTimeOutTime()
+        void ResetTimeOutTime(bool onlyActive)
         {
-            m_timeOutTime = sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME);
+            if (GetPlayer())
+                m_timeOutTime = int32(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME_ACTIVE));
+            else if (!onlyActive)
+                m_timeOutTime = int32(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME));
         }
         bool IsConnectionIdle() const
         {
@@ -961,11 +967,13 @@ class WorldSession
         Player* _player;
         WorldSocket* m_Socket;
         std::string m_Address;
+        // std::string m_LAddress;                             // Last Attempted Remote Adress - we can not set attempted ip for a non-existing session!
 
         AccountTypes _security;
         bool _skipQueue;
         uint32 _accountId;
         uint8 m_expansion;
+        uint32 m_total_time;
 
         typedef std::list<AddonInfo> AddonsList;
 

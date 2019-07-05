@@ -646,7 +646,7 @@ struct ChrClassesEntry
                                                             // 1, unused
     uint32  powerType;                                      // 2
                                                             // 3-4, unused
-    //char*       name[16];                                 // 5-20 unused
+    char*       name[16];                                 // 5-20 unused
                                                             // 21 string flag, unused
     //char*       nameFemale[16];                           // 21-36 unused, if different from base (male) case
                                                             // 37 string flag, unused
@@ -2042,17 +2042,6 @@ struct WorldMapOverlayEntry
                                                             // 6-7 always 0, possible part of areatableID[]
     //char* internal_name                                   // 8
                                                             // 9-16 some ints
-};
-
-struct WorldSafeLocsEntry
-{
-    uint32    ID;                                           // 0
-    uint32    map_id;                                       // 1
-    float     x;                                            // 2
-    float     y;                                            // 3
-    float     z;                                            // 4
-    //char*   name[16]                                      // 5-20 name, unused
-                                                            // 21 name flags, unused
 };
 
 /*

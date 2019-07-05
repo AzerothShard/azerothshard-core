@@ -22,7 +22,7 @@ char const BattlemasterListEntryfmt[] = "niiiiiiiiixssssssssssssssssxiixx";
 char const CharStartOutfitEntryfmt[] = "dbbbXiiiiiiiiiiiiiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 char const CharTitlesEntryfmt[] = "nxssssssssssssssssxssssssssssssssssxi";
 char const ChatChannelsEntryfmt[] = "nixssssssssssssssssxxxxxxxxxxxxxxxxxx"; // ChatChannelsEntryfmt, index not used (more compact store)
-char const ChrClassesEntryfmt[] = "nxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxixii";
+char const ChrClassesEntryfmt[] = "nxixssssssssssssssssxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxixii";
 char const ChrRacesEntryfmt[] = "nxixiixixxxxixssssssssssssssssxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxi";
 char const CinematicSequencesEntryfmt[] = "nxxxxxxxxx";
 char const CreatureDisplayInfofmt[] = "nixxfxxxxxxxxxxx";
@@ -116,6 +116,5 @@ char const VehicleSeatEntryfmt[] = "niiffffffffffiiiiiifffffffiiifffiiiiiiiffiii
 char const WMOAreaTableEntryfmt[] = "niiixxxxxiixxxxxxxxxxxxxxxxx";
 char const WorldMapAreaEntryfmt[] = "xinxffffixx";
 char const WorldMapOverlayEntryfmt[] = "nxiiiixxxxxxxxxxx";
-char const WorldSafeLocsEntryfmt[] = "nifffxxxxxxxxxxxxxxxxx";
 
 #endif

@@ -11,7 +11,7 @@
 #include "Common.h"
 #include "DatabaseEnv.h"
 #include "Config.h"
-#include "SystemConfig.h"
+#include "GitRevision.h"
 #include "Log.h"
 #include "Opcodes.h"
 #include "WorldSession.h"
@@ -75,7 +75,12 @@
 #include "WhoListCache.h"
 #include "AsyncAuctionListing.h"
 #include "SavingSystem.h"
+#include "ServerMotd.h"
+#include "GameGraveyard.h"
 #include <VMapManager2.h>
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 
 
 #include "GuildHouse.h" //[AZTH]
@@ -123,6 +128,8 @@ World::World()
     m_isClosed = false;
 
     m_CleaningFlags = 0;
+
+    m_configFileList = "";
 
     memset(rate_values, 0, sizeof(rate_values));
     memset(m_int_configs, 0, sizeof(m_int_configs));
@@ -188,18 +195,6 @@ void World::SetClosed(bool val)
 
     // Invert the value, for simplicity for scripters.
     sScriptMgr->OnOpenStateChange(!val);
-}
-
-void World::SetMotd(const std::string& motd)
-{
-    m_motd = motd;
-
-    sScriptMgr->OnMotdChange(m_motd);
-}
-
-const char* World::GetMotd() const
-{
-    return m_motd.c_str();
 }
 
 /// Find a session by its id
@@ -377,7 +372,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         if (*iter == sess)
         {
             sess->SetInQueue(false);
-            sess->ResetTimeOutTime();
+            sess->ResetTimeOutTime(false);
             iter = m_QueuedPlayer.erase(iter);
             found = true;
             break;
@@ -396,7 +391,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
     {
         WorldSession* pop_sess = m_QueuedPlayer.front();
         pop_sess->SetInQueue(false);
-        pop_sess->ResetTimeOutTime();
+        pop_sess->ResetTimeOutTime(false);
         pop_sess->SendAuthWaitQue(0);
         pop_sess->SendAddonsInfo();
 
@@ -418,6 +413,43 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
     return found;
 }
 
+void World::LoadModuleConfigSettings()
+{
+    Tokenizer configFileList(GetConfigFileList(), ',');
+    for (auto i = configFileList.begin(); i != configFileList.end(); i++)
+    {
+        std::string configFile = (*i) + std::string(".conf");
+
+        std::string conf_path = _CONF_DIR;
+        std::string cfg_file = conf_path + "/" + configFile;
+
+#if PLATFORM == PLATFORM_WINDOWS
+        cfg_file = configFile;
+#endif
+        std::string cfg_def_file = cfg_file + ".dist";
+
+        // Load .conf.dist config
+        if (!sConfigMgr->LoadMore(cfg_def_file.c_str()))
+        {
+            sLog->outString();
+            sLog->outError("Module config: Invalid or missing configuration dist file : %s", cfg_def_file.c_str());
+            sLog->outError("Module config: Verify that the file exists and has \'[worldserver]' written in the top of the file!");
+            sLog->outError("Module config: Use default settings!");
+            sLog->outString();
+        }
+
+        // Load .conf config
+        if (!sConfigMgr->LoadMore(cfg_file.c_str()))
+        {
+            sLog->outString();
+            sLog->outError("Module config: Invalid or missing configuration file : %s", cfg_file.c_str());
+            sLog->outError("Module config: Verify that the file exists and has \'[worldserver]' written in the top of the file!");
+            sLog->outError("Module config: Use default settings!");
+            sLog->outString();
+        }
+    }
+}
+
 /// Initialize config values
 void World::LoadConfigSettings(bool reload)
 {
@@ -430,6 +462,7 @@ void World::LoadConfigSettings(bool reload)
         }
     }
 
+    LoadModuleConfigSettings();
     sScriptMgr->OnBeforeConfigLoad(reload);
 
     // Reload log levels and filters
@@ -440,7 +473,7 @@ void World::LoadConfigSettings(bool reload)
     ///- Read the player limit and the Message of the day from the config file
     if (!reload)
         SetPlayerAmountLimit(sConfigMgr->GetIntDefault("PlayerLimit", 100));
-    SetMotd(sConfigMgr->GetStringDefault("Motd", "Welcome to an AzerothCore server") + "\n|cffFF4A2DT"+"his serv"+"er run"+"s on Aze"+"roth"+"Core|r |cff3CE7FFwww.azer"+"othcor"+"e.org|r");
+    Motd::SetMotd(sConfigMgr->GetStringDefault("Motd", "Welcome to an AzerothCore server"));
 
     ///- Read ticket system setting from the config file
     m_bool_configs[CONFIG_ALLOW_TICKETS] = sConfigMgr->GetBoolDefault("AllowTickets", true);
@@ -654,6 +687,7 @@ void World::LoadConfigSettings(bool reload)
         m_int_configs[CONFIG_PORT_WORLD] = sConfigMgr->GetIntDefault("WorldServerPort", 8085);
 
     m_int_configs[CONFIG_SOCKET_TIMEOUTTIME] = sConfigMgr->GetIntDefault("SocketTimeOutTime", 900000);
+    m_int_configs[CONFIG_SOCKET_TIMEOUTTIME_ACTIVE] = sConfigMgr->GetIntDefault("SocketTimeOutTimeActive", 60000);
     m_int_configs[CONFIG_SESSION_ADD_DELAY] = sConfigMgr->GetIntDefault("SessionAddDelay", 10000);
 
     m_float_configs[CONFIG_GROUP_XP_DISTANCE] = sConfigMgr->GetFloatDefault("MaxGroupXPDistance", 74.0f);
@@ -661,7 +695,6 @@ void World::LoadConfigSettings(bool reload)
 
     /// \todo Add MonsterSight and GuarderSight (with meaning) in worldserver.conf or put them as define
     m_float_configs[CONFIG_SIGHT_MONSTER] = sConfigMgr->GetFloatDefault("MonsterSight", 50);
-    m_float_configs[CONFIG_SIGHT_GUARDER] = sConfigMgr->GetFloatDefault("GuarderSight", 50);
 
     if (reload)
     {
@@ -964,7 +997,6 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_MAX_ALLOWED_MMR_DROP] = sConfigMgr->GetIntDefault("MaxAllowedMMRDrop", 500); // pussywizard
     m_bool_configs[CONFIG_ENABLE_LOGIN_AFTER_DC] = sConfigMgr->GetBoolDefault("EnableLoginAfterDC", true); // pussywizard
     m_bool_configs[CONFIG_DONT_CACHE_RANDOM_MOVEMENT_PATHS] = sConfigMgr->GetBoolDefault("DontCacheRandomMovementPaths", true); // pussywizard
-    SetRealmName(sConfigMgr->GetStringDefault("RealmName", "X"));
 
     m_int_configs[CONFIG_SKILL_CHANCE_ORANGE] = sConfigMgr->GetIntDefault("SkillChance.Orange", 100);
     m_int_configs[CONFIG_SKILL_CHANCE_YELLOW] = sConfigMgr->GetIntDefault("SkillChance.Yellow", 75);
@@ -1023,6 +1055,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_int_configs[CONFIG_WORLD_BOSS_LEVEL_DIFF] = sConfigMgr->GetIntDefault("WorldBossLevelDiff", 3);
 
+    m_bool_configs[CONFIG_QUEST_ENABLE_QUEST_TRACKER] = sConfigMgr->GetBoolDefault("Quests.EnableQuestTracker", false);
+    
     // note: disable value (-1) will assigned as 0xFFFFFFF, to prevent overflow at calculations limit it to max possible player level MAX_LEVEL(100)
     m_int_configs[CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF] = sConfigMgr->GetIntDefault("Quests.LowLevelHideDiff", 4);
     if (m_int_configs[CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF] > MAX_LEVEL)
@@ -1279,7 +1313,6 @@ void World::LoadConfigSettings(bool reload)
     // misc
     m_bool_configs[CONFIG_PDUMP_NO_PATHS] = sConfigMgr->GetBoolDefault("PlayerDump.DisallowPaths", true);
     m_bool_configs[CONFIG_PDUMP_NO_OVERWRITE] = sConfigMgr->GetBoolDefault("PlayerDump.DisallowOverwrite", true);
-    m_bool_configs[CONFIG_FREE_DUAL_SPEC] = sConfigMgr->GetBoolDefault("FreeDualTalentSpecialization", false);
     m_bool_configs[CONFIG_ENABLE_MMAPS] = sConfigMgr->GetBoolDefault("MoveMaps.Enable", true);
     MMAP::MMapFactory::InitializeDisabledMaps();
 
@@ -1293,6 +1326,18 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_WINTERGRASP_RESTART_AFTER_CRASH] = sConfigMgr->GetIntDefault("Wintergrasp.CrashRestartTimer", 10);
 
     m_int_configs[CONFIG_BIRTHDAY_TIME] = sConfigMgr->GetIntDefault("BirthdayTime", 1222964635);
+    m_bool_configs[CONFIG_MINIGOB_MANABONK] = sConfigMgr->GetBoolDefault("Minigob.Manabonk.Enable", true);
+
+    m_bool_configs[CONFIG_ENABLE_CONTINENT_TRANSPORT] = sConfigMgr->GetBoolDefault("IsContinentTransport.Enabled", true);
+    m_bool_configs[CONFIG_ENABLE_CONTINENT_TRANSPORT_PRELOADING] = sConfigMgr->GetBoolDefault("IsPreloadedContinentTransport.Enabled", false);
+
+    m_bool_configs[CONFIG_IP_BASED_ACTION_LOGGING] = sConfigMgr->GetBoolDefault("Allow.IP.Based.Action.Logging", false);
+
+    // Whether to use LoS from game objects
+    m_bool_configs[CONFIG_CHECK_GOBJECT_LOS] = sConfigMgr->GetBoolDefault("CheckGameObjectLoS", true);
+
+    m_bool_configs[CONFIG_CALCULATE_CREATURE_ZONE_AREA_DATA] = sConfigMgr->GetBoolDefault("Calculate.Creature.Zone.Area.Data", false);
+    m_bool_configs[CONFIG_CALCULATE_GAMEOBJECT_ZONE_AREA_DATA] = sConfigMgr->GetBoolDefault("Calculate.Gameoject.Zone.Area.Data", false);
 
     // call ScriptMgr if we're reloading the configuration
     sScriptMgr->OnAfterConfigLoad(reload);
@@ -1321,6 +1366,21 @@ void World::SetInitialWorldSettings()
         vmmgr2->GetLiquidFlagsPtr = &GetLiquidFlags;
     }
 
+#ifdef ELUNA
+    ///- Initialize Lua Engine
+    sLog->outString("Initialize Eluna Lua Engine...");
+
+    std::string conf_path = _CONF_DIR;
+    std::string cfg_file = conf_path + "/mod_LuaEngine.conf";
+#ifdef WIN32
+    cfg_file = "mod_LuaEngine.conf";
+#endif
+    std::string cfg_def_file = cfg_file + ".dist";
+    sConfigMgr->LoadMore(cfg_def_file.c_str());
+    sConfigMgr->LoadMore(cfg_file.c_str());
+    Eluna::Initialize();
+#endif
+
     ///- Initialize config settings
     LoadConfigSettings();
 
@@ -1330,18 +1390,21 @@ void World::SetInitialWorldSettings()
     ///- Init highest guids before any table loading to prevent using not initialized guids in some code.
     sObjectMgr->SetHighestGuids();
 
-    ///- Check the existence of the map files for all races' startup areas.
-    if (!MapManager::ExistMapAndVMap(0, -6240.32f, 331.033f)
-        || !MapManager::ExistMapAndVMap(0, -8949.95f, -132.493f)
-        || !MapManager::ExistMapAndVMap(1, -618.518f, -4251.67f)
-        || !MapManager::ExistMapAndVMap(0, 1676.35f, 1677.45f)
-        || !MapManager::ExistMapAndVMap(1, 10311.3f, 832.463f)
-        || !MapManager::ExistMapAndVMap(1, -2917.58f, -257.98f)
-        || (m_int_configs[CONFIG_EXPANSION] && (
-            !MapManager::ExistMapAndVMap(530, 10349.6f, -6357.29f) ||
-            !MapManager::ExistMapAndVMap(530, -3961.64f, -13931.2f))))
+    if (!sConfigMgr->isDryRun())
     {
-        exit(1);
+        ///- Check the existence of the map files for all starting areas.
+        if (!MapManager::ExistMapAndVMap(0, -6240.32f, 331.033f)
+            || !MapManager::ExistMapAndVMap(0, -8949.95f, -132.493f)
+            || !MapManager::ExistMapAndVMap(1, -618.518f, -4251.67f)
+            || !MapManager::ExistMapAndVMap(0, 1676.35f, 1677.45f)
+            || !MapManager::ExistMapAndVMap(1, 10311.3f, 832.463f)
+            || !MapManager::ExistMapAndVMap(1, -2917.58f, -257.98f)
+            || (m_int_configs[CONFIG_EXPANSION] && (
+                !MapManager::ExistMapAndVMap(530, 10349.6f, -6357.29f) ||
+                !MapManager::ExistMapAndVMap(530, -3961.64f, -13931.2f))))
+        {
+            exit(1);
+        }
     }
 
     ///- Initialize pool manager
@@ -1375,10 +1438,16 @@ void World::SetInitialWorldSettings()
     stmt->setUInt32(0, 3 * DAY);
     CharacterDatabase.Execute(stmt);
 
+    ///- Custom Hook for loading DB items
+    sScriptMgr->OnLoadCustomDatabaseTable();
+
     ///- Load the DBC files
     sLog->outString("Initialize data stores...");
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
+
+    sLog->outString("Loading Game Graveyard...");
+    sGraveyard->LoadGraveyardFromDB();
 
     sLog->outString("Loading spell dbc data corrections...");
     sSpellMgr->LoadDbcDataCorrections();
@@ -1426,6 +1495,8 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadItemLocales();
     sObjectMgr->LoadItemSetNameLocales();
     sObjectMgr->LoadQuestLocales();
+    sObjectMgr->LoadQuestOfferRewardLocale();
+    sObjectMgr->LoadQuestRequestItemsLocale();
     sObjectMgr->LoadNpcTextLocales();
     sObjectMgr->LoadPageTextLocales();
     sObjectMgr->LoadGossipMenuItemsLocales();
@@ -1440,6 +1511,9 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Loading Game Object Templates...");         // must be after LoadPageTexts
     sObjectMgr->LoadGameObjectTemplate();
+
+    sLog->outString("Loading Game Object template addons...");
+    sObjectMgr->LoadGameObjectTemplateAddons();
 
     sLog->outString("Loading Transport templates...");
     sTransportMgr->LoadTransportTemplates();
@@ -1608,7 +1682,7 @@ void World::SetInitialWorldSettings()
     sLFGMgr->LoadRewards();
 
     sLog->outString("Loading Graveyard-zone links...");
-    sObjectMgr->LoadGraveyardZones();
+    sGraveyard->LoadGraveyardZones();
 
     sLog->outString("Loading spell pet auras...");
     sSpellMgr->LoadSpellPetAuras();
@@ -1768,10 +1842,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadSpellScripts();                              // must be after load Creature/Gameobject(Template/Data)
     sObjectMgr->LoadEventScripts();                              // must be after load Creature/Gameobject(Template/Data)
     sObjectMgr->LoadWaypointScripts();
-
-    sLog->outString("Loading Scripts text locales...");      // must be after Load*Scripts calls
-    sObjectMgr->LoadDbScriptStrings();
-
+    
     sLog->outString("Loading spell script names...");
     sObjectMgr->LoadSpellScriptNames();
 
@@ -1806,7 +1877,7 @@ void World::SetInitialWorldSettings()
     m_startTime = m_gameTime;
 
     LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision) VALUES(%u, %u, 0, '%s')",
-                            realmID, uint32(m_startTime), _FULLVERSION);       // One-time query
+                            realmID, uint32(m_startTime), GitRevision::GetFullVersion());       // One-time query
 
 
 
@@ -1915,6 +1986,13 @@ void World::SetInitialWorldSettings()
     mgr = ChannelMgr::forTeam(TEAM_HORDE);
     mgr->LoadChannels();
 
+#ifdef ELUNA
+    ///- Run eluna scripts.
+    // in multithread foreach: run scripts
+    sEluna->RunScripts();
+    sEluna->OnConfigLoad(false,false); // Must be done after Eluna is initialized and scripts have run.
+#endif
+    
     uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
     sLog->outString();
     sLog->outError("WORLD: World initialized in %u minutes %u seconds", (startupDuration / 60000), ((startupDuration % 60000) / 1000));
@@ -1925,6 +2003,11 @@ void World::SetInitialWorldSettings()
     {
         sLog->outString("Enabling database logging...");
         sLog->SetLogDB(true);
+    }
+
+    if (sConfigMgr->isDryRun()) {
+        sLog->outString("AzerothCore dry run completed, terminating.");
+        exit(0);
     }
 }
 
@@ -2267,7 +2350,7 @@ namespace Trinity
     {
         public:
             typedef std::vector<WorldPacket*> WorldPacketList;
-            explicit WorldWorldTextBuilder(int32 textId, va_list* args = NULL) : i_textId(textId), i_args(args) {}
+            explicit WorldWorldTextBuilder(uint32 textId, va_list* args = NULL) : i_textId(textId), i_args(args) {}
             void operator()(WorldPacketList& data_list, LocaleConstant loc_idx)
             {
                 char const* text = sObjectMgr->GetTrinityString(i_textId, loc_idx);
@@ -2301,13 +2384,13 @@ namespace Trinity
             }
 
 
-            int32 i_textId;
+            uint32 i_textId;
             va_list* i_args;
     };
 }                                                           // namespace Trinity
 
 /// Send a System Message to all players (except self if mentioned)
-void World::SendWorldText(int32 string_id, ...)
+void World::SendWorldText(uint32 string_id, ...)
 {
     va_list ap;
     va_start(ap, string_id);
@@ -2326,7 +2409,7 @@ void World::SendWorldText(int32 string_id, ...)
 }
 
 /// Send a System Message to all GMs (except self if mentioned)
-void World::SendGMText(int32 string_id, ...)
+void World::SendGMText(uint32 string_id, ...)
 {
     va_list ap;
     va_start(ap, string_id);
@@ -3204,8 +3287,7 @@ void World::LoadGlobalPlayerDataStore()
     QueryResult result = CharacterDatabase.Query("SELECT guid, account, name, gender, race, class, level FROM characters WHERE deleteDate IS NULL");
     if (!result)
     {
-        sLog->outString();
-        sLog->outErrorDb(">>  Loaded 0 Players data!");
+        sLog->outString(">> Loaded 0 Players data.");
         return;
     }
 

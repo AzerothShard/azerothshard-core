@@ -18,6 +18,7 @@ EndScriptData */
 #include "Chat.h"
 #include "Language.h"
 #include "Player.h"
+#include "GameGraveyard.h"
 #include "GuildHouse.h" //[AZTH]
 
 class go_commandscript : public CommandScript
@@ -33,6 +34,7 @@ public:
             { "graveyard",      SEC_MODERATOR,      false, &HandleGoGraveyardCommand,         "" },
             { "grid",           SEC_MODERATOR,      false, &HandleGoGridCommand,              "" },
             { "object",         SEC_MODERATOR,      false, &HandleGoObjectCommand,            "" },
+            { "gobject",        SEC_MODERATOR,      false, &HandleGoObjectCommand,            "" },
             { "taxinode",       SEC_MODERATOR,      false, &HandleGoTaxinodeCommand,          "" },
             { "trigger",        SEC_MODERATOR,      false, &HandleGoTriggerCommand,           "" },
             { "zonexy",         SEC_MODERATOR,      false, &HandleGoZoneXYCommand,            "" },
@@ -173,7 +175,7 @@ public:
         if (!graveyardId)
             return false;
 
-        WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId);
+        GraveyardStruct const* gy = sGraveyard->GetGraveyard(graveyardId);
         if (!gy)
         {
             handler->PSendSysMessage(LANG_COMMAND_GRAVEYARDNOEXIST, graveyardId);
@@ -181,9 +183,9 @@ public:
             return false;
         }
 
-        if (!MapManager::IsValidMapCoord(gy->map_id, gy->x, gy->y, gy->z))
+        if (!MapManager::IsValidMapCoord(gy->Map, gy->x, gy->y, gy->z))
         {
-            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, gy->x, gy->y, gy->map_id);
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, gy->x, gy->y, gy->Map);
             handler->SetSentErrorMessage(true);
             return false;
         }
@@ -198,7 +200,7 @@ public:
         else
             player->SaveRecallPosition();
 
-        player->TeleportTo(gy->map_id, gy->x, gy->y, gy->z, player->GetOrientation());
+        player->TeleportTo(gy->Map, gy->x, gy->y, gy->z, player->GetOrientation());
         return true;
     }
 

@@ -153,14 +153,20 @@ enum WorldBoolConfigs
     CONFIG_WINTERGRASP_ENABLE,
     CONFIG_PDUMP_NO_PATHS,
     CONFIG_PDUMP_NO_OVERWRITE,
-    CONFIG_FREE_DUAL_SPEC, // pussywizard
     CONFIG_ENABLE_MMAPS, // pussywizard
     CONFIG_ENABLE_LOGIN_AFTER_DC, // pussywizard
     CONFIG_DONT_CACHE_RANDOM_MOVEMENT_PATHS, // pussywizard
     CONFIG_QUEST_IGNORE_AUTO_ACCEPT,
     CONFIG_QUEST_IGNORE_AUTO_COMPLETE,
-    CONFIG_QUEST_ENABLE_QUEST_TRACKER, // [AZTH]
+    CONFIG_QUEST_ENABLE_QUEST_TRACKER,
     CONFIG_WARDEN_ENABLED,
+    CONFIG_ENABLE_CONTINENT_TRANSPORT,
+    CONFIG_ENABLE_CONTINENT_TRANSPORT_PRELOADING,
+    CONFIG_MINIGOB_MANABONK,
+    CONFIG_IP_BASED_ACTION_LOGGING,
+    CONFIG_CALCULATE_CREATURE_ZONE_AREA_DATA,
+    CONFIG_CALCULATE_GAMEOBJECT_ZONE_AREA_DATA,
+    CONFIG_CHECK_GOBJECT_LOS,
     CONFIG_ANTICHEAT_ENABLE, //[AZTH]
     CONFIG_EXTERNAL_MAIL, //[AZTH]
     CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SHOW_ON_LOGIN, //[AZTH]
@@ -172,7 +178,6 @@ enum WorldFloatConfigs
     CONFIG_GROUP_XP_DISTANCE = 0,
     CONFIG_MAX_RECRUIT_A_FRIEND_DISTANCE,
     CONFIG_SIGHT_MONSTER,
-    CONFIG_SIGHT_GUARDER,
     CONFIG_LISTEN_RANGE_SAY,
     CONFIG_LISTEN_RANGE_TEXTEMOTE,
     CONFIG_LISTEN_RANGE_YELL,
@@ -334,6 +339,7 @@ enum WorldIntConfigs
     CONFIG_WARDEN_NUM_MEM_CHECKS,
     CONFIG_WARDEN_NUM_OTHER_CHECKS,
     CONFIG_BIRTHDAY_TIME,
+    CONFIG_SOCKET_TIMEOUTTIME_ACTIVE,
     CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION, //[AZTH]
     CONFIG_ANTICHEAT_MAX_REPORTS_FOR_DAILY_REPORT, //[AZTH]
     CONFIG_ANTICHEAT_DETECTIONS_ENABLED, //[AZTH]
@@ -638,11 +644,6 @@ class World
         /// Allow/Disallow object movements
         void SetAllowMovement(bool allow) { m_allowMovement = allow; }
 
-        /// Set a new Message of the Day
-        void SetMotd(std::string const& motd);
-        /// Get the current Message of the Day
-        const char* GetMotd() const;
-
         /// Set the string for new characters (first login)
         void SetNewCharString(std::string const& str) { m_newCharString = str; }
         /// Get the string for new characters (first login)
@@ -679,10 +680,11 @@ class World
 
         void SetInitialWorldSettings();
         void LoadConfigSettings(bool reload = false);
+        void LoadModuleConfigSettings();
 
-        void SendWorldText(int32 string_id, ...);
+        void SendWorldText(uint32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession* self);
-        void SendGMText(int32 string_id, ...);
+        void SendGMText(uint32 string_id, ...);
         void SendGlobalMessage(WorldPacket* packet, WorldSession* self = 0, TeamId teamId = TEAM_NEUTRAL);
         void SendGlobalGMMessage(WorldPacket* packet, WorldSession* self = 0, TeamId teamId = TEAM_NEUTRAL);
         bool SendZoneMessage(uint32 zone, WorldPacket* packet, WorldSession* self = 0, TeamId teamId = TEAM_NEUTRAL);
@@ -818,6 +820,9 @@ class World
         std::string const& GetRealmName() const { return _realmName; } // pussywizard
         void SetRealmName(std::string name) { _realmName = name; } // pussywizard
 
+        std::string GetConfigFileList() { return m_configFileList; }
+        void SetConfigFileList(std::string list) { m_configFileList = list; }
+
         void SendGameMail(Player* receiver, std::string subject, std::string body, uint32 money, uint32 itemId = 0, uint32 itemCount = 0); //[AZTH] in-game mailer
 
     protected:
@@ -880,7 +885,6 @@ class World
         uint32 m_availableDbcLocaleMask;                       // by loaded DBC
         void DetectDBCLang();
         bool m_allowMovement;
-        std::string m_motd;
         std::string m_dataPath;
 
         // for max speed access
@@ -922,6 +926,8 @@ class World
 
         void ProcessQueryCallbacks();
         ACE_Future_Set<PreparedQueryResult> m_realmCharCallbacks;
+
+        std::string m_configFileList;
 };
 
 #define sWorld ACE_Singleton<World, ACE_Null_Mutex>::instance()

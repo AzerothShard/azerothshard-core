@@ -22,6 +22,9 @@
 #include "GameObjectAI.h"
 #include "SpellAuraEffects.h"
 #include "Player.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 //[AZTH]
 #include "AzthUtils.h"
 

@@ -16,6 +16,10 @@
 #include "GridDefines.h"
 #include "Map.h"
 
+#ifdef ELUNA
+class ElunaEventProcessor;
+#endif
+
 #include <set>
 #include <string>
 #include <sstream>
@@ -727,8 +731,11 @@ class WorldObject : public Object, public WorldLocation
     public:
         virtual ~WorldObject();
 
-        virtual void Update (uint32 /*time_diff*/) { }
-
+#ifdef ELUNA
+        virtual void Update(uint32 /*time_diff*/);
+#else
+        virtual void Update(uint32 /*time_diff*/) { };
+#endif
         void _Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
 
         virtual void RemoveFromWorld()
@@ -740,6 +747,10 @@ class WorldObject : public Object, public WorldLocation
 
             Object::RemoveFromWorld();
         }
+
+#ifdef ELUNA
+        ElunaEventProcessor* elunaEvents;
+#endif
 
         void GetNearPoint2D(float &x, float &y, float distance, float absAngle) const;
         void GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const;
@@ -860,8 +871,8 @@ class WorldObject : public Object, public WorldLocation
         {
             return obj && IsInMap(obj) && InSamePhase(obj) && _IsWithinDist(obj, dist2compare, is3D);
         }
-        bool IsWithinLOS(float x, float y, float z) const;
-        bool IsWithinLOSInMap(const WorldObject* obj) const;
+        bool IsWithinLOS(float x, float y, float z, LineOfSightChecks checks = LINEOFSIGHT_ALL_CHECKS) const;
+        bool IsWithinLOSInMap(WorldObject const* obj, LineOfSightChecks checks = LINEOFSIGHT_ALL_CHECKS) const;
         Position GetHitSpherePointFor(Position const& dest) const;
         void GetHitSpherePointFor(Position const& dest, float& x, float& y, float& z) const;
         bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
@@ -901,7 +912,8 @@ class WorldObject : public Object, public WorldLocation
         float GetGridActivationRange() const;
         float GetVisibilityRange() const;
         float GetSightRange(const WorldObject* target = NULL) const;
-        bool CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false) const;
+        //bool CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false) const;
+        bool CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false, bool checkAlert = false) const;
 
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealth;
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealthDetect;
@@ -1042,9 +1054,11 @@ class WorldObject : public Object, public WorldLocation
 
         bool CanNeverSee(WorldObject const* obj) const;
         virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }
-        bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkClient) const;
+        //bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkClient) const;
+        bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkClient, bool checkAlert = false) const;
         bool CanDetectInvisibilityOf(WorldObject const* obj) const;
-        bool CanDetectStealthOf(WorldObject const* obj) const;
+        //bool CanDetectStealthOf(WorldObject const* obj) const;
+        bool CanDetectStealthOf(WorldObject const* obj, bool checkAlert = false) const;
 };
 
 namespace Trinity

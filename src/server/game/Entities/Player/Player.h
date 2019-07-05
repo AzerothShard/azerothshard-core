@@ -1449,6 +1449,7 @@ class Player : public Unit, public GridObject<Player>
         bool CanRewardQuest(Quest const* quest, uint32 reward, bool msg);
         void AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver);
         void AddQuest(Quest const* quest, Object* questGiver);
+        void AbandonQuest(uint32 quest_id);
         void CompleteQuest(uint32 quest_id);
         void IncompleteQuest(uint32 quest_id);
         void RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, bool announce = true);
@@ -1536,7 +1537,7 @@ class Player : public Unit, public GridObject<Player>
         void MoneyChanged(uint32 value);
         void ReputationChanged(FactionEntry const* factionEntry);
         void ReputationChanged2(FactionEntry const* factionEntry);
-        bool HasQuestForItem(uint32 itemid) const;
+        bool HasQuestForItem(uint32 itemId, uint32 excludeQuestId = 0, bool turnIn = false) const;
         bool HasQuestForGO(int32 GOId) const;
         void UpdateForQuestWorldObjects();
         bool CanShareQuest(uint32 quest_id) const;
@@ -1750,6 +1751,7 @@ class Player : public Unit, public GridObject<Player>
         void GetTalentTreePoints(uint8 (&specPoints)[3]) const;
         uint8 GetMostPointsTalentTree() const;
         bool IsHealerTalentSpec() const;
+        bool IsTankTalentSpec() const;
 
         void InitGlyphsForLevel();
         void SetGlyphSlot(uint8 slot, uint32 slottype) { SetUInt32Value(PLAYER_FIELD_GLYPH_SLOTS_1 + slot, slottype); }
@@ -3037,8 +3039,8 @@ class Player : public Unit, public GridObject<Player>
 
 };
 
-void AddItemsSetItem(Player*player, Item* item);
-void RemoveItemsSetItem(Player*player, ItemTemplate const* proto);
+void AddItemsSetItem(Player* player, Item* item);
+void RemoveItemsSetItem(Player* player, ItemTemplate const* proto);
 
 // "the bodies of template functions must be made available in a header file"
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell, bool temporaryPet)

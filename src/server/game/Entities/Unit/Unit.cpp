@@ -57,6 +57,11 @@
 #include "AzthUtils.h"
 //[/AZTH]
 
+#ifdef ELUNA
+#include "LuaEngine.h"
+#include "ElunaEventMgr.h"
+#endif
+
 #include <math.h>
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
@@ -140,9 +145,9 @@ void DamageInfo::BlockDamage(uint32 amount)
     m_damage -= amount;
 }
 
-ProcEventInfo::ProcEventInfo(Unit* actor, Unit* actionTarget, Unit* procTarget, uint32 typeMask, uint32 spellTypeMask, uint32 spellPhaseMask, uint32 hitMask, Spell* spell, DamageInfo* damageInfo, HealInfo* healInfo, SpellInfo const* triggeredByAuraSpell)
+ProcEventInfo::ProcEventInfo(Unit* actor, Unit* actionTarget, Unit* procTarget, uint32 typeMask, uint32 spellTypeMask, uint32 spellPhaseMask, uint32 hitMask, Spell* /*spell*/, DamageInfo* damageInfo, HealInfo* healInfo, SpellInfo const* triggeredByAuraSpell)
 :_actor(actor), _actionTarget(actionTarget), _procTarget(procTarget), _typeMask(typeMask), _spellTypeMask(spellTypeMask), _spellPhaseMask(spellPhaseMask),
-_hitMask(hitMask), _spell(spell), _damageInfo(damageInfo), _healInfo(healInfo), _triggeredByAuraSpell(triggeredByAuraSpell)
+_hitMask(hitMask), _damageInfo(damageInfo), _healInfo(healInfo), _triggeredByAuraSpell(triggeredByAuraSpell)
 {
 }
 
@@ -177,6 +182,7 @@ i_motionMaster(new MotionMaster(this)), m_regenTimer(0), m_ThreatManager(this), 
     m_rootTimes = 0;
 
     m_state = 0;
+    m_petCatchUp = false;
     m_deathState = ALIVE;
 
     for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
@@ -339,6 +345,9 @@ Unit::~Unit()
 
 void Unit::Update(uint32 p_time)
 {
+#ifdef ELUNA
+    elunaEvents->Update(p_time);
+#endif
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
@@ -8029,7 +8038,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 damage, Aura* triggeredByAura, Sp
                     if (!spInfo)
                         return false;
 
-                    int32 bp0 = int32(CalculatePct(GetCreateMana(), spInfo->Effects[0].CalcValue()));
+                    int32 bp0 = int32(CalculatePct(GetMaxPower(POWER_MANA), spInfo->Effects[0].CalcValue()));
                     CastCustomSpell(this, 67545, &bp0, NULL, NULL, true, NULL, triggeredByAura->GetEffect(EFFECT_0), GetGUID());
                     return true;
                 }
@@ -12652,6 +12661,10 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy, uint32 duration)
 
         controlled->SetInCombatState(PvP, enemy);
     }
+#ifdef ELUNA
+    if (Player* player = this->ToPlayer())
+        sEluna->OnPlayerEnterCombat(player, enemy);
+#endif
 }
 
 void Unit::ClearInCombat()
@@ -12680,6 +12693,10 @@ void Unit::ClearInCombat()
             for (uint8 i = 0; i < MAX_RUNES; ++i)
                 player->SetGracePeriod(i, 0);
     }
+#ifdef ELUNA
+    if (Player* player = this->ToPlayer())
+        sEluna->OnPlayerLeaveCombat(player);
+#endif
 }
 
 void Unit::ClearInPetCombat()
@@ -12732,7 +12749,8 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
                 return false;
 
     // can't attack invisible (ignore stealth for aoe spells) also if the area being looked at is from a spell use the dynamic object created instead of the casting unit.
-    if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE)) && (obj ? !obj->CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea() && !bySpell->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)) : !CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea() && !bySpell->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO))))
+    //Ignore stealth if target is player and unit in combat with same player
+    if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE)) && (obj ? !obj->CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()) : !CanSeeOrDetect(target, (bySpell && bySpell->IsAffectingArea()) || (target->GetTypeId() == TYPEID_PLAYER && target->HasStealthAura() && target->IsInCombat() && IsInCombatWith(target)))))
         return false;
 
     // can't attack dead
@@ -13176,8 +13194,40 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
                 Unit* pOwner = GetCharmerOrOwner();
                 if (pOwner && !IsInCombat() && !IsVehicle() && !HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED) && (IsPet() || IsGuardian() || GetGUID() == pOwner->GetCritterGUID() || GetCharmerGUID() == pOwner->GetGUID()))
                 {
-                    if (speed < pOwner->GetSpeedRate(mtype)+0.1f)
-                        speed = pOwner->GetSpeedRate(mtype)+0.1f; // pets derive speed from owner when not in combat
+                    if (pOwner->GetTypeId() != TYPEID_PLAYER)
+                    {
+                        if (speed < pOwner->GetSpeedRate(mtype)+0.1f)
+                            speed = pOwner->GetSpeedRate(mtype)+0.1f; // pets derive speed from owner when not in combat
+                    }
+                    else
+                    {
+                        // special treatment for player pets in order to avoid stuttering
+                        float ownerSpeed = pOwner->GetSpeedRate(mtype);
+                        float distOwner = GetDistance(pOwner);
+                        float minDist = 2.5f;
+
+                        if (ToCreature()->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET)
+                        {
+                            // different minimum distance for vanity pets
+                            minDist = 5.0f;
+
+                            if (mtype == MOVE_FLIGHT)
+                                mtype = MOVE_RUN; // vanity pets use run speed for flight
+                        }
+
+                        float maxDist = ownerSpeed >= 1.0f ? minDist * ownerSpeed * 1.5f : minDist * 1.5f;
+
+                        if (distOwner < minDist && m_petCatchUp)
+                            m_petCatchUp = false;
+
+                        if (distOwner > maxDist && !m_petCatchUp)
+                            m_petCatchUp = true;
+
+                        if (m_petCatchUp)
+                            speed = ownerSpeed * 1.05f;
+                        else
+                            speed = ownerSpeed * 0.95f;
+                    }
                 }
                 else
                     speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
@@ -16505,7 +16555,10 @@ void Unit::Kill(Unit* killer, Unit* victim, bool durabilityLoss, WeaponAttackTyp
     // Do KILL and KILLED procs. KILL proc is called only for the unit who landed the killing blow (and its owner - for pets and totems) regardless of who tapped the victim
     if (killer && (killer->IsPet() || killer->IsTotem()))
         if (Unit* owner = killer->GetOwner())
+        {
             owner->ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_EX_NONE, 0, attackType, spellProto);
+            sScriptMgr->OnCreatureKilledByPet( killer->GetCharmerOrOwnerPlayerOrPlayerItself(), victim->ToCreature());
+        }
 
     if (killer != victim && !victim->IsCritter())
         killer->ProcDamageAndSpell(victim, killer ? PROC_FLAG_KILL : 0, PROC_FLAG_KILLED, PROC_EX_NONE, 0, attackType, spellProto);
@@ -19560,4 +19613,23 @@ void Unit::setRace(uint8 race)
 {
     if (GetTypeId() == TYPEID_PLAYER)
         m_race = race;
+}
+
+// Check if unit in combat with specific unit
+bool Unit::IsInCombatWith(Unit const* who) const
+{
+    // Check target exists
+    if (!who)
+        return false;
+    // Search in threat list
+    uint64 guid = who->GetGUID();
+    for (ThreatContainer::StorageType::const_iterator i = m_ThreatManager.getThreatList().begin(); i != m_ThreatManager.getThreatList().end(); ++i)
+    {
+        HostileReference* ref = (*i);
+        // Return true if the unit matches
+        if (ref && ref->getUnitGuid() == guid)
+            return true;
+    }
+    // Nothing found, false.
+    return false;
 }

@@ -36,6 +36,7 @@ file(GLOB_RECURSE sources_Loot Loot/*.cpp Loot/*.h)
 file(GLOB_RECURSE sources_Mails Mails/*.cpp Mails/*.h)
 file(GLOB_RECURSE sources_Maps Maps/*.cpp Maps/*.h)
 file(GLOB_RECURSE sources_Miscellaneous Miscellaneous/*.cpp Miscellaneous/*.h)
+file(GLOB_RECURSE sources_Motd Motd/*.cpp Motd/*.h)
 file(GLOB_RECURSE sources_Movement Movement/*.cpp Movement/*.h)
 file(GLOB_RECURSE sources_OutdoorPvP OutdoorPvP/*.cpp OutdoorPvP/*.h)
 file(GLOB_RECURSE sources_Petitions Petitions/*.cpp Petitions/*.h)
@@ -90,6 +91,7 @@ set(game_STAT_SRCS
   ${sources_Mails}
   ${sources_Maps}
   ${sources_Miscellaneous}
+  ${sources_Motd}
   ${sources_Movement}
   ${sources_OutdoorPvP}
   ${sources_Petitions}
@@ -183,6 +185,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Mails
   ${CMAKE_CURRENT_SOURCE_DIR}/Maps
   ${CMAKE_CURRENT_SOURCE_DIR}/Miscellaneous
+  ${CMAKE_CURRENT_SOURCE_DIR}/Motd
   ${CMAKE_CURRENT_SOURCE_DIR}/Movement
   ${CMAKE_CURRENT_SOURCE_DIR}/Movement/Spline
   ${CMAKE_CURRENT_SOURCE_DIR}/Movement/MovementGenerators
@@ -214,6 +217,9 @@ include_directories(
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
 )
+
+# Group sources
+GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(game STATIC
   ${game_STAT_SRCS}
