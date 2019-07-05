@@ -120,8 +120,8 @@ class Transport;
 class StaticTransport;
 class MotionTransport;
 
-typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
-typedef UNORDERED_SET<uint32> UpdatePlayerSet;
+typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
+typedef std::unordered_set<uint32> UpdatePlayerSet;
 
 class Object
 {
@@ -926,6 +926,7 @@ class WorldObject : public Object, public WorldLocation
 
         // Low Level Packets
         void SendPlaySound(uint32 Sound, bool OnlySelf);
+        void SendPlayMusic(uint32 Music, bool OnlySelf);
 
         virtual void SetMap(Map* map);
         virtual void ResetMap();
@@ -979,6 +980,8 @@ class WorldObject : public Object, public WorldLocation
 
         bool isActiveObject() const { return m_isActive; }
         void setActive(bool isActiveObject);
+        bool IsVisibilityOverridden() const { return m_isVisibilityDistanceOverride; }
+        void SetVisibilityDistanceOverride(bool isVisibilityDistanceOverride);
         void SetWorldObject(bool apply);
         bool IsPermanentWorldObject() const { return m_isWorldObject; }
         bool IsWorldObject() const;
@@ -1023,6 +1026,7 @@ class WorldObject : public Object, public WorldLocation
     protected:
         std::string m_name;
         bool m_isActive;
+        bool m_isVisibilityDistanceOverride;
         const bool m_isWorldObject;
         ZoneScript* m_zoneScript;
 

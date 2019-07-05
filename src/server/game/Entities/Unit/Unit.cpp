@@ -700,6 +700,10 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
         // Signal to pets that their owner was attacked
         Pet* pet = victim->ToPlayer()->GetPet();
 
+        if (victim->GetTypeId() == TYPEID_PLAYER)
+            if (victim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
+                return 0;
+
         if (pet && pet->IsAlive())
             pet->AI()->OwnerAttackedBy(attacker);
     }
@@ -3710,7 +3714,7 @@ void SafeUnitPointer::UnitDeleted()
             if (ptr)
                 sLog->outMisc("SafeUnitPointer::UnitDeleted (A2)");
 
-            p->GetSession()->KickPlayer();
+            p->GetSession()->KickPlayer("Unit deleted");
         }
     }
     else if (ptr)
@@ -17607,7 +17611,7 @@ void Unit::SendPlaySpellImpact(uint64 guid, uint32 id)
     WorldPacket data(SMSG_PLAY_SPELL_IMPACT, 8 + 4);
     data << uint64(guid); // target
     data << uint32(id); // SpellVisualKit.dbc index
-    SendMessageToSet(&data, false);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::ApplyResilience(Unit const* victim, float* crit, int32* damage, bool isCrit, CombatRating type)
@@ -19589,7 +19593,7 @@ void Unit::BuildCooldownPacket(WorldPacket& data, uint8 flags, PacketCooldowns c
     data.Initialize(SMSG_SPELL_COOLDOWN, 8 + 1 + (4 + 4) * cooldowns.size());
     data << uint64(GetGUID());
     data << uint8(flags);
-    for (UNORDERED_MAP<uint32, uint32>::const_iterator itr = cooldowns.begin(); itr != cooldowns.end(); ++itr)
+    for (std::unordered_map<uint32, uint32>::const_iterator itr = cooldowns.begin(); itr != cooldowns.end(); ++itr)
     {
         data << uint32(itr->first);
         data << uint32(itr->second);

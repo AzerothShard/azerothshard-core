@@ -4606,8 +4606,8 @@ void ObjectMgr::LoadQuestLocales()
         AddLocaleString(fields[2].GetString(), locale, data.Title);
         AddLocaleString(fields[3].GetString(), locale, data.Details);
         AddLocaleString(fields[4].GetString(), locale, data.Objectives);
-        AddLocaleString(fields[7].GetString(), locale, data.AreaDescription);
-        AddLocaleString(fields[8].GetString(), locale, data.CompletedText);
+        AddLocaleString(fields[5].GetString(), locale, data.AreaDescription);
+        AddLocaleString(fields[6].GetString(), locale, data.CompletedText);
 
         for (uint8 i = 0; i < 4; ++i)
             AddLocaleString(fields[i + 7].GetString(), locale, data.ObjectiveText[i]);
@@ -7792,6 +7792,21 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
     while (result->NextRow());
 
     sLog->outString(">> Loaded %u areas for fishing base skill level in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString();
+}
+
+void ObjectMgr::ChangeFishingBaseSkillLevel(uint32 entry, int32 skill)
+{
+    AreaTableEntry const* fArea = sAreaTableStore.LookupEntry(entry);
+    if (!fArea)
+    {
+        sLog->outErrorDb("AreaId %u defined in `skill_fishing_base_level` does not exist", entry);
+        return;
+    }
+    
+    _fishingBaseForAreaStore[entry] = skill;
+
+    sLog->outString(">> Fishing base skill level of area %u changed to %u", entry, skill);
     sLog->outString();
 }
 

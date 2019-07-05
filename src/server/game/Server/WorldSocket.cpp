@@ -119,8 +119,11 @@ bool WorldSocket::IsClosed(void) const
     return closing_;
 }
 
-void WorldSocket::CloseSocket(void)
+void WorldSocket::CloseSocket(std::string const& reason)
 {
+    if (!reason.empty())
+        sLog->outDebug(LOG_FILTER_CLOSE_SOCKET, "Socket closed because of: %s", reason.c_str());
+
     {
         ACE_GUARD (LockType, Guard, m_OutBufferLock);
 
@@ -659,7 +662,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     // manage memory ;)
     ACE_Auto_Ptr<WorldPacket> aptr (new_pct);
 
-    const ACE_UINT16 opcode = new_pct->GetOpcode();
+    const uint16 opcode = new_pct->GetOpcode();
 
     if (closing_)
         return -1;
