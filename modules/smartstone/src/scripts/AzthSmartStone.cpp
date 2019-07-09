@@ -100,9 +100,7 @@ public:
             GossipMenusMapBounds menuBounds = sObjectMgr->GetGossipMenusMapBounds(menuId);
 
             for (GossipMenusContainer::const_iterator itr = menuBounds.first; itr != menuBounds.second; ++itr)
-            {
-                textId = itr->second.text_id;
-            }
+                textId = itr->second.TextID;
 
             for (GossipMenuItemsContainer::const_iterator itr = menuItemBounds.first; itr != menuItemBounds.second; ++itr)
             {
@@ -112,7 +110,7 @@ public:
                 int32 locale = player->GetSession()->GetSessionDbLocaleIndex();
                 if (locale >= 0)
                 {
-                    uint32 idxEntry = MAKE_PAIR32(menuId, itr->second.OptionIndex);
+                    uint32 idxEntry = MAKE_PAIR32(menuId, itr->second.OptionID);
                     if (GossipMenuItemsLocale const* no = sObjectMgr->GetGossipMenuItemsLocale(idxEntry))
                     {
                         ObjectMgr::GetLocaleString(no->OptionText, locale, strOptionText);
@@ -120,11 +118,11 @@ public:
                     }
                 }
 
-                player->PlayerTalkClass->GetGossipMenu().AddMenuItem(itr->second.OptionIndex, itr->second.OptionIcon, strOptionText, 0, itr->second.ActionMenuId, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
-                player->PlayerTalkClass->GetGossipMenu().AddGossipMenuItemData(itr->second.OptionIndex, itr->second.ActionMenuId, itr->second.ActionPoiId);
+                player->PlayerTalkClass->GetGossipMenu().AddMenuItem(itr->second.OptionID, itr->second.OptionIcon, strOptionText, 0, itr->second.ActionMenuID, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+                player->PlayerTalkClass->GetGossipMenu().AddGossipMenuItemData(itr->second.OptionID, itr->second.ActionMenuID, itr->second.ActionPoiID);
             }
              
-            player->SEND_GOSSIP_MENU(textId, item->GetGUID());
+            SendGossipMenuFor(player, textId, item->GetGUID());
             return;
         }
 

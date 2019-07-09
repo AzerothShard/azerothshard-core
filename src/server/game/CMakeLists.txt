@@ -41,7 +41,8 @@ target_link_libraries(game-interface
 
 add_library(game STATIC
   ${PRIVATE_SOURCES}
-  ${ElunaLuaEngineFiles})
+  ${ElunaLuaEngineFiles}
+  ${game_STAT_SRCS})
 
 add_dependencies(game revision.h)
 

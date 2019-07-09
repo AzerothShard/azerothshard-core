@@ -1,6 +1,7 @@
 #include "Apps.h"
 #include "MapManager.h"
 #include "AzthSharedDefines.h"
+#include "GameGraveyard.h"
 
 void SmartStoneApps::blackMarketTeleport(Player *player) {
     if (player->IsInCombat())
@@ -19,16 +20,15 @@ void SmartStoneApps::blackMarketTeleport(Player *player) {
 
         Map *m = sMapMgr->FindBaseMap(pos.GetMapId());
 
-        if (m && m->IsDungeon()) {
+        if (m && m->IsDungeon())
+        {
+            GraveyardStruct const* graveyard = sGraveyard->GetClosestGraveyard(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetMapId(), TEAM_NEUTRAL);
 
-            WorldSafeLocsEntry const* ClosestGrave = sObjectMgr->GetClosestGraveyard(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetMapId(), TEAM_NEUTRAL);
-
-            if (ClosestGrave) {
-                player->TeleportTo(ClosestGrave->map_id, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, player->GetOrientation());
-            }
-        } else {
-            player->TeleportTo(pos);
+            if (graveyard)
+                player->TeleportTo(graveyard->Map, graveyard->x, graveyard->y, graveyard->z, player->GetOrientation());
         }
+        else
+            player->TeleportTo(pos);
     }   
 }
 

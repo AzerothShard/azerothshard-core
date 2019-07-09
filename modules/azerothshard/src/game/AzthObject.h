@@ -3,7 +3,7 @@
 
 #include "Config.h"
 #include "Define.h"
-#include <UnorderedMap.h>
+#include <unordered_map>
 
 enum EUint32Fields {
     AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS,
@@ -45,11 +45,11 @@ public:
     }
 
 
-    typedef UNORDERED_MAP<uint32 /*index*/, uint32 /*value*/>
+    typedef std::unordered_map<uint32 /*index*/, uint32 /*value*/>
         DataUint32;
     DataUint32 m_dataUint32;
 
-    typedef UNORDERED_MAP<uint32 /*index*/, float /*value*/>
+    typedef std::unordered_map<uint32 /*index*/, float /*value*/>
         DataFloat;
     DataFloat m_dataFloat;
 };

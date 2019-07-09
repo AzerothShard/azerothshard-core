@@ -760,10 +760,6 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
 {
     if (BattlegroundMgr::queueToBg.find(bgQueueTypeId) == BattlegroundMgr::queueToBg.end()) {
         return BattlegroundTypeId(0);
-//[AZTH]
-        case BATTLEGROUND_QUEUE_1v1:
-        case BATTLEGROUND_QUEUE_3v3_SOLO:
-//[/AZTH]
     }
 
     return BattlegroundMgr::queueToBg[bgQueueTypeId];
@@ -1095,6 +1091,10 @@ std::unordered_map<int, BattlegroundTypeId> BattlegroundMgr::queueToBg = {
     { BATTLEGROUND_QUEUE_2v2,   BATTLEGROUND_AA },
     { BATTLEGROUND_QUEUE_3v3,   BATTLEGROUND_AA },
     { BATTLEGROUND_QUEUE_5v5,   BATTLEGROUND_AA },
+//[AZTH]
+    { BATTLEGROUND_QUEUE_1v1,   BATTLEGROUND_AA },
+    { BATTLEGROUND_QUEUE_3v3_SOLO,   BATTLEGROUND_AA },
+//[/AZTH]
 };
 
 std::unordered_map<int, Battleground*> BattlegroundMgr::bgtypeToBattleground = {

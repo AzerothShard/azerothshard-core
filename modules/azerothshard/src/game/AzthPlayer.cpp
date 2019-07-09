@@ -470,7 +470,8 @@ bool AzthPlayer::canEquipItem(ItemTemplate const* proto) {
     uint32 calcLevel = sAzthUtils->getCalcReqLevel(proto);
     if (!isTimeWalking(true)
         && proto->ScalingStatDistribution == 0
-        && player->getLevel()+15 < calcLevel) {
+        && player->getLevel()+15 < static_cast<uint8>(calcLevel))
+    {
         ChatHandler(player->GetSession()).PSendSysMessage("Cannot equip this item. Its level is too high");
         return false;
     }

@@ -4,25 +4,28 @@
 #include "CustomRates.h"
 #include "Player.h"
 
-class AzthXPRatePlayerScripts : public PlayerScript {
+class AzthXPRatePlayerScripts : public PlayerScript
+{
 public:
+    AzthXPRatePlayerScripts() : PlayerScript("AzthXPRatePlayerScripts") { }
 
-    AzthXPRatePlayerScripts() : PlayerScript("AzthXPRatePlayerScripts") {
-    }
-
-    void OnDelete(uint64 guid) {
+    void OnDelete(uint64 guid, uint32 /*AccountID*/) override
+    {
         CustomRates::DeleteRateFromDB(guid, CHAR_DEL_INDIVIDUAL_XP_RATE);
     }
 
-    void OnLogin(Player* player) {
+    void OnLogin(Player* player) override
+    {
         float rate = CustomRates::GetXpRateFromDB(player);
 
         // player has custom xp rate set. Load it from DB. Otherwise use default set in AzthPlayer::AzthPlayer
-        if (rate != -1) {
+        if (rate != -1)
+        {
             player->azthPlayer->SetPlayerQuestRate(rate);
 
-            if (sWorld->getBoolConfig(CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SHOW_ON_LOGIN)) {
-                if (rate == 0)
+            if (sWorld->getBoolConfig(CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SHOW_ON_LOGIN))
+            {
+                if (!rate)
                     ChatHandler(player->GetSession()).SendSysMessage("|CFF7BBEF7[Custom Rates]|r: Your quest XP rate was set to 0. You won't gain any XP from quest completation.");
                 else
                     ChatHandler(player->GetSession()).PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Your quest XP rate was set to %.2f.", rate);
@@ -31,6 +34,7 @@ public:
     }
 };
 
-void AddSC_Custom_Rates() {
+void AddSC_Custom_Rates()
+{
     new AzthXPRatePlayerScripts();
 }

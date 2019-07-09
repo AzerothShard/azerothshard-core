@@ -2457,7 +2457,7 @@ public:
             if (!p)
                 return false;
 
-            if (plr->GetTeamId(true) != p->GetTeamId(true))
+            if (player->GetTeamId(true) != p->GetTeamId(true))
                 return false;
         }
 

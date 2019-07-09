@@ -1,5 +1,9 @@
 
+target_link_libraries(game-interface
+  INTERFACE
+    modules-interface)
+
 target_link_libraries(game
-  azth_mod
-)
+  PRIVATE
+    azth_mod)
 

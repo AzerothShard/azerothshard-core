@@ -10,17 +10,14 @@
  *
  **/
 
-
-#include "ScriptPCH.h"
 #include "Teleport.h"
+#include "Player.h"
 
 #define TELE    nsNpcTel::CatDest
 #define PAGE    nsNpcTel::Page
 #define PAGEI   PAGE::Instance
 
-
 nsNpcTel::VCatDest nsNpcTel::TabCatDest;
-
 
 uint32 PAGE::operator [] (Player * const player) const
 {

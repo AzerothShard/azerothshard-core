@@ -21,7 +21,7 @@ private:
 class AzthLang {
     friend class ACE_Singleton<AzthLang, ACE_Null_Mutex>;
 public:
-    UNORDERED_MAP<uint32, AzthLangString*> strings;
+    std::unordered_map<uint32, AzthLangString*> strings;
     explicit AzthLang();
     ~AzthLang();
     
