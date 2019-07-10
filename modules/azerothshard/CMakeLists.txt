@@ -1,7 +1,8 @@
 CU_SET_PATH("CMAKE_AZTH_DIR" "${CMAKE_CURRENT_LIST_DIR}")
 CU_SET_PATH("CMAKE_AZTH_SRC_DIR" "${CMAKE_CURRENT_LIST_DIR}/src/")
 
-CU_ADD_HOOK(AFTER_WORLDSERVER_CMAKE "${CMAKE_AZTH_SRC_DIR}/cmake/after_ws.cmake")
+# Add config file
+AC_ADD_CONFIG_FILE("${CMAKE_AZTH_DIR}/conf/azth_mod.conf.dist")
 
 include("${CMAKE_CURRENT_LIST_DIR}/src/CMakeLists.txt")
 

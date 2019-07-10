@@ -7,4 +7,5 @@ AC_ADD_SCRIPT("${CMAKE_VAS_MOD_SRC_DIR}/VASAutoBalance.h")
 
 AC_ADD_SCRIPT_LOADER("VASAutoBalance" "${CMAKE_VAS_MOD_SRC_DIR}/loader.h")
 
-CU_ADD_HOOK(AFTER_WORLDSERVER_CMAKE "${CMAKE_VAS_MOD_SRC_DIR}/cmake/after_ws_install.cmake")
+# Add config file
+AC_ADD_CONFIG_FILE("${CMAKE_CURRENT_LIST_DIR}/conf/VASAutoBalance.conf.dist")

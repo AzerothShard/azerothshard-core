@@ -3,4 +3,5 @@ CU_SET_PATH("CMAKE_TRANSM_SRC_DIR" "${CMAKE_CURRENT_LIST_DIR}/src/")
 
 include("${CMAKE_TRANSM_SRC_DIR}/CMakeLists.txt")
 
-
+# Add config file
+AC_ADD_CONFIG_FILE("${CMAKE_TRANSM_DIR}/conf/transmog.conf.dist")
