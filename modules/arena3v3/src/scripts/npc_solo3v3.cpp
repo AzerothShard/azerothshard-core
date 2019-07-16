@@ -400,28 +400,7 @@ private:
 	}
 };
 
-class SoloQ3v3World : public WorldScript
-{
-public:
-    SoloQ3v3World() : WorldScript("SoloQ3v3World") { }
-
-    void OnBeforeConfigLoad(bool reload) override
-    {
-        if (!reload) {
-            std::string conf_path = _CONF_DIR;
-            std::string cfg_file = conf_path + "/3v3_soloq.conf";
-            std::string cfg_def_file = cfg_file +".dist";
-
-            sConfigMgr->LoadMore(cfg_def_file.c_str());
-
-            sConfigMgr->LoadMore(cfg_file.c_str());
-        }
-    }
-};
-
-
 void AddSC_npc_solo3v3()
 {
-    new SoloQ3v3World();
 	new npc_solo3v3();
 }
