@@ -1,5 +1,7 @@
 # DuelReset
 
+![DuelReset](https://raw.githubusercontent.com/azerothcore/mod-duel-reset/master/icon.png)
+
 - Latest DuelReset build status with azerothcore: [![Build Status](https://travis-ci.org/azerothcore/mod-duelreset.svg?branch=master)](https://travis-ci.org/azerothcore/mod-duelreset)
 
 This is a module for [AzerothCore](http://www.azerothcore.org) that adds some duel reset features.
@@ -9,8 +11,6 @@ Current features:
 - **Health/mana reset**: when duel starts it sets the health/mana of the player to the MAX, when the duel ends it restores the health/mana values that the player had before the duel
 - **Cooldown reset**: when duel starts it resets the player cooldowns
 
-Upcoming features:
-- **Improved cooldown reset**: when duel starts it resets the player cooldowns, when duel ends it restores the cooldowns that the player had before the duel
 
 ## Requirements
 
