@@ -18,7 +18,7 @@ AzthLangString::~AzthLangString()
 
 AzthLang::AzthLang()
 {
-    strings = UNORDERED_MAP<uint32, AzthLangString*>();
+    strings = std::unordered_map<uint32, AzthLangString*>();
 }
 
 AzthLang::~AzthLang()
@@ -38,7 +38,7 @@ const char * AzthLang::get(uint32 strId,Player const* pl) const {
     if (pl)
         loc = pl->azthPlayer->getCustLang();
 
-    UNORDERED_MAP<uint32, AzthLangString*>::const_iterator itr=strings.find(strId);
+    std::unordered_map<uint32, AzthLangString*>::const_iterator itr=strings.find(strId);
     if ( itr != strings.end() ) {
         switch(loc) {
             case AZTH_LOC_IT:

@@ -169,32 +169,12 @@ void getAreaLevel(Map *map, uint8 areaid, uint8 &min, uint8 &max) {
 
 class VAS_AutoBalance_WorldScript : public WorldScript
 {
-    public:
-    VAS_AutoBalance_WorldScript()
-        : WorldScript("VAS_AutoBalance_WorldScript")
-    {
-    }
+public:
+    VAS_AutoBalance_WorldScript() : WorldScript("VAS_AutoBalance_WorldScript") { }
 
     void OnBeforeConfigLoad(bool reload) override
     {
-        /* from skeleton module */
-        if (!reload) {
-            std::string conf_path = _CONF_DIR;
-            std::string cfg_file = conf_path+"/VASAutoBalance.conf";
-#ifdef WIN32
-                cfg_file = "VASAutoBalance.conf";
-#endif
-            std::string cfg_def_file = cfg_file + ".dist";
-            sConfigMgr->LoadMore(cfg_def_file.c_str());
-
-            sConfigMgr->LoadMore(cfg_file.c_str());
-        }
-
         SetInitialWorldSettings();
-        /* end from skeleton module */
-    }
-    void OnStartup() override
-    {
     }
 
     void SetInitialWorldSettings()

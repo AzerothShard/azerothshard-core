@@ -92,10 +92,10 @@ public:
     }
 };
 
-typedef UNORDERED_MAP<uint32, GuildHouse> GuildHouseMap;
-typedef UNORDERED_MAP<uint32, GH_Item> GH_Add;
-typedef UNORDERED_MAP<uint32, GH_unit*> GuildHouseUnits;
-typedef UNORDERED_MAP<uint32, uint32> GuildGuardID;
+typedef std::unordered_map<uint32, GuildHouse> GuildHouseMap;
+typedef std::unordered_map<uint32, GH_Item> GH_Add;
+typedef std::unordered_map<uint32, GH_unit*> GuildHouseUnits;
+typedef std::unordered_map<uint32, uint32> GuildGuardID;
 
 class GuildHouseObject
 {    

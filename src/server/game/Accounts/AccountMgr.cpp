@@ -21,6 +21,9 @@ namespace AccountMgr
         if (utf8length(username) > MAX_ACCOUNT_STR)
             return AOR_NAME_TOO_LONG;                           // username's too long
 
+        if (utf8length(password) > MAX_PASS_STR)
+            return AOR_PASS_TOO_LONG;                           // password's too long
+
         normalizeString(username);
         normalizeString(password);
 
@@ -72,7 +75,7 @@ namespace AccountMgr
                 if (Player* p = ObjectAccessor::FindPlayer(guid))
                 {
                     WorldSession* s = p->GetSession();
-                    s->KickPlayer();                            // mark session to remove at next session list update
+                    s->KickPlayer("Delete account");            // mark session to remove at next session list update
                     s->LogoutPlayer(false);                     // logout player without waiting next session list update
                 }
 
@@ -130,8 +133,8 @@ namespace AccountMgr
         if (utf8length(newUsername) > MAX_ACCOUNT_STR)
             return AOR_NAME_TOO_LONG;
 
-        if (utf8length(newPassword) > MAX_ACCOUNT_STR)
-            return AOR_PASS_TOO_LONG;
+        if (utf8length(newPassword) > MAX_PASS_STR)
+            return AOR_PASS_TOO_LONG;                           // password's too long
 
         normalizeString(newUsername);
         normalizeString(newPassword);
@@ -157,10 +160,10 @@ namespace AccountMgr
             return AOR_NAME_NOT_EXIST;                          // account doesn't exist
         }
 
-        if (utf8length(newPassword) > MAX_ACCOUNT_STR)
+        if (utf8length(newPassword) > MAX_PASS_STR)
         {
             sScriptMgr->OnFailedEmailChange(accountId);
-            return AOR_PASS_TOO_LONG;
+            return AOR_PASS_TOO_LONG;                           // password's too long
         }
 
         normalizeString(username);

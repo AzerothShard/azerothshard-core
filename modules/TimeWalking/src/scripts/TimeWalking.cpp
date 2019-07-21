@@ -843,7 +843,8 @@ class global_timewalking : public GlobalScript {
             if (!player->GetMap()->IsDungeon() && !player->GetMap()->IsRaid())
                 return;
 
-            if (item->mincountOrRef >= 0) {
+            if (item->mincount >= 0)
+            {
                 ItemTemplate const* i = sObjectMgr->GetItemTemplate (item->itemid);
 
                 if (i && i->Quality < ITEM_QUALITY_RARE)

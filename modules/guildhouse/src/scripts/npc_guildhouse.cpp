@@ -29,10 +29,10 @@
  *
  * edited by sceicco
  **/
+
 #include "GuildHouse.h"
 #include "ObjectAccessor.h"
 #include "MapManager.h"
-#include "ScriptPCH.h"
 #include "ObjectMgr.h"
 #include "GuildMgr.h"
 #include "ScriptMgr.h"
@@ -40,9 +40,9 @@
 #include "Guild.h"
 #include "Teleport.h"
 #include "AccountMgr.h"
+
 //[AZTH]
 #include "AzthUtils.h"
-
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
 

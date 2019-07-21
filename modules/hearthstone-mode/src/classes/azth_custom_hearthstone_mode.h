@@ -91,17 +91,17 @@ class HearthstoneMode
         int returnData0(AchievementCriteriaEntry const* criteria);
         int returnData1(AchievementCriteriaEntry const* criteria);
         std::vector<HearthstoneAchievement> hsAchievementTable;
-        UNORDERED_MAP<uint32, HearthstoneQuest> allQuests;
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsPveQuests;
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsPvpQuests;
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsWeeklyClassicQuests;
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsWeeklyTBCQuests;
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsWeeklyWotlkQuests;
+        std::unordered_map<uint32, HearthstoneQuest> allQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsPveQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsPvpQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsWeeklyClassicQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsWeeklyTBCQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsWeeklyWotlkQuests;
         
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsTwWeeklyRandomQuests;
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsTwWeeklyQuests;
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsTwDailyQuests;
-        UNORDERED_MAP<uint32, HearthstoneQuest> hsTwDailyRandomQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsTwWeeklyRandomQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsTwWeeklyQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsTwDailyQuests;
+        std::unordered_map<uint32, HearthstoneQuest> hsTwDailyRandomQuests;
         int getQuality();
         std::vector<int> items[8];
         bool isInArray(int val);

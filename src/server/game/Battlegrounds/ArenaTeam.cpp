@@ -326,6 +326,19 @@ bool ArenaTeam::LoadMembersFromDB(QueryResult result)
     return true;
 }
 
+bool ArenaTeam::SetName(std::string const& name)
+{
+    if (TeamName == name || name.empty() || name.length() > 24 || sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name))
+        return false;
+
+    TeamName = name;
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ARENA_TEAM_NAME);
+    stmt->setString(0, TeamName);
+    stmt->setUInt32(1, GetId());
+    CharacterDatabase.Execute(stmt);
+    return true;
+}
+
 void ArenaTeam::SetCaptain(uint64 guid)
 {
     // Disable remove/promote buttons
@@ -396,6 +409,29 @@ void ArenaTeam::Disband(WorldSession* session)
     {
         BroadcastEvent(ERR_ARENA_TEAM_DISBANDED_S, 0, 2, session->GetPlayerName(), GetName(), "");
     }
+
+    // Update database
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARENA_TEAM);
+    stmt->setUInt32(0, TeamId);
+    trans->Append(stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARENA_TEAM_MEMBERS);
+    stmt->setUInt32(0, TeamId);
+    trans->Append(stmt);
+
+    CharacterDatabase.CommitTransaction(trans);
+
+    // Remove arena team from ObjectMgr
+    sArenaTeamMgr->RemoveArenaTeam(TeamId);
+}
+
+void ArenaTeam::Disband()
+{
+    // Remove all members from arena team
+    while (!Members.empty())
+        DelMember(Members.front().Guid, false);
 
     // Update database
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -742,7 +778,7 @@ int32 ArenaTeam::GetRatingMod(uint32 ownRating, uint32 opponentRating, bool won 
         if (ownRating < 1300)
         {
             float win_rating_modifier1 = sWorld->getFloatConfig(CONFIG_ARENA_WIN_RATING_MODIFIER_1);
-            
+
             if (ownRating < 1000)
                 mod =  win_rating_modifier1 * (1.0f - chance);
             else
@@ -1019,7 +1055,7 @@ void ArenaTeam::saveSoloDB() {
         ArenaTeam* plrArenaTeam = NULL;
 
         // Find real arena team for player
-        for (UNORDERED_MAP<uint32, ArenaTeam*>::iterator itrMgr = sArenaTeamMgr->GetArenaTeamMapBegin(); itrMgr != sArenaTeamMgr->GetArenaTeamMapEnd(); itrMgr++)
+        for (std::unordered_map<uint32, ArenaTeam*>::iterator itrMgr = sArenaTeamMgr->GetArenaTeamMapBegin(); itrMgr != sArenaTeamMgr->GetArenaTeamMapEnd(); itrMgr++)
         {
             if (itrMgr->first < 0xFFF00000 && itrMgr->second->CaptainGuid == itr->Guid && itrMgr->second->Type == ARENA_TEAM_SOLO_3v3)
             {

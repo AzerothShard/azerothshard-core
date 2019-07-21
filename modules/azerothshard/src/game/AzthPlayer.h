@@ -4,9 +4,9 @@
 #include "AzthSmartStone.h"
 #include "Config.h"
 #include "Define.h"
-#include <UnorderedMap.h>
 #include "CustomRates.h"
 #include "AzthSharedDefines.h"
+#include <unordered_map>
 
 struct SmartStoneCommand;
 
@@ -55,15 +55,15 @@ public:
     uint32 specialLevel;
   };
 
-  typedef UNORDERED_MAP<uint16 /*achiId*/, AzthAchiData /*data*/>
+  typedef std::unordered_map<uint16 /*achiId*/, AzthAchiData /*data*/>
       CompletedAchievementMap;
   CompletedAchievementMap m_completed_achievement_map;
 
-  typedef UNORDERED_MAP<uint16 /*critId*/, AzthAchiData /*data*/>
+  typedef std::unordered_map<uint16 /*critId*/, AzthAchiData /*data*/>
       CompletedCriteriaMap;
   CompletedCriteriaMap m_completed_criteria_map;
   
-  typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*guid*/> ItemInBankMap;
+  typedef std::unordered_map<uint32 /*entry*/, uint32 /*guid*/> ItemInBankMap;
 
   uint32 instanceID;
 

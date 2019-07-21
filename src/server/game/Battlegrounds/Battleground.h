@@ -404,7 +404,7 @@ class Battleground
         void SetMaxPlayersPerTeam(uint32 MaxPlayers) { m_MaxPlayersPerTeam = MaxPlayers; }
         void SetMinPlayersPerTeam(uint32 MinPlayers) { m_MinPlayersPerTeam = MinPlayers; }
 
-        void DecreaseInvitedCount(TeamId teamId)    { ASSERT(m_BgInvitedPlayers[teamId] > 0); --m_BgInvitedPlayers[teamId]; }
+        void DecreaseInvitedCount(TeamId teamId)    { if (m_BgInvitedPlayers[teamId]) --m_BgInvitedPlayers[teamId]; }
         void IncreaseInvitedCount(TeamId teamId)    { ++m_BgInvitedPlayers[teamId]; }
         uint32 GetInvitedCount(TeamId teamId) const { return m_BgInvitedPlayers[teamId]; }
 
@@ -731,7 +731,7 @@ class Battleground
         uint32 m_BgInvitedPlayers[BG_TEAMS_COUNT];
 
         // [AZTH] Crossfaction Battleground
-        UNORDERED_MAP<uint64, bool> m_hasPlayerJoinedPremade;
+        std::unordered_map<uint64, bool> m_hasPlayerJoinedPremade;
         uint32 m_premadeAssigned[BG_TEAMS_COUNT];
         // [AZTH]
 

@@ -1,7 +1,5 @@
-#include "ScriptPCH.h"
 #include "AzthLanguageStrings.h"
 #include "AzthPlayer.h"
-
 
 #define MIN_RATING 1200
 #define AP_REQ 1000

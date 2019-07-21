@@ -250,12 +250,12 @@ class npc_han_al : public CreatureScript
 public:
     npc_han_al() : CreatureScript("npc_han_al") { }
     
-    uint32 _weeklyRandom(UNORDERED_MAP<uint32, HearthstoneQuest> &list) {
+    uint32 _weeklyRandom(std::unordered_map<uint32, HearthstoneQuest> &list) {
             time_t t = time(NULL);
 
             uint32 index;
             uint64 seed;
-            UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
+            std::unordered_map<uint32, HearthstoneQuest>::iterator _tmpItr;
         
             int firstTuesday = 446400; // Tuesday 1970/01/06 at 04:00
             seed = (((t - firstTuesday )/60/60/24))/7;
@@ -269,13 +269,13 @@ public:
             return _tmpItr->second.id;
     }
     
-    uint32 _dailyRandom(UNORDERED_MAP<uint32, HearthstoneQuest> &list, Player *player = NULL) {
+    uint32 _dailyRandom(std::unordered_map<uint32, HearthstoneQuest> &list, Player *player = NULL) {
             time_t t = time(NULL);
             tm *lt = localtime(&t);
 
             uint32 index;
             uint64 seed;
-            UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
+            std::unordered_map<uint32, HearthstoneQuest>::iterator _tmpItr;
 
             seed = lt->tm_mday + lt->tm_mon + 1 + lt->tm_year + 1900 + (player ? player->GetGUID() : 0);
             srand(seed);
@@ -320,7 +320,7 @@ public:
         bool isEmpty=true;
         uint32 pveId=0, pvpId=0, weeklyClassicId=0, weeklyTBCId=0, weeklyWotlkId=0, weeklyRandomTwId=0, dailyRandomTwId=0;
         std::list<uint32> dailyTwIds, weeklyTwIds;
-        UNORDERED_MAP<uint32, HearthstoneQuest>::iterator _tmpItr;
+        std::unordered_map<uint32, HearthstoneQuest>::iterator _tmpItr;
 
         // PVP
         if (sHearthstoneMode->hsPvpQuests.size() > 0) {
@@ -358,7 +358,7 @@ public:
         Quest const * questWotlkWeekly = sObjectMgr->GetQuestTemplate(weeklyWotlkId);
         
         // WEEKLY TW
-        for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwWeeklyQuests.begin(); it != sHearthstoneMode->hsTwWeeklyQuests.end(); it++ )
+        for (std::unordered_map<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwWeeklyQuests.begin(); it != sHearthstoneMode->hsTwWeeklyQuests.end(); it++ )
         {
             if (t >= it->second.startTime  &&  t <= it->second.endTime) {
                 weeklyTwIds.push_back(it->second.id);
@@ -366,7 +366,7 @@ public:
         }
         
         // DAILY TW
-        for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwDailyQuests.begin(); it != sHearthstoneMode->hsTwDailyQuests.end(); it++ )
+        for (std::unordered_map<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwDailyQuests.begin(); it != sHearthstoneMode->hsTwDailyQuests.end(); it++ )
         {
             if (t >= it->second.startTime  &&  t <= it->second.endTime) {
                 dailyTwIds.push_back(it->second.id);
@@ -374,8 +374,8 @@ public:
         }
         
         // DAILY RANDOM TW
-        UNORDERED_MAP<uint32, HearthstoneQuest> _dailyRandomTwList;
-        for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwDailyRandomQuests.begin(); it != sHearthstoneMode->hsTwDailyRandomQuests.end(); it++ )
+        std::unordered_map<uint32, HearthstoneQuest> _dailyRandomTwList;
+        for (std::unordered_map<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwDailyRandomQuests.begin(); it != sHearthstoneMode->hsTwDailyRandomQuests.end(); it++ )
         {
             if (t >= it->second.startTime  &&  t <= it->second.endTime) {
                 _dailyRandomTwList[it->second.id] = it->second;
@@ -389,8 +389,8 @@ public:
         Quest const * questDailyRandomTw = sObjectMgr->GetQuestTemplate(dailyRandomTwId);
         
         // WEEKLY RANDOM TW
-        UNORDERED_MAP<uint32, HearthstoneQuest> _weeklyRandomTwList;
-        for (UNORDERED_MAP<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwWeeklyRandomQuests.begin(); it != sHearthstoneMode->hsTwWeeklyRandomQuests.end(); it++ )
+        std::unordered_map<uint32, HearthstoneQuest> _weeklyRandomTwList;
+        for (std::unordered_map<uint32, HearthstoneQuest>::iterator it = sHearthstoneMode->hsTwWeeklyRandomQuests.begin(); it != sHearthstoneMode->hsTwWeeklyRandomQuests.end(); it++ )
         {
             if (t >= it->second.startTime  &&  t <= it->second.endTime) {
                 _weeklyRandomTwList[it->second.id] = it->second;
@@ -1059,7 +1059,7 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
 
 HearthstoneQuest* HearthstoneMode::getHeartstoneQuestInfo(uint64 id)
 {
-    UNORDERED_MAP<uint32,HearthstoneQuest>::iterator itr = allQuests.find(id);
+    std::unordered_map<uint32,HearthstoneQuest>::iterator itr = allQuests.find(id);
     if (itr != allQuests.end())
         return &itr->second;
 

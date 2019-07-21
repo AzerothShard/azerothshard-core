@@ -4312,16 +4312,18 @@ void SpellMgr::LoadDbcDataCorrections()
             break;
         // Wintergrasp spells
         case 51422: // Cannon (Tower Cannon)
-            spellInfo->EffectRadiusIndex[EFFECT_0] = 13; // 10yd
+            spellInfo->EffectRadiusIndex[EFFECT_0] = 20; // Radius: 20 yards
             break;
         case 57610: // Cannon (Siege Turret)
-            spellInfo->EffectRadiusIndex[EFFECT_0] = 13; // 10yd
+            spellInfo->EffectRadiusIndex[EFFECT_0] = 20; // Radius: 20 yards
+            spellInfo->EffectRadiusIndex[EFFECT_1] = 10; // Radius: 10 yards
             break;
         case 50999: // Boulder (Demolisher)
-            spellInfo->EffectRadiusIndex[EFFECT_0] = 13; // 10yd
+            spellInfo->EffectRadiusIndex[EFFECT_0] = 20; // Radius: 20 yards
+            spellInfo->EffectRadiusIndex[EFFECT_1] = 3; // Radius: 3 yards
             break;
         case 50990: // Flame Breath (Catapult)
-            spellInfo->EffectRadiusIndex[EFFECT_0] = 19; // 18yd
+            spellInfo->EffectRadiusIndex[EFFECT_0] = 30; // Radius: 30 yards
             break;
 
         /////////////////////////////////
@@ -4481,7 +4483,17 @@ void SpellMgr::LoadDbcDataCorrections()
             spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CHANGE_MAP;
             break;
 
-
+        /*
+            Raid: Battle for Mount Hyjal
+            Boss: Archimonde
+        */
+        case 31984: // Spell doesn't need to ignore invulnerabilities
+        case 35354:
+            spellInfo->Attributes = SPELL_ATTR0_ABILITY;
+            break;
+        case 32111: // We only need the animation, no damage
+            spellInfo->CastingTimeIndex = 0;
+            break;
 
         //////////////////////////////////////////
         ////////// Vault of Archavon (VOA)
@@ -6050,6 +6062,13 @@ void SpellMgr::LoadDbcDataCorrections()
         //Crushing the Crown
         case 71024:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DYNOBJ_NONE;
+            break;
+        // Battle for the Undercity
+        case 59892: // Cyclone fall
+            spellInfo->Effect[EFFECT_0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
+            spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_10_YARDS;
+            spellInfo->AttributesEx &= ~SPELL_ATTR0_CANT_CANCEL;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
             break;
 
         // ///////////////////////////////////////////

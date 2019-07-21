@@ -17,6 +17,7 @@
 #include "SpellInfo.h"
 #include "SpellScript.h"
 #include "GossipDef.h"
+#include "ScriptedGossip.h"
 #include "CreatureAI.h"
 #include "Player.h"
 #include "WorldPacket.h"
@@ -60,6 +61,7 @@ template class ScriptRegistry<MovementHandlerScript>;
 template class ScriptRegistry<BGScript>;
 template class ScriptRegistry<SpellSC>;
 template class ScriptRegistry<AccountScript>;
+template class ScriptRegistry<GameEventScript>;
 
 #include "ScriptMgrMacros.h"
 
@@ -213,6 +215,7 @@ void ScriptMgr::Unload()
     SCR_CLEAR(ModuleScript);
     SCR_CLEAR(BGScript);
     SCR_CLEAR(SpellSC);
+    SCR_CLEAR(GameEventScript);
 
     #undef SCR_CLEAR
 }
@@ -763,7 +766,7 @@ bool ScriptMgr::OnQuestAccept(Player* player, Item* item, Quest const* quest)
 #endif
 
     GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->OnQuestAccept(player, item, quest);
 }
 
@@ -855,7 +858,7 @@ bool ScriptMgr::OnGossipHello(Player* player, Creature* creature)
         return true;
 #endif
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->OnGossipHello(player, creature);
 }
 
@@ -891,7 +894,7 @@ bool ScriptMgr::OnQuestAccept(Player* player, Creature* creature, Quest const* q
     ASSERT(quest);
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->OnQuestAccept(player, creature, quest);
 }
 
@@ -902,8 +905,19 @@ bool ScriptMgr::OnQuestSelect(Player* player, Creature* creature, Quest const* q
     ASSERT(quest);
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->OnQuestSelect(player, creature, quest);
+}
+
+bool ScriptMgr::OnQuestComplete(Player* player, Creature* creature, Quest const* quest)
+{
+    ASSERT(player);
+    ASSERT(creature);
+    ASSERT(quest);
+
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
+    ClearGossipMenuFor(player);
+    return tmpscript->OnQuestComplete(player, creature, quest);
 }
 
 bool ScriptMgr::OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt)
@@ -914,12 +928,12 @@ bool ScriptMgr::OnQuestReward(Player* player, Creature* creature, Quest const* q
 #ifdef ELUNA
     if (sEluna->OnQuestReward(player, creature, quest, opt))
     {
-        player->PlayerTalkClass->ClearMenus();
+        ClearGossipMenuFor(player);
         return false;
     }
 #endif
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->OnQuestReward(player, creature, quest, opt);
 }
 
@@ -929,7 +943,7 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
     ASSERT(creature);
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->GetDialogStatus(player, creature);
 }
 
@@ -967,7 +981,7 @@ bool ScriptMgr::OnGossipHello(Player* player, GameObject* go)
         return true;
 #endif
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->OnGossipHello(player, go);
 }
 
@@ -1003,7 +1017,7 @@ bool ScriptMgr::OnQuestAccept(Player* player, GameObject* go, Quest const* quest
     ASSERT(quest);
 
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->OnQuestAccept(player, go, quest);
 }
 
@@ -1021,7 +1035,7 @@ bool ScriptMgr::OnQuestReward(Player* player, GameObject* go, Quest const* quest
         return false;
 #endif
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->OnQuestReward(player, go, quest, opt);
 }
 
@@ -1031,7 +1045,7 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
     ASSERT(go);
 
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
-    player->PlayerTalkClass->ClearMenus();
+    ClearGossipMenuFor(player);
     return tmpscript->GetDialogStatus(player, go);
 }
 
@@ -1451,6 +1465,21 @@ void ScriptMgr::OnPlayerReputationChange(Player* player, uint32 factionID, int32
     sEluna->OnReputationChange(player, factionID, standing, incremental);
 #endif
     FOREACH_SCRIPT(PlayerScript)->OnReputationChange(player, factionID, standing, incremental);
+}
+
+void ScriptMgr::OnPlayerReputationRankChange(Player* player, uint32 factionID, ReputationRank newRank, ReputationRank oldRank, bool increased)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnReputationRankChange(player, factionID, newRank, oldRank, increased);
+}
+
+void ScriptMgr::OnPlayerLearnSpell(Player* player, uint32 spellID)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnLearnSpell(player, spellID);
+}
+
+void ScriptMgr::OnPlayerForgotSpell(Player* player, uint32 spellID)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnForgotSpell(player, spellID);
 }
 
 void ScriptMgr::OnPlayerDuelRequest(Player* target, Player* challenger)
@@ -2045,10 +2074,36 @@ void ScriptMgr::OnBattlegroundAddPlayer(Battleground* bg, Player* player)
     FOREACH_SCRIPT(BGScript)->OnBattlegroundAddPlayer(bg, player);
 }
 
+void ScriptMgr::OnBattlegroundBeforeAddPlayer(Battleground* bg, Player* player)
+{
+    FOREACH_SCRIPT(BGScript)->OnBattlegroundBeforeAddPlayer(bg, player);
+}
+
+void ScriptMgr::OnBattlegroundRemovePlayerAtLeave(Battleground* bg, Player* player)
+{
+    FOREACH_SCRIPT(BGScript)->OnBattlegroundRemovePlayerAtLeave(bg, player);
+}
+
 // SpellSC
 void ScriptMgr::OnCalcMaxDuration(Aura const* aura, int32& maxDuration)
 {
     FOREACH_SCRIPT(SpellSC)->OnCalcMaxDuration(aura, maxDuration);
+}
+
+void ScriptMgr::OnGameEventStart(uint16 EventID)
+{
+#ifdef ELUNA
+    sEluna->OnGameEventStart(EventID);
+#endif
+    FOREACH_SCRIPT(GameEventScript)->OnStart(EventID);
+}
+
+void ScriptMgr::OnGameEventStop(uint16 EventID)
+{
+#ifdef ELUNA
+    sEluna->OnGameEventStop(EventID);
+#endif
+    FOREACH_SCRIPT(GameEventScript)->OnStop(EventID);
 }
 
 void ScriptMgr::OnBeforeUpdatingPersonalRating(int32 &mod, uint32 type)
@@ -2253,5 +2308,11 @@ ModuleScript::ModuleScript(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<ModuleScript>::AddScript(this);
+}
+
+GameEventScript::GameEventScript(const char* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<GameEventScript>::AddScript(this);
 }
 
