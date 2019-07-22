@@ -17,8 +17,7 @@
 #include "MapManager.h"
 #include "Map.h"
 #include "Group.h"
-
-#include "Apps/Apps.h"
+#include "Apps.h"
 
 class Group;
 

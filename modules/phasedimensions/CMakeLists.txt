@@ -1,5 +1,9 @@
-CU_SET_PATH("CMAKE_PHASEDIMENSIONS_DIR" "${CMAKE_CURRENT_LIST_DIR}")
+# 
+#
+#
 
-AC_ADD_SCRIPT("${CMAKE_PHASEDIMENSIONS_DIR}/src/scripts/dimensions.cpp")
+# Add SC
+AC_ADD_SCRIPTS("${CMAKE_CURRENT_LIST_DIR}/src/scripts/")
 
-AC_ADD_SCRIPT_LOADER("PhaseDimensions" "${CMAKE_PHASEDIMENSIONS_DIR}/src/scripts/loader.h")
+# Add SC loader
+AC_ADD_SCRIPT_LOADER("PhaseDimensions" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")

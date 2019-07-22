@@ -1,7 +1,9 @@
-CU_SET_PATH("CMAKE_MOD_BGITEMLVL" "${CMAKE_CURRENT_LIST_DIR}")
+# 
+#
+#
 
-AC_ADD_SCRIPT("${CMAKE_MOD_BGITEMLVL}/src/BGItemLevel.cpp")
-AC_ADD_SCRIPT_LOADER("BGItemLevel" "${CMAKE_MOD_BGITEMLVL}/src/loader.h")
+# Add SC
+AC_ADD_SCRIPTS("${CMAKE_CURRENT_LIST_DIR}/src/scripts/")
 
-
-CU_ADD_HOOK(BEFORE_GAME_LIBRARY "${CMAKE_MOD_BGITEMLVL}/src/cmake/before_game.cmake")
+# Add SC loader
+AC_ADD_SCRIPT_LOADER("BGItemLevel" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")
