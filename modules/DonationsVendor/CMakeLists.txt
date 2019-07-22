@@ -1,5 +1,9 @@
-CU_SET_PATH("CMAKE_DONATIONVEND_DIR" "${CMAKE_CURRENT_LIST_DIR}")
+# 
+#
+#
 
-AC_ADD_SCRIPT("${CMAKE_DONATIONVEND_DIR}/src/scripts/DonationsVendor.cpp")
-AC_ADD_SCRIPT("${CMAKE_DONATIONVEND_DIR}/src/scripts/ItemToSell.cpp")
-AC_ADD_SCRIPT_LOADER("DonationsVendor" "${CMAKE_DONATIONVEND_DIR}/src/scripts/loader.h")
+# Add SC
+AC_ADD_SCRIPTS("${CMAKE_CURRENT_LIST_DIR}/src/scripts/")
+
+# Add SC loader
+AC_ADD_SCRIPT_LOADER("DonationsVendor" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")

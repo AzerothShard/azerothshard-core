@@ -1,3 +1,9 @@
-AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/Jukebox.cpp")
-AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/music.cpp")
+# 
+#
+#
+
+# Add SC
+AC_ADD_SCRIPTS("${CMAKE_CURRENT_LIST_DIR}/src/scripts/")
+
+# Add SC loader
 AC_ADD_SCRIPT_LOADER("Jukebox" "${CMAKE_CURRENT_LIST_DIR}/src/loader.h")

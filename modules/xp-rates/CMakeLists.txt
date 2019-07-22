@@ -1,6 +1,9 @@
-CU_SET_PATH("CMAKE_MOD_XP_RATES_DIR" "${CMAKE_CURRENT_LIST_DIR}")
+# 
+#
+#
 
-AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/scripts/AzthRateScript.cpp")
-AC_ADD_SCRIPT_LOADER("XpRates" "${CMAKE_CURRENT_LIST_DIR}/src/scripts/xp_rates_loader.h")
+# Add SC
+AC_ADD_SCRIPTS("${CMAKE_CURRENT_LIST_DIR}/src/scripts/")
 
-CU_ADD_HOOK(BEFORE_GAME_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/src/cmake/before_game.cmake")
+# Add SC loader
+AC_ADD_SCRIPT_LOADER("XpRates" "${CMAKE_CURRENT_LIST_DIR}/src/xp_rates_loader.h")

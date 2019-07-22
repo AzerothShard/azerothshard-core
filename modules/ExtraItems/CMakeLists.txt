@@ -1,4 +1,9 @@
-CU_SET_PATH("CMAKE_MOD_EXTRAITEMS_DIR" "${CMAKE_CURRENT_LIST_DIR}")
+# 
+#
+#
 
-AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/scripts/ExtraItems.cpp")
-AC_ADD_SCRIPT_LOADER("AzthExtraItems" "${CMAKE_CURRENT_LIST_DIR}/src/scripts/extraitems_loader.h")
+# Add SC
+AC_ADD_SCRIPTS("${CMAKE_CURRENT_LIST_DIR}/src/scripts/")
+
+# Add SC loader
+AC_ADD_SCRIPT_LOADER("AzthExtraItems" "${CMAKE_CURRENT_LIST_DIR}/src/extraitems_loader.h")
