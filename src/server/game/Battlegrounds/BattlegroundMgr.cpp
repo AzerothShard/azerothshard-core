@@ -109,7 +109,6 @@ void BattlegroundMgr::Update(uint32 diff)
     if (m_NextPeriodicQueueUpdateTime < diff)
     {
         // for rated arenas
-        for (uint32 qtype = BATTLEGROUND_QUEUE_2v2; qtype <= MAX_BATTLEGROUND_QUEUE_TYPES; ++qtype)
         for (uint32 qtype = BATTLEGROUND_QUEUE_2v2; qtype < MAX_BATTLEGROUND_QUEUE_TYPES; ++qtype)
             for (uint32 bracket = BG_BRACKET_ID_FIRST; bracket < MAX_BATTLEGROUND_BRACKETS; ++bracket)
                 m_BattlegroundQueues[qtype].BattlegroundQueueUpdate(BattlegroundBracketId(bracket), 0x03, true, 0); // pussywizard: 0 for rated means looking for opponents for every team
