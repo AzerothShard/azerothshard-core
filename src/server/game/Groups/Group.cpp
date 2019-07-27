@@ -29,9 +29,6 @@
 #include "SharedDefines.h"
 #include "MapManager.h"
 #include "UpdateFieldFlags.h"
-// [AZTH]
-#include "AzthGroupMgr.h"
-#include "ArenaSeason.h"
 
 Roll::Roll(uint64 _guid, LootItem const& li) : itemGUID(_guid), itemid(li.itemid),
 itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix), itemCount(li.count),
@@ -63,13 +60,13 @@ _difficultyChangePreventionType(DIFFICULTY_PREVENTION_CHANGE_NONE)
     for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
         m_targetIcons[i] = 0;
 
-    // [AZTH]
-    azthGroupMgr = new AzthGroupMgr(this);
-    // [/AZTH]
+    sScriptMgr->OnConstructGroup(this);
 }
 
 Group::~Group()
 {
+    sScriptMgr->OnDestructGroup(this);
+
     if (m_bgGroup)
     {
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
@@ -90,8 +87,6 @@ Group::~Group()
 
     // Sub group counters clean up
     delete[] m_subGroupsCounts;
-    //[AZTH]
-    delete azthGroupMgr;
 }
 
 bool Group::Create(Player* leader)
@@ -1813,7 +1808,7 @@ void Group::UpdateLooterGuid(WorldObject* pLootedObject, bool ifneed)
     }
 }
 
-GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* bgTemplate, BattlegroundQueueTypeId  /*bgQueueTypeId*/, uint32 MinPlayerCount, uint32 /*MaxPlayerCount*/, bool isRated, uint32 arenaSlot)
+GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* bgTemplate, BattlegroundQueueTypeId /*bgQueueTypeId*/, uint32 MinPlayerCount, uint32 /*MaxPlayerCount*/, bool isRated, uint32 arenaSlot)
 {
     // check if this group is LFG group
     if (isLFGGroup())
@@ -1844,14 +1839,12 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next(), ++memberscount)
     {
         Player* member = itr->GetSource();
-        
-        //[AZTH]
-        if (!member->azthPlayer->canJoinQueue(bgTemplate->isArena() ? AZTH_QUEUE_ARENA : AZTH_QUEUE_BG))
-            return ERR_BATTLEGROUND_JOIN_FAILED;
-        //[/AZTH]
 
         // don't let join with offline members
         if (!member)
+            return ERR_BATTLEGROUND_JOIN_FAILED;
+
+        if (!sScriptMgr->CanGroupJoinBattlegroundQueue(this, member, bgTemplate, MinPlayerCount, isRated, arenaSlot))
             return ERR_BATTLEGROUND_JOIN_FAILED;
 
         // don't allow cross-faction groups to join queue

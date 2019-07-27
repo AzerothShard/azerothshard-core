@@ -18,10 +18,6 @@
 #include <map>
 #include <unordered_map>
 
-//[AZTH]
-#include "AzthInstanceMgr.h"
-class AzthInstanceMgr;
-
 struct InstanceTemplate;
 struct MapEntry;
 class Player;
@@ -84,9 +80,6 @@ class InstanceSave
 
         typedef std::list<uint32> PlayerListType;
 
-        // [AZTH]
-        AzthInstanceMgr* azthInstMgr;
-        // [/AZTH]
     private:
 
         PlayerListType m_playerList;

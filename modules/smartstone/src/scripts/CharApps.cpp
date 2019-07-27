@@ -1,17 +1,18 @@
 #include "Apps.h"
 #include "SpellAuras.h"
+#include "AZTH.h"
 
 void SmartStoneApps::changeExp(Player *player, const char* code) {
     if (isFloatNumber(code)) {
         float exp = atof(code);
-        player->azthPlayer->AzthSelfChangeXp(exp);
+        sAZTH->GetAZTHPlayer(player)->AzthSelfChangeXp(exp);
     } else {
         ChatHandler(player->GetSession()).PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Invalid rate specified!");
     }
 }
 
 void SmartStoneApps::maxSkill(Player *player) {
-    player->azthPlayer->AzthMaxPlayerSkill();   
+    sAZTH->GetAZTHPlayer(player)->AzthMaxPlayerSkill();   
 }
 
 void SmartStoneApps::changeRace(Player *player) {

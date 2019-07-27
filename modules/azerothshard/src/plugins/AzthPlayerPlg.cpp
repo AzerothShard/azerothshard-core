@@ -12,6 +12,7 @@
 #include "AzthGroupMgr.h"
 #include "AzthPlayer.h"
 #include "azth_custom_hearthstone_mode.h"
+#include "AZTH.h"
 
 class AzthPlayerPlg : public PlayerScript{
 public:
@@ -23,9 +24,10 @@ public:
         //                                                    0
         QueryResult res = LoginDatabase.PQuery("SELECT custom_lang FROM azth_account_info WHERE id = '%d';", accId);
 
-        if (res != nullptr && res->GetRowCount() > 0) {
+        if (res != nullptr && res->GetRowCount() > 0) 
+        {
             Field* info = res->Fetch();
-            pl->azthPlayer->setCustLang(AzthCustomLangs(info[0].GetUInt8()));
+            sAZTH->GetAZTHPlayer(pl)->setCustLang(AzthCustomLangs(info[0].GetUInt8()));
         }
         
         
@@ -47,7 +49,7 @@ public:
 
                 //aggiungere check da altra tabella per controllare se lo possedeva
 
-                pl->azthPlayer->AddBankItem(itemEntry, itemGUID);
+                sAZTH->GetAZTHPlayer(pl)->AddBankItem(itemEntry, itemGUID);
 
             } while (itemInBankQuery->NextRow());
 
@@ -62,10 +64,13 @@ public:
     
     void OnLevelChanged(Player* player, uint8 oldLevel) override
     {
-        if (oldLevel == 9 && !player->azthPlayer->isTimeWalking())
-        {
-            sWorld->SendGameMail(player, "Well done!", "You reached level 10, a small present for you by AzerothShard!", 10 * GOLD);
-        }
+        if (!player || oldLevel != 9)
+            return;
+
+        if (sAZTH->GetAZTHPlayer(player)->isTimeWalking())
+            return;
+        
+        sAZTH->SendGameMail(player, "Well done!", "You reached level 10, a small present for you by AzerothShard!", 10 * GOLD);
     }
 
     // logger for custom extended costs

@@ -10,6 +10,9 @@
 #include "World.h"
 #include "DBCStores.h"
 
+// AZTH
+#include "AZTH.h"
+
 GroupMgr::GroupMgr()
 {
     _nextGroupId = 0;
@@ -121,8 +124,8 @@ void GroupMgr::LoadGroups()
                 RegisterGroupId(group->GetLowGUID());
 
                 //[AZTH]
-                group->azthGroupMgr->levelMaxGroup = fields[19].GetUInt32();
-                group->azthGroupMgr->groupSize = fields[20].GetUInt32();
+                sAZTH->GetAZTHGroup(group)->levelMaxGroup = fields[19].GetUInt32();
+                sAZTH->GetAZTHGroup(group)->groupSize = fields[20].GetUInt32();
                 //[/AZTH]
 
                 ++count;

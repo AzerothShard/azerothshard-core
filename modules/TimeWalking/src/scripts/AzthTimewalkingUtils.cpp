@@ -2,6 +2,7 @@
 #include "AzthLevelStat.h"
 #include "Pet.h"
 #include "Spell.h"
+#include "AZTH.h"
 
 class Spell;
 
@@ -109,18 +110,17 @@ bool AzthUtils::isEligibleForBonusByArea(Player const* player) {
     WorldLocation pos = WorldLocation(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
     uint32 posLvl=sAzthUtils->getPositionLevel(true, player->GetMap(), pos);
     
-    if (posLvl>0) {
-        uint32 level = player->azthPlayer->getPStatsLevel();
+    if (posLvl>0)
+    {
+        uint32 level = sAZTH->GetAZTHPlayer((Player*)player)->getPStatsLevel();
         
-        if (posLvl>TIMEWALKING_SPECIAL_LVL_MIN) {
-            //if (player->azthPlayer->GetTimeWalkingLevel() == posLvl) // with special level we must have the exact value
+        if (posLvl>TIMEWALKING_SPECIAL_LVL_MIN)
+        {
+            //if (sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel() == posLvl) // with special level we must have the exact value
             //    return true;
-        } else if (
-            level < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && posLvl < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) // avoid double loot and other bonuses on end-game instances
-            && level<=posLvl
-        ) {
+        } else if (level < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && posLvl < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) // avoid double loot and other bonuses on end-game instances
+            && level<=posLvl)
             return true;
-        }
     }
     
     return false;
@@ -188,75 +188,91 @@ AzthLevelStat const* AzthUtils::getTwStats(Player *player, uint32 level) {
     return &itr->second;
 }
 
-bool AzthUtils::updateTwLevel(Player *player,Group *group) {
+bool AzthUtils::updateTwLevel(Player *player,Group *group)
+{
     bool result = false;
     
-    if (!player || !player->azthPlayer || player->IsGameMaster())
+    if (!player || !sAZTH->GetAZTHPlayer(player) || player->IsGameMaster())
         return result;
     
-    uint32 levelPlayer = player->azthPlayer->isTimeWalking() ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
+    uint32 levelPlayer = sAZTH->GetAZTHPlayer(player)->isTimeWalking() ? sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel() : player->getLevel();
     
-    if (group) {
-        bool updated=false;
-        uint32 maxLevel = sAzthUtils->maxTwLevel(levelPlayer, group->azthGroupMgr->levelMaxGroup);
-        if (maxLevel != group->azthGroupMgr->levelMaxGroup) {
-            group->azthGroupMgr->levelMaxGroup = maxLevel;
+    if (group)
+    {
+        bool updated = false;
+        uint32 maxLevel = sAzthUtils->maxTwLevel(levelPlayer, sAZTH->GetAZTHGroup(group)->levelMaxGroup);
+
+        if (maxLevel != sAZTH->GetAZTHGroup(group)->levelMaxGroup)
+        {
+            sAZTH->GetAZTHGroup(group)->levelMaxGroup = maxLevel;
             updated = true;
         }
         
-        if (group->GetMembersCount() > group->azthGroupMgr->groupSize) {
-            group->azthGroupMgr->groupSize = group->GetMembersCount();
+        if (group->GetMembersCount() > sAZTH->GetAZTHGroup(group)->groupSize)
+        {
+            sAZTH->GetAZTHGroup(group)->groupSize = group->GetMembersCount();
             updated = true;
         }
 
-        if (updated) {    
-            std::string _slvl=sAzthUtils->getLevelInfo(group->azthGroupMgr->levelMaxGroup);
+        if (updated)
+        {
+            std::string _slvl=sAzthUtils->getLevelInfo(sAZTH->GetAZTHGroup(group)->levelMaxGroup);
             std::string msg = sAzthLang->getf(AZTH_LANG_GROUP_LEVEL_REG,player, player->GetName().c_str(),_slvl.c_str(), group->GetMembersCount());
             sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());
-            group->azthGroupMgr->saveToDb();
-            result=true;
+            sAZTH->GetAZTHGroup(group)->saveToDb();
+            result = true;
         }
     }
 
     Map* map = player->FindMap();
 
-    if (map->IsDungeon() || map->IsRaid()) {
-        bool updated=false;
+    if (map->IsDungeon() || map->IsRaid())
+    {
+        bool updated = false;
         InstanceSave* is = sInstanceSaveMgr->PlayerGetInstanceSave(GUID_LOPART(player->GetGUID()), map->GetId(), player->GetDifficulty(map->IsRaid()));
-        if (is) { // negative condition shouldn't happen (maybe only on login?)
-            if (is->azthInstMgr->levelMax == 0) {
-                player->azthPlayer->instanceID = map->GetInstanceId();
+        if (is) // negative condition shouldn't happen (maybe only on login?)
+        { 
+            if (sAZTH->GetAZTHInstanceSave(is)->levelMax == 0)
+            {
+                sAZTH->GetAZTHPlayer(player)->instanceID = map->GetInstanceId();
 
-                QueryResult result = CharacterDatabase.PQuery("SELECT levelPg,groupSize,startTime FROM instance WHERE id = %u", player->azthPlayer->instanceID);
+                QueryResult result = CharacterDatabase.PQuery("SELECT levelPg,groupSize,startTime FROM instance WHERE id = %u", sAZTH->GetAZTHPlayer(player)->instanceID);
                 if (!result)
                     return result;
+
                 Field* fields = result->Fetch();
-                is->azthInstMgr->levelMax = fields[0].GetUInt32();
-                is->azthInstMgr->groupSize = fields[1].GetUInt32();
+                sAZTH->GetAZTHInstanceSave(is)->levelMax = fields[0].GetUInt32();
+                sAZTH->GetAZTHInstanceSave(is)->groupSize = fields[1].GetUInt32();
                 uint32 startTime = fields[2].GetUInt32();
+
                 if (startTime)
-                    is->azthInstMgr->startTime = startTime; 
-                updated=true;
+                    sAZTH->GetAZTHInstanceSave(is)->startTime = startTime; 
+
+                updated = true;
             }
 
-            uint32 maxLevel = sAzthUtils->maxTwLevel(levelPlayer, is->azthInstMgr->levelMax);
-            if (maxLevel != is->azthInstMgr->levelMax) {
-                is->azthInstMgr->levelMax = maxLevel;
-                updated=true;
+            uint32 maxLevel = sAzthUtils->maxTwLevel(levelPlayer, sAZTH->GetAZTHInstanceSave(is)->levelMax);
+            if (maxLevel != sAZTH->GetAZTHInstanceSave(is)->levelMax)
+            {
+                sAZTH->GetAZTHInstanceSave(is)->levelMax = maxLevel;
+                updated = true;
             }
             
-            uint32 cnt=map->GetPlayersCountExceptGMs();
-            if (cnt > is->azthInstMgr->groupSize) {
-                is->azthInstMgr->groupSize = cnt;
+            uint32 cnt = map->GetPlayersCountExceptGMs();
+            if (cnt > sAZTH->GetAZTHInstanceSave(is)->groupSize)
+            {
+                sAZTH->GetAZTHInstanceSave(is)->groupSize = cnt;
                 updated = true;
             }
         
-            if (updated) {
+            if (updated)
+            {
                 is->InsertToDB();
-                std::string _slvl = sAzthUtils->getLevelInfo(is->azthInstMgr->levelMax);
-                std::string msg=sAzthLang->getf(AZTH_LANG_INSTANCE_LEVEL_REG, player, player->GetName().c_str(), _slvl.c_str(), is->azthInstMgr->groupSize);
+                std::string _slvl = sAzthUtils->getLevelInfo(sAZTH->GetAZTHInstanceSave(is)->levelMax);
+                std::string msg = sAzthLang->getf(AZTH_LANG_INSTANCE_LEVEL_REG, player, player->GetName().c_str(), _slvl.c_str(), sAZTH->GetAZTHInstanceSave(is)->groupSize);
+
                 sAzthUtils->sendMessageToGroup(player, player->GetGroup(), msg.c_str());
-                result=true;
+                result = true;
             }
         }
     }
@@ -265,7 +281,7 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group) {
 }
 
 uint32 AzthUtils::selectSpellForTW(Player* player, uint32 spellId) {
-    if (player->azthPlayer->isTimeWalking(true)) {
+    if (sAZTH->GetAZTHPlayer(player)->isTimeWalking(true)) {
         uint32 spell=this->selectCorrectSpellRank(player->getLevel(), spellId);
         if (spell)
             return spell;
@@ -427,7 +443,7 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
     
     // we need to use damage/heal reduction from TW table when in TW 
     // at 80 special levels
-    uint32 twLevel=player->azthPlayer->GetTimeWalkingLevel();
+    uint32 twLevel=sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel();
     if (twLevel != TIMEWALKING_LVL_AUTO && twLevel >= TIMEWALKING_SPECIAL_LVL_MIN && twLevel <= TIMEWALKING_SPECIAL_LVL_MAX)
         return -1;
 
@@ -443,15 +459,15 @@ int32 AzthUtils::getSpellReduction(Player *player, SpellInfo const* spellProto) 
         
         
     if (player->getLevel() > 70) { // from 71
-        rate = 1;
+        rate = 1.0f;
         min = 0;
         max = 50;
     } else if (player->getLevel() >= 60) {
-        rate = 1.5;
+        rate = 1.5f;
         min = 30;
         max = 95;
     } else {
-        rate = 1.8;
+        rate = 1.8f;
         min = 30;
         max = 95;
     }
@@ -623,7 +639,7 @@ bool AzthUtils::disableEnchant(Player *player, SpellItemEnchantmentEntry const* 
     // we can't only check isTimeWalking here because
     // at this time timewalking variable has been already set when switching to timewalking
     // so we need just to check also appropriate level
-    if (level >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) || !player->azthPlayer->isTimeWalking(true))
+    if (level >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) || !sAZTH->GetAZTHPlayer(player)->isTimeWalking(true))
         return false;
     
     if (pEnchant->GemID) {

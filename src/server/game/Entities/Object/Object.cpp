@@ -40,6 +40,7 @@
 #include "Group.h"
 #include "Chat.h"
 #include "DynamicVisibility.h"
+#include "ScriptMgr.h"
 
 #ifdef ELUNA
 #include "LuaEngine.h"
@@ -78,8 +79,7 @@ Object::Object() : m_PackGUID(sizeof(uint64)+1)
 
     m_PackGUID.appendPackGUID(0);
     
-    //[AZTH] initialization
-    azthObject = new AzthObject(this);
+    sScriptMgr->OnConstructObject(this);
 }
 
 WorldObject::~WorldObject()
@@ -122,8 +122,7 @@ Object::~Object()
     delete [] m_uint32Values;
     m_uint32Values = 0;
     
-    // [AZTH]
-    delete azthObject;
+    sScriptMgr->OnDestructObject(this);
 }
 
 void Object::_InitValues()

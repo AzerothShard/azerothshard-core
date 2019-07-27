@@ -220,10 +220,6 @@ enum ScoreType
 
 enum ArenaType
 {
-//[AZTH]
-    ARENA_TYPE_1v1          = 1,
-    ARENA_TYPE_3v3_SOLO     = 4, // 3v3 soloqueue
-//[/AZTH]
     ARENA_TYPE_2v2          = 2,
     ARENA_TYPE_3v3          = 3,
     ARENA_TYPE_5v5          = 5
@@ -267,10 +263,10 @@ struct BattlegroundScore
     uint32 BonusHonor;
     uint32 DamageDone;
     uint32 HealingDone;
-    /** World of Warcraft Armory **/
-    uint32 DamageTaken;
-    uint32 HealingTaken;
-    /** World of Warcraft Armory **/
+    ///** World of Warcraft Armory **/ NEED DELETE
+    //uint32 DamageTaken;
+    //uint32 HealingTaken;
+    ///** World of Warcraft Armory **/
     Player* player;
 
     uint32 GetKillingBlows() const { return KillingBlows; }
@@ -630,11 +626,7 @@ class Battleground
         BattlegroundRV const* ToBattlegroundRV() const { if (GetBgTypeID() == BATTLEGROUND_RV) return reinterpret_cast<const BattlegroundRV*>(this); else return NULL; }
 
         BattlegroundIC* ToBattlegroundIC() { if (GetBgTypeID() == BATTLEGROUND_IC) return reinterpret_cast<BattlegroundIC*>(this); else return NULL; }
-        BattlegroundIC const* ToBattlegroundIC() const { if (GetBgTypeID() == BATTLEGROUND_IC) return reinterpret_cast<const BattlegroundIC*>(this); else return NULL; }
-
-        //[AZTH] custom functions
-        void CheckStartSolo3v3Arena();
-        void cleanUp3v3SoloQ();
+        BattlegroundIC const* ToBattlegroundIC() const { if (GetBgTypeID() == BATTLEGROUND_IC) return reinterpret_cast<const BattlegroundIC*>(this); else return NULL; }     
 
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground

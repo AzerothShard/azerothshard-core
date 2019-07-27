@@ -37,11 +37,6 @@
 #include "LuaEngine.h"
 #endif
 
-//[AZTH]
-#include "ArenaTeamMgr.h"
-#include "npc_solo3v3.h"
-//[/AZTH]
-
 namespace Trinity
 {
     class BattlegroundChatBuilder
@@ -469,12 +464,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         SendMessageToAll(StartMessageIds[BG_STARTING_EVENT_FIRST], CHAT_MSG_BG_SYSTEM_NEUTRAL);
     }
 
-//[AZTH]
-// 1v1 Arena - Start arena after 15s, when all players are in arena
-    if (GetArenaType() == ARENA_TEAM_1v1 && GetStartDelayTime() > StartDelayTimes[BG_STARTING_EVENT_THIRD] && (m_PlayersCount[0] + m_PlayersCount[1]) == 2)
-        SetStartDelayTime(StartDelayTimes[BG_STARTING_EVENT_THIRD]);
-//[/AZTH]
-
     // After 1 minute or 30 seconds, warning is signaled
     else if (GetStartDelayTime() <= StartDelayTimes[BG_STARTING_EVENT_SECOND] && !(m_Events & BG_STARTING_EVENT_2))
     {
@@ -568,8 +557,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                 ArenaSpectator::HandleResetCommand(*itr);
 
             CheckArenaWinConditions();
-            //[AZTH]
-            CheckStartSolo3v3Arena();
 
             // pussywizard: arena spectator stuff
             if (GetStatus() == STATUS_IN_PROGRESS)
@@ -950,9 +937,6 @@ void Battleground::EndBattleground(TeamId winnerTeamId)
     {
         Player* player = itr->second;
         TeamId bgTeamId = player->GetBgTeamId();
-
-        //[AZTH]
-        // rewardGoodGuys();
 
         // should remove spirit of redemption
         if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
@@ -1427,32 +1411,14 @@ void Battleground::ReadyMarkerClicked(Player* p)
 {
     if (!isArena() || GetStatus() >= STATUS_IN_PROGRESS || GetStartDelayTime() <= BG_START_DELAY_15S || (m_Events & BG_STARTING_EVENT_3) || p->IsSpectator())
         return;
-    readyMarkerClickedSet.insert(p->GetGUIDLow());
-    uint32 count = readyMarkerClickedSet.size();
-    uint32 req = 0;
 
-    switch (GetArenaType())
-    {
-        case ARENA_TYPE_2v2:
-            req = 4;
-            break;
-        case ARENA_TYPE_3v3:
-            req = 6;
-            break;
-        case ARENA_TYPE_5v5:
-            req = 10;
-            break;
-        // [AZTH]
-        case ARENA_TYPE_1v1:
-            req = 2;
-            break;
-        case ARENA_TYPE_3v3_SOLO:
-            req = 6;
-            break;
-        //[/AZTH]
-    }
+    readyMarkerClickedSet.insert(p->GetGUIDLow());
+
+    uint32 count = readyMarkerClickedSet.size();
+    uint32 req = ArenaTeam::GetReqPlayersForType(GetArenaType());
 
     p->GetSession()->SendNotification("You are marked as ready %u/%u", count, req);
+
     if (count == req)
     {
         m_Events |= BG_STARTING_EVENT_2;
@@ -2062,106 +2028,3 @@ uint8 Battleground::GetUniqueBracketId() const
 {
     return GetMinLevel() / 10;
 }
-
-//[AZTH] Custom functions & SoloQ 3v3
-
-void Battleground::cleanUp3v3SoloQ() {
-    // Cleanup temp arena teams for solo 3v3
-    if (isArena() && isRated() && GetArenaType() == ARENA_TYPE_3v3_SOLO)
-    {
-        ArenaTeam *tempAlliArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
-        ArenaTeam *tempHordeArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
-
-        if (tempAlliArenaTeam && tempAlliArenaTeam->GetId() >= 0xFFF00000)
-        {
-            sArenaTeamMgr->RemoveArenaTeam(tempAlliArenaTeam->GetId());
-            delete tempAlliArenaTeam;
-        }
-
-        if (tempHordeArenaTeam && tempHordeArenaTeam->GetId() >= 0xFFF00000)
-        {
-            sArenaTeamMgr->RemoveArenaTeam(tempHordeArenaTeam->GetId());
-            delete tempHordeArenaTeam;
-        }
-
-    }
-}
-
-
-void Battleground::CheckStartSolo3v3Arena()
-{
-    if (GetArenaType() != ARENA_TYPE_3v3_SOLO)
-        return;
-
-    if (GetStatus() != STATUS_IN_PROGRESS)
-        return;  // if CheckArenaWinConditions ends the game
-
-    bool someoneNotInArena = false;
-
-    ArenaTeam* team[2];
-    team[0] = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
-    team[1] = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
-
-    ASSERT(team[0] && team[1]);
-
-    for (int i = 0; i < 2; i++)
-    {
-        for (ArenaTeam::MemberList::iterator itr = team[i]->m_membersBegin(); itr != team[i]->m_membersEnd(); itr++)
-        {
-            Player* plr = sObjectAccessor->FindPlayer(itr->Guid);
-            if (!plr)
-            {
-                someoneNotInArena = true;
-                continue;
-            }
-
-            if (plr->GetInstanceId() != GetInstanceID())
-            {
-                if (sConfigMgr->GetBoolDefault("Solo.3v3.CastDeserterOnAfk", true))
-                    plr->CastSpell(plr, 26013, true); // Deserter
-                someoneNotInArena = true;
-            }
-        }
-    }
-
-    if (someoneNotInArena && sConfigMgr->GetBoolDefault("Solo.3v3.StopGameIncomplete", true))
-    {
-        SetRated(false);
-        EndBattleground(TEAM_NEUTRAL);
-    }
-}
-
-/*
-void Battleground::rewardGoodGuys() {
-    // Reward winners "BattleArenas Reward Box" in 2v2 and 3v3 rated battles
-        // And Badge of Justice as reward from Solo Queue
-
-    if (team == winner && isArena())
-    {
-        if (isRated())
-        {
-            // Dont reward players in arena preparation
-            if (!player->HasAura(SPELL_ARENA_PREPARATION))
-            {
-                if (GetArenaType() == ARENA_TYPE_3v3)
-                {
-                    //player->AddItem(54218, 1); // Add two BattleArenas Reward Box
-
-                    // Bonus rewards for Healers
-                    if (Arena1v1CheckTalents(player) == false);
-                    //player->AddItem(54218, 1); // Add two BattleArenas Reward Box
-                }
-
-                if (GetArenaType() == ARENA_TYPE_5v5) // 1v1 rated
-                    //player->AddItem(29434, 5); // Add 5 Badge of Justice
-
-                    if (GetArenaType() == ARENA_TYPE_3v3_SOLO)
-                    {
-                        //player->AddItem(54218, 1); // Add one BattleArenas Reward Box
-                    }
-            }
-        }
-    }
-
-}
-*/

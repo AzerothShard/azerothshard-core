@@ -1,5 +1,6 @@
 #include "AzthLanguageStrings.h"
 #include "AzthPlayer.h"
+#include "AZTH.h"
 
 #define MIN_RATING 1200
 #define AP_REQ 1000
@@ -28,7 +29,7 @@ class Professions_NPC : public CreatureScript
                 bool OnGossipHello(Player *pPlayer, Creature* _creature)
                 {
                         if (!pPlayer->IsGameMaster() 
-                            && !pPlayer->azthPlayer->isPvP() && pPlayer->GetMaxPersonalArenaRatingRequirement(2) < MIN_RATING) {
+                            && !sAZTH->GetAZTHPlayer(pPlayer)->isPvP() && pPlayer->GetMaxPersonalArenaRatingRequirement(2) < MIN_RATING) {
                             std::string msg  = "You need to be a Full PvP player and least "+std::to_string(MIN_RATING)+" 2v2 Rating to talk with me!";
                             _creature->MonsterWhisper(msg.c_str(), pPlayer);
                             return true;
@@ -45,11 +46,11 @@ class Professions_NPC : public CreatureScript
                         uint32 skillCount = 0;
 
                         if (pPlayer->HasSkill(SKILL_MINING))
-                                skillCount++;
+                            skillCount++;
                         if (pPlayer->HasSkill(SKILL_SKINNING))
-                                skillCount++;
+                            skillCount++;
                         if (pPlayer->HasSkill(SKILL_HERBALISM))
-                                skillCount++;
+                            skillCount++;
 
                         if (skillCount >= 2)
                                 return true;
@@ -161,7 +162,7 @@ class Professions_NPC : public CreatureScript
                             return true;
                     
                         if (!pPlayer->IsGameMaster() 
-                            && !pPlayer->azthPlayer->isPvP() && pPlayer->GetMaxPersonalArenaRatingRequirement(2) < MIN_RATING) {
+                            && !sAZTH->GetAZTHPlayer(pPlayer)->isPvP() && pPlayer->GetMaxPersonalArenaRatingRequirement(2) < MIN_RATING) {
                             return true;
                         }
                     

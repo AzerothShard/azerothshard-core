@@ -14,8 +14,8 @@
 #ifndef TELEPORT_H
 #define TELEPORT_H
 
+#include "Common.h"
 #include <vector>
-
 
 namespace nsNpcTel
 {
@@ -141,10 +141,10 @@ namespace nsNpcTel
                      const uint64 &data0, const uint32 &data1);
 
     extern VCatDest TabCatDest;
-}
 
-// Loading contents of database
-void LoadNpcTele(void);
+    // Loading contents of database
+    void LoadNpcTele();
+}
 
 extern WorldDatabaseWorkerPool WorldDatabase;
 

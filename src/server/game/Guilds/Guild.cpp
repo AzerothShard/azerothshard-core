@@ -2858,11 +2858,8 @@ void Guild::_BroadcastEvent(GuildEvents guildEvent, uint64 guid, const char* par
 
 void Guild::_SendBankList(WorldSession* session /* = NULL*/, uint8 tabId /*= 0*/, bool sendAllSlots /*= false*/, SlotIds *slots /*= NULL*/) const
 {
-    //[AZTH]
-    if (session && session->GetPlayer() && session->GetPlayer()->azthPlayer->isPvP()) {
+    if (!sScriptMgr->CanGuildSendBankList(this, session, tabId, sendAllSlots))
         return;
-    }
-    //[/AZTH]
     
     WorldPacket data(SMSG_GUILD_BANK_LIST, 500);
     data << uint64(m_bankMoney);

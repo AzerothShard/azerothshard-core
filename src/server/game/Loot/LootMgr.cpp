@@ -17,9 +17,6 @@
 #include "Containers.h"
 #include "ScriptMgr.h"
 
-//[AZTH]
-#include "AzthUtils.h"
-
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {
     RATE_DROP_ITEM_POOR,                                    // ITEM_QUALITY_POOR
@@ -478,13 +475,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
 
     tab->Process(*this, store, lootMode, lootOwner);          // Processing is done there, callback via Loot::AddItem()
 
-    //Dangerous since it can drops multiple quest items
-    //[AZTH] give another loot process if done with correct level
-    if (sAzthUtils->isEligibleForBonusByArea(lootOwner) && (&store == &LootTemplates_Gameobject || &store == &LootTemplates_Creature)) {
-        this->azthSecondRound = true;
-        tab->Process(*this, store, lootMode, lootOwner);
-    }
-    //[/AZTH]
+    sScriptMgr->OnAfterLootTemplateProcess(this, tab, store, lootOwner, personal, noEmptyError, lootMode);
 
     // Setting access rights for group loot case
     Group* group = lootOwner->GetGroup();
@@ -503,9 +494,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
                 if (proto->Quality < uint32(group->GetLootThreshold()))
                     items[i].is_underthreshold = true;
         }
-    }
-    // ... for personal loot
-    else
+    }    
+    else // ... for personal loot
         FillNotNormalLootFor(lootOwner, true);
 
     return true;

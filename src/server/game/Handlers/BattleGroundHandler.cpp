@@ -10,7 +10,6 @@
 #include "ArenaTeamMgr.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
-
 #include "ArenaTeam.h"
 #include "BattlegroundMgr.h"
 #include "Battleground.h"
@@ -23,10 +22,6 @@
 #include "DisableMgr.h"
 #include "Group.h"
 #include "ScriptMgr.h"
-
-//[AZTH]
-#include "npc_solo3v3.h"
-#include "ArenaSeason.h"
 
 void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket & recvData)
 {
@@ -138,6 +133,14 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
     // queue result (default ok)
     GroupJoinBattlegroundResult err = GroupJoinBattlegroundResult(bgt->GetBgTypeID());
 
+    if (!sScriptMgr->CanJoinInBattlegroundQueue(_player, guid, bgTypeId, joinAsGroup, err) && err <= 0)
+    {
+        WorldPacket data;
+        sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, err);
+        SendPacket(&data);
+        return;
+    }
+
     // check if player can queue:
     if (!joinAsGroup)
     {
@@ -154,13 +157,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
         else if (_player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2) ||
                  _player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) ||
                  _player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5)) // can't be already queued for arenas
-            err = ERR_BATTLEGROUND_QUEUED_FOR_RATED;
-        //[AZTH]
-        else if (!_player->azthPlayer->canJoinQueue(AZTH_QUEUE_BG)) {
-                err = ERR_BATTLEGROUND_NONE;
-        }
-        //[/AZTH]
-        
+            err = ERR_BATTLEGROUND_QUEUED_FOR_RATED;        
 
         if (err <= 0)
         {
@@ -389,9 +386,8 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, arenaType);
     BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
 
-    // [AZTH]
-    if ((bgQueueTypeId == BATTLEGROUND_QUEUE_1v1 || bgQueueTypeId == BATTLEGROUND_QUEUE_3v3_SOLO ) && (action == 1 /*accept join*/ && Arena1v1CheckTalents(_player) == false))
-        return;
+    if (!sScriptMgr->CanBattleFieldPort(_player, arenaType, bgTypeId, action))
+        return;    
 
     // get group info from queue
     GroupQueueInfo ginfo;
@@ -680,14 +676,17 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
     // queue result (default ok)
     GroupJoinBattlegroundResult err = GroupJoinBattlegroundResult(bgt->GetBgTypeID());
 
+    if (!sScriptMgr->CanJoinInArenaQueue(_player, guid, arenaslot, bgTypeId, asGroup, isRated, err) && err <= 0)
+    {
+        WorldPacket data;
+        sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, err);
+        SendPacket(&data);
+        return;
+    }
+
     // check if player can queue:
     if (!asGroup)
     {
-        //[AZTH]
-        if (!_player->azthPlayer->canJoinQueue(AZTH_QUEUE_ARENA))
-            err = ERR_BATTLEGROUND_NONE;
-        //[/AZTH]
-        
         if (GetPlayer()->InBattleground()) // currently in battleground
             err = ERR_BATTLEGROUND_NOT_IN_BATTLEGROUND;
         else if (GetPlayer()->isUsingLfg()) // using lfg system

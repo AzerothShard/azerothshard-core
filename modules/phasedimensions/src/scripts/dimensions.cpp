@@ -7,6 +7,7 @@
 #include "AzthLanguageStrings.h"
 #include "AzthUtils.h"
 #include "AzthSharedDefines.h"
+#include "AZTH.h"
 
 class PhaseDimensionsNPC : public CreatureScript
 {
@@ -15,7 +16,7 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature) override
     {
-        uint32 currDimension=player->azthPlayer->getCurrentDimensionByMark();
+        uint32 currDimension=sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByMark();
         std::string msg=sAzthLang->get(AZTH_LANG_DIMENSION_CURRENT, player);
         std::string dimName= sAzthUtils->getDimensionName(currDimension);
         msg +=  dimName;
@@ -23,7 +24,7 @@ public:
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, msg.c_str(), GOSSIP_SENDER_MAIN, 0);
 
 
-        if (!player->azthPlayer->isPvP() && currDimension != uint32(DIMENSION_NORMAL))
+        if (!sAZTH->GetAZTHPlayer(player)->isPvP() && currDimension != uint32(DIMENSION_NORMAL))
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_ILLUSORY, player), GOSSIP_SENDER_MAIN, DIMENSION_NORMAL);
 
         if (currDimension != uint32(DIMENSION_GUILD))
@@ -64,7 +65,7 @@ public:
         
         if (sender == GOSSIP_SENDER_MAIN)
         {           
-            player->azthPlayer->changeDimension(action, true);
+            sAZTH->GetAZTHPlayer(player)->changeDimension(action, true);
         }
 
         return true;
@@ -76,7 +77,8 @@ class PhaseDimensions : public PlayerScript
 public:
     PhaseDimensions() : PlayerScript("PhaseDimensions") {}
 
-    bool OnBeforeTeleport(Player* player, uint32 /*mapid*/, float /*x*/, float /*y,*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit *target) override {
+    bool OnBeforeTeleport(Player* player, uint32 /*mapid*/, float /*x*/, float /*y,*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit *target) override
+    {
         if (!target)
             return true;
 
@@ -88,14 +90,14 @@ public:
         if (player->GetGUIDLow() == pTarget->GetGUIDLow())
             return true; //strange case but could happen
 
-        uint32 playerPhaseDimension = player->azthPlayer->getCurrentDimensionByPhase();
-        uint32 targetPhaseDimension = pTarget->azthPlayer->getCurrentDimensionByPhase();
+        uint32 playerPhaseDimension = sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByPhase();
+        uint32 targetPhaseDimension = sAZTH->GetAZTHPlayer(pTarget)->getCurrentDimensionByPhase();
         
         if (targetPhaseDimension == playerPhaseDimension)
             return true;
 
         if (targetPhaseDimension == DIMENSION_NORMAL || player->IsGameMaster()) {               
-            if (!player->azthPlayer->changeDimension(targetPhaseDimension, true))
+            if (!sAZTH->GetAZTHPlayer(player)->changeDimension(targetPhaseDimension, true))
                 return false;
         } else {
             std::string dimSource = sAzthUtils->getDimensionName(playerPhaseDimension);
@@ -126,18 +128,18 @@ public:
         if (!player)
             return;
         
-        uint32 curDimension   = player->azthPlayer->getCurrentDimensionByMark();
-        uint32 aurDimension   = player->azthPlayer->getCurrentDimensionByAura();
+        uint32 curDimension   = sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByMark();
+        uint32 aurDimension   = sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByAura();
         // we should make an integrity check with phase
         // avoiding cases where we're on a special dimension
         // without aura (hacking/exploit)
-        uint32 phaseDimension = player->azthPlayer->getCurrentDimensionByPhase();
+        uint32 phaseDimension = sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByPhase();
         
         MapEntry const* mEntry = sMapStore.LookupEntry(mapid);
         
         if (sAzthUtils->isPhasedDimension(curDimension) && sAzthUtils->isSharedArea(player, mEntry, zoneid, areaid)) {
             // TEMPORARY DISABLE DIMENSION IN BG BUT DO NOT REMOVE THE MARKER
-            player->azthPlayer->changeDimension(DIMENSION_NORMAL, false, true);
+            sAZTH->GetAZTHPlayer(player)->changeDimension(DIMENSION_NORMAL, false, true);
         } else if (phaseDimension == DIMENSION_60 && mEntry->Expansion() > 0) {
             // CLASSIC EXPANSION CHECK
             player->TeleportTo(AzthSharedDef::blackMarket);
@@ -149,17 +151,17 @@ public:
         } else if (phaseDimension == DIMENSION_GM && player->GetSession()->GetSecurity() > SEC_PLAYER) {
             // GM security check
             player->TeleportTo(AzthSharedDef::blackMarket);
-            player->azthPlayer->changeDimension(DIMENSION_NORMAL);
+            sAZTH->GetAZTHPlayer(player)->changeDimension(DIMENSION_NORMAL);
             ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GM_ACCESSCHECK, player));
         } else if (phaseDimension == DIMENSION_GUILD && !player->GetGuild()) {
             // GUILD security check
             player->TeleportTo(AzthSharedDef::blackMarket);
-            player->azthPlayer->changeDimension(DIMENSION_NORMAL);
+            sAZTH->GetAZTHPlayer(player)->changeDimension(DIMENSION_NORMAL);
             ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_MULTIDIMENSION_GUILD_ACCESSCHECK, player));
         } else {
             // integrity check: re-enable temporary disabled dimensions or just fix possible exploits
             if (curDimension != aurDimension || curDimension != phaseDimension) {
-                player->azthPlayer->changeDimension(curDimension);
+                sAZTH->GetAZTHPlayer(player)->changeDimension(curDimension);
             }
         }
     }

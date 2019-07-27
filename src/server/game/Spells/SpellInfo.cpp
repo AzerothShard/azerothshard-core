@@ -2482,12 +2482,10 @@ SpellInfo const* SpellInfo::GetAuraRankForLevel(uint8 level) const
     for (SpellInfo const* nextSpellInfo = this; nextSpellInfo != NULL; nextSpellInfo = nextSpellInfo->GetPrevRankSpell())
     {
         // [AZTH] timewalking
-        if (nextSpellInfo->SpellLevel == 0){
-            if ( uint32(level) >= nextSpellInfo->BaseLevel )
+        if (nextSpellInfo->SpellLevel == 0)
+            if (uint32(level) >= nextSpellInfo->BaseLevel)
                 return nextSpellInfo;
-        } else
-        // if found appropriate level
-        if (uint32(level /*[AZTH]+ 10*/) >= nextSpellInfo->SpellLevel)
+        else if (uint32(level /*[AZTH]+ 10*/) >= nextSpellInfo->SpellLevel) // if found appropriate level
             return nextSpellInfo;
 
         latestSpellInfo = nextSpellInfo;
@@ -2498,7 +2496,6 @@ SpellInfo const* SpellInfo::GetAuraRankForLevel(uint8 level) const
     // one that is in a 10 level higher range as official code did
     if (uint32(level + 10) >= latestSpellInfo->SpellLevel)
         return latestSpellInfo;
-    
 
     // not found
     return NULL;

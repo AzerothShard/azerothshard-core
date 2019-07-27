@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Opcodes.h"
 #include "AzthSharedDefines.h"
+#include "AZTH.h"
 
 std::vector<SmartStonePlayerCommand> & AzthPlayer::getSmartStoneCommands() {
     return smartStoneCommands;
@@ -307,7 +308,7 @@ bool AzthPlayer::BuySmartStoneCommand(uint64 vendorguid, uint32 vendorslot,
     command = sSmartStone->getCommandByItem(item);
 
     if (!sSmartStone->isNullCommand(command)) {
-        player->azthPlayer->addSmartStoneCommand(
+        sAZTH->GetAZTHPlayer(player)->addSmartStoneCommand(
                 sSmartStone->toPlayerCommand(command), true);
         ChatHandler(player->GetSession())
                 .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_NEWAPP, player));
@@ -348,7 +349,7 @@ std::map<uint32,WorldLocation> AzthPlayer::getLastPositionInfoFromDB() {
         uint32 type = posFields[0].GetUInt32();
         lastPos[type] = WorldLocation(posFields[1].GetFloat(),posFields[2].GetFloat(),posFields[3].GetFloat(), posFields[4].GetFloat(), player->GetOrientation());
 
-        player->azthPlayer->setLastPositionInfo(type, lastPos[type]);
+        sAZTH->GetAZTHPlayer(player)->setLastPositionInfo(type, lastPos[type]);
     } while (savedPosResult->NextRow());
 
     return lastPos;

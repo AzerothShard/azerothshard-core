@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "ChannelMgr.h"
 #include "Channel.h"
+#include "ScriptMgr.h"
 #include <unordered_map>
 
 struct BGSpamProtectionS
@@ -23,10 +24,7 @@ struct BGSpamProtectionS
     uint32 last_queue = 0; // CHAT DISABLED BY DEFAULT
 };
 
-std::unordered_map<uint32, BGSpamProtectionS>BGSpamProtection;
-
-//[AZTH]
-#include "npc_solo3v3.h"
+std::unordered_map<uint32, BGSpamProtectionS> BGSpamProtection;
 
 /*********************************************************/
 /***            BATTLEGROUND QUEUE SYSTEM              ***/
@@ -402,7 +400,9 @@ bool BattlegroundQueue::GetPlayerGroupInfoData(uint64 guid, GroupQueueInfo * gin
     QueuedPlayersMap::const_iterator qItr = m_QueuedPlayers.find(guid);
     if (qItr == m_QueuedPlayers.end())
         return false;
+
     *ginfo = *(qItr->second);
+
     return true;
 }
 
@@ -817,6 +817,9 @@ void BattlegroundQueue::BattlegroundQueueUpdate(BattlegroundBracketId bracket_id
         MaxPlayersPerTeam = m_arenaType;
     }
 
+    // BattlegroundBracketId bracket_id, uint8 actionMask, bool isRated, uint32 arenaRatedTeamId
+    sScriptMgr->OnQueueUpdate(this, bracket_id, actionMask, isRated, arenaRatedTeamId);
+
     // check if can start new premade battleground
     if (bg_template->isBattleground() && m_bgTypeId != BATTLEGROUND_RB)
         if (CheckPremadeMatch(bracket_id, MinPlayersPerTeam, MaxPlayersPerTeam))
@@ -885,44 +888,6 @@ void BattlegroundQueue::BattlegroundQueueUpdate(BattlegroundBracketId bracket_id
             bg->StartBattleground();
         }
     }
-    //[AZTH]
-    else if (m_arenaType == ARENA_TYPE_3v3_SOLO)
-    {
-        // Solo 3v3
-        if (CheckSolo3v3Arena(bracket_id))
-        {
-            uint32 minLvl = bracketEntry->minLevel;
-            uint32 maxLvl = bracketEntry->maxLevel;
-
-            Battleground* arena = sBattlegroundMgr->CreateNewBattleground(m_bgTypeId, minLvl, maxLvl, m_arenaType, isRated);
-            if (!arena)
-                return;
-
-            // Create temp arena team and store arenaTeamId
-            ArenaTeam* arenaTeams[BG_TEAMS_COUNT];
-            CreateTempArenaTeamForQueue(arenaTeams);
-
-            // invite those selection pools
-            for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
-                for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
-                {
-                    (*citr)->ArenaTeamId = arenaTeams[i]->GetId();
-                    BattlegroundMgr::InviteGroupToBG((*citr), arena, (*citr)->teamId);
-                }
-
-            // Override ArenaTeamId to temp arena team (was first set in InviteGroupToBG)
-            arena->SetArenaTeamIdForTeam(TEAM_ALLIANCE, arenaTeams[TEAM_ALLIANCE]->GetId());
-            arena->SetArenaTeamIdForTeam(TEAM_HORDE, arenaTeams[TEAM_HORDE]->GetId());
-
-            // Set matchmaker rating for calculating rating-modifier on EndBattleground (when a team has won/lost)
-            arena->SetArenaMatchmakerRating(TEAM_ALLIANCE, arenaTeams[TEAM_ALLIANCE]->GetAverageMMR());
-            arena->SetArenaMatchmakerRating(TEAM_HORDE, arenaTeams[TEAM_HORDE]->GetAverageMMR());
-
-            // start bg
-            arena->StartBattleground();
-        }
-    }
-    //[/AZTH]
 
     // check if can start new rated arenas (can create many in single queue update)
     else if (bg_template->isArena())
@@ -1186,121 +1151,3 @@ void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 {
     //do nothing
 }
-
-
-//[AZTH] Custom functions & SoloQ 3v3
-
-bool BattlegroundQueue::CheckSolo3v3Arena(BattlegroundBracketId bracket_id)
-{
-    bool soloTeam[BG_TEAMS_COUNT][MAX_TALENT_CAT]; // 2 teams and each team 3 players - set to true when slot is taken
-    for (int i = 0; i < BG_TEAMS_COUNT; i++)
-        for (int j = 0; j < MAX_TALENT_CAT; j++)
-            soloTeam[i][j] = false; // default false = slot not taken
-
-    m_SelectionPools[TEAM_ALLIANCE].Init();
-    m_SelectionPools[TEAM_HORDE].Init();
-    
-    uint32 MinPlayersPerTeam = sBattlegroundMgr->isArenaTesting() ? 1 : 3;
-
-    bool filterTalents = sConfigMgr->GetBoolDefault("Solo.3v3.FilterTalents", false);
-
-    for (int teamId = 0; teamId < 2; teamId++) // BG_QUEUE_PREMADE_ALLIANCE and BG_QUEUE_PREMADE_HORDE
-    {
-        for (GroupsQueueType::iterator itr = m_QueuedGroups[bracket_id][teamId].begin(); itr != m_QueuedGroups[bracket_id][teamId].end(); ++itr)
-        {
-            if ((*itr)->IsInvitedToBGInstanceGUID) // Skip when invited
-                continue;
-
-            std::set<uint64> *grpPlr = &(*itr)->Players;
-            for (std::set<uint64>::iterator grpPlrItr = grpPlr->begin(); grpPlrItr != grpPlr->end(); grpPlrItr++)
-            {
-                Player* plr = sObjectAccessor->FindPlayer(*grpPlrItr);
-                if (!plr)
-                    continue;
-
-                if (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() + m_SelectionPools[TEAM_HORDE].GetPlayerCount() == MinPlayersPerTeam*2)
-                    return true;
-
-                Solo3v3TalentCat plrCat = GetTalentCatForSolo3v3(plr); // get talent cat
-
-                if ((filterTalents && soloTeam[TEAM_ALLIANCE][plrCat] == false) // is slot free in alliance team?
-                    || (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() != MinPlayersPerTeam))
-                {
-                    if (m_SelectionPools[TEAM_ALLIANCE].AddGroup((*itr), MinPlayersPerTeam)) // added successfully?
-                    {
-                        soloTeam[TEAM_ALLIANCE][plrCat] = true; // okay take this slot
-
-                        if ((*itr)->teamId != TEAM_ALLIANCE) // move to other team
-                        {
-                            (*itr)->teamId = TEAM_ALLIANCE;
-                            (*itr)->_groupType = BG_QUEUE_PREMADE_ALLIANCE;
-                            m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].push_front((*itr));
-                            itr = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].erase(itr);
-                            return CheckSolo3v3Arena(bracket_id);
-                        }
-                    }
-                }
-                else if ((filterTalents && soloTeam[TEAM_HORDE][plrCat] == false) || !filterTalents) // nope? and in horde team?
-                {
-                    if (m_SelectionPools[TEAM_HORDE].AddGroup((*itr), MinPlayersPerTeam))
-                    {
-                        soloTeam[TEAM_HORDE][plrCat] = true;
-
-                        if ((*itr)->teamId != TEAM_HORDE) // move to other team
-                        {
-                            (*itr)->teamId = TEAM_HORDE;
-                            (*itr)->_groupType = BG_QUEUE_PREMADE_HORDE;
-                            m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].push_front((*itr));
-                            itr = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr);
-                            return CheckSolo3v3Arena(bracket_id);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    uint32 countAll = 0;
-    for (int i = 0; i < BG_TEAMS_COUNT; i++)
-    {
-        for (int j = 0; j < MAX_TALENT_CAT; j++)
-            if (soloTeam[i][j])
-                countAll++;
-    }
-
-    return countAll == MinPlayersPerTeam*2 ||
-        (!filterTalents && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() + m_SelectionPools[TEAM_HORDE].GetPlayerCount() == MinPlayersPerTeam*2);
-}
-
-
-void BattlegroundQueue::CreateTempArenaTeamForQueue(ArenaTeam *arenaTeams[])
-{
-    // Create temp arena team
-    for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
-    {
-        ArenaTeam* tempArenaTeam = new ArenaTeam();  // delete it when all players have left the arena match. Stored in sArenaTeamMgr
-        Player* atPlr[3];
-        uint32 atPlrItr = 0;
-
-        for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
-        {
-            if (atPlrItr >= 3)
-                break; // Should never happen
-
-
-            std::set<uint64> *players = &(*citr)->Players;
-            for (std::set<uint64>::iterator it = players->begin(); it != players->end(); it++)
-            {
-                uint64 guid = *it;
-                if (Player* pPlr = sObjectAccessor->FindPlayer(guid))
-                    atPlr[atPlrItr++] = pPlr;
-                break;
-            }
-        }
-
-        tempArenaTeam->CreateTempForSolo3v3(atPlr, i);
-        sArenaTeamMgr->AddArenaTeam(tempArenaTeam);
-        arenaTeams[i] = tempArenaTeam;
-    }
-}
-//[/AZTH]

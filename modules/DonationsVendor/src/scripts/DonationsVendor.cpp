@@ -7,6 +7,7 @@
 #include "GossipDef.h"
 #include "AzthLanguageStrings.h"
 #include "AzthUtils.h"
+#include "AZTH.h"
 
 #define AZTH_ITEMBANK_START_ACTION 100000
 // same as MAX_VENDOR_ITEMS
@@ -51,7 +52,7 @@ public:
     bool OnGossipHello(Player* player, Creature* creature) override
     {
         //                              icon            text                           sender      action   popup message    money  code
-        //if (!player->azthPlayer->isTimeWalking() && !player->azthPlayer->hasGear())
+        //if (!sAZTH->GetAZTHPlayer(player)->isTimeWalking() && !sAZTH->GetAZTHPlayer(player)->hasGear())
         //{
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, sAzthLang->get(AZTH_LANG_COLLECTION_DEPOSIT_ITEMS, player), GOSSIP_SENDER_MAIN, 501);
         //}
@@ -184,7 +185,7 @@ public:
             }
 
             //add item to list of owned items
-            player->azthPlayer->AddBankItem(item->GetEntry(), item->GetGUID());
+            sAZTH->GetAZTHPlayer(player)->AddBankItem(item->GetEntry(), item->GetGUID());
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
             item->SaveToDB(trans); // if this item has not been saved yet in character inventory
@@ -227,13 +228,13 @@ public:
         std::vector<ItemToSell> allItems;
         uint32 counter=offset;
         
-        if (!player->azthPlayer->GetBankItemsList().empty()) {
-            AzthPlayer::ItemInBankMap::iterator iterator = player->azthPlayer->GetBankItemsList().begin();
-            if (player->azthPlayer->GetBankItemsList().size() > std::size_t(offset)) {
+        if (!sAZTH->GetAZTHPlayer(player)->GetBankItemsList().empty()) {
+            AzthPlayer::ItemInBankMap::iterator iterator = sAZTH->GetAZTHPlayer(player)->GetBankItemsList().begin();
+            if (sAZTH->GetAZTHPlayer(player)->GetBankItemsList().size() > std::size_t(offset)) {
                 if (offset>0)
                     std::advance(iterator, offset);
 
-                for(; iterator != player->azthPlayer->GetBankItemsList().end(); iterator++) {
+                for(; iterator != sAZTH->GetAZTHPlayer(player)->GetBankItemsList().end(); iterator++) {
                     if (counter>= AZTH_ITEMBANK_RANGE+offset)
                         break;
                     
@@ -272,8 +273,8 @@ public:
             std::vector<ItemToSell> notBuyAbleItems;
 
             // get own items
-            if (!player->azthPlayer->GetBankItemsList().empty()) {
-                AzthPlayer::ItemInBankMap & items=player->azthPlayer->GetBankItemsList();
+            if (!sAZTH->GetAZTHPlayer(player)->GetBankItemsList().empty()) {
+                AzthPlayer::ItemInBankMap & items=sAZTH->GetAZTHPlayer(player)->GetBankItemsList();
 
                 for(AzthPlayer::ItemInBankMap::iterator iterator = items.begin(); iterator != items.end(); iterator++) {
                     ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(iterator->first);
@@ -369,7 +370,7 @@ public:
 
                         CharacterDatabase.PQuery("DELETE FROM `azth_items_bank` WHERE `guid`=%d AND `itemEntry`=%d;", player->GetGUID(), itemEntry);
 
-                        player->azthPlayer->DelBankItem(itemEntry);
+                        sAZTH->GetAZTHPlayer(player)->DelBankItem(itemEntry);
 
                         WorldPacket data(SMSG_BUY_ITEM, (8 + 4 + 4 + 4));
                         data << uint64(vendor->GetGUID());

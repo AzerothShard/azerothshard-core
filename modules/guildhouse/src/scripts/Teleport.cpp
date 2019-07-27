@@ -291,7 +291,7 @@ bool nsNpcTel::IsValidData(const uint32 &cat,   const Flag &flag,
     return false;
 }
 
-void LoadNpcTele(void)
+void nsNpcTel::LoadNpcTele()
 {
     const char *Table[] =
     {
@@ -299,7 +299,6 @@ void LoadNpcTele(void)
         "custom_npc_tele_destination",
         "custom_npc_tele_association",
     };
-
 
     QueryResult result = WorldDatabase.PQuery(
         "SELECT `flag`, `data0`, `data1`, `cat_id`, C.`name` `namecat`, D.`name` `namedest`, "

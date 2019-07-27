@@ -11,6 +11,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Formulas.h"
+#include "Player.h"
 
 GossipMenu::GossipMenu()
 {
@@ -435,8 +436,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
         }
 
         data << uint32(quest->GetRewOrReqMoney());
-        //[AZTH]
-        data << uint32(quest->XPValue(_session->GetPlayer()) * _session->GetPlayer()->azthPlayer->GetPlayerQuestRate());
+        data << uint32(quest->XPValue(_session->GetPlayer()) * _session->GetPlayer()->GetQuestRate());
     }
 
     // rewarded honor points. Multiply with 10 to satisfy client
@@ -672,8 +672,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
     }
 
     data << uint32(quest->GetRewOrReqMoney());
-    //[AZTH]
-    data << uint32(quest->XPValue(_session->GetPlayer()) * _session->GetPlayer()->azthPlayer->GetPlayerQuestRate());
+    data << uint32(quest->XPValue(_session->GetPlayer()) * _session->GetPlayer()->GetQuestRate());
 
     // rewarded honor points. Multiply with 10 to satisfy client
     data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));

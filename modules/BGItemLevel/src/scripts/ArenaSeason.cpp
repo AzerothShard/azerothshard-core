@@ -1,5 +1,7 @@
 #include "ArenaSeason.h"
 #include "AzthUtils.h"
+#include "AZTH.h"
+#include "Solo3v3.h"
 
 Season::Season()
 {
@@ -60,20 +62,21 @@ void Season::SetEnabled(bool enable)
 //
 // Passing player argument will check the player state and automatically shows a message
 // 
-bool Season::checkItem(ItemTemplate const* proto, Player const* player) {
+bool Season::checkItem(ItemTemplate const* proto, Player const* player)
+{
     if (!IsEnabled())
-    {
-        return true; //SYSTEM DISABLED
-    }
+        return true; //SYSTEM DISABLED  
     
     if (/*player->InBattleground() ||*/ player->InArena() || /*player->InBattlegroundQueue()*/
         player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2) ||
                  player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) ||
                  player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5) ||
-                 player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO) ||
-                 player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_1v1)
-    ) {
-        if (!sAzthUtils->checkItemLvL(proto, GetItemLevel())) {
+                 player->InBattlegroundQueueForBattlegroundQueueType((BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_3v3_SOLO) ||
+                 player->InBattlegroundQueueForBattlegroundQueueType((BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_1v1)
+    )
+    {
+        if (!sAzthUtils->checkItemLvL(proto, GetItemLevel()))
+        {
             ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TOURNAMENT_LEVEL_TOOHIGH, player, proto->ItemId, proto->Name1.c_str()));
             return false;
         }
@@ -82,15 +85,13 @@ bool Season::checkItem(ItemTemplate const* proto, Player const* player) {
     return true;
 }
 
-bool Season::canJoinArenaOrBg(Player *pl) {
+bool Season::canJoinArenaOrBg(Player *pl)
+{
     if (!IsEnabled())
-    {
-        return true; //SYSTEM DISABLED
-    }
+        return true; // SYSTEM DISABLED
     
-    if (pl->azthPlayer->checkItems(GetItemLevel())) {
+    if (sAZTH->GetAZTHPlayer(pl)->checkItems(GetItemLevel()))
         return true;
-    }
             
     ChatHandler(pl->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TOURNAMENT_LEVEL_ACTUAL, pl, sASeasonMgr->GetItemLevel()));
     return false;

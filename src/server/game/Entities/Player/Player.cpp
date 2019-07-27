@@ -82,11 +82,6 @@
 #include "LuaEngine.h"
 #endif
 
-//[AZTH]
-#include "AzthLevelStat.h"
-#include "AzthUtils.h"
-#include "ArenaSeason.h"
-
 #define ZONE_UPDATE_INTERVAL (2*IN_MILLISECONDS)
 
 #define PLAYER_SKILL_INDEX(x)       (PLAYER_SKILL_INFO_1_1 + ((x)*3))
@@ -584,24 +579,18 @@ void KillRewarder::_RewardPlayer(Player* player, bool isDungeon)
         if (_victim->GetTypeId() == TYPEID_PLAYER)
             player->KilledPlayerCredit();
     }
+
     // Give XP only in PvE or in battlegrounds.
     // Give reputation and kill credit only in PvE.
     if (!_isPvP || _isBattleGround)
     {
-        //[AZTH] removed const from rate
-        float rate = _group ?
-            _groupRate * float(player->getLevel()) / _sumLevel : // Group rate depends on summary level.
-            1.0f;
+        float rate = _group ? _groupRate * float(player->getLevel()) / _sumLevel : /*Personal rate is 100%.*/ 1.0f; // Group rate depends on summary level.
 
-        //[AZTH] workaround for high exp rate in dungeons
-        if (isDungeon && player->azthPlayer->GetPlayerQuestRate() > 0) {
-            rate *= player->azthPlayer->GetPlayerQuestRate();
-        }
+        sScriptMgr->OnRewardKillRewarder(player, isDungeon, rate);
 
-        // Personal rate is 100%.
-        if (_xp)
-            // 4.2. Give XP.
-            _RewardXP(player, rate);
+        if (_xp)            
+            _RewardXP(player, rate); // 4.2. Give XP.
+
         if (!_isBattleGround)
         {
             // If killer is in dungeon then all members receive full reputation at kill.
@@ -947,15 +936,16 @@ Player::Player(WorldSession* session) : Unit(true), m_mover(this)
         m_charmAISpells[i] = 0;
 
     m_applyResilience = true;
-    
-    //[AZTH] initialization
-    azthPlayer = new AzthPlayer(this);
+
+    sScriptMgr->OnConstructPlayer(this);
 }
 
 Player::~Player()
 {
     // it must be unloaded already in PlayerLogout and accessed only for loggined player
     //m_social = NULL;
+
+    sScriptMgr->OnDestructPlayer(this);
 
     // Note: buy back item already deleted from DB when player was saved
     for (uint8 i = 0; i < PLAYER_SLOTS_COUNT; ++i)
@@ -983,8 +973,6 @@ Player::~Player()
     delete m_runes;
     delete m_achievementMgr;
     delete m_reputationMgr;
-    // [AZTH]
-    delete azthPlayer;
 
     sWorld->DecreasePlayerCount();
 
@@ -3324,21 +3312,16 @@ void Player::GiveLevel(uint8 level)
     if (Pet* pet = GetPet())
         pet->SynchronizeLevelWithOwner();
 
-    //[AZTH]
-    if (!azthPlayer->isTimeWalking()) {
-    //[/AZTH]
-    
-    if (MailLevelReward const* mailReward = sObjectMgr->GetMailLevelReward(level, getRaceMask()))
+    if (sScriptMgr->CanGiveMailRewardAtGiveLevel(this, level))
     {
-        //- TODO: Poor design of mail system
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        MailDraft(mailReward->mailTemplateId).SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
-        CharacterDatabase.CommitTransaction(trans);
+        if (MailLevelReward const* mailReward = sObjectMgr->GetMailLevelReward(level, getRaceMask()))
+        {
+            //- TODO: Poor design of mail system
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            MailDraft(mailReward->mailTemplateId).SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
+            CharacterDatabase.CommitTransaction(trans);
+        }
     }
-
-    //[AZTH]
-    }
-    //[/AZTH]
     
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL);
 
@@ -5080,17 +5063,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         stmt->setUInt32(0, guid);
         trans->Append(stmt);
 
-        //[AZTH]
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARMORY_STATS);
-        stmt->setUInt32(0, guid);
-        trans->Append(stmt);
-
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_FEED_LOG);
-        stmt->setUInt32(0, guid);
-        trans->Append(stmt);
-        trans->PAppend("DELETE FROM armory_character_stats WHERE guid = '%u'", guid);
-        trans->PAppend("DELETE FROM character_feed_log WHERE guid = '%u'", guid);
-        //[/AZTH]
+        sScriptMgr->OnDeleteFromDB(trans, guid);
 
         CharacterDatabase.CommitTransaction(trans);
         break;
@@ -5645,15 +5618,8 @@ void Player::RepopAtGraveyard()
 
     AreaTableEntry const* zone = sAreaTableStore.LookupEntry(GetAreaId());
 
-    // [AZTH] 
-    if (azthPlayer->isInBlackMarket()) { 
-        if (!IsAlive()) { 
-            ResurrectPlayer(0.5f);
-            SpawnCorpseBones();
-        }
-        TeleportTo(AzthSharedDef::blackMarket);
+    if (!sScriptMgr->CanRepopAtGraveyard(this))
         return;
-    }
 
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
     // Xinef: Get Transport Check is not needed
@@ -6716,9 +6682,7 @@ uint16 Player::GetMaxSkillValue(uint32 skill) const
 
     int32 result = int32(SKILL_MAX(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos))));
     
-    //[AZTH] Hack for timewalking
-    if (this->azthPlayer->isTimeWalking())
-        result = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
+    sScriptMgr->OnGetMaxSkillValue(const_cast<Player*>(this), skill, result, false);
     
     result += SKILL_TEMP_BONUS(bonus);
     result += SKILL_PERM_BONUS(bonus);
@@ -6733,12 +6697,12 @@ uint16 Player::GetPureMaxSkillValue(uint32 skill) const
     SkillStatusMap::const_iterator itr = mSkillStatus.find(skill);
     if (itr == mSkillStatus.end() || itr->second.uState == SKILL_DELETED)
         return 0;
-    
-    //[AZTH] Hack for timewalking
-    if (this->azthPlayer->isTimeWalking())
-        return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
 
-    return SKILL_MAX(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos)));
+    int32 result = int32(SKILL_MAX(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos))));
+
+    sScriptMgr->OnGetMaxSkillValue(const_cast<Player*>(this), skill, result, true);
+
+    return result < 0 ? 0 : result;
 }
 
 uint16 Player::GetBaseSkillValue(uint32 skill) const
@@ -6809,27 +6773,6 @@ void Player::SendActionButtons(uint32 state) const
     {
         for (uint8 button = 0; button < MAX_ACTION_BUTTONS; ++button)
         {
-            /*[AZTH] Timewalking this code fuck-up the action bar when you move lowered rank spell from a slot to another
-            if (azthPlayer->isTimeWalking(true)) {
-                ActionButtonList::const_iterator itr = m_actionButtons.find(button);
-                if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED && itr->second.GetType() == ACTION_BUTTON_SPELL) { 
-                    SpellInfo const *sInfo = sSpellMgr->GetSpellInfo(itr->second.GetAction());
-                        
-                    if (sAzthUtils->canScaleSpell(sInfo)) {
-                        uint32 spell=sAzthUtils->selectCorrectSpellRank(getLevel(), itr->second.GetAction());
-                        if (spell != itr->second.GetAction() 
-                            && HasActiveSpell(spell)) { // we cannot send information about low ranks that are not active (maybe workaround needed?)
-                            ActionButton _twBtn = itr->second;
-                            _twBtn.SetActionAndType(spell, ACTION_BUTTON_SPELL);
-                            data << uint32(_twBtn.packedData);
-
-                            continue;
-                        }
-                    }
-                }
-            }
-            //[/AZTH] Timewalking*/
-            
             ActionButtonList::const_iterator itr = m_actionButtons.find(button);
             if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED)
                 data << uint32(itr->second.packedData);
@@ -7013,17 +6956,15 @@ void Player::CheckAreaExploreAndOutdoor()
     if (sWorld->getBoolConfig(CONFIG_VMAP_INDOOR_CHECK) && !isOutdoor)
         RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
     
-    //[AZTH]
-    if (!azthPlayer->canExplore())
+    if (!sScriptMgr->CanAreaExploreAndOutdoor(this))
         return;
-    //[/AZTH]
 
     if (!areaId)
         return;
 
     if (!areaEntry)
     {
-     sLog->outError("Player '%s' (%u) discovered unknown area (x: %f y: %f z: %f map: %u)",
+        sLog->outError("Player '%s' (%u) discovered unknown area (x: %f y: %f z: %f map: %u)",
             GetName().c_str(), GetGUIDLow(), GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId());
         return;
     }
@@ -7360,9 +7301,8 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
 
     uint64 victim_guid = 0;
     uint32 victim_rank = 0;
-    uint32 rank_diff = 0; //[AZTH]
 
-                          // need call before fields update to have chance move yesterday data to appropriate fields before today data change.
+    // need call before fields update to have chance move yesterday data to appropriate fields before today data change.
     UpdateHonorFields();
 
     // do not reward honor in arenas, but return true to enable onkill spellproc
@@ -7393,8 +7333,6 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
             if (v_level <= k_grey)
                 return false;
 
-            //[AZTH] PVP Rank Patch
-
             // PLAYER_CHOSEN_TITLE VALUES DESCRIPTION
             //  [0]      Just name
             //  [1..14]  Alliance honor titles and player name
@@ -7402,30 +7340,9 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
             //  [29..38] Other title and player name
             //  [39+]    Nothing
             uint32 victim_title = victim->GetUInt32Value(PLAYER_CHOSEN_TITLE);
+            uint32 killer_title = 0;            
 
-            // Get Killer titles, CharTitlesEntry::bit_index
-            // PLAYER__FIELD_KNOWN_TITLES describe which titles player can use,
-            // so we must find biggest pvp title , even for killer to find extra honor value
-            uint32 vtitle = victim->GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES);
-            //uint32 victim_title = 0;
-            uint32 ktitle = GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES);
-            uint32 killer_title = 0;
-            if (PLAYER_TITLE_MASK_ALL_PVP & ktitle)
-            {
-                for (int i = ((GetTeamId(true) == TEAM_ALLIANCE) ? 1 : HKRANKMAX); i != ((GetTeamId(true) == TEAM_ALLIANCE) ? HKRANKMAX : (2 * HKRANKMAX - 1)); i++)
-                {
-                    if (ktitle & (1 << i))
-                        killer_title = i;
-                }
-            }
-            if (PLAYER_TITLE_MASK_ALL_PVP & vtitle)
-            {
-                for (int i = ((victim->GetTeamId(true) == TEAM_ALLIANCE) ? 1 : HKRANKMAX); i != ((victim->GetTeamId(true) == TEAM_ALLIANCE) ? HKRANKMAX : (2 * HKRANKMAX - 1)); i++)
-                {
-                    if (vtitle & (1 << i))
-                        victim_title = i;
-                }
-            }
+            sScriptMgr->OnVictimRewardBefore(this, victim, killer_title, victim_title);
 
             // Get Killer titles, CharTitlesEntry::bit_index
             // Ranks:
@@ -7434,38 +7351,28 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
             //  title[other]  -> 0
             if (victim_title == 0)
                 victim_guid = 0;                        // Don't show HK: <rank> message, only log.
-            else if (victim_title < HKRANKMAX)
+            else if (victim_title < 15)
                 victim_rank = victim_title + 4;
-            else if (victim_title < (2 * HKRANKMAX - 1))
-                victim_rank = victim_title - (HKRANKMAX - 1) + 4;
+            else if (victim_title < 29)
+                victim_rank = victim_title - 14 + 4;
             else
                 victim_guid = 0;                        // Don't show HK: <rank> message, only log.
 
-                                                        // now find rank difference
-            if (killer_title == 0 && victim_rank>4)
-                rank_diff = victim_rank - 4;
-            else if (killer_title < HKRANKMAX)
-                rank_diff = (victim_rank>(killer_title + 4)) ? (victim_rank - (killer_title + 4)) : 0;
-            else if (killer_title < (2 * HKRANKMAX - 1))
-                rank_diff = (victim_rank>(killer_title - (HKRANKMAX - 1) + 4)) ? (victim_rank - (killer_title - (HKRANKMAX - 1) + 4)) : 0;
-
-
             honor_f = ceil(Trinity::Honor::hk_honor_at_level_f(k_level) * (v_level - k_grey) / (k_level - k_grey));
-            honor_f *= 1 + sWorld->getRate(RATE_PVP_RANK_EXTRA_HONOR)*(((float)rank_diff) / 10.0f);
-
-            //[/AZTH] End of PVP Ranks Patch
 
             // count the number of playerkills in one day
             ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);
+
             // and those in a lifetime
             ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_CLASS, victim->getClass());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, victim->getRace(true));
-            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA, GetAreaId());
-            UpdateKnownTitles(); // [AZTH]
+            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA, GetAreaId());            
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL, 1, 0, victim);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL, 1, 0, victim);
+
+            sScriptMgr->OnVictimRewardAfter(this, victim, killer_title, victim_rank, honor_f);
         }
         else
         {
@@ -8087,77 +7994,49 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
     // req. check at equip, but allow use for extended range if range limit max level, set proper level
     uint32 ssd_level = getLevel();
+    uint32 CustomScalingStatValue = 0;
 
-    // [AZTH] Timewalking
-    uint32 azthScalingStatValue = azthPlayer->isTimeWalking(true) ? sAzthUtils->calculateItemScalingValue(proto, this) : 0;
-    azthScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : azthScalingStatValue;
+    sScriptMgr->OnCustomScalingStatValueBefore(this, proto, slot, apply, CustomScalingStatValue);
+
+    uint32 ScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : CustomScalingStatValue;
 
     if (ssd && ssd_level > ssd->MaxLevel)
         ssd_level = ssd->MaxLevel;
 
-    ScalingStatValuesEntry const* ssv = azthScalingStatValue > 0 ? sScalingStatValuesStore.LookupEntry(ssd_level) : NULL;
+    ScalingStatValuesEntry const* ssv = ScalingStatValue ? sScalingStatValuesStore.LookupEntry(ssd_level) : nullptr;
     if (only_level_scale && !ssv)
         return;
 
     for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
     {
         uint32 statType = 0;
-        int32  val = 0;
+        int32 val = 0;
+
         // If set ScalingStatDistribution need get stats and values from it
         if (ssv)
         {
-            if (ssd) {
+            if (ssd)
+            {
                 if (ssd->StatMod[i] < 0)
                     continue;
+
                 statType = ssd->StatMod[i];
-                val = (ssv->getssdMultiplier(azthScalingStatValue) * ssd->Modifier[i]) / 10000;
+                val = (ssv->getssdMultiplier(ScalingStatValue) * ssd->Modifier[i]) / 10000;
             }
-            else {
-                // [AZTH] Timewalking
+            else
+            {
                 if (i >= proto->StatsCount)
                     continue;
 
-                statType = proto->ItemStat[i].ItemStatType;
-                uint32 posVal = proto->ItemStat[i].ItemStatValue < 0 ? -(proto->ItemStat[i].ItemStatValue) : proto->ItemStat[i].ItemStatValue;
-
-                // hack for items that don't have a required level
-                uint32 req=sAzthUtils->getCalcReqLevel(proto);
-                ScalingStatValuesEntry const* maxSSV = sScalingStatValuesStore.LookupEntry(req);
-                if (maxSSV) {
-                    float mulMax = sAzthUtils->getCustomMultiplier(proto, (float)maxSSV->getssdMultiplier(azthScalingStatValue));
-                    uint32 modifier = ((float)posVal / mulMax ) * 10000;
-
-                    float mul = sAzthUtils->getCustomMultiplier(proto, (float)ssv->getssdMultiplier(azthScalingStatValue));
-                    val = (mul * modifier) / 10000;
-
-                    if (proto->ItemStat[i].ItemStatValue < 0)
-                        val *= -1;
-
-                    //[AZTH] avoid higher values than stats. This means that there's an
-                    // uncorrect scaling calculation
-                    if (proto->ScalingStatValue == 0) {
-                        // constant reduction since even with scaling, stats are too large
-                        if (getLevel() + 10 > req) {         // from 0 to 9 level diff
-                            // val = val;
-                        } else if (getLevel() + 20 >= req) { // from 10 to 20 level diff
-                            val = val / 2;
-                        } else {                             // from 21 to max level diff
-                            val = val / 3;
-                        }
-                        
-                        if (abs(val) > abs(proto->ItemStat[i].ItemStatValue))
-                            val = proto->ItemStat[i].ItemStatValue;
-                    }
-                }
-                else {
-                    val = proto->ItemStat[i].ItemStatValue;
-                }
+                // OnCustomScalingStatValue(Player* player, ItemTemplate const* proto, uint32& statType, int32& val, uint8 itemProtoStatNumber, uint32 ScalingStatValue, ScalingStatValuesEntry const* ssv)
+                sScriptMgr->OnCustomScalingStatValue(this, proto, statType, val, i, ScalingStatValue, ssv);
             }
         }
         else
         {
             if (i >= proto->StatsCount)
                 continue;
+
             statType = proto->ItemStat[i].ItemStatType;
             val = proto->ItemStat[i].ItemStatValue;
         }
@@ -8320,18 +8199,15 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
     // Apply Spell Power from ScalingStatValue if set
     if (ssv)
-        if (int32 spellbonus = ssv->getSpellBonus(azthScalingStatValue))
+        if (int32 spellbonus = ssv->getSpellBonus(ScalingStatValue))
             ApplySpellPowerBonus(spellbonus, apply);
 
     // If set ScalingStatValue armor get it or use item armor
     uint32 armor = proto->Armor;
     if (ssv)
-    {
-        if (uint32 ssvarmor = ssv->getArmorMod(azthScalingStatValue))
-            //[AZTH] check to avoid higher values than stat itself (heirloom OR azth items with correct armor value)
-            if (proto->ScalingStatValue > 0 || ssvarmor < proto->Armor)
-            armor = ssvarmor;
-    }
+        if (uint32 ssvarmor = ssv->getArmorMod(ScalingStatValue))            
+            if (proto->ScalingStatValue > 0 || ssvarmor < proto->Armor) //Check to avoid higher values than stat itself (heirloom OR items with correct armor value)
+                armor = ssvarmor;
     else if (armor && proto->ArmorDamageModifier)
         armor -= uint32(proto->ArmorDamageModifier);
 
@@ -8355,7 +8231,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     }
 
     // Add armor bonus from ArmorDamageModifier if > 0
-    if (proto->ArmorDamageModifier > 0 /*[AZTH] */ && !azthPlayer->isTimeWalking(true)) // [/AZTH] armor modifier doesn't scale, so we need to deactivate
+    if (proto->ArmorDamageModifier > 0 && sScriptMgr->CanArmorDamageModifier(this))
         HandleStatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(proto->ArmorDamageModifier), apply);
 
     if (proto->Block)
@@ -8395,22 +8271,22 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     if (CanUseAttackType(attType))
         _ApplyWeaponDamage(slot, proto, ssv, apply);
 
-
     // Druids get feral AP bonus from weapon dps (also use DPS from ScalingStatValue)
     if (getClass() == CLASS_DRUID)
     {
         int32 dpsMod = 0;
         int32 feral_bonus = 0;
+
         if (ssv)
         {
-            dpsMod = ssv->getDPSMod(azthScalingStatValue);
-            feral_bonus += ssv->getFeralBonus(azthScalingStatValue);
+            dpsMod = ssv->getDPSMod(ScalingStatValue);
+            feral_bonus += ssv->getFeralBonus(ScalingStatValue);
         }
 
         feral_bonus += proto->getFeralBonus(dpsMod);
-        //[AZTH]
-        feral_bonus = sAzthUtils->normalizeFeralAp(feral_bonus, dpsMod, proto, ssv);
-        //[/AZTH]
+
+        sScriptMgr->OnGetFeralApBonus(this, feral_bonus, dpsMod, proto, ssv);
+        
         if (feral_bonus)
             ApplyFeralAPBonus(feral_bonus, apply);
     }
@@ -8418,14 +8294,17 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
 void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingStatValuesEntry const* ssv, bool apply)
 {
-    // [AZTH] Timewalking
-    uint32 azthScalingStatValue = azthPlayer->isTimeWalking(true) ? sAzthUtils->calculateItemScalingValue(proto, this) : 0;
-    azthScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : azthScalingStatValue;
-    
+    uint32 CustomScalingStatValue = 0;
+
+    sScriptMgr->OnCustomScalingStatValueBefore(this, proto, slot, apply, CustomScalingStatValue);
+
+    uint32 ScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : CustomScalingStatValue;
+
     // following part fix disarm issue
     // that doesn't apply the scaling after disarmed
-    if (!ssv) {
-        ScalingStatDistributionEntry const* ssd = proto->ScalingStatDistribution ? sScalingStatDistributionStore.LookupEntry(proto->ScalingStatDistribution) : NULL;
+    if (!ssv)
+    {
+        ScalingStatDistributionEntry const* ssd = proto->ScalingStatDistribution ? sScalingStatDistributionStore.LookupEntry(proto->ScalingStatDistribution) : nullptr;
 
         // req. check at equip, but allow use for extended range if range limit max level, set proper level
         uint32 ssd_level = getLevel();
@@ -8433,10 +8312,8 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
         if (ssd && ssd_level > ssd->MaxLevel)
             ssd_level = ssd->MaxLevel;
 
-        ssv = azthScalingStatValue > 0 ? sScalingStatValuesStore.LookupEntry(ssd_level) : NULL;
+        ssv = ScalingStatValue ? sScalingStatValuesStore.LookupEntry(ssd_level) : nullptr;
     }
-    
-    //[/AZTH]
 
     WeaponAttackType attType = BASE_ATTACK;
     float damage = 0.0f;
@@ -8458,7 +8335,7 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
     // If set dpsMod in ScalingStatValue use it for min (70% from average), max (130% from average) damage
     if (ssv)
     {
-        int32 extraDPS = ssv->getDPSMod(azthScalingStatValue);
+        int32 extraDPS = ssv->getDPSMod(ScalingStatValue);
         if (extraDPS)
         {
             float average = extraDPS * proto->Delay / 1000.0f;
@@ -8537,12 +8414,6 @@ void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attac
 
 void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
 {
-    //[AZTH] weapon damage is already handled by our item scaling system
-    // but we need other effect of MOD_DAMAGE_PERCENT with SPELL_SCHOOL_MASK_NORMAL (physic spells)
-    if (aura->GetSpellInfo()->Id == TIMEWALKING_AURA_MOD_DAMAGESPELL)
-        return;
-    //[/AZTH]
-    
     // don't apply mod if item is broken or cannot be used
     if (item->IsBroken() || !CanUseAttackType(attackType))
         return;
@@ -8553,6 +8424,9 @@ void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType att
 
     // generic not weapon specific case processes in aura code
     if (aura->GetSpellInfo()->EquippedItemClass == -1)
+        return;
+
+    if (!sScriptMgr->CanApplyWeaponDependentAuraDamageMod(this, item, attackType, aura, apply))
         return;
 
     UnitMods unitMod = UNIT_MOD_END;
@@ -8619,8 +8493,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
 {
     if (apply)
     {
-        // [AZTH] Timewalking
-        if (item && !azthPlayer->itemCheckReqLevel(item->GetTemplate()))
+        if (!sScriptMgr->CanApplyEquipSpell(this, spellInfo, item, apply, form_change))
             return;
         
         // Cannot be used in this stance/form
@@ -8695,24 +8568,8 @@ void Player::UpdateEquipSpellsAtFormChange()
 
             ApplyEquipSpell(spellInfo, NULL, false, true);       // remove spells that not fit to form
             
-            // [AZTH] Timewalking
-            bool found=false;
-            for (uint8 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
-            {
-                if (m_items[i])
-                {
-                    ItemTemplate const* proto = m_items[i]->GetTemplate();
-                    if (proto->ItemSet == eff->setid) {
-                        if (proto && !azthPlayer->itemCheckReqLevel(proto)) {
-                            found=true;
-                        }
-                        break;
-                    }
-                }
-            }
-            if (found)
+            if (!sScriptMgr->CanApplyEquipSpellsItemSet(this, eff))
                 break;
-            //[/AZTH]
             
             ApplyEquipSpell(spellInfo, NULL, true, true);        // add spells that fit form but not active
         }
@@ -8758,8 +8615,7 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 
 void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item* item, ItemTemplate const* proto)
 {
-    // [AZTH] Timewalking
-    if (!azthPlayer->itemCheckReqLevel(proto))
+    if (!sScriptMgr->CanCastItemCombatSpell(this, target, attType, procVictim, procEx, item, proto))
         return;
     
     // Can do effect if any damage done to target
@@ -8886,12 +8742,12 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 
 void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex)
 {    
-    ItemTemplate const* proto = item->GetTemplate();
-    
-    // [AZTH] Timewalking
-    if (!azthPlayer->canUseItem(item, true))
+    if (!sScriptMgr->CanCastItemUseSpell(this, item, targets, cast_count, glyphIndex))
         return;
-    //[/AZTH]
+
+    ItemTemplate const* proto = item->GetTemplate();    
+
+    
     
     // special learning case
     if (proto->Spells[0].SpellId == 483 || proto->Spells[0].SpellId == 55884)
@@ -9156,16 +9012,7 @@ void Player::_ApplyAmmoBonuses()
     else
         currentAmmoDPS = (ammo_proto->Damage[0].DamageMin + ammo_proto->Damage[0].DamageMax) / 2;
     
-    //[AZTH] Timewalking
-    if (!azthPlayer->itemCheckReqLevel(ammo_proto)) {
-        uint32 reqLevel = sAzthUtils->getCalcReqLevel(ammo_proto);
-        if (getLevel() < reqLevel) {
-            uint32 red=ceil(getLevel() * 100 / reqLevel / 2);
-            uint32 malus = ceil((reqLevel - getLevel()) / 10);
-            float pRed = float(red > malus ? red - malus : 1) / 100.0f; // convert to fraction
-            currentAmmoDPS=ceil(currentAmmoDPS * pRed);
-        }
-    }
+    sScriptMgr->OnApplyAmmoBonuses(this, ammo_proto, currentAmmoDPS);
 
     if (currentAmmoDPS == GetAmmoDPS())
         return;
@@ -12113,8 +11960,8 @@ InventoryResult Player::CanEquipNewItem(uint8 slot, uint16 &dest, uint32 item, b
 
 InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool swap, bool not_loading) const
 {
-
     dest = 0;
+
     if (pItem)
     {
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
@@ -12123,14 +11970,8 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
         ItemTemplate const* pProto = pItem->GetTemplate();
         if (pProto)
         {
-            //[AZTH] if you have the pvp set or not valid item for this season and you
-            // are equipping something, it won't be equipped
-            if (!GetSession()->PlayerLoading() && pProto->InventoryType>0
-                && !azthPlayer->canEquipItem(pProto))
-            {
-                    return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-            }
-            //[/AZTH]
+            if (!sScriptMgr->CanEquipItem(const_cast<Player*>(this), slot, dest, pItem, swap, not_loading))
+                return EQUIP_ERR_CANT_DO_RIGHT_NOW;
 
             // item used
             if (pItem->m_lootGenerated)
@@ -12294,10 +12135,8 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
 
 InventoryResult Player::CanUnequipItem(uint16 pos, bool swap) const
 {
-    //[AZTH]
-    if (IsEquipmentPos(pos) && azthPlayer->hasGear())
+    if (!sScriptMgr->CanUnequipItem(const_cast<Player*>(this), pos, swap))
         return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-    //[/AZTH]
 
     // Applied only to equipped items and bank bags
     if (!IsEquipmentPos(pos) && !IsBagPos(pos))
@@ -12597,53 +12436,48 @@ InventoryResult Player::CanUseItem(Item* pItem, bool not_loading) const
 InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
 {
     // Used by group, function NeedBeforeGreed, to know if a prototype can be used by a player
+    if (!proto)
+        return EQUIP_ERR_ITEM_NOT_FOUND;
 
-    if (proto)
+    if ((proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY) && GetTeamId(true) != TEAM_HORDE)
+        return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
+
+    if ((proto->Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY) && GetTeamId(true) != TEAM_ALLIANCE)
+        return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
+
+    if ((proto->AllowableClass & getClassMask()) == 0 || (proto->AllowableRace & getRaceMask()) == 0)
+        return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
+
+    if (proto->RequiredSkill != 0)
     {
-        if ((proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY) && GetTeamId(true) != TEAM_HORDE)
-            return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
-
-        if ((proto->Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY) && GetTeamId(true) != TEAM_ALLIANCE)
-            return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
-
-        if ((proto->AllowableClass & getClassMask()) == 0 || (proto->AllowableRace & getRaceMask()) == 0)
-            return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
-
-        if (proto->RequiredSkill != 0)
-        {
-            if (GetSkillValue(proto->RequiredSkill) == 0)
-                return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
-            else if (GetSkillValue(proto->RequiredSkill) < proto->RequiredSkillRank)
-                return EQUIP_ERR_CANT_EQUIP_SKILL;
-        }
-
-        if (proto->RequiredSpell != 0 && !HasSpell(proto->RequiredSpell))
+        if (GetSkillValue(proto->RequiredSkill) == 0)
             return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
-
-        //if player is in bg or arena and tournament is enabled check for item level 
-        //if it is > of the maximum level doesnt allow the equipment
-        if(proto->InventoryType>0 && !azthPlayer->canEquipItem(proto))
-                return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-        
-        //[AZTH] if you are a timewalker you can equip all items
-        // because you are an 80 with "fake low level"
-        if (!azthPlayer->isTimeWalking()) {
-            if (getLevel() < proto->RequiredLevel)
-                return EQUIP_ERR_CANT_EQUIP_LEVEL_I;
-        }
-
-        // If World Event is not active, prevent using event dependant items
-        if (proto->HolidayId && !IsHolidayActive((HolidayIds)proto->HolidayId))
-            return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-
-        return EQUIP_ERR_OK;
+        else if (GetSkillValue(proto->RequiredSkill) < proto->RequiredSkillRank)
+            return EQUIP_ERR_CANT_EQUIP_SKILL;
     }
+
+    if (proto->RequiredSpell != 0 && !HasSpell(proto->RequiredSpell))
+        return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
+
+    InventoryResult result = EQUIP_ERR_OK;
+
+    if (!sScriptMgr->CanUseItem(const_cast<Player*>(this), proto, result))
+        return result;
+
+    if (getLevel() < proto->RequiredLevel)
+        return EQUIP_ERR_CANT_EQUIP_LEVEL_I;
+
+    // If World Event is not active, prevent using event dependant items
+    if (proto->HolidayId && !IsHolidayActive((HolidayIds)proto->HolidayId))
+        return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+
 #ifdef ELUNA
     InventoryResult eres = sEluna->OnCanUseItem(this, proto->ItemId);
     if (eres != EQUIP_ERR_OK)
         return eres;
 #endif
-    return EQUIP_ERR_ITEM_NOT_FOUND;
+
+    return EQUIP_ERR_OK;
 }
 
 InventoryResult Player::CanRollForItemInLFG(ItemTemplate const* proto, WorldObject const* lootedObject) const
@@ -12978,22 +12812,22 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
 
 Item* Player::EquipNewItem(uint16 pos, uint32 item, bool update)
 {
-    if (Item* pItem = Item::CreateItem(item, 1, this))
-    {
-        if (!IsEquipmentPos(pos) || !azthPlayer->hasGear()) //AZTH dosnt save equip if they are temp item for tournament
-        {
-            // pussywizard: obtaining blue or better items saves to db
-            if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item))
-                if (pProto->Quality >= ITEM_QUALITY_RARE)
-                    AdditionalSavingAddMask(ADDITIONAL_SAVING_INVENTORY_AND_GOLD);
+    Item* _item = Item::CreateItem(item, 1, this);
+    if (!_item)
+        return nullptr;
 
-            ItemAddedQuestCheck(item, 1);
-            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item, 1);
-        }
-        return EquipItem(pos, pItem, update);
+    if (!IsEquipmentPos(pos) || sScriptMgr->CanSaveEquipNewItem(this, _item, pos, update))
+    {
+        // pussywizard: obtaining blue or better items saves to db
+        if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item))
+            if (pProto->Quality >= ITEM_QUALITY_RARE)
+                AdditionalSavingAddMask(ADDITIONAL_SAVING_INVENTORY_AND_GOLD);
+
+        ItemAddedQuestCheck(item, 1);
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item, 1);
     }
 
-    return NULL;
+    return EquipItem(pos, _item, update);
 }
 
 Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
@@ -14602,20 +14436,12 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
     if (slot >= MAX_ENCHANTMENT_SLOT)
         return;
 
-    //[AZTH] Timewalking
-    if (!azthPlayer->itemCheckReqLevel(item->GetTemplate()))
-        return;
-
     uint32 enchant_id = item->GetEnchantmentId(slot);
     if (!enchant_id)
         return;
 
     SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
     if (!pEnchant)
-        return;
-
-    //[AZTH] Timewalking
-    if (sAzthUtils->disableEnchant(this, pEnchant))
         return;
     
     if (!ignore_condition && pEnchant->EnchantmentCondition && !EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
@@ -14625,6 +14451,9 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
         return;
 
     if (pEnchant->requiredSkill > 0 && pEnchant->requiredSkillValue > GetSkillValue(pEnchant->requiredSkill))
+        return;
+
+    if (!sScriptMgr->CanApplyEnchantment(this, item, slot, apply, apply_dur, ignore_condition))
         return;
 
     // If we're dealing with a gem inside a prismatic socket we need to check the prismatic socket requirements
@@ -16205,8 +16034,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     bool rewarded = IsQuestRewarded(quest_id) && !quest->IsDFQuest();
 
     // Not give XP in case already completed once repeatable quest
-    // [AZTH]
-    uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this) * azthPlayer->GetPlayerQuestRate());
+    uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this) * GetQuestRate());
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
@@ -16770,7 +16598,7 @@ bool Player::SatisfyQuestSeasonal(Quest const* qInfo, bool /*msg*/) const
     if (!qInfo->IsSeasonal() || m_seasonalquests.empty())
         return true;
 
-    Player::SeasonalEventQuestMap::iterator itr = ((Player*)this)->m_seasonalquests.find(qInfo->GetEventIdForQuest());
+    Player::SeasonalEventQuestMap::iterator itr = (const_cast<Player*>(this))->m_seasonalquests.find(qInfo->GetEventIdForQuest());
 
     if (itr == m_seasonalquests.end() || itr->second.empty())
         return true;
@@ -17347,17 +17175,15 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
         Quest const* qInfo = sObjectMgr->GetQuestTemplate(questid);
         if (!qInfo)
             continue;
+
         // just if !ingroup || !noraidgroup || raidgroup
         // xinef: or is pvp quest, and player in BG/BF group
         QuestStatusData& q_status = m_QuestStatus[questid];
         if (q_status.Status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->IsAllowedInRaid(GetMap()->GetDifficulty()) ||
             (qInfo->IsPVPQuest() && (GetGroup()->isBFGroup() || GetGroup()->isBGGroup()))))
         {
-            //[AZTH] it it's an Hearthstone quest and doesn't satisfy requirements, skip
-            // otherwise continue as normal
-            if (!azthPlayer->passHsChecks(qInfo, entry, real_entry, guid)) 
+            if (!sScriptMgr->PassedQuestKilledMonsterCredit(this, qInfo, entry, real_entry, guid))
                 continue;
-            
             
             if (qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_KILL) /*&& !qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_CAST)*/)
             {
@@ -17908,15 +17734,18 @@ void Player::_LoadArenaTeamInfo()
 {
     memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32) * MAX_ARENA_SLOT * ARENA_TEAM_END);
 
-    for (uint8 slot = 0; slot <= 4 /*[AZTH] 2 -> 4 for 1v1 & 3v3soloq slots*/; ++slot)
-        if (uint32 arenaTeamId = Player::GetArenaTeamIdFromStorage(GetGUIDLow(), slot))
+    for (auto const& itr : ArenaTeam::ArenaSlotByType)
+        if (uint32 arenaTeamId = Player::GetArenaTeamIdFromStorage(GetGUIDLow(), itr.second))
         {
             ArenaTeam* arenaTeam = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);
             if (!arenaTeam) // some shit, should be assert, but just ignore
                 continue;
+
             ArenaTeamMember const* member = arenaTeam->GetMember(GetGUID());
             if (!member) // some shit, should be assert, but just ignore
                 continue;
+
+            uint8 slot = itr.second;
 
             SetArenaTeamInfoField(slot, ARENA_TEAM_ID, arenaTeamId);
             SetArenaTeamInfoField(slot, ARENA_TEAM_TYPE, arenaTeam->GetType());
@@ -18101,12 +17930,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         CharacterDatabase.Execute(stmt);
         return false;
     }
-
-    //[AZTH]
-    // Cleanup old Wowarmory feeds
-    InitWowarmoryFeeds();
-    //[/AZTH]
-
+    
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 
@@ -18500,7 +18324,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     InitStatsForLevel();
     InitGlyphsForLevel();
     InitTaxiNodesForLevel();
-    InitRunes();
+    InitRunes();   
 
     sScriptMgr->OnPlayerLoadFromDB(this);
 
@@ -18970,25 +18794,9 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
                     else if (IsEquipmentPos(INVENTORY_SLOT_BAG_0, slot))
                     {
                         uint16 dest;
-                        
-                        if (azthPlayer->hasGear()) { /*[AZTH] pvp set */
-                            ItemTemplate const* pProto = item->GetTemplate();
-                            if (pProto)
-                            {
-                                uint8 eslot = FindEquipSlot(pProto, slot, false);
-                                if (eslot == NULL_SLOT)
-                                    err = EQUIP_ERR_ITEM_CANT_BE_EQUIPPED;
 
-                                dest = ((INVENTORY_SLOT_BAG_0 << 8) | eslot);
-                            }
-                            else {
-                                err = EQUIP_ERR_ITEM_NOT_FOUND;
-                            }
-                            //[/AZTH]
-                        }
-                        else {
+                        if (sScriptMgr->CheckItemInSlotAtLoadInventory(this, item, slot, err, dest))
                             err = CanEquipItem(slot, dest, item, false, false);
-                        }
 
                         if (err == EQUIP_ERR_OK)
                             QuickEquipItem(dest, item);
@@ -19857,7 +19665,7 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
             leader = HashMapHolder<Player>::Find(leaderGuid);
         
         if (!leader || !leader->IsInWorld())
-            leader=this;
+            leader = this;
 
         if (ar->achievement)
             if (!leader || !leader->HasAchieved(ar->achievement))
@@ -19867,11 +19675,8 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
         MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(target_map, target_difficulty);
         if (LevelMin || LevelMax || missingItem || missingQuest || missingAchievement)
         {
-            //[AZTH] Timewalking, avoid attunement for TBC & Classic
-            if (ar->levelMin<=70 && leader->azthPlayer->isTimeWalking()){
+            if (!sScriptMgr->NotAvoidSatisfy(leader, ar, target_map, report))
                 return true;
-            }
-            //[/AZTH]
             
             if (report)
             {
@@ -20047,41 +19852,6 @@ void Player::SaveToDB(bool create, bool logout)
         _SaveStats(trans);
 
     CharacterDatabase.CommitTransaction(trans);
-    
-    //[AZTH]
-    // Place this code AFTER CharacterDatabase.CommitTransaction(); to avoid some character saving errors.
-    // Wowarmory feeds
-    SQLTransaction wowArmoryTrans = CharacterDatabase.BeginTransaction();
-    
-    if (!m_wowarmory_feeds.empty())
-    {
-        std::ostringstream sWowarmory;
-        sWowarmory << "INSERT IGNORE INTO character_feed_log (guid,type,data,date,counter,difficulty,item_guid,item_quality) VALUES ";
-        for (WowarmoryFeeds::iterator iter = m_wowarmory_feeds.begin(); iter < m_wowarmory_feeds.end(); ++iter)
-        {
-            //                      guid                    type                        data                    date                            counter                   difficulty                        item_guid                      item_quality
-            sWowarmory << "(" << (*iter).guid << ", " << (*iter).type << ", " << (*iter).data << ", " << uint64((*iter).date) << ", " << (*iter).counter << ", " << uint32((*iter).difficulty) << ", " << (*iter).item_guid << ", " << (*iter).item_quality << ")";
-            if (iter != m_wowarmory_feeds.end() - 1)
-                sWowarmory << ",";
-        }
-        wowArmoryTrans->Append(sWowarmory.str().c_str());
-        // Clear old saved feeds from storage - they are not required for server core.
-        InitWowarmoryFeeds();
-    }
-    
-    wowArmoryTrans->PAppend("DELETE FROM armory_character_stats WHERE guid = %u", GetGUIDLow());
-    
-    // Character stats
-    std::ostringstream ps;
-    time_t t = time(NULL);
-    ps << "INSERT INTO armory_character_stats (guid, data, save_date) VALUES (" << GetGUIDLow() << ", '";
-    for (uint16 i = 0; i < m_valuesCount; ++i)
-        ps << GetUInt32Value(i) << " ";
-    ps << "', " << uint64(t) << ");";
-    wowArmoryTrans->Append(ps.str().c_str());
-    
-    CharacterDatabase.CommitTransaction(wowArmoryTrans);
-    //[/AZTH]
 
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
@@ -23187,9 +22957,11 @@ bool Player::IsVisibleGloballyFor(Player const* u) const
 
     // GMs are visible for higher gms (or players are visible for gms)
     if (!AccountMgr::IsPlayerAccount(u->GetSession()->GetSecurity()))
-        return GetSession()->GetSecurity() <= u->GetSession()->GetSecurity() 
-                    || (GetSession()->GetSecurity() == SEC_ENTERTAINER && u->GetSession()->GetSecurity() == SEC_T1_SUPPORTER); //[AZTH]
+        return GetSession()->GetSecurity() <= u->GetSession()->GetSecurity();
 
+    if (!sScriptMgr->NotVisibleGloballyFor(const_cast<Player*>(this), u))
+        return true;
+    
     // non faction visibility non-breakable for non-GMs
     return false;
 }
@@ -27922,77 +27694,62 @@ void Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     Pet::LoadPetFromDB(this, asynchLoadType, entry, 0, false, asynchPetInfo);
 }
 
-//[AZTH]
+void Player::SetArenaTeamInfoField(uint8 slot, ArenaTeamInfoType type, uint32 value)
+{
+    if (sScriptMgr->NotSetArenaTeamInfoField(this, slot, type, value))
+        SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + type, value); 
+}
 
-uint16 Player::GetMaxSkillValueForLevel() const {
-    if (this->azthPlayer->isTimeWalking())
-        return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
+uint32 Player::GetArenaPersonalRating(uint8 slot) const
+{
+    uint32 result = GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_PERSONAL_RATING);
+
+    sScriptMgr->OnGetArenaPersonalRating(const_cast<Player*>(this), slot, result);
+
+    return result;
+}
+
+uint32 Player::GetArenaTeamId(uint8 slot) const
+{
+    uint32 result = GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_ID);
+
+    sScriptMgr->OnGetArenaTeamId(const_cast<Player*>(this), slot, result);
+
+    return result;
+}
+
+bool Player::IsFFAPvP()
+{
+    bool result = Unit::IsFFAPvP();
+
+    sScriptMgr->OnIsFFAPvP(this, result);
+
+    return result;
+}
+
+bool Player::IsPvP()
+{
+    bool result = Unit::IsPvP();
+
+    sScriptMgr->OnIsPvP(this, result);
+
+    return result;
+}
+
+uint16 Player::GetMaxSkillValueForLevel() const
+{
+    uint16 result = Unit::GetMaxSkillValueForLevel();
+
+    sScriptMgr->OnGetMaxSkillValueForLevel(const_cast<Player*>(this), result);
     
-    return Unit::GetMaxSkillValueForLevel();
+    return result;
 }
 
-void Player::UpdateKnownTitles()
+float Player::GetQuestRate()
 {
-    uint32 new_title = 0;
-    uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
-    uint32 old_title = GetUInt32Value(PLAYER_CHOSEN_TITLE);
-    RemoveFlag64(PLAYER__FIELD_KNOWN_TITLES, PLAYER_TITLE_MASK_ALL_PVP);
-    // if (honor_kills < 0)
-    //    return;
-    bool max_rank = ((honor_kills >= sWorld->pvp_ranks[HKRANKMAX - 1]) ? true : false);
-    for (int i = HKRANK01; i != HKRANKMAX; ++i)
-    {
-        if (honor_kills < sWorld->pvp_ranks[i] || (max_rank))
-        {
-            new_title = ((max_rank) ? (HKRANKMAX - 1) : (i - 1));
-            if (new_title > 0)
-                new_title += ((GetTeamId(true) == TEAM_ALLIANCE) ? 0 : (HKRANKMAX - 1));
-            break;
-        }
-    }
-    SetFlag64(PLAYER__FIELD_KNOWN_TITLES, uint64(1) << new_title);
-    if (old_title > 0 && old_title < (2 * HKRANKMAX - 1) && new_title > old_title)
-        SetUInt32Value(PLAYER_CHOSEN_TITLE, new_title);
-}
+    float result = sWorld->getRate(RATE_XP_QUEST);
 
-void Player::InitWowarmoryFeeds()
-{
-    // Clear feeds
-    m_wowarmory_feeds.clear();
-}
+    sScriptMgr->OnGetQuestRate(this, result);
 
-void Player::CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality)
-{
-    /*
-    1 - TYPE_ACHIEVEMENT_FEED
-    2 - TYPE_ITEM_FEED
-    3 - TYPE_BOSS_FEED
-    */
-    if (GetGUIDLow() == 0)
-    {
-        sLog->outError("[Wowarmory]: player is not initialized, unable to create log entry!");
-        return;
-    }
-    if (type <= 0 || type > 3)
-    {
-        sLog->outError("[Wowarmory]: unknown feed type: %d, ignore.", type);
-        return;
-    }
-    if (data == 0)
-    {
-        sLog->outError("[Wowarmory]: empty data (GUID: %u), ignore.", GetGUIDLow());
-        return;
-    }
-    WowarmoryFeedEntry feed;
-    feed.guid = GetGUIDLow();
-    feed.type = type;
-    feed.data = data;
-    feed.difficulty = type == 3 ? GetMap()->GetDifficulty() : 0;
-    feed.item_guid = item_guid;
-    feed.item_quality = item_quality;
-    feed.counter = 0;
-    feed.date = time(NULL);
-    sLog->outDebug(LOG_FILTER_NONE, "[Wowarmory]: create wowarmory feed (GUID: %u, type: %d, data: %u).", feed.guid, feed.type, feed.data);
-    m_wowarmory_feeds.push_back(feed);
+    return result;
 }
-//[/AZTH]

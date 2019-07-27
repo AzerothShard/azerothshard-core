@@ -17,6 +17,7 @@
 #include "MapManager.h"
 #include "Map.h"
 #include "Group.h"
+#include "AZTH.h"
 #include "Apps.h"
 
 class Group;
@@ -42,25 +43,28 @@ enum SmartStoneCommands {
     SMRTST_README_CHILD=60400,
 };
 
-std::string SmartStoneCommand::getText(Player *pl) {
-        AzthCustomLangs loc = AZTH_LOC_IT;
+std::string SmartStoneCommand::getText(Player *pl)
+{
+    AzthCustomLangs loc = AZTH_LOC_IT;
 
-        if (pl)
-            loc = pl->azthPlayer->getCustLang();
+    if (pl)
+        loc = sAZTH->GetAZTHPlayer(pl)->getCustLang();
         
-        switch(loc) {
-            case AZTH_LOC_IT:
-                return text_it;
-            break;
-            case AZTH_LOC_EN:
-                return text_def;
-            break;
-        }
+    switch(loc)
+    {
+        case AZTH_LOC_IT:
+            return text_it;
+        break;
+        case AZTH_LOC_EN:
+            return text_def;
+        break;
+    }
         
-        return text_def;
+    return text_def;
 }
 
-class azth_smart_stone : public ItemScript {
+class azth_smart_stone : public ItemScript
+{
 public:
     
     uint32 parent = 1;
@@ -187,7 +191,7 @@ public:
                     break;
             }
             if (selectedCommand.charges > 0) {
-                player->azthPlayer->decreaseSmartStoneCommandCharges(
+                sAZTH->GetAZTHPlayer(player)->decreaseSmartStoneCommandCharges(
                         selectedCommand.id);
             }
             player->CLOSE_GOSSIP_MENU();
@@ -222,7 +226,7 @@ public:
                     break;
             }
             if (selectedCommand.charges > 0) {
-                player->azthPlayer->decreaseSmartStoneCommandCharges(selectedCommand.id);
+                sAZTH->GetAZTHPlayer(player)->decreaseSmartStoneCommandCharges(selectedCommand.id);
             }
             player->CLOSE_GOSSIP_MENU();
         }
@@ -235,8 +239,8 @@ public:
         {
             // black market teleport id 1
             SmartStoneCommand teleport = sSmartStone->getCommandById(SMRTST_BLACK_MARKET);
-            if (!player->azthPlayer->isInBlackMarket()) {
-                /*if (player->azthPlayer->isPvP()) {
+            if (!sAZTH->GetAZTHPlayer(player)->isInBlackMarket()) {
+                /*if (sAZTH->GetAZTHPlayer(player)->isPvP()) {
                     player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
                 }*/
 
@@ -245,7 +249,7 @@ public:
                 player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
             }
             
-            if (!player->azthPlayer->isPvP()) {
+            if (!sAZTH->GetAZTHPlayer(player)->isPvP()) {
                 player->PlayerTalkClass->GetGossipMenu().AddMenuItem(SMRTST_README, 0, GOSSIP_SENDER_MAIN, SMRTST_README_CHILD);
             }
 
@@ -274,17 +278,16 @@ public:
             SmartStoneCommand resetAuras = sSmartStone->getCommandById(SMRTST_RESET_AURAS);
             player->ADD_GOSSIP_ITEM(resetAuras.icon, resetAuras.getText(player), GOSSIP_SENDER_MAIN, resetAuras.id);
             
-            if (player->azthPlayer->isPvP()) {
+            if (sAZTH->GetAZTHPlayer(player)->isPvP()) {
                 // dalaran teleport
                 SmartStoneCommand dalaranTeleport = sSmartStone->getCommandById(SMRTST_TELEPORT_DALARAN);
                 player->ADD_GOSSIP_ITEM(dalaranTeleport.icon, dalaranTeleport.getText(player), GOSSIP_SENDER_MAIN, dalaranTeleport.id);
             }
-            
 
-            if (player->azthPlayer->getCurrentDimensionByAura() == DIMENSION_RPG) {
+            if (sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByAura() == DIMENSION_RPG) {
                 Player *owner=getHomeOwner(player);
                 
-                if (MapManager::IsValidMapCoord(owner->azthPlayer->getLastPositionInfo(AZTH_SMRTST_POSITION_HOUSE_INDEX))) {
+                if (MapManager::IsValidMapCoord(sAZTH->GetAZTHPlayer(owner)->getLastPositionInfo(AZTH_SMRTST_POSITION_HOUSE_INDEX))) {
                     // home teleport for RPG world
                     SmartStoneCommand homeTeleport = sSmartStone->getCommandById(SMRTST_TELEPORT_HOUSE);
                     std::string str=homeTeleport.getText(player) + " (" +owner->GetName()+")";
@@ -295,7 +298,7 @@ public:
         }
 
         std::vector<SmartStonePlayerCommand> & playerCommands =
-                player->azthPlayer->getSmartStoneCommands();
+                sAZTH->GetAZTHPlayer(player)->getSmartStoneCommands();
         int n = playerCommands.size();
 
         for (int i = 0; i < n; i++) {
@@ -306,7 +309,7 @@ public:
             if ((playerCommands[i].duration <= static_cast<uint32>(time(NULL)) &&
                     playerCommands[i].duration != 0) ||
                     playerCommands[i].charges == 0) {
-                player->azthPlayer->removeSmartStoneCommand(playerCommands[i], true);
+                sAZTH->GetAZTHPlayer(player)->removeSmartStoneCommand(playerCommands[i], true);
                 continue;
             }
 
@@ -454,20 +457,20 @@ public:
                 uint32 id = (*ssCommandsResult)[0].GetUInt32();
                 uint64 date = (*ssCommandsResult)[1].GetUInt64();
                 int32 charges = (*ssCommandsResult)[2].GetInt32();
-                player->azthPlayer->addSmartStoneCommand(id, false, date, charges);
+                sAZTH->GetAZTHPlayer(player)->addSmartStoneCommand(id, false, date, charges);
             } while (ssCommandsResult->NextRow());
         }
 
-        player->azthPlayer->getLastPositionInfoFromDB();
+        sAZTH->GetAZTHPlayer(player)->getLastPositionInfoFromDB();
     }
 
     void OnLogout(Player* player) override {
-        player->azthPlayer->saveLastPositionInfoToDB(player);
+        sAZTH->GetAZTHPlayer(player)->saveLastPositionInfoToDB(player);
     }
 
     void OnBeforeBuyItemFromVendor(Player* player, uint64 vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8  /*bag*/, uint8 /*slot*/) override {
         if (!sSmartStone->isNullCommand(sSmartStone->getCommandByItem(item))) {
-            player->azthPlayer->BuySmartStoneCommand(vendorguid, vendorslot, item, count, NULL_BAG, NULL_SLOT);
+            sAZTH->GetAZTHPlayer(player)->BuySmartStoneCommand(vendorguid, vendorslot, item, count, NULL_BAG, NULL_SLOT);
             item = 0;
         }
     }
@@ -541,8 +544,7 @@ void SmartStone::SmartStoneSendListInventory(WorldSession *session, uint64 vendo
 
                 uint32 leftInStock = 0xFFFFFFFF;
 
-                std::vector<SmartStonePlayerCommand> & playerCommands =
-                        session->GetPlayer()->azthPlayer->getSmartStoneCommands();
+                std::vector<SmartStonePlayerCommand> & playerCommands = sAZTH->GetAZTHPlayer(session->GetPlayer())->getSmartStoneCommands();
                 int n = playerCommands.size();
                 SmartStoneCommand command = sSmartStone->getCommandByItem(item->item);
 

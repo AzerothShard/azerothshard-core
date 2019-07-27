@@ -3,6 +3,7 @@
 #include "Language.h"
 #include "CustomRates.h"
 #include "Player.h"
+#include "AZTH.h"
 
 class AzthXPRatePlayerScripts : public PlayerScript
 {
@@ -21,9 +22,9 @@ public:
         // player has custom xp rate set. Load it from DB. Otherwise use default set in AzthPlayer::AzthPlayer
         if (rate != -1)
         {
-            player->azthPlayer->SetPlayerQuestRate(rate);
+            sAZTH->GetAZTHPlayer(player)->SetPlayerQuestRate(rate);
 
-            if (sWorld->getBoolConfig(CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SHOW_ON_LOGIN))
+            if (sAZTH->IsCustomXPShowOnLogin())
             {
                 if (!rate)
                     ChatHandler(player->GetSession()).SendSysMessage("|CFF7BBEF7[Custom Rates]|r: Your quest XP rate was set to 0. You won't gain any XP from quest completation.");

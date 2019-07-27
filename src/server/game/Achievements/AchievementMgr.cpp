@@ -31,11 +31,6 @@
 #include "SpellMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-//[AZTH]
-#include "azth_custom_hearthstone_mode.h"
-#include "AzthFirstKills.h"
-#include "AzthUtils.h"
-//[/AZTH]
 
 namespace Trinity
 {
@@ -757,7 +752,6 @@ static const uint32 achievIdForDungeon[][4] =
  */
 void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= NULL*/)
 {
-
     // disable for gamemasters with GM-mode enabled
     if (m_player->IsGameMaster())
         return;
@@ -772,7 +766,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
     sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::UpdateAchievementCriteria(%u, %u, %u)", type, miscValue1, miscValue2);
 #endif
 
-    AchievementCriteriaEntryList const* achievementCriteriaList = NULL;
+    AchievementCriteriaEntryList const* achievementCriteriaList = nullptr;
 
     switch (type)
     {
@@ -829,7 +823,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
     if (!achievementCriteriaList) 
         return;
 
-    std::vector<uint32> hsCheckList; //[AZTH]
+    sScriptMgr->OnBeforeCheckCriteria(this, achievementCriteriaList);
 
     for (AchievementCriteriaEntryList::const_iterator i = achievementCriteriaList->begin(); i != achievementCriteriaList->end(); ++i)
     {
@@ -842,11 +836,8 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
         if (!CanUpdateCriteria(achievementCriteria, achievement))
             continue;
 
-        //[AZTH] need it before the check on completed achievements
-        sHearthstoneMode->sendQuestCredit(GetPlayer(), achievementCriteria, hsCheckList);
-        if (!GetPlayer()->azthPlayer->canCompleteCriteria(achievementCriteria))
+        if (!sScriptMgr->CanCheckCriteria(this, achievementCriteria))
             continue;
-        //[/AZTH]
 
         switch (type)
         {
@@ -1735,9 +1726,6 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 if (IsCompletedAchievement(*itr))
                     CompletedAchievement(*itr);
     }
-    
-    //[AZTH]
-    hsCheckList.clear();
 }
 
 bool AchievementMgr::IsCompletedCriteria(AchievementCriteriaEntry const* achievementCriteria, AchievementEntry const* achievement)
@@ -1776,10 +1764,8 @@ bool AchievementMgr::IsCompletedCriteria(AchievementCriteriaEntry const* achieve
     if (!progress)
         return false;
     
-    //[AZTH] if criteria has been achieved before this year, then it's not valid for our first kill system
-    if (achievement->flags & (ACHIEVEMENT_FLAG_REALM_FIRST_REACH | ACHIEVEMENT_FLAG_REALM_FIRST_KILL) && progress->date < sAzthUtils->getStartsOfYear())
+    if (!sScriptMgr->IsCompletedCriteria(this, achievementCriteria, achievement, progress))
         return false;
-    //[/AZTH]
 
     switch (achievementCriteria->requiredType)
     {
@@ -2184,9 +2170,7 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement)
 #endif
 
     SendAchievementEarned(achievement);
-    //[AZTH]
-    GetPlayer()->CreateWowarmoryFeed(1, achievement->ID, 0, 0);
-    //[/AZTH]
+    
     CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
     ca.date = time(NULL);
     ca.changed = true;
@@ -2393,9 +2377,8 @@ bool AchievementGlobalMgr::IsRealmCompleted(AchievementEntry const* achievement)
     if (itr->second == std::chrono::system_clock::time_point::min())
         return false;
     
-    //[AZTH] do not continue, do our check instead
-    if (achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL)
-        return sAzthFirstKills->isRealmCompleted(achievement,((itr->second == std::chrono::system_clock::time_point::max()) || (std::chrono::system_clock::now() - itr->second) > std::chrono::minutes(1)));
+    if (!sScriptMgr->IsRealmCompleted(this, achievement, itr->second))
+        return false;
 
     if (itr->second == std::chrono::system_clock::time_point::max())
         return true;
@@ -2413,10 +2396,10 @@ void AchievementGlobalMgr::SetRealmCompleted(AchievementEntry const* achievement
 {
     if (IsRealmCompleted(achievement))
         return;
-
-
-    sAzthFirstKills->setRealmCompleted(achievement); //[AZTH]
+    
     m_allCompletedAchievements[achievement->ID] = std::chrono::system_clock::now();
+
+    sScriptMgr->SetRealmCompleted(achievement);
 }
 
 //==========================================================

@@ -3,6 +3,7 @@
 #include "Item.h"
 #include "ItemPrototype.h"
 #include "Common.h"
+#include "AZTH.h"
 
 class lootModifier : public GlobalScript
 {
@@ -11,7 +12,7 @@ public:
     
 	void OnBeforeDropAddItem(Player const* player, Loot& loot, bool /*canRate*/, uint16 /*lootMode*/, LootStoreItem* lootStore, LootStore const& /*store*/)
 	{
-		if (player->azthPlayer->hasSmartStoneCommand(7))
+		if (sAZTH->GetAZTHPlayer((Player*)player)->hasSmartStoneCommand(7))
         {
 			ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(lootStore->itemid);
 			if (!_proto)
@@ -21,7 +22,7 @@ public:
 					loot.AddItem(*lootStore);
 		} 
 		
-		if (player->azthPlayer->hasSmartStoneCommand(8)){
+		if (sAZTH->GetAZTHPlayer((Player*)player)->hasSmartStoneCommand(8)){
 			
 			ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(lootStore->itemid);
 			if (!_proto)

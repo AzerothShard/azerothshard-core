@@ -2,19 +2,20 @@
 #include "MapManager.h"
 #include "AzthSharedDefines.h"
 #include "GameGraveyard.h"
+#include "AZTH.h"
 
 void SmartStoneApps::blackMarketTeleport(Player *player) {
     if (player->IsInCombat())
         return;
     
-    if (!player->azthPlayer->isInBlackMarket()) {
+    if (!sAZTH->GetAZTHPlayer(player)->isInBlackMarket()) {
         WorldLocation pos = WorldLocation(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
-        player->azthPlayer->setLastPositionInfo(player->azthPlayer->getCurrentDimensionByAura(), pos);
+        sAZTH->GetAZTHPlayer(player)->setLastPositionInfo(sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByAura(), pos);
 
         player->TeleportTo(AzthSharedDef::blackMarket);
     }
     else {
-        WorldLocation const& pos = player->azthPlayer->getLastPositionInfo(player->azthPlayer->getCurrentDimensionByAura());
+        WorldLocation const& pos = sAZTH->GetAZTHPlayer(player)->getLastPositionInfo(sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByAura());
         if (!MapManager::IsValidMapCoord(pos))
             return;
 
@@ -36,7 +37,7 @@ void SmartStoneApps::teleportHouse(Player *owner, Player *guest) {
     if (guest->IsInCombat())
         return;
 
-    WorldLocation const& pos = owner->azthPlayer->getLastPositionInfo(AZTH_SMRTST_POSITION_HOUSE_INDEX);
+    WorldLocation const& pos = sAZTH->GetAZTHPlayer(owner)->getLastPositionInfo(AZTH_SMRTST_POSITION_HOUSE_INDEX);
     if (!MapManager::IsValidMapCoord(pos))
         return;
 

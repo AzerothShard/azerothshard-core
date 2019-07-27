@@ -6,15 +6,11 @@
 
 #ifndef _PLAYER_H
 #define _PLAYER_H
-//[AZTH]
-#include "ArenaTeam.h"
-#include "AzthPlayer.h"
-//[/AZTH]
+
 #include "DBCStores.h"
 #include "GroupReference.h"
 #include "MapReference.h"
 #include "InstanceSaveMgr.h"
-
 #include "Item.h"
 #include "PetDefines.h"
 #include "QuestDef.h"
@@ -23,7 +19,6 @@
 #include "Battleground.h"
 #include "WorldSession.h"
 #include "ObjectMgr.h"
-
 #include <string>
 #include <vector>
 
@@ -46,9 +41,6 @@ class PlayerMenu;
 class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
-//[AZTH]
-class AzthPlayer;
-//[/AZTH]
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -465,28 +457,7 @@ enum PlayerFlags
 #define KNOWN_TITLES_SIZE   3
 #define MAX_TITLE_INDEX     (KNOWN_TITLES_SIZE*64)          // 3 uint64 fields
 
-//[AZTH] Custom Titles
-#define PLAYER_TITLE_MASK_ALLIANCE_PVP             \
-    (PLAYER_TITLE_PRIVATE | PLAYER_TITLE_CORPORAL |  \
-      PLAYER_TITLE_SERGEANT_A | PLAYER_TITLE_MASTER_SERGEANT | \
-      PLAYER_TITLE_SERGEANT_MAJOR | PLAYER_TITLE_KNIGHT | \
-      PLAYER_TITLE_KNIGHT_LIEUTENANT | PLAYER_TITLE_KNIGHT_CAPTAIN | \
-      PLAYER_TITLE_KNIGHT_CHAMPION | PLAYER_TITLE_LIEUTENANT_COMMANDER | \
-      PLAYER_TITLE_COMMANDER | PLAYER_TITLE_MARSHAL | \
-      PLAYER_TITLE_FIELD_MARSHAL | PLAYER_TITLE_GRAND_MARSHAL)
 
-#define PLAYER_TITLE_MASK_HORDE_PVP                           \
-    (PLAYER_TITLE_SCOUT | PLAYER_TITLE_GRUNT |  \
-      PLAYER_TITLE_SERGEANT_H | PLAYER_TITLE_SENIOR_SERGEANT | \
-      PLAYER_TITLE_FIRST_SERGEANT | PLAYER_TITLE_STONE_GUARD | \
-      PLAYER_TITLE_BLOOD_GUARD | PLAYER_TITLE_LEGIONNAIRE | \
-      PLAYER_TITLE_CENTURION | PLAYER_TITLE_CHAMPION | \
-      PLAYER_TITLE_LIEUTENANT_GENERAL | PLAYER_TITLE_GENERAL | \
-      PLAYER_TITLE_WARLORD | PLAYER_TITLE_HIGH_WARLORD)
-
-#define PLAYER_TITLE_MASK_ALL_PVP  \
-    (PLAYER_TITLE_MASK_ALLIANCE_PVP | PLAYER_TITLE_MASK_HORDE_PVP)
-//[/AZTH]
 
 // used in PLAYER_FIELD_BYTES values
 enum PlayerFieldByteFlags
@@ -1115,35 +1086,14 @@ private:
     bool _isPvP;
 };
 
-//[AZTH]
-struct WowarmoryFeedEntry
-{
-    uint32 guid;         // Player GUID
-    time_t date;         // Log date
-    uint32 type;         // TYPE_ACHIEVEMENT_FEED, TYPE_ITEM_FEED, TYPE_BOSS_FEED
-    uint32 data;         // TYPE_ITEM_FEED: item_entry, TYPE_BOSS_FEED: creature_entry
-    uint32 item_guid;    // Can be 0
-    uint32 item_quality; // Can be 0
-    uint8  difficulty;   // Can be 0
-    int    counter;      // Can be 0
-};
-
-typedef std::vector<WowarmoryFeedEntry> WowarmoryFeeds;
-//[/AZTH]
-
-
 class Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
-    friend class AzthPlayer; // [AZTH] make AzthPlayer friendly to Player, allowing private access
     friend void Item::AddToUpdateQueueOf(Player* player);
     friend void Item::RemoveFromUpdateQueueOf(Player* player);
     public:
         explicit Player(WorldSession* session);
         ~Player();
-
-        //[AZTH] Custom variables
-        AzthPlayer *azthPlayer;
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
@@ -1495,6 +1445,7 @@ class Player : public Unit, public GridObject<Player>
         void RemoveRewardedQuest(uint32 questId, bool update = true);
         void SendQuestUpdate(uint32 questId);
         QuestGiverStatus GetQuestDialogStatus(Object* questGiver);
+        float GetQuestRate();
 
         void SetDailyQuestStatus(uint32 quest_id);
         void SetWeeklyQuestStatus(uint32 quest_id);
@@ -1645,6 +1596,7 @@ class Player : public Unit, public GridObject<Player>
 
         RewardedQuestSet const& getRewardedQuests() const { return m_RewardedQuests; }
         QuestStatusMap& getQuestStatusMap() { return m_QuestStatus; }
+        QuestStatusSaveMap& GetQuestStatusSaveMap() { return m_QuestStatusSave; }
 
         size_t GetRewardedQuestCount() const { return m_RewardedQuests.size(); }
         bool IsQuestRewarded(uint32 quest_id) const
@@ -1937,44 +1889,13 @@ class Player : public Unit, public GridObject<Player>
             SetArenaTeamInfoField(slot, ARENA_TEAM_ID, ArenaTeamId);
             SetArenaTeamInfoField(slot, ARENA_TEAM_TYPE, type);
         }
-        void SetArenaTeamInfoField(uint8 slot, ArenaTeamInfoType type, uint32 value)
-        {
-// [AZTH] avoid higher slots to be set in datafield
-            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)) {
-                azthPlayer->setArena1v1Info(type, value);
-                return;
-            }
 
-            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3)) {
-                azthPlayer->setArena3v3Info(type, value);
-                return;
-            }
-// [/AZTH]
-            SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + type, value);
-        }
+        void SetArenaTeamInfoField(uint8 slot, ArenaTeamInfoType type, uint32 value);
 
-        uint32 GetArenaPersonalRating(uint8 slot) const {
-            // [AZTH]
-            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_1v1))
-                return azthPlayer->getArena1v1Info(ARENA_TEAM_PERSONAL_RATING);
-
-            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3))
-                return azthPlayer->getArena3v3Info(ARENA_TEAM_PERSONAL_RATING);
-            // [/AZTH]
-            return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_PERSONAL_RATING); 
-        }
+        uint32 GetArenaPersonalRating(uint8 slot) const;
         static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
         static void LeaveAllArenaTeams(uint64 guid);
-        uint32 GetArenaTeamId(uint8 slot) const {
-            // [AZTH] use static method of ArenaTeam to retrieve the slot
-            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_1v1))
-                return GetArenaTeamIdFromDB(this->GetGUID(), ARENA_TEAM_1v1);
-
-            if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3))
-                return GetArenaTeamIdFromDB(this->GetGUID(), ARENA_TEAM_SOLO_3v3);
-            // [/AZTH]
-            return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_ID);
-        }
+        uint32 GetArenaTeamId(uint8 slot) const;
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
 
@@ -2201,7 +2122,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot) const;
         void SetHonorPoints(uint32 value);
         void SetArenaPoints(uint32 value);
-        void UpdateKnownTitles(); // [AZTH] Rank patch
 
         // duel health and mana reset methods
         void SaveHealthBeforeDuel()     { healthBeforeDuel = GetHealth(); }
@@ -2489,15 +2409,10 @@ class Player : public Unit, public GridObject<Player>
 
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
-
-        //[AZTH]
+        
         uint16 GetMaxSkillValueForLevel() const;
-        void CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality);
-        void InitWowarmoryFeeds();
-        // override Unit.h functions (it must not be const so we don't use override keyword)
-        bool IsFFAPvP() { return azthPlayer->isFFAPvPFlagOn(Unit::IsFFAPvP()); };
-        bool IsPvP() { return azthPlayer->isPvPFlagOn(Unit::IsPvP()); };
-        //[/AZTH]
+        bool IsFFAPvP();
+        bool IsPvP();
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
@@ -3042,11 +2957,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
 
-        //[AZTH]
-        // World of Warcraft Armory Feeds
-        WowarmoryFeeds m_wowarmory_feeds;
-        //[/AZTH]
-
         InstanceTimeMap _instanceResetTimes;
         uint32 _pendingBindId;
         uint32 _pendingBindTimer;
@@ -3056,7 +2966,6 @@ class Player : public Unit, public GridObject<Player>
         // duel health and mana reset attributes
         uint32 healthBeforeDuel;
         uint32 manaBeforeDuel;
-
 };
 
 void AddItemsSetItem(Player* player, Item* item);

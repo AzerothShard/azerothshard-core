@@ -5,6 +5,7 @@
 #include "AzthUtils.h"
 #include "AzthPlayer.h"
 #include "MapManager.h"
+#include "AZTH.h"
 
 class PvPMode : public GlobalScript
 {
@@ -13,7 +14,7 @@ public:
 
     void OnInitializeLockedDungeons(Player* player, uint8&  /*level*/, uint32& lockData, lfg::LFGDungeonData const* /*dungeon*/) override
     {
-        if (player->azthPlayer->isPvP())
+        if (sAZTH->GetAZTHPlayer(player)->isPvP())
         {
             lockData = 6; // LFG_LOCKSTATUS_RAID_LOCKED; //disable raid/dungeon if is a character/pvp account
         }
@@ -21,7 +22,7 @@ public:
 
     void OnAfterInitializeLockedDungeons(Player* player) override
     {
-        if ((player->GetMap()->IsDungeon() && !player->GetMap()->IsBattlegroundOrArena()) && player->azthPlayer->isPvP())
+        if ((player->GetMap()->IsDungeon() && !player->GetMap()->IsBattlegroundOrArena()) && sAZTH->GetAZTHPlayer(player)->isPvP())
         {
             player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);
             ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPACCOUNT_DUNGEON, player));
@@ -36,9 +37,9 @@ public:
     
     void OnCreate(Player* player) override
     {
-        player->azthPlayer->loadPvPInfo();
+        sAZTH->GetAZTHPlayer(player)->loadPvPInfo();
         
-        if (player->azthPlayer->isPvP()) {
+        if (sAZTH->GetAZTHPlayer(player)->isPvP()) {
             player->setCinematic(1);
             player->SetLevel(80);
 
@@ -61,7 +62,7 @@ public:
 
     void OnFirstLogin(Player* player) override
     {
-        if (player->azthPlayer->isPvP())
+        if (sAZTH->GetAZTHPlayer(player)->isPvP())
         {
             // restore at first login flag for now, to be used inside OnLogin function
             //player->SetAtLoginFlag(AT_LOGIN_FIRST);
@@ -70,9 +71,9 @@ public:
 
     void OnLogin(Player* player) override
     {
-        player->azthPlayer->loadPvPInfo();
+        sAZTH->GetAZTHPlayer(player)->loadPvPInfo();
         
-        if (player->azthPlayer->isPvP()){
+        if (sAZTH->GetAZTHPlayer(player)->isPvP()){
             if (!player->HasAchieved(13))//if (player->HasAtLoginFlag(AT_LOGIN_FIRST))
             {
                 // delevel + levelup to fix achievements 
@@ -86,7 +87,7 @@ public:
                 player->SetUInt32Value(PLAYER_XP, 0);
                 sAzthUtils->learnClassSpells(player, false);
                 
-                player->azthPlayer->changeDimension(DIMENSION_PVP);
+                sAZTH->GetAZTHPlayer(player)->changeDimension(DIMENSION_PVP);
                 
                 // riding + flying
                 player->learnSpell(34091); // artisan riding
@@ -107,7 +108,7 @@ public:
                 
                 player->UpdateSkillsToMaxSkillsForLevel(); // set all skills
                 
-                player->azthPlayer->AzthMaxPlayerSkill();
+                sAZTH->GetAZTHPlayer(player)->AzthMaxPlayerSkill();
                 
                 player->StoreNewItemInBestSlots(23162, 8);
                 
@@ -181,7 +182,7 @@ public:
     // logger for custom extended costs
     void OnAfterStoreOrEquipNewItem(Player* player, uint32  /*vendorslot*/, Item* item, uint8  /*count*/, uint8  /*bag*/, uint8  /*slot*/, ItemTemplate const*  /*pProto*/, Creature* /*pVendor*/, VendorItem const*  /*crItem*/, bool  /*bStore*/) override
     {
-        if (!player->azthPlayer->isPvP())
+        if (!sAZTH->GetAZTHPlayer(player)->isPvP())
             return;
         
         /*if (pVendor->GetScriptName() == "npc_azth_vendor") {
@@ -214,7 +215,7 @@ public:
     }
     
     void OnBeforeDurabilityRepair(Player * player, uint64  /*npcGUID*/, uint64  /*itemGUID*/, float & discountMod, uint8  /*guildbank*/) override {
-        if (!player->azthPlayer->isPvP())
+        if (!sAZTH->GetAZTHPlayer(player)->isPvP())
             return;
         
         discountMod = 0.f;

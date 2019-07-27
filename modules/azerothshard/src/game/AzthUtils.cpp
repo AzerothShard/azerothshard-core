@@ -8,6 +8,7 @@
 #include "GuildHouse.h"
 #include "BattlefieldWG.h"
 #include "InstanceScript.h"
+#include "AZTH.h"
 #include <ctime>
 
 class InstanceScript;
@@ -678,11 +679,14 @@ std::string AzthUtils::getDimensionName(uint32 dim) {
     return name;
 }
 
-bool AzthUtils::dimIntegrityCheck(Unit *target, uint32 phasemask) {
-    if (target && target->GetTypeId() == TYPEID_PLAYER) {
-        Player *player=target->ToPlayer();
+bool AzthUtils::dimIntegrityCheck(Unit const* target, uint32 phasemask)
+{
+    if (target && target->GetTypeId() == TYPEID_PLAYER)
+    {
+        Player const* player = target->ToPlayer();
         
-        if (player) {     
+        if (player)
+        {
             PhaseDimensionsEnum dim=getCurrentDimensionByPhase(phasemask);
             
             // If target has temporary normal dimension
@@ -696,11 +700,10 @@ bool AzthUtils::dimIntegrityCheck(Unit *target, uint32 phasemask) {
             // Moreover checking aura instead phase, if it differ by dim
             // then the changeDimension can fix eventually exploits
             // with phased players without correct aura
-            uint32 targetDim=player->azthPlayer->getCurrentDimensionByAura();
+            uint32 targetDim = sAZTH->GetAZTHPlayer((Player*)player)->getCurrentDimensionByAura();
             
-            if (isPhasedDimension(dim) && dim != targetDim) { 
-                return player->azthPlayer->changeDimension(dim, true);
-            }
+            if (isPhasedDimension(dim) && dim != targetDim)
+                return sAZTH->GetAZTHPlayer((Player*)player)->changeDimension(dim, true);
         }
     }
     
@@ -744,13 +747,13 @@ int AzthUtils::getReaction(Unit const* unit, Unit const* target) {
     Player const* selfPlayerOwner = unit->GetAffectingPlayer();
     Player const* targetPlayerOwner = target->GetAffectingPlayer();
     
-    uint32 dimUnit=selfPlayerOwner ? selfPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(unit->GetPhaseMask());
-    uint32 dimTarget=targetPlayerOwner ? targetPlayerOwner->azthPlayer->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(target->GetPhaseMask());
+    uint32 dimUnit=selfPlayerOwner ? sAZTH->GetAZTHPlayer((Player*)selfPlayerOwner)->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(unit->GetPhaseMask());
+    uint32 dimTarget=targetPlayerOwner ? sAZTH->GetAZTHPlayer((Player*)targetPlayerOwner)->getCurrentDimensionByPhase() : getCurrentDimensionByPhase(target->GetPhaseMask());
 
     // case of 2 players
     if (selfPlayerOwner && targetPlayerOwner) {
         // before guild check
-        if (selfPlayerOwner->azthPlayer->isInBlackMarket() && targetPlayerOwner->azthPlayer->isInBlackMarket())
+        if (sAZTH->GetAZTHPlayer((Player*)selfPlayerOwner)->isInBlackMarket() && sAZTH->GetAZTHPlayer((Player*)targetPlayerOwner)->isInBlackMarket())
             return REP_FRIENDLY;
         
         if (dimUnit == DIMENSION_PVP && dimTarget == DIMENSION_PVP) {
@@ -802,11 +805,12 @@ int AzthUtils::getReaction(Unit const* unit, Unit const* target) {
 
 bool AzthUtils::canFly(Unit*const /*caster*/, Unit* originalCaster)
 {
-    if (originalCaster && originalCaster->GetTypeId() == TYPEID_PLAYER) {
-        uint32 curDim=((Player*)originalCaster)->azthPlayer->getCurrentDimensionByAura();
-        if (curDim == DIMENSION_TEST || curDim == DIMENSION_GM) {
+    if (originalCaster && originalCaster->GetTypeId() == TYPEID_PLAYER)
+    {
+        uint32 curDim = sAZTH->GetAZTHPlayer((Player*)originalCaster)->getCurrentDimensionByAura();
+
+        if (curDim == DIMENSION_TEST || curDim == DIMENSION_GM)
             return true;
-        }
     }
     
     // return false to continue with other checks
@@ -825,7 +829,7 @@ SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell
         return SPELL_FAILED_LOWLEVEL;
     }
     
-    if (player->azthPlayer->isTimeWalking(true) && sAzthUtils->isNotAllowedSpellForTw(spell)) {
+    if (sAZTH->GetAZTHPlayer(player)->isTimeWalking(true) && sAzthUtils->isNotAllowedSpellForTw(spell)) {
         if (notify)
             player->GetSession()->SendNotification("This spell is not allowed in Timewalking");
         return SPELL_FAILED_DONT_REPORT;
@@ -848,7 +852,7 @@ bool AzthUtils::canPrepareSpell(Spell* /*spell*/, Unit* /*m_caster*/, SpellInfo 
     /*if (target->GetTypeId() == TYPEID_PLAYER)
         player = target->ToPlayer();
     
-    if (m_spellInfo->Id == 72613  && player && player->azthPlayer->GetTimeWalkingLevel() == TIMEWALKING_LVL_NAXX) {
+    if (m_spellInfo->Id == 72613  && player && sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel() == TIMEWALKING_LVL_NAXX) {
         if (InstanceScript* iscript=player->GetInstanceScript()) {
             if (
                 iscript->GetBossState(BOSS_MAEXXNA) == DONE &&

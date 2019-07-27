@@ -303,10 +303,6 @@ struct Loot
     QuestItemMap const& GetPlayerFFAItems() const { return PlayerFFAItems; }
     QuestItemMap const& GetPlayerNonQuestNonFFAConditionalItems() const { return PlayerNonQuestNonFFAConditionalItems; }
     
-    //[AZTH]
-    bool azthSecondRound = false; 
-    //[/AZTH]
-
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;
     uint32 gold;

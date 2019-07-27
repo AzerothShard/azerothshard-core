@@ -17,6 +17,7 @@
 #include "SocialMgr.h"
 #include "Language.h"
 #include "AccountMgr.h"
+#include "ScriptMgr.h"
 
 void WorldSession::SendTradeStatus(TradeStatus status)
 {
@@ -620,14 +621,7 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
     {
         SendTradeStatus(TRADE_STATUS_IGNORE_YOU);
         return;
-    }
-    
-    //[AZTH]
-    if (_player->azthPlayer->isPvP() != pOther->azthPlayer->isPvP()) {
-        SendTradeStatus(TRADE_STATUS_NOT_ELIGIBLE);
-        return;
-    }
-    //[/AZTH]
+    }    
 
     if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_TRADE) && pOther->GetTeamId() != _player->GetTeamId())
     {
@@ -646,6 +640,9 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
         SendNotification(GetTrinityString(LANG_TRADE_OTHER_REQ), sWorld->getIntConfig(CONFIG_TRADE_LEVEL_REQ));
         return;
     }
+
+    if (!sScriptMgr->CanInitTrade(_player, pOther))
+        return;
 
     // OK start trade
     _player->m_trade = new TradeData(_player, pOther);

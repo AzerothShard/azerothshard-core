@@ -876,7 +876,8 @@ void WorldSession::HandlePlayerLoginFromDB(LoginQueryHolder* holder)
     uint64 playerGuid = holder->GetGuid();
 
     Player* pCurrChar = new Player(this);
-     // for send server info and strings (config)
+
+    // for send server info and strings (config)
     ChatHandler chH = ChatHandler(this);
 
     // "GetAccountId() == db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
@@ -893,7 +894,8 @@ void WorldSession::HandlePlayerLoginFromDB(LoginQueryHolder* holder)
     /* currently we cannot use it because of safety checks on changefaction
      * that require to login to fix them 
      * [AZTH] hack for instant80 ( we're forcing all change faction and race )
-    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_CHANGE_FACTION) || pCurrChar->HasAtLoginFlag(AT_LOGIN_CHANGE_RACE)) {
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_CHANGE_FACTION) || pCurrChar->HasAtLoginFlag(AT_LOGIN_CHANGE_RACE))
+    {
         // following instruction allow core to destroy the Player instance
         LogoutRequest(0);
         KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick

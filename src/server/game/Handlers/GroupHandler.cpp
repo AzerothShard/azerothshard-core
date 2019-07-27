@@ -20,6 +20,7 @@
 #include "Util.h"
 #include "SpellAuras.h"
 #include "Vehicle.h"
+#include "ScriptMgr.h"
 
 class Aura;
 
@@ -72,13 +73,9 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recvData)
         SendPartyResult(PARTY_OP_INVITE, membername, ERR_BAD_PLAYER_NAME_S);
         return;
     }
-    
-    //[AZTH]
-    if (!GetPlayer()->azthPlayer->canGroup(player)) {
-        SendPartyResult(PARTY_OP_INVITE, membername, ERR_BAD_PLAYER_NAME_S);
+
+    if (!sScriptMgr->CanGroupInvite(GetPlayer(), membername))
         return;
-    }
-    //[/AZTH]
 
     if (GetPlayer()->IsSpectator() || player->IsSpectator())
     {
@@ -92,7 +89,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recvData)
         SendPartyResult(PARTY_OP_INVITE, membername, ERR_BAD_PLAYER_NAME_S);
         return;
     }
-
+    
     // can't group with
     if (!GetPlayer()->IsGameMaster() && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && GetPlayer()->GetTeamId() != player->GetTeamId())
     {
@@ -217,7 +214,6 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket& recvData)
 
     recvData.read_skip<uint32>();
     Group* group = GetPlayer()->GetGroupInvite();
-
     if (!group)
         return;
 
@@ -229,13 +225,9 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket& recvData)
         SendPartyResult(PARTY_OP_INVITE, "", ERR_INVITE_RESTRICTED);
         return;
     }
-    
-    //[AZTH]
-    if (!GetPlayer()->azthPlayer->canGroup()) {
-        SendPartyResult(PARTY_OP_INVITE, "", ERR_BAD_PLAYER_NAME_S);
-        return;
-    }
-    //[/AZTH]
+
+    if (!sScriptMgr->CanGroupAccept(GetPlayer(), group))
+        return;    
 
     if (group->GetLeaderGUID() == GetPlayer()->GetGUID())
     {

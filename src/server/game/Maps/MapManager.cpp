@@ -27,6 +27,8 @@
 #include "LFGMgr.h"
 #include "Chat.h"
 #include "AvgDiffTracker.h"
+#include "ScriptMgr.h"
+
 #ifdef ELUNA
 #include "LuaEngine.h"
 #endif
@@ -132,6 +134,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
 
     Difficulty targetDifficulty, requestedDifficulty;
     targetDifficulty = requestedDifficulty = player->GetDifficulty(entry->IsRaid());
+
     // Get the highest available difficulty if current setting is higher than the instance allows
     MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(entry->MapID, targetDifficulty);
     if (!mapDiff)
@@ -146,10 +149,8 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
 
     char const* mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
     
-    //[AZTH] TODO: add an hook here
-    if (!player->azthPlayer->canEnterMap(entry, instance, loginCheck))
+    if (!sScriptMgr->CanEnterMap(player, entry, instance, mapDiff, loginCheck))
         return false;
-    //[AZTH]
 
     Group* group = player->GetGroup();
     if (entry->IsRaid())

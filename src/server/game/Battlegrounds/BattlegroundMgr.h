@@ -140,6 +140,8 @@ class BattlegroundMgr
         static std::unordered_map<int, BattlegroundTypeId> queueToBg; // BattlegroundQueueTypeId -> BattlegroundTypeId
         static std::unordered_map<int, Battleground*> bgtypeToBattleground; // BattlegroundTypeId -> Battleground*
         static std::unordered_map<int, bgRef> bgTypeToTemplate; // BattlegroundTypeId -> bgRef
+        static std::unordered_map<uint32, BattlegroundQueueTypeId> ArenaTypeToQueue; // ArenaType -> BattlegroundQueueTypeId
+        static std::unordered_map<uint32, ArenaType> QueueToArenaType; // BattlegroundQueueTypeId -> ArenaType
 
     private:
         bool CreateBattleground(CreateBattlegroundData& data);

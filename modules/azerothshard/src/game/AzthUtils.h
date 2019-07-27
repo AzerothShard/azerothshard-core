@@ -127,7 +127,7 @@ public:
     std::string getDimensionName(uint32 dim);
     bool isPhasedDimension(uint32 dim);
     PhaseDimensionsEnum getCurrentDimensionByPhase(uint32 phase);
-    bool dimIntegrityCheck(Unit *target, uint32 phasemask);
+    bool dimIntegrityCheck(Unit const* target, uint32 phasemask);
     bool isSharedArea(Player *player, MapEntry const *mEntry, uint32 zone, uint32 area);
     // /DIMENSIONS
     

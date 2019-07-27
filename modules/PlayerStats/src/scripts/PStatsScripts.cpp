@@ -6,8 +6,10 @@
 #include "WorldSession.h"
 #include "Group.h"
 #include "AzthUtils.h"
+#include "AZTH.h"
 
-enum achievementStatsType {
+enum achievementStatsType
+{
     ACHIEVEMENT_TYPE,
     CRITERIA_TYPE
 };
@@ -25,7 +27,8 @@ public:
     }
 };
 
-class PlayerStats : public PlayerScript {
+class PlayerStats : public PlayerScript
+{
 public:
 
     PlayerStats() : PlayerScript("PlayerStats") {
@@ -41,28 +44,28 @@ public:
     void OnAchiComplete(Player *player, AchievementEntry const* achievement) override {
         AzthPlayer::AzthAchiData it = {
             player->getLevel(),
-            player->azthPlayer->getGroupLevel(),
-            player->azthPlayer->getPStatsLevel(false)
+            sAZTH->GetAZTHPlayer(player)->getGroupLevel(),
+            sAZTH->GetAZTHPlayer(player)->getPStatsLevel(false)
         };
         
-        player->azthPlayer->m_completed_achievement_map[achievement->ID] = it;
+        sAZTH->GetAZTHPlayer(player)->m_completed_achievement_map[achievement->ID] = it;
     }
 
     void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override {
         AzthPlayer::AzthAchiData it = {
             player->getLevel(),
-            player->azthPlayer->getGroupLevel(),
-            player->azthPlayer->getPStatsLevel(false)
+            sAZTH->GetAZTHPlayer(player)->getGroupLevel(),
+            sAZTH->GetAZTHPlayer(player)->getPStatsLevel(false)
         };
         
-        player->azthPlayer->m_completed_criteria_map[criteria->ID] = it;
+        sAZTH->GetAZTHPlayer(player)->m_completed_criteria_map[criteria->ID] = it;
     }
 
     // Following 2 functions save our temporary maps inside the db
 
     void OnAchiSave(SQLTransaction& trans, Player *player, uint16 achId, CompletedAchievementData achiData) override {
-        if (player->azthPlayer->m_completed_achievement_map.find(achId) != player->azthPlayer->m_completed_achievement_map.end()) {
-            AzthPlayer::AzthAchiData it = player->azthPlayer->m_completed_achievement_map[achId];
+        if (sAZTH->GetAZTHPlayer(player)->m_completed_achievement_map.find(achId) != sAZTH->GetAZTHPlayer(player)->m_completed_achievement_map.end()) {
+            AzthPlayer::AzthAchiData it = sAZTH->GetAZTHPlayer(player)->m_completed_achievement_map[achId];
             uint32 index = 0;
 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVESTATS);
@@ -75,13 +78,13 @@ public:
             stmt->setUInt32(index++, achiData.date);
             trans->Append(stmt);
 
-            player->azthPlayer->m_completed_achievement_map.erase(achId); 
+            sAZTH->GetAZTHPlayer(player)->m_completed_achievement_map.erase(achId); 
         }
     }
 
     void OnCriteriaSave(SQLTransaction& trans, Player* player, uint16 critId, CriteriaProgress criteriaData) override {
-        if (player->azthPlayer->m_completed_criteria_map.find(critId) != player->azthPlayer->m_completed_criteria_map.end()) {
-            AzthPlayer::AzthAchiData it = player->azthPlayer->m_completed_criteria_map[critId];
+        if (sAZTH->GetAZTHPlayer(player)->m_completed_criteria_map.find(critId) != sAZTH->GetAZTHPlayer(player)->m_completed_criteria_map.end()) {
+            AzthPlayer::AzthAchiData it = sAZTH->GetAZTHPlayer(player)->m_completed_criteria_map[critId];
             uint32 index = 0;
 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVESTATS);
@@ -94,7 +97,7 @@ public:
             stmt->setUInt32(index++, criteriaData.date);
             trans->Append(stmt);
 
-            player->azthPlayer->m_completed_criteria_map.erase(critId);
+            sAZTH->GetAZTHPlayer(player)->m_completed_criteria_map.erase(critId);
         }
     }
 

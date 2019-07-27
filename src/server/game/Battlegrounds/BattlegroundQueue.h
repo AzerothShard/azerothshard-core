@@ -114,10 +114,8 @@ class BattlegroundQueue
 
         //one selection pool for horde, other one for alliance
         SelectionPool m_SelectionPools[BG_TEAMS_COUNT];
-
-        //[AZTH] custom functions
-        bool CheckSolo3v3Arena(BattlegroundBracketId bracket_id);
-        void CreateTempArenaTeamForQueue(ArenaTeam * arenaTeams[]);
+        ArenaType GetArenaType() { return m_arenaType; }
+        BattlegroundTypeId GetBGTypeID() { return m_bgTypeId; }
 
     private:
 

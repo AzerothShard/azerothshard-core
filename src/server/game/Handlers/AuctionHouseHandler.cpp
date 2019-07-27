@@ -9,7 +9,6 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
-
 #include "AuctionHouseMgr.h"
 #include "Log.h"
 #include "Language.h"
@@ -19,6 +18,7 @@
 #include "AccountMgr.h"
 #include "Chat.h"
 #include "AsyncAuctionListing.h"
+#include "ScriptMgr.h"
 
 //void called when player click on auctioneer npc
 void WorldSession::HandleAuctionHelloOpcode(WorldPacket & recvData)
@@ -50,13 +50,9 @@ void WorldSession::SendAuctionHello(uint64 guid, Creature* unit)
         SendNotification(GetTrinityString(LANG_AUCTION_REQ), sWorld->getIntConfig(CONFIG_AUCTION_LEVEL_REQ));
         return;
     }
-    
-    //[AZTH]
-    if (GetPlayer()->azthPlayer->isPvP()) {
-        SendNotification("This is a Full PvP Account! You cannot use the Auction House.");
+
+    if (!sScriptMgr->CanSendAuctionHello(this, guid, unit))
         return;
-    }
-    //[/AZTH]
 
     AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit->getFaction());
     if (!ahEntry)

@@ -3,6 +3,7 @@
 #include "AzthPlayer.h"
 #include "Player.h"
 #include "SharedDefines.h"
+#include "AZTH.h"
 
 class Player;
 
@@ -32,11 +33,11 @@ void AzthLang::add(uint32 strId, std::string const def, std::string const it)
     this->strings[strId]=new AzthLangString(def,it);
 }
 
-const char * AzthLang::get(uint32 strId,Player const* pl) const {
+const char * AzthLang::get(uint32 strId, Player const* pl) const {
     AzthCustomLangs loc = AZTH_LOC_EN;
 
     if (pl)
-        loc = pl->azthPlayer->getCustLang();
+        loc = sAZTH->GetAZTHPlayer((Player*)pl)->getCustLang();
 
     std::unordered_map<uint32, AzthLangString*>::const_iterator itr=strings.find(strId);
     if ( itr != strings.end() ) {

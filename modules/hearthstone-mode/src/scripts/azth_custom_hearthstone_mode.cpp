@@ -11,6 +11,8 @@
 #include "AzthPlayer.h"
 #include "ArenaTeamMgr.h"
 #include "ObjectMgr.h"
+#include "AZTH.h"
+#include "Solo3v3.h"
 
 // old
 void HearthstoneMode::AzthSendListInventory(uint64 vendorGuid, WorldSession * session, uint32 /*extendedCostStartValue*/)
@@ -560,7 +562,7 @@ public:
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, sAzthLang->getf(AZTH_LANG_HS_PVP_QUEST, player, (questPvp->GetTitle() + (pvpId ? "" : sAzthLang->get(AZTH_LANG_HS_QUEST_LIMIT_SUFFIX, player))).c_str()), GOSSIP_SENDER_MAIN, pvpId);
         }
 
-        if (!player->azthPlayer->isPvP()) {
+        if (!sAZTH->GetAZTHPlayer(player)->isPvP()) {
             if ((bitmask & BITMASK_DAILY_RANDOM) == BITMASK_DAILY_RANDOM)
             {
                 if (questPve)
@@ -702,7 +704,7 @@ public:
         
         HearthstoneVendor vendor = vendors.at(pos);
         
-        if (vendor.pvpVendor && !player->azthPlayer->isPvP() && !player->IsGameMaster())
+        if (vendor.pvpVendor && !sAZTH->GetAZTHPlayer(player)->isPvP() && !player->IsGameMaster())
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,  "Non sei un player Full PvP! Non posso mostrarti nulla!", GOSSIP_SENDER_MAIN, 0);
             player->SEND_GOSSIP_MENU(vendor.gossipNope, creature->GetGUID());
@@ -1042,18 +1044,18 @@ void HearthstoneMode::sendQuestCredit(Player *player, AchievementCriteriaEntry c
                 break;
             }
         }
-    }
-    
+    }    
 
-/*	for (int i = 0; i < hsAchievementTable.size(); i++)
+    /*for (int i = 0; i < hsAchievementTable.size(); i++)
 	{
 		if (hsAchievementTable[i].type == achievementType)
 			if 
 	}*/
 
-    if (entry != 0 && std::find(hsCheckList.begin(), hsCheckList.end(), entry) == hsCheckList.end()) {
+    if (entry && std::find(hsCheckList.begin(), hsCheckList.end(), entry) == hsCheckList.end())
+    {
         hsCheckList.push_back(entry);
-        player->azthPlayer->ForceKilledMonsterCredit(entry, 0); // send credit   
+        sAZTH->GetAZTHPlayer(player)->ForceKilledMonsterCredit(entry, 0); // send credit
     }
 }
 

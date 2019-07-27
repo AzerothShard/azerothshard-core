@@ -3,7 +3,8 @@
 
 #include "AzthLanguage.h" // including LanguageStrings.h will include the system too
 
-enum AzthLangStrEnum {
+enum AzthLangStrEnum 
+{
     AZTH_LANG_REMOVED_ITEMS = 0,
     AZTH_LANG_PVP_NPC_SET_ADVICE,
     AZTH_LANG_PVP_NPC_CANNOT_EQUIP,

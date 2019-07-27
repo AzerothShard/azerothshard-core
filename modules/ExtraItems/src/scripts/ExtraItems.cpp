@@ -1,3 +1,8 @@
+/*
+
+*/
+
+#include "AZTH.h"
 #include "AzthSmartStone.h"
 #include "Chat.h"
 #include "Common.h"
@@ -26,7 +31,8 @@
 class Pet;
 class Group;
 
-enum AzthSummonType {
+enum AzthSummonType
+{
     // special
     AZTH_SUMMON_MORPH,
     AZTH_SUMMON_MOUNT,
@@ -142,14 +148,14 @@ public:
                 return true;
             }
 
-            if (item->azthObject->getBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS) || player->HasAuraType(SPELL_AURA_MOUNTED)) { // we cannot check isMounted because using item automatically dismount players before this hook
+            if (sAZTH->GetAZTHObject(item)->getBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS) || player->HasAuraType(SPELL_AURA_MOUNTED)) { // we cannot check isMounted because using item automatically dismount players before this hook
                 if (player->GetMountID()  == ci->Modelid1 || player->GetMountID()  == ci->Modelid2 ||
                 player->GetMountID()  == ci->Modelid3 || player->GetMountID()  == ci->Modelid4) {
                     player->Dismount();
                     player->RemoveAurasByType(SPELL_AURA_MOUNTED);
                     player->CastSpell(player, 53708, TRIGGERED_FULL_MASK); // visual  
                     player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
-                    item->azthObject->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, false);
+                    sAZTH->GetAZTHObject(item)->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, false);
                     return true;
                 }
                 // else {
@@ -178,11 +184,11 @@ public:
                     player->Dismount();
                     player->GetSession()->SendNotification("You can't mount now!");
                     player->SendEquipError(EQUIP_ERR_NONE, item, NULL);
-                    item->azthObject->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, false);
+                    sAZTH->GetAZTHObject(item)->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, false);
                     return true; 
                 }
                 
-                item->azthObject->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, true);
+                sAZTH->GetAZTHObject(item)->setBoolValue(AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS, true);
                 
                 player->CastSpell(player, 53708, TRIGGERED_FULL_MASK); // visual  
 

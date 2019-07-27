@@ -5,6 +5,7 @@
 #include "Creature.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "AZTH.h"
 
 class Player;
 
@@ -122,9 +123,9 @@ uint32 ItemToSell::OwnItem(Player *player, uint32 itemId)
 {
     uint32 guid = 0;
 
-    if (!player->azthPlayer->GetBankItemsList().empty()) {
-        auto item=player->azthPlayer->GetBankItemsList().find(itemId);
-        if (item != player->azthPlayer->GetBankItemsList().end())
+    if (!sAZTH->GetAZTHPlayer(player)->GetBankItemsList().empty()) {
+        auto item=sAZTH->GetAZTHPlayer(player)->GetBankItemsList().find(itemId);
+        if (item != sAZTH->GetAZTHPlayer(player)->GetBankItemsList().end())
             guid = item->second;
     }
 

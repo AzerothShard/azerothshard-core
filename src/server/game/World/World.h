@@ -171,9 +171,6 @@ enum WorldBoolConfigs
     CONFIG_CHECK_GOBJECT_LOS,
     CONFIG_CLOSE_IDLE_CONNECTIONS,
     CONFIG_LFG_LOCATION_ALL, // Player can join LFG anywhere
-    CONFIG_ANTICHEAT_ENABLE, //[AZTH]
-    CONFIG_EXTERNAL_MAIL, //[AZTH]
-    CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SHOW_ON_LOGIN, //[AZTH]
     BOOL_CONFIG_VALUE_COUNT
 };
 
@@ -192,7 +189,6 @@ enum WorldFloatConfigs
     CONFIG_ARENA_WIN_RATING_MODIFIER_2,
     CONFIG_ARENA_LOSE_RATING_MODIFIER,
     CONFIG_ARENA_MATCHMAKER_RATING_MODIFIER,
-    CONFIG_PLAYER_MAXIMUM_INDIVIDUAL_XP_RATE, //[AZTH]
     FLOAT_CONFIG_VALUE_COUNT
 };
 
@@ -248,7 +244,6 @@ enum WorldIntConfigs
     CONFIG_START_GM_LEVEL,
     CONFIG_GROUP_VISIBILITY,
     CONFIG_MAIL_DELIVERY_DELAY,
-    CONFIG_EXTERNAL_MAIL_INTERVAL, //[AZTH]
     CONFIG_UPTIME_UPDATE,
     CONFIG_SKILL_CHANCE_ORANGE,
     CONFIG_SKILL_CHANCE_YELLOW,
@@ -345,34 +340,8 @@ enum WorldIntConfigs
     CONFIG_WARDEN_NUM_OTHER_CHECKS,
     CONFIG_BIRTHDAY_TIME,
     CONFIG_SOCKET_TIMEOUTTIME_ACTIVE,
-    CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION, //[AZTH]
-    CONFIG_ANTICHEAT_MAX_REPORTS_FOR_DAILY_REPORT, //[AZTH]
-    CONFIG_ANTICHEAT_DETECTIONS_ENABLED, //[AZTH]
-    CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SECURITY, //[AZTH]
     INT_CONFIG_VALUE_COUNT
 };
-
-//[AZTH] PVP Rank Patch
-enum HonorKillPvPRank
-{
-    HKRANK00,
-    HKRANK01,
-    HKRANK02,
-    HKRANK03,
-    HKRANK04,
-    HKRANK05,
-    HKRANK06,
-    HKRANK07,
-    HKRANK08,
-    HKRANK09,
-    HKRANK10,
-    HKRANK11,
-    HKRANK12,
-    HKRANK13,
-    HKRANK14,
-    HKRANKMAX
-};
-//[/AZTH]
 
 /// Server rates
 enum Rates
@@ -429,7 +398,6 @@ enum Rates
     RATE_AUCTION_DEPOSIT,
     RATE_AUCTION_CUT,
     RATE_HONOR,
-    RATE_PVP_RANK_EXTRA_HONOR, //[AZTH]
     RATE_ARENA_POINTS,
     RATE_TALENT,
     RATE_CORPSE_DECAY_LOOTED,
@@ -696,8 +664,6 @@ class World
         void SendZoneText(uint32 zone, const char *text, WorldSession* self = 0, TeamId teamId = TEAM_NEUTRAL);
         void SendServerMessage(ServerMessageType type, const char *text = "", Player* player = NULL);
 
-        uint32 pvp_ranks[HKRANKMAX]; //[AZTH] PVP Rank Patch
-
         /// Are we in the middle of a shutdown?
         bool IsShuttingDown() const { return m_ShutdownTimer > 0; }
         uint32 GetShutDownTimeLeft() const { return m_ShutdownTimer; }
@@ -824,8 +790,6 @@ class World
         std::string GetConfigFileList() { return m_configFileList; }
         void SetConfigFileList(std::string list) { m_configFileList = list; }
 
-        void SendGameMail(Player* receiver, std::string subject, std::string body, uint32 money, uint32 itemId = 0, uint32 itemCount = 0); //[AZTH] in-game mailer
-
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -856,12 +820,7 @@ class World
         IntervalTimer m_timers[WUPDATE_COUNT];
         time_t mail_expire_check_timer;
         uint32 m_updateTime, m_updateTimeSum;
-        static uint32 m_gameMSTime;
-
-        //[AZTH] Customs
-        IntervalTimer extmail_timer; 
-        uint32 m_guildhousetimer;
-        // [/AZTH]
+        static uint32 m_gameMSTime;       
 
         SessionMap m_sessions;
         SessionMap m_offlineSessions;

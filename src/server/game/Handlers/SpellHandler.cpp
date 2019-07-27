@@ -22,11 +22,11 @@
 #include "GameObjectAI.h"
 #include "SpellAuraEffects.h"
 #include "Player.h"
+#include "ScriptMgr.h"
+
 #ifdef ELUNA
 #include "LuaEngine.h"
 #endif
-//[AZTH]
-#include "AzthUtils.h"
 
 void WorldSession::HandleClientCastFlags(WorldPacket& recvPacket, uint8 castFlags, SpellCastTargets& targets)
 {
@@ -346,9 +346,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     uint8  castCount, castFlags;
     recvPacket >> castCount >> spellId >> castFlags;
 
-    //[AZTH] Timewalking
     uint32 oldSpellId = spellId;
-    //[/AZTH]
 
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got cast spell packet, castCount: %u, spellId: %u, castFlags: %u, data length = %u", castCount, spellId, castFlags, (uint32)recvPacket.size());
@@ -410,9 +408,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             return;
         }
     }
-    
-    spellId = sAzthUtils->selectSpellForTW(_player, spellId);
-    if (oldSpellId!=spellId)
+
+    sScriptMgr->ValidateSpellAtCastSpell(_player, oldSpellId, spellId, castCount, castFlags);
+
+    if (oldSpellId != spellId)
         spellInfo = sSpellMgr->GetSpellInfo(spellId);
 
     // Client is resending autoshot cast opcode when other spell is casted during shoot rotation
@@ -455,16 +454,9 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
 
-    //[AZTH] Timewalking: we must send a spell cast result on prev spell
-    // to avoid bad visual effect in spell bar
-    if (oldSpellId != spellId) {
-        SpellInfo const* oldSpellInfo = sSpellMgr->GetSpellInfo(oldSpellId);
-        Spell* oldSpell = new Spell(mover, oldSpellInfo, TRIGGERED_NONE, 0, false);
-        spell->m_twOriginalSpell = oldSpell;
-    }
-    //[/AZTH]
+    sScriptMgr->ValidateSpellAtCastSpellResult(_player, mover, spell, oldSpellId, spellId);
 
-    spell->m_cast_count = castCount;                       // set count of casts
+    spell->m_cast_count = castCount; // set count of casts
     spell->prepare(&targets);
 }
 

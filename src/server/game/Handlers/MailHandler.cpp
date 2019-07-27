@@ -17,6 +17,7 @@
 #include "DBCStores.h"
 #include "Item.h"
 #include "AccountMgr.h"
+#include "ScriptMgr.h" 
 
 bool WorldSession::CanOpenMailBox(uint64 guid)
 {
@@ -177,22 +178,13 @@ void WorldSession::HandleSendMail(WorldPacket & recvData)
         }
     }*/
 
-    uint32 rc_account = receive
-        ? receive->GetSession()->GetAccountId()
-        : sObjectMgr->GetPlayerAccountIdByGUID(rc);
+    uint32 rc_account = receive ? receive->GetSession()->GetAccountId() : sObjectMgr->GetPlayerAccountIdByGUID(rc);
 
     if (/*!accountBound*/ GetAccountId() != rc_account && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_MAIL) && player->GetTeamId() != rc_teamId && AccountMgr::IsPlayerAccount(GetSecurity()))
     {
         player->SendMailResult(0, MAIL_SEND, MAIL_ERR_NOT_YOUR_TEAM);
         return;
     }
-    
-    //[AZTH]
-    if (player->azthPlayer->isPvP()) {
-        player->SendMailResult(0, MAIL_SEND, MAIL_ERR_DISABLED_FOR_TRIAL_ACC);
-        return;
-    }
-    //[/AZTH]
 
     Item* items[MAX_MAIL_ITEMS];
 
@@ -242,6 +234,9 @@ void WorldSession::HandleSendMail(WorldPacket & recvData)
             player->SendMailResult(0, MAIL_SEND, MAIL_ERR_EQUIP_ERROR, EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS);
             return;
         }
+
+        if (!sScriptMgr->CanSendMail(player, rc, mailbox, subject, body, money, COD, item))
+            return;
 
         items[i] = item;
     }

@@ -2,55 +2,61 @@
 #define AZTHOBJECT_H
 
 #include "Config.h"
-#include "Define.h"
+#include "Common.h"
 #include <unordered_map>
 
-enum EUint32Fields {
+enum EUint32Fields
+{
     AZTH_U32FIELD_PLAYER_EXTRA_MOUNT_STATUS,
 };
 
-enum EFloatFields {
-};
+//enum EFloatFields
+//{
+//
+//};
 
 class Object;
 
-
-class AzthObject {
+class AzthObject
+{
 public:
     explicit AzthObject(Object *origin);
     ~AzthObject();
     
-    void setBoolValue(uint32 index, bool value) {
+    void setBoolValue(uint32 index, bool value)
+    {
         m_dataUint32[index] = value ? 1 : 0;
     }
 
-    bool getBoolValue(uint32 index) {
+    bool getBoolValue(uint32 index)
+    {
         return m_dataUint32[index] > 0;
     }
 
-    void setUint32Value(uint32 index, uint32 value) {
+    void setUint32Value(uint32 index, uint32 value)
+    {
         m_dataUint32[index] = value;
     }
 
-    uint32 getUint32Value(uint32 index) {
+    uint32 getUint32Value(uint32 index)
+    {
         return m_dataUint32[index];
     }
 
-    void setFloatValue(uint32 index, float value) {
+    void setFloatValue(uint32 index, float value)
+    {
         m_dataFloat[index] = value;
     }
 
-    float getfloatValue(uint32 index) {
+    float getfloatValue(uint32 index)
+    {
         return m_dataFloat[index];
     }
 
-
-    typedef std::unordered_map<uint32 /*index*/, uint32 /*value*/>
-        DataUint32;
+    typedef std::unordered_map<uint32 /*index*/, uint32 /*value*/> DataUint32;
     DataUint32 m_dataUint32;
 
-    typedef std::unordered_map<uint32 /*index*/, float /*value*/>
-        DataFloat;
+    typedef std::unordered_map<uint32 /*index*/, float /*value*/> DataFloat;
     DataFloat m_dataFloat;
 };
 

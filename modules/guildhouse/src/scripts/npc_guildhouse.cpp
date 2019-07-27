@@ -40,6 +40,7 @@
 #include "Guild.h"
 #include "Teleport.h"
 #include "AccountMgr.h"
+#include "AZTH.h"
 
 //[AZTH]
 #include "AzthUtils.h"
@@ -971,14 +972,14 @@ class npc_buffnpc : public CreatureScript
 void Teleport(Player *player, uint16 map,
                 float X, float Y, float Z, float orient)
 {
-    uint32 aurDim=player->azthPlayer->getCurrentDimensionByAura();
-    if (sAzthUtils->isPhasedDimension(aurDim) && !player->azthPlayer->changeDimension(DIMENSION_NORMAL, true))
+    uint32 aurDim=sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByAura();
+    if (sAzthUtils->isPhasedDimension(aurDim) && !sAZTH->GetAZTHPlayer(player)->changeDimension(DIMENSION_NORMAL, true))
         return;
     
     player->CLOSE_GOSSIP_MENU();
     player->CastSpell(player, SPELL_VISUAL_TELEPORT, true);
     if (!player->TeleportTo(map, X, Y, Z, orient) && sAzthUtils->isPhasedDimension(aurDim))
-        player->azthPlayer->changeDimension(aurDim); // we have to restore old dimension to avoid exploits if teleport failed
+        sAZTH->GetAZTHPlayer(player)->changeDimension(aurDim); // we have to restore old dimension to avoid exploits if teleport failed
 };
 
 class npc_portal : public CreatureScript

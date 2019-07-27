@@ -29,11 +29,12 @@ enum NxEncouters
     MAX_ENCOUNTERS,
 };
  
-bool AzthFirstKills::canCompleteAchi(Player *player, uint32 achiId) {
+bool AzthFirstKills::canCompleteAchi(Player *player, uint32 achiId) 
+{
     return true;
     /*
-    uint32 plLevel=player->azthPlayer->isTimeWalking() ? player->azthPlayer->GetTimeWalkingLevel() : player->getLevel();
-    uint32 groupLevel=player->azthPlayer->getGroupLevel(false);
+    uint32 plLevel=sAZTH->GetAZTHPlayer(player)->isTimeWalking() ? sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel() : player->getLevel();
+    uint32 groupLevel=sAZTH->GetAZTHPlayer(player)->getGroupLevel(false);
     
     uint32 level=sAzthUtils->maxTwLevel(groupLevel, plLevel);
     

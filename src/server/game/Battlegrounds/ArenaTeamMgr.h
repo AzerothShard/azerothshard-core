@@ -9,6 +9,9 @@
 
 #include "ArenaTeam.h"
 
+#define MAX_ARENA_TEAM_ID 0xFFF00000
+#define MAX_TEMP_ARENA_TEAM_ID 0xFFFFFFFE
+
 class ArenaTeamMgr
 {
     friend class ACE_Singleton<ArenaTeamMgr, ACE_Null_Mutex>;
@@ -28,6 +31,7 @@ public:
 
     ArenaTeamContainer::iterator GetArenaTeamMapBegin() { return ArenaTeamStore.begin(); }
     ArenaTeamContainer::iterator GetArenaTeamMapEnd()   { return ArenaTeamStore.end(); }
+    ArenaTeamContainer& GetArenaTeams() { return ArenaTeamStore; }
 
     void DistributeArenaPoints();
 
@@ -37,7 +41,7 @@ public:
     uint32 GetNextArenaLogId() { return ++LastArenaLogId; }
     void SetLastArenaLogId(uint32 id) { LastArenaLogId = id; }
 
-    //[AZTH] custom functions
+    // AZTH custom for 3v3 solo
     uint32 GenerateTempArenaTeamId();
 
 protected:
@@ -45,7 +49,7 @@ protected:
     ArenaTeamContainer ArenaTeamStore;
     uint32 LastArenaLogId;
 
-    //[AZTH] custom properties
+    // AZTH custom for 3v3 solo
     uint32 NextTempArenaTeamId;
 };
 

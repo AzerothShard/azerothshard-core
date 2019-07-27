@@ -78,16 +78,10 @@
 #include "ServerMotd.h"
 #include "GameGraveyard.h"
 #include <VMapManager2.h>
+
 #ifdef ELUNA
 #include "LuaEngine.h"
 #endif
-
-
-#include "GuildHouse.h" //[AZTH]
-#include "Teleport.h" //[AZTH]
-#include "azth_custom_hearthstone_mode.h" //[AZTH]
-
-
 
 ACE_Atomic_Op<ACE_Thread_Mutex, bool> World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -926,21 +920,6 @@ void World::LoadConfigSettings(bool reload)
         m_int_configs[CONFIG_MIN_PETITION_SIGNS] = 9;
     }
 
-    //[AZTH] PVP RANK Patch
-    rate_values[RATE_PVP_RANK_EXTRA_HONOR] = sConfigMgr->GetFloatDefault("PvPRank.Rate.ExtraHonor", 1);
-    std::string s_pvp_ranks = sConfigMgr->GetStringDefault("PvPRank.HKPerRank", "10,50,100,200,450,750,1300,2000,3500,6000,9500,15000,21000,30000");
-    char *c_pvp_ranks = const_cast<char*>(s_pvp_ranks.c_str());
-    for (int i = 0; i != HKRANKMAX; i++)
-    {
-        if (i == 0)
-            pvp_ranks[0] = 0;
-        else if (i == 1)
-            pvp_ranks[1] = atoi(strtok(c_pvp_ranks, ","));
-        else
-            pvp_ranks[i] = atoi(strtok(NULL, ","));
-    }
-    //[/AZTH]
-
     m_int_configs[CONFIG_GM_LOGIN_STATE]        = sConfigMgr->GetIntDefault("GM.LoginState", 2);
     m_int_configs[CONFIG_GM_VISIBLE_STATE]      = sConfigMgr->GetIntDefault("GM.Visible", 2);
     m_int_configs[CONFIG_GM_CHAT]               = sConfigMgr->GetIntDefault("GM.Chat", 2);
@@ -969,11 +948,6 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_GROUP_VISIBILITY] = sConfigMgr->GetIntDefault("Visibility.GroupMode", 1);
 
     m_int_configs[CONFIG_MAIL_DELIVERY_DELAY] = sConfigMgr->GetIntDefault("MailDeliveryDelay", HOUR);
-
-    //[AZTH]    
-    m_bool_configs[CONFIG_EXTERNAL_MAIL] = sConfigMgr->GetBoolDefault("ExternalMail", 0);
-    m_int_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] = sConfigMgr->GetIntDefault("ExternalMailInterval", 1);
-    //[/AZTH]
 
     m_int_configs[CONFIG_UPTIME_UPDATE] = sConfigMgr->GetIntDefault("UpdateUptimeInterval", 10);
     if (int32(m_int_configs[CONFIG_UPTIME_UPDATE]) <= 0)
@@ -1301,12 +1275,6 @@ void World::LoadConfigSettings(bool reload)
 
     // Dungeon finder
     m_int_configs[CONFIG_LFG_OPTIONSMASK] = sConfigMgr->GetIntDefault("DungeonFinder.OptionsMask", 3);
-
-    // [AZTH]
-    m_int_configs[CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SECURITY] = sConfigMgr->GetIntDefault("Player.customXP.security", 0);
-    m_float_configs[CONFIG_PLAYER_MAXIMUM_INDIVIDUAL_XP_RATE] = sConfigMgr->GetFloatDefault("Player.customXP.maxValue", 1);
-    m_bool_configs[CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SHOW_ON_LOGIN] = sConfigMgr->GetBoolDefault("Player.customXP.showOnLogin", false);
-    // [/AZTH]
 
     // Max instances per hour
     m_int_configs[CONFIG_MAX_INSTANCES_PER_HOUR] = sConfigMgr->GetIntDefault("AccountInstancesPerHour", 5);
@@ -1869,10 +1837,6 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Calendar data...");
     sCalendarMgr->LoadFromDB();
 
-    GHobj.LoadGuildHouseSystem();     // [AZTH] Load Guildhouses
-    LoadNpcTele();                    // Teleport
-    sHearthstoneMode->loadHearthstone(); // [AZTH] Load Hearthstone Mode
-
     sLog->outString("Initializing SpellInfo precomputed data..."); // must be called after loading items, professions, spells and pretty much anything
     sObjectMgr->InitializeSpellInfoPrecomputedData();
 
@@ -1904,11 +1868,6 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_5_SECS].SetInterval(5*IN_MILLISECONDS);
 
     mail_expire_check_timer = time(NULL) + 6*3600;
-
-    //[AZTH] 
-    m_guildhousetimer=0;
-    extmail_timer.SetInterval(m_int_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] * MINUTE * IN_MILLISECONDS);     //External Mail
-    //[/AZTH]
 
     ///- Initilize static helper structures
     AIRegistry::Initialize();
@@ -2152,26 +2111,6 @@ void World::Update(uint32 diff)
 
     if (m_gameTime > m_NextGuildReset)
         ResetGuildCap();
-
-    /// [AZTH] Customs
-    if (m_bool_configs[CONFIG_EXTERNAL_MAIL])
-    {
-        extmail_timer.Update(diff);
-        if (extmail_timer.Passed())
-        {
-            WorldSession::SendExternalMails();
-            extmail_timer.Reset();
-        }
-    }
-
-    if (m_guildhousetimer <= m_updateTime)
-    {
-        GHobj.ControlGuildHouse();
-        m_guildhousetimer = 600000;
-    }
-    else m_guildhousetimer -= m_updateTime;
-
-    /// [/AZTH]
 
     // pussywizard:
     // acquire mutex now, this is kind of waiting for listing thread to finish it's work (since it can't process next packet)
@@ -3364,39 +3303,4 @@ uint32 World::GetGlobalPlayerGUID(std::string const& name) const
 
     // Player not found
     return 0;
-}
-
-// [AZTH] Custom functions
-void World::SendGameMail(Player* receiver, std::string subject, std::string body, uint32 money, uint32 itemId /* =0 */, uint32 itemCount /* =0 */)
-{
-    uint32 receiver_guid = receiver->GetGUIDLow();
-
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    MailDraft* mail = NULL;
-
-    mail = new MailDraft(subject, body);
-
-    if (money)
-    {
-        mail->AddMoney(money);
-    }
-
-    if (itemId)
-    {
-        ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemId);
-        if (pProto)
-        {
-            Item* mailItem = Item::CreateItem(itemId, itemCount);
-            if (mailItem)
-            {
-                mailItem->SaveToDB(trans);
-                mail->AddItem(mailItem);
-            }
-        }
-    }
-
-    mail->SendMailTo(trans, receiver ? receiver : MailReceiver(receiver_guid), MailSender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_RETURNED);
-    delete mail;
-
-    CharacterDatabase.CommitTransaction(trans);
 }

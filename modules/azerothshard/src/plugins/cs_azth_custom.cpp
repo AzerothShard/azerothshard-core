@@ -31,6 +31,7 @@
 #include "AzthSharedDefines.h"
 #include "RatingBonus.h"
 #include "AzthUtils.h"
+#include "AZTH.h"
  
  class azth_commandscript : public CommandScript {
  public:
@@ -67,16 +68,16 @@
             return false;
         
         
-        uint32 finalLevel = target->azthPlayer->getPStatsLevel(false);
-        uint32 nFinalLevel = target->azthPlayer->getPStatsLevel(true);
-        uint32 level = target->azthPlayer->getPStatsLevel(false, false, false);
-        uint32 nLevel = target->azthPlayer->getPStatsLevel(true, false, false);
-        uint32 groupLevel = target->azthPlayer->getGroupLevel(false, false);
-        uint32 nGroupLevel = target->azthPlayer->getGroupLevel(true, false);
-        uint32 instanceLevel = target->azthPlayer->getInstanceLevel(false);
-        uint32 nInstanceLevel = target->azthPlayer->getInstanceLevel(true);
-        uint32 groupSize = target->azthPlayer->getGroupSize(false);
-        uint32 instanceSize = target->azthPlayer->getInstanceSize();
+        uint32 finalLevel = sAZTH->GetAZTHPlayer(target)->getPStatsLevel(false);
+        uint32 nFinalLevel = sAZTH->GetAZTHPlayer(target)->getPStatsLevel(true);
+        uint32 level = sAZTH->GetAZTHPlayer(target)->getPStatsLevel(false, false, false);
+        uint32 nLevel = sAZTH->GetAZTHPlayer(target)->getPStatsLevel(true, false, false);
+        uint32 groupLevel = sAZTH->GetAZTHPlayer(target)->getGroupLevel(false, false);
+        uint32 nGroupLevel = sAZTH->GetAZTHPlayer(target)->getGroupLevel(true, false);
+        uint32 instanceLevel = sAZTH->GetAZTHPlayer(target)->getInstanceLevel(false);
+        uint32 nInstanceLevel = sAZTH->GetAZTHPlayer(target)->getInstanceLevel(true);
+        uint32 groupSize = sAZTH->GetAZTHPlayer(target)->getGroupSize(false);
+        uint32 instanceSize = sAZTH->GetAZTHPlayer(target)->getInstanceSize();
         
         std::string finalLevelInfo = sAzthUtils->getLevelInfo(finalLevel);
         std::string nFinalLevelInfo = sAzthUtils->getLevelInfo(nFinalLevel);
@@ -135,7 +136,7 @@
         if (!target)
             return false;
         
-        if (target->azthPlayer->isPvP()) {
+        if (sAZTH->GetAZTHPlayer(target)->isPvP()) {
             handler->PSendSysMessage("This is a full pvp character");
             return true;
         }
@@ -486,30 +487,35 @@
          return true;
      }
 
-	 static bool handleAzthXP(ChatHandler* handler, const char* args) {
-		 Player *me = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+	 static bool handleAzthXP(ChatHandler* handler, const char* args)
+     {
+         Player *me = handler->GetSession() ? handler->GetSession()->GetPlayer() : nullptr;
 		 Player *target = handler->getSelectedPlayer();
-		 Player *player = NULL;
+		 Player *player = nullptr;
 
 		 if (!me || !me->GetSession())
 			 return false;
 
+         // If no arguments provided, show current custom XP rate
+         if (!*args)
+         {
+             handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Your current XP rate is %.2f.", sAZTH->GetAZTHPlayer(me)->GetPlayerQuestRate());
+             return true;
+         }
+
 		 // first, check if I can use the command
-		 if (me->GetSession()->GetSecurity() < (int)sWorld->getIntConfig(CONFIG_PLAYER_INDIVIDUAL_XP_RATE_SECURITY)) {
+		 if (me->GetSession()->GetSecurity() < sAZTH->GetCustomXPSecurity())
+         {
 			 handler->SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
 			 handler->SetSentErrorMessage(true);
 			 return false;
 		 }
 
-		 // If no arguments provided, show current custom XP rate
-		 if (!*args) {
-			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Your current XP rate is %.2f.", me->azthPlayer->GetPlayerQuestRate());
-			 return true;
-		 }
-
 		 float rate = atof((char *)args);
-		 float maxRate = sWorld->getFloatConfig(CONFIG_PLAYER_MAXIMUM_INDIVIDUAL_XP_RATE);
-		 if (rate < 0 || rate > maxRate) {
+		 float maxRate = sAZTH->GetCustomXPMax();
+
+         if (rate < 0 || rate > maxRate)
+         {
 			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Invalid rate specified, must be in interval [0, %.2f].", maxRate);
 			 handler->SetSentErrorMessage(true);
 			 return false;
@@ -518,7 +524,8 @@
 		 // Without target; Set my XP rate
 		 if (!target || !target->GetSession())
 			 player = me;
-		 else {
+		 else
+         {
 			 // Have a target AND my security level is higher than target's (I am a GM, he is a player); Set target XP rate
 			 if (me->GetSession()->GetSecurity() > target->GetSession()->GetSecurity())
 				 player = target;
@@ -528,16 +535,17 @@
 
 		 CustomRates::SaveXpRateToDB(player, rate);
 
-		 player->azthPlayer->SetPlayerQuestRate(rate);
+		 sAZTH->GetAZTHPlayer(player)->SetPlayerQuestRate(rate);
 
-		 if (me->azthPlayer->GetPlayerQuestRate() == 0.0f)
+		 if (sAZTH->GetAZTHPlayer(me)->GetPlayerQuestRate() == 0.0f)
 			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to 0. You won't gain any experience from now on.");
 		 else
-			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to %.2f.", me->azthPlayer->GetPlayerQuestRate());
+			 handler->PSendSysMessage("|CFF7BBEF7[Custom Rates]|r: Quest & Dungeons XP Rate set to %.2f.", sAZTH->GetAZTHPlayer(me)->GetPlayerQuestRate());
 		 return true;
 	 }
  };
 
- void AddSC_azth_commandscript() {
+ void AddSC_azth_commandscript()
+ {
      new azth_commandscript();
  }

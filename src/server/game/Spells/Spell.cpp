@@ -4,11 +4,6 @@
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  */
 
-#ifdef ELUNA
-#include "LuaEngine.h"
-#include "ElunaUtility.h"
-#endif
-
 #include "Common.h"
 #include "DatabaseEnv.h"
 #include "WorldPacket.h"
@@ -52,8 +47,15 @@
 #include "BattlegroundIC.h"
 #include "GameObjectAI.h"
 #include "ArenaSpectator.h"
+
+#ifdef ELUNA
+#include "LuaEngine.h"
+#include "ElunaUtility.h"
+#endif
+
 //[AZTH]
 #include "AzthUtils.h"
+#include "AZTH.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -548,10 +550,6 @@ m_spellInfo(sSpellMgr->GetSpellForDifficultyFromSpell(info, caster)),
 m_caster((info->HasAttribute(SPELL_ATTR6_CAST_BY_CHARMER) && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
 , m_spellValue(new SpellValue(m_spellInfo))
 {
-    //[AZTH]
-    m_twOriginalSpell = NULL;
-    //[/AZTH]
-
     m_customError = SPELL_CUSTOM_ERROR_NONE;
     m_skipCheck = skipCheck;
     m_selfContainer = NULL;
@@ -670,10 +668,6 @@ m_caster((info->HasAttribute(SPELL_ATTR6_CAST_BY_CHARMER) && caster->GetCharmerO
 
 Spell::~Spell()
 {
-    //[AZTH]
-    delete m_twOriginalSpell;
-    //[/AZTH]
-
     // unload scripts
     while (!m_loadedScripts.empty())
     {
@@ -2384,6 +2378,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     targetInfo.damage     = 0;
     targetInfo.crit       = false;
     targetInfo.scaleAura  = false;
+
     if (m_auraScaleMask && targetInfo.effectMask == m_auraScaleMask /*[AZTH] && m_caster != target*/)
     {
         SpellInfo const* auraSpell = m_spellInfo->GetFirstRankSpell();
@@ -3359,15 +3354,14 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
 
     InitExplicitTargets(*targets);
 
-    //[/AZTH]
-    if (!sAzthUtils->canPrepareSpell(this, m_caster, m_spellInfo, targets, triggeredByAura)) {
+    if (!sScriptMgr->CanPrepare(this, targets, triggeredByAura))
+    {
         finish(false);
         return;
     }
-    //[/AZTH]
+
     // Fill aura scaling information
-    if ((m_caster->isType(TYPEMASK_PLAYER) && ((Player*)m_caster)->azthPlayer->isTimeWalking(true)) || //[AZTH] timewalking scale everything!!!
-        m_caster->IsTotem() || (m_caster->IsControlledByPlayer() && !m_spellInfo->IsPassive() && m_spellInfo->SpellLevel && !m_spellInfo->IsChanneled() && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_SCALING)))
+    if (sScriptMgr->CanScalingEverything(this) || m_caster->IsTotem() || (m_caster->IsControlledByPlayer() && !m_spellInfo->IsPassive() && m_spellInfo->SpellLevel && !m_spellInfo->IsChanneled() && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_SCALING)))
     {
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
@@ -4085,10 +4079,6 @@ void Spell::SendSpellCooldown()
                     WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 4 + 4);
                     data << uint64(m_caster->GetGUID());
                     data << uint8(SPELL_COOLDOWN_FLAG_INCLUDE_GCD);
-                    //[AZTH] Timewalking
-                    if (m_twOriginalSpell)
-                        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
-                    else
                     data << uint32(m_spellInfo->Id);
                     data << uint32(m_spellInfo->RecoveryTime);
                     player->SendDirectMessage(&data);
@@ -4437,7 +4427,7 @@ void Spell::SendCastResult(SpellCastResult result)
     if ((_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) && result != SPELL_FAILED_BM_OR_INVISGOD)
         result = SPELL_FAILED_DONT_REPORT;
 
-    SendCastResult(m_caster->ToPlayer(), /*[AZTH]*/ m_twOriginalSpell ? m_twOriginalSpell->GetSpellInfo() : /*[/AZTH]*/ m_spellInfo, m_cast_count, result, m_customError);
+    SendCastResult(m_caster->ToPlayer(), m_spellInfo, m_cast_count, result, m_customError);
 }
 
 void Spell::SendPetCastResult(SpellCastResult result)
@@ -4489,10 +4479,6 @@ void Spell::SendSpellStart()
 
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
-    //[AZTH]
-    if (m_twOriginalSpell)
-        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
-    else
     data << uint32(m_spellInfo->Id);                        // spellId
     data << uint32(castFlags);                              // cast flags
     data << int32(m_timer);                                 // delay?
@@ -4566,10 +4552,6 @@ void Spell::SendSpellGo()
 
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
-    //[AZTH]
-    if (m_twOriginalSpell)
-        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
-    else
     data << uint32(m_spellInfo->Id);                        // spellId
     data << uint32(castFlags);                              // cast flags
     data << uint32(World::GetGameTimeMS());                 // timestamp
@@ -4765,10 +4747,6 @@ void Spell::SendLogExecute()
 
     data.append(m_caster->GetPackGUID());
 
-    //[AZTH]
-    if (m_twOriginalSpell)
-        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
-    else
     data << uint32(m_spellInfo->Id);
 
     uint8 effCount = 0;
@@ -4869,10 +4847,6 @@ void Spell::SendInterrupted(uint8 result)
     WorldPacket data(SMSG_SPELL_FAILURE, (8+1+4+1));
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);
-    //[AZTH]
-    if (m_twOriginalSpell)
-        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
-    else
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
     m_caster->SendMessageToSet(&data, true);
@@ -4880,10 +4854,6 @@ void Spell::SendInterrupted(uint8 result)
     data.Initialize(SMSG_SPELL_FAILED_OTHER, (8+1+4+1));
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);
-    //[AZTH]
-    if (m_twOriginalSpell)
-        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
-    else
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
     m_caster->SendMessageToSet(&data, true);
@@ -4913,11 +4883,6 @@ void Spell::SendChannelStart(uint32 duration)
 
     WorldPacket data(MSG_CHANNEL_START, (8+4+4));
     data.append(m_caster->GetPackGUID());
-
-    //[AZTH]
-    if (m_twOriginalSpell)
-        data << uint32(m_twOriginalSpell->GetSpellInfo()->Id);
-    else
     data << uint32(m_spellInfo->Id);
     data << uint32(duration);
 
@@ -4930,10 +4895,6 @@ void Spell::SendChannelStart(uint32 duration)
     if (channelTarget)
         m_caster->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, channelTarget);
 
-    //[AZTH]
-    if (m_twOriginalSpell) {
-        m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, m_twOriginalSpell->GetSpellInfo()->Id);
-    } else //[/AZTH]
     m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, m_spellInfo->Id);
 }
 
@@ -5248,23 +5209,11 @@ void Spell::TakeReagents()
 
     for (uint32 x = 0; x < MAX_SPELL_REAGENTS; ++x)
     {
-        //[AZTH] TIMEWALKING REAGENTS
-        if (m_twOriginalSpell) {
-            if (m_twOriginalSpell->GetSpellInfo()->Reagent[x] <= 0)
-                continue;
-        } else //[/AZTH]
         if (m_spellInfo->Reagent[x] <= 0)
             continue;
 
-        uint32 itemid    = m_spellInfo->Reagent[x];
+        uint32 itemid = m_spellInfo->Reagent[x];
         uint32 itemcount = m_spellInfo->ReagentCount[x];
-
-        //[AZTH] overwrite
-        if (m_twOriginalSpell) {
-            itemid    = m_twOriginalSpell->GetSpellInfo()->Reagent[x];
-            itemcount = m_twOriginalSpell->GetSpellInfo()->ReagentCount[x];
-        }
-        //[/AZTH]
 
         // if CastItem is also spell reagent
         if (castItemTemplate && castItemTemplate->ItemId == itemid)
@@ -5377,14 +5326,12 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (((const Player*)m_caster)->IsSpectator() && m_spellInfo->Id != SPECTATOR_SPELL_BINDSIGHT)
             return SPELL_FAILED_NOT_HERE;
         
-    //[AZTH]
-    Player *_plr = m_caster->GetSpellModOwner();
-    if (_plr) {
-        SpellCastResult res=sAzthUtils->checkSpellCast(_plr, m_spellInfo, true);
-        if (res!= SPELL_CAST_OK)
-            return res;
-    }     
-    //[/AZTH]
+    SpellCastResult res = SPELL_CAST_OK;
+
+    sScriptMgr->OnSpellCheckCast(this, strict, res);
+
+    if (res != SPELL_CAST_OK)
+        return res;
 
     // check cooldowns to prevent cheating
     if (!m_spellInfo->HasAttribute(SPELL_ATTR0_PASSIVE))
@@ -6223,20 +6170,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 break;
             }
             case SPELL_EFFECT_TALENT_SPEC_SELECT:
-
-                //[AZTH]
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                {
-                    Player* plr = m_caster->ToPlayer();
-                    if (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3_SOLO) ||
-                        plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_1v1))
-                    {
-                        plr->GetSession()->SendAreaTriggerMessage("You can't change your talents while in queue for 1v1 or 3v3.");
-                        return SPELL_FAILED_DONT_REPORT;
-                    }
-
-                }
-                //[/AZTH]
+                if (!sScriptMgr->CanSelectSpecTalent(this))
+                    return SPELL_FAILED_DONT_REPORT;
 
                 // can't change during already started arena/battleground
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -6904,23 +6839,11 @@ SpellCastResult Spell::CheckItems()
         {
             for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
             {
-                //[AZTH] TIMEWALKING REAGENTS
-                if (m_twOriginalSpell) {
-                    if (m_twOriginalSpell->GetSpellInfo()->Reagent[i] <= 0)
-                        continue;
-                } else //[/AZTH]
                 if (m_spellInfo->Reagent[i] <= 0)
                     continue;
 
                 uint32 itemid    = m_spellInfo->Reagent[i];
                 uint32 itemcount = m_spellInfo->ReagentCount[i];
-
-                //[AZTH] overwrite
-                if (m_twOriginalSpell) {
-                    itemid    = m_twOriginalSpell->GetSpellInfo()->Reagent[i];
-                    itemcount = m_twOriginalSpell->GetSpellInfo()->ReagentCount[i];
-                }
-                //[/AZTH]
 
                 // if CastItem is also spell reagent
                 if (m_CastItem && m_CastItem->GetEntry() == itemid)

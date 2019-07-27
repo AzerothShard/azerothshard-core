@@ -498,6 +498,7 @@ void Vehicle::RelocatePassengers()
 {
     ASSERT(_me->GetMap());
     
+    // [AZTH]
     std::vector<std::pair<Unit*, Position>> seatRelocation;
     seatRelocation.reserve(Seats.size());
 
@@ -511,10 +512,13 @@ void Vehicle::RelocatePassengers()
             float px, py, pz, po;
             passenger->m_movementInfo.transport.pos.GetPosition(px, py, pz, po);
             CalculatePassengerPosition(px, py, pz, &po);
+
+            // [AZTH]
             seatRelocation.emplace_back(passenger, Position(px, py, pz, po));
         }
     }
 
+    // [AZTH]
     for (auto const& pair : seatRelocation)
         pair.first->UpdatePosition(pair.second);
 }

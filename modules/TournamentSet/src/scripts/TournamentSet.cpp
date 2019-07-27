@@ -9,8 +9,7 @@
 #include "AzthGearScalingSocket.h"
 #include "AzthLanguageStrings.h"
 #include "ScriptedGossip.h"
-
-
+#include "AZTH.h"
 #include <iostream>
 #include <chrono>
 
@@ -85,14 +84,14 @@ public:
             return true;
         }
         
-        if (!player->azthPlayer->isPvP())
+        if (!sAZTH->GetAZTHPlayer(player)->isPvP())
         {
             ChatHandler(player->GetSession()).PSendSysMessage("|cffff0000You need a PvP account to use this NPC!|r");
             return true;
         }
         
         if (player->getLevel()>=80) {
-            if (!player->azthPlayer->hasGear())
+            if (!sAZTH->GetAZTHPlayer(player)->hasGear())
             {
                 string str = sAzthLang->get(AZTH_LANG_PVP_NPC_SET_ADVICE,player);
                 player->ADD_GOSSIP_ITEM_EXTENDED(1, "Set PvP: Deadly", GOSSIP_SENDER_MAIN, 5, str, 0, false);
@@ -104,7 +103,7 @@ public:
                 player->ADD_GOSSIP_ITEM(0, "Rimuovi il set PVP", GOSSIP_SENDER_MAIN, 9);
         }
 
-        if (player->azthPlayer->isPvP()) {
+        if (sAZTH->GetAZTHPlayer(player)->isPvP()) {
             player->ADD_GOSSIP_ITEM(8, "Gratis: Ripara tutti gli items", GOSSIP_SENDER_MAIN, 20);
             player->ADD_GOSSIP_ITEM_EXTENDED(3, "Gratis: Resetta i talenti", GOSSIP_SENDER_MAIN, 21, "Vuoi davvero resettare tutti i talenti?", 0, false);
         }
@@ -118,12 +117,12 @@ public:
         if (action >= 4 && action <= 8) // deadly = 5, furious = 6, relentless = 7, wrathful = 8 -> go to select spec menu
             selectSpec(player, creature, action);
         
-        if (action == 20 && player->azthPlayer->isPvP()) {
+        if (action == 20 && sAZTH->GetAZTHPlayer(player)->isPvP()) {
             player->DurabilityRepairAll(false,0,false);
             player->PlayerTalkClass->SendCloseGossip();
         }
         
-        if (action == 21 && player->azthPlayer->isPvP()) {
+        if (action == 21 && sAZTH->GetAZTHPlayer(player)->isPvP()) {
             player->resetTalents(true);
             player->SendTalentsInfoData(false);
             creature->CastSpell(player, 14867, true);                  //spell: "Untalent Visual Effect"
@@ -137,7 +136,7 @@ public:
             AzthGearScaling & set = sAzthGearScalingMgr->GetGearScalingList()[action];
 
             if (equipSet(creature, set, player, spec)) {
-                if (!player->azthPlayer->isPvP()) {
+                if (!sAZTH->GetAZTHPlayer(player)->isPvP()) {
                     QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("INSERT IGNORE INTO azth_tournamentset_active (`id`, `season`, `spec`) VALUES ('%d', '%d', '%d');"), player->GetGUID(), season, spec);
                 }
 
@@ -157,7 +156,7 @@ public:
                     player->DestroyItem(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                 }
             }
-            player->azthPlayer->SetTempGear(false);
+            sAZTH->GetAZTHPlayer(player)->SetTempGear(false);
             QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_tournamentset_active WHERE  `id`=%d;"), player->GetGUID());
             player->SaveToDB(false, false);
             ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPITEMS_REMOVED, player));
@@ -234,7 +233,7 @@ public:
         /* // already done in preCheckEquip
          * Item* pItem = Item::CreateItem(entry, 1, player);
         
-        if (player->azthPlayer->isPvP()) {
+        if (sAZTH->GetAZTHPlayer(player)->isPvP()) {
             InventoryResult msg = player->CanEquipItem(INVENTORY_SLOT_BAG_0, slot, pItem, false);
             if (msg != EQUIP_ERR_OK)
             {
@@ -265,7 +264,7 @@ public:
         if (msg != EQUIP_ERR_OK 
             && msg != EQUIP_ERR_CANT_EQUIP_WITH_TWOHANDED) // TODO: maybe two hand control skip should be solved in another way. It can skip some important checks.
         {
-            if (player->azthPlayer->isPvP() 
+            if (sAZTH->GetAZTHPlayer(player)->isPvP() 
                 || msg != EQUIP_ERR_CANT_CARRY_MORE_OF_THIS) {
                 player->SendEquipError(msg, pItem, NULL);
                 const char *msg=sAzthLang->getf(AZTH_LANG_PVP_NPC_CANNOT_EQUIP, player, entry, pItem->GetTemplate()->Name1.c_str());
@@ -376,8 +375,8 @@ public:
 
         player->RemoveItemDependentAurasAndCasts((Item*)NULL);
 
-        if (!player->azthPlayer->isPvP())
-            player->azthPlayer->SetTempGear(true);
+        if (!sAZTH->GetAZTHPlayer(player)->isPvP())
+            sAZTH->GetAZTHPlayer(player)->SetTempGear(true);
         
         equipItem(set.GetHead(), SLOT_HEAD, player, spec);
         equipItem(set.GetNeck(), SLOT_NECK, player, spec);
@@ -515,7 +514,7 @@ public:
         QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("SELECT id,season,spec FROM azth_tournamentset_active WHERE id = %d;"), player->GetGUID());
 
         if (PVPSetCharactersActive_table)
-            player->azthPlayer->SetTempGear(true);
+            sAZTH->GetAZTHPlayer(player)->SetTempGear(true);
     }
 
     void OnUpdateZone(Player* player, uint32  newZone, uint32 /*newArea*/) override
@@ -523,10 +522,10 @@ public:
         if (player->GetSession()->PlayerLoading())
             return; // do not remove set during login
             
-        if (player->azthPlayer->isPvP())
+        if (sAZTH->GetAZTHPlayer(player)->isPvP())
             return; // do not remove set for pvp players
             
-        uint32 curDimension=player->azthPlayer->getCurrentDimensionByAura();
+        uint32 curDimension=sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByAura();
         if (curDimension && (curDimension == DIMENSION_PVP || curDimension == DIMENSION_ENTERTAINMENT || curDimension == DIMENSION_TEST))
             return; // do not remove set on special dimensions
         
@@ -539,7 +538,7 @@ public:
         
         if (!player->IsGameMaster() && !player->InBattleground() && !player->InArena())
         {
-            if (player->azthPlayer->hasGear())
+            if (sAZTH->GetAZTHPlayer(player)->hasGear())
             {
                 for (uint32 INVENTORY_INDEX = EQUIPMENT_SLOT_START; INVENTORY_INDEX < EQUIPMENT_SLOT_END; INVENTORY_INDEX++)
                 {
@@ -549,7 +548,7 @@ public:
                         player->DestroyItem(INVENTORY_SLOT_BAG_0, INVENTORY_INDEX, true);
                     }
                 }
-                player->azthPlayer->SetTempGear(false);
+                sAZTH->GetAZTHPlayer(player)->SetTempGear(false);
                 QueryResult PVPSetCharactersActive_table = CharacterDatabase.PQuery(("DELETE FROM azth_tournamentset_active WHERE  `id`=%d;"), player->GetGUID());
                 player->SaveToDB(false, false);
                 ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_PVPITEMS_FORCE_REMOVED, player));

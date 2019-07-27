@@ -16,6 +16,7 @@
 #include "ConditionMgr.h"
 #include "Player.h"
 #include "Opcodes.h"
+#include "ScriptMgr.h"
 
 void AddItemsSetItem(Player* player, Item* item)
 {
@@ -91,9 +92,9 @@ void AddItemsSetItem(Player* player, Item* item)
                 }
 
                 // spell casted only if fit form requirement, in other case will casted at form change
-                // [AZTH] Timewalking
-                if (player->azthPlayer->itemCheckReqLevel(proto))
+                if (sScriptMgr->CanItemApplyEquipSpell(player, item))
                     player->ApplyEquipSpell(spellInfo, NULL, true);
+                    
                 eff->spells[y] = spellInfo;
                 break;
             }
@@ -269,14 +270,7 @@ bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
     SetUInt32Value(ITEM_FIELD_DURATION, itemProto->Duration);
     SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, 0);
 
-    //[AZTH]
-    if (itemProto->Quality > 2 && itemProto->Flags != 2048 && (itemProto->Class == ITEM_CLASS_WEAPON || itemProto->Class == ITEM_CLASS_ARMOR))
-    {
-        if (!GetOwner())
-            return true;
-        GetOwner()->CreateWowarmoryFeed(2, itemid, guidlow, itemProto->Quality);
-    }
-    //[/AZTH]
+    sScriptMgr->OnItemCreate(this, itemProto, owner);
 
     return true;
 }
