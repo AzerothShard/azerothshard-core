@@ -142,14 +142,12 @@ bool Group::Create(Player* leader)
         stmt->setUInt32(index++, uint8(m_dungeonDifficulty));
         stmt->setUInt32(index++, uint8(m_raidDifficulty));
         stmt->setUInt32(index++, GUID_LOPART(m_masterLooterGuid));
-        //[/AZTH]
-        stmt->setUInt32(index++, uint8(leader->getLevel()));
-        // [/AZTH]
 
         CharacterDatabase.Execute(stmt);
 
-
         ASSERT(AddMember(leader)); // If the leader can't be added to a new group because it appears full, something is clearly wrong.
+
+        sScriptMgr->OnCreate(this, leader);
     }
     else if (!AddMember(leader))
         return false;
@@ -421,6 +419,7 @@ bool Group::AddMember(Player* player)
     }
 
     SendUpdate();
+
     sScriptMgr->OnGroupAddMember(this, player->GetGUID());
 
     if (player)

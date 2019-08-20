@@ -11,10 +11,6 @@
 #include "DBCEnums.h"
 #include "Battleground.h"
 #include "EventProcessor.h"
-
-//[AZTH]
-#include "ArenaTeam.h"
-
 #include <deque>
 
 #define COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME 10

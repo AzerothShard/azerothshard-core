@@ -171,12 +171,6 @@ Battleground::Battleground()
     m_BgInvitedPlayers[TEAM_ALLIANCE]= 0;
     m_BgInvitedPlayers[TEAM_HORDE]   = 0;
 
-    // [AZTH] crossfaction system
-    m_premadeAssigned[TEAM_ALLIANCE] = 0; 
-    m_premadeAssigned[TEAM_HORDE]    = 0;
-    m_hasPlayerJoinedPremade.clear();
-    // [/AZTH]
-
     m_TeamScores[TEAM_ALLIANCE]      = 0;
     m_TeamScores[TEAM_HORDE]         = 0;
 
@@ -1083,8 +1077,6 @@ void Battleground::BlockMovement(Player* player)
 
 void Battleground::RemovePlayerAtLeave(Player* player)
 {
-    sScriptMgr->OnPlayerRemoveFromBattleground(player, this);
-
     TeamId teamId = player->GetBgTeamId();
 
     // check if the player was a participant of the match, or only entered through gm command
@@ -1275,8 +1267,7 @@ void Battleground::AddPlayer(Player* player)
     AddOrSetPlayerToCorrectBgGroup(player, teamId);
 
     sScriptMgr->OnBattlegroundAddPlayer(this, player);
-    
-    sScriptMgr->OnPlayerAddToBattleground(player, this);
+
     // Log
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
     sLog->outDetail("BATTLEGROUND: Player %s joined the battle.", player->GetName().c_str());
@@ -1320,7 +1311,7 @@ void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, TeamId teamId)
 
 uint32 Battleground::GetFreeSlotsForTeam(TeamId teamId) const
 {
-    //[AZTH]    
+    //[AZTH]
     // if BG is starting and CONFIG_BATTLEGROUND_INVITATION_TYPE == BG_QUEUE_INVITATION_TYPE_NO_BALANCE, invite anyone
     if (GetStatus() == STATUS_WAIT_JOIN && sWorld->getIntConfig(CONFIG_BATTLEGROUND_INVITATION_TYPE) == BG_QUEUE_INVITATION_TYPE_NO_BALANCE)
         return (GetInvitedCount(teamId) < GetMaxPlayersPerTeam()) ? GetMaxPlayersPerTeam() - GetInvitedCount(teamId) : 0;

@@ -403,9 +403,7 @@ class Map : public GridRefManager<NGridType>
         void markCell(uint32 pCellId) { marked_cells.set(pCellId); }
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
-        uint32 GetPlayersCountExceptGMs() const;
-        std::vector<Player*> GetPlayerList() const;
-        std::vector<Player*> GetPlayerListExceptGMs() const;
+        uint32 GetPlayersCountExceptGMs() const;        
 
         void AddWorldObject(WorldObject* obj) { i_worldObjects.insert(obj); }
         void RemoveWorldObject(WorldObject* obj) { i_worldObjects.erase(obj); }

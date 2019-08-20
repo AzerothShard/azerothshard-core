@@ -263,10 +263,6 @@ struct BattlegroundScore
     uint32 BonusHonor;
     uint32 DamageDone;
     uint32 HealingDone;
-    ///** World of Warcraft Armory **/ NEED DELETE
-    //uint32 DamageTaken;
-    //uint32 HealingTaken;
-    ///** World of Warcraft Armory **/
     Player* player;
 
     uint32 GetKillingBlows() const { return KillingBlows; }
@@ -626,7 +622,7 @@ class Battleground
         BattlegroundRV const* ToBattlegroundRV() const { if (GetBgTypeID() == BATTLEGROUND_RV) return reinterpret_cast<const BattlegroundRV*>(this); else return NULL; }
 
         BattlegroundIC* ToBattlegroundIC() { if (GetBgTypeID() == BATTLEGROUND_IC) return reinterpret_cast<BattlegroundIC*>(this); else return NULL; }
-        BattlegroundIC const* ToBattlegroundIC() const { if (GetBgTypeID() == BATTLEGROUND_IC) return reinterpret_cast<const BattlegroundIC*>(this); else return NULL; }     
+        BattlegroundIC const* ToBattlegroundIC() const { if (GetBgTypeID() == BATTLEGROUND_IC) return reinterpret_cast<const BattlegroundIC*>(this); else return NULL; }
 
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
@@ -721,11 +717,6 @@ class Battleground
         // Invited counters will be changed only when removing already invited player from queue, removing player from battleground and inviting player to BG
         // Invited players counters
         uint32 m_BgInvitedPlayers[BG_TEAMS_COUNT];
-
-        // [AZTH] Crossfaction Battleground
-        std::unordered_map<uint64, bool> m_hasPlayerJoinedPremade;
-        uint32 m_premadeAssigned[BG_TEAMS_COUNT];
-        // [AZTH]
 
         // Raid Group
         Group* m_BgRaids[BG_TEAMS_COUNT];                   // 0 - alliance, 1 - horde

@@ -3036,11 +3036,9 @@ void Player::SetGameMaster(bool on)
 
         getHostileRefManager().setOnlineOfflineState(false);
         CombatStopWithPets();
-
-        //[AZTH] SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
-        //[AZTH] xeela
-        m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_ENTERTAINER ? GetSession()->GetSecurity() : SEC_ENTERTAINER);
-        //[/AZTH]
+        
+        SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
+        SetServerSideVisibilityDetect(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
     }
     else
     {
@@ -3071,7 +3069,7 @@ void Player::SetGameMaster(bool on)
         UpdateArea(m_areaUpdateId);
 
         getHostileRefManager().setOnlineOfflineState(true);
-        m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+        SetServerSideVisibilityDetect(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
     }
 
     UpdateObjectVisibility();
@@ -3087,7 +3085,7 @@ void Player::SetGMVisible(bool on)
             RemoveAurasDueToSpell(VISUAL_AURA);
 
         m_ExtraFlags &= ~PLAYER_EXTRA_GM_INVISIBLE;         //remove flag
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+        SetServerSideVisibility(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
     }
     else
     {
@@ -3098,9 +3096,7 @@ void Player::SetGMVisible(bool on)
         SetAcceptWhispers(false);
         SetGameMaster(true);
 
-        //[AZTH] xeela
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity() > SEC_ENTERTAINER ? GetSession()->GetSecurity() : SEC_ENTERTAINER);
-        //[/AZTH]
+        SetServerSideVisibility(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
     }
 }
 
@@ -27752,4 +27748,18 @@ float Player::GetQuestRate()
     sScriptMgr->OnGetQuestRate(this, result);
 
     return result;
+}
+
+void Player::SetServerSideVisibility(ServerSideVisibilityType type, AccountTypes sec)
+{
+    sScriptMgr->OnSetServerSideVisibility(this, type, sec);
+
+    m_serverSideVisibility.SetValue(type, sec);
+}
+
+void Player::SetServerSideVisibilityDetect(ServerSideVisibilityType type, AccountTypes sec)
+{
+    sScriptMgr->OnSetServerSideVisibilityDetect(this, type, sec);
+
+    m_serverSideVisibilityDetect.SetValue(type, sec);    
 }

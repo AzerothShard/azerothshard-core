@@ -1667,16 +1667,6 @@ void ScriptMgr::OnPlayerUpdateFaction(Player* player)
     FOREACH_SCRIPT(PlayerScript)->OnUpdateFaction(player);
 }
 
-void ScriptMgr::OnPlayerAddToBattleground(Player* player, Battleground *bg)
-{
-    FOREACH_SCRIPT(PlayerScript)->OnAddToBattleground(player, bg);
-}
-
-void ScriptMgr::OnPlayerRemoveFromBattleground(Player* player, Battleground* bg)
-{
-    FOREACH_SCRIPT(PlayerScript)->OnRemoveFromBattleground(player, bg);
-}
-
 void ScriptMgr::OnAchievementComplete(Player* player, AchievementEntry const* achievement)
 {
     FOREACH_SCRIPT(PlayerScript)->OnAchiComplete(player, achievement);
@@ -2209,6 +2199,16 @@ bool ScriptMgr::CanInitTrade(Player* player, Player* target)
     return ret;
 }
 
+void ScriptMgr::OnSetServerSideVisibility(Player* player, ServerSideVisibilityType& type, AccountTypes& sec)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnSetServerSideVisibility(player, type, sec);
+}
+
+void ScriptMgr::OnSetServerSideVisibilityDetect(Player* player, ServerSideVisibilityType& type, AccountTypes& sec)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnSetServerSideVisibilityDetect(player, type, sec);
+}
+
 // AccountScript
 void ScriptMgr::OnAccountLogin(uint32 accountId)
 {
@@ -2396,6 +2396,11 @@ bool ScriptMgr::CanGroupJoinBattlegroundQueue(Group const* group, Player* member
             ret = false; // we change ret value only when scripts return true
 
     return ret;
+}
+
+void ScriptMgr::OnCreate(Group* group, Player* leader)
+{
+    FOREACH_SCRIPT(GroupScript)->OnCreate(group, leader);
 }
 
 // GlobalScript

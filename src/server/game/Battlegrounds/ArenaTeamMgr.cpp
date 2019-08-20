@@ -82,7 +82,6 @@ uint32 ArenaTeamMgr::GenerateArenaTeamId()
     return NextArenaTeamId++;
 }
 
-//[AZTH] custom functions
 uint32 ArenaTeamMgr::GenerateTempArenaTeamId()
 {
     if (NextTempArenaTeamId >= MAX_TEMP_ARENA_TEAM_ID)

@@ -41,15 +41,12 @@ public:
     uint32 GetNextArenaLogId() { return ++LastArenaLogId; }
     void SetLastArenaLogId(uint32 id) { LastArenaLogId = id; }
 
-    // AZTH custom for 3v3 solo
     uint32 GenerateTempArenaTeamId();
 
 protected:
     uint32 NextArenaTeamId;
     ArenaTeamContainer ArenaTeamStore;
     uint32 LastArenaLogId;
-
-    // AZTH custom for 3v3 solo
     uint32 NextTempArenaTeamId;
 };
 

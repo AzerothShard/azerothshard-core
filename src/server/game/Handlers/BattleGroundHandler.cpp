@@ -157,7 +157,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
         else if (_player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2) ||
                  _player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) ||
                  _player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5)) // can't be already queued for arenas
-            err = ERR_BATTLEGROUND_QUEUED_FOR_RATED;        
+            err = ERR_BATTLEGROUND_QUEUED_FOR_RATED;
 
         if (err <= 0)
         {
@@ -448,27 +448,6 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
                 }
 
                 TeamId teamId = ginfo.teamId;
-
-                // [AZTH] Random Battleground Randomizer - by Yehonal & Mik1893
-                if (bgQueueTypeId == BATTLEGROUND_QUEUE_RB && bg->isBattleground() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_RANDOM_CROSSFACTION))
-                {
-                    uint32 allyCount = bg->GetPlayersCountByTeam(TEAM_ALLIANCE);
-                    uint32 hordeCount = bg->GetPlayersCountByTeam(TEAM_HORDE);
-
-                    if (allyCount == hordeCount)
-                    {
-                        if (roll_chance_i(50))
-                            teamId = _player->GetTeamId(true) == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
-                    }
-                    else if (allyCount < hordeCount)
-                        teamId = TEAM_ALLIANCE;
-                    else
-                        teamId = TEAM_HORDE;
-                }
-
-                _player->setTeamId(teamId);
-                _player->setFaction(teamId == TEAM_ALLIANCE ? 1 : 2);
-                // [/AZTH]
 
                 // remove player from all bg queues
                 for (uint32 qslot = 0; qslot < PLAYER_MAX_BATTLEGROUND_QUEUES; ++qslot)

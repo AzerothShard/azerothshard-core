@@ -1081,6 +1081,10 @@ class PlayerScript : public ScriptObject
         virtual bool CanEnterMap(Player* /*player*/, MapEntry const* /*entry*/, InstanceTemplate const* /*instance*/, MapDifficulty const* /*mapDiff*/, bool /*loginCheck*/) { return true; }
 
         virtual bool CanInitTrade(Player* /*player*/, Player* /*target*/) { return true; }
+
+        virtual void OnSetServerSideVisibility(Player* /*player*/, ServerSideVisibilityType& /*type*/, AccountTypes& /*sec*/) { }
+
+        virtual void OnSetServerSideVisibilityDetect(Player* /*player*/, ServerSideVisibilityType& /*type*/, AccountTypes& /*sec*/) { }
 };
 
 class AccountScript : public ScriptObject
@@ -1186,6 +1190,8 @@ class GroupScript : public ScriptObject
         virtual void OnDisband(Group* /*group*/) { }
 
         virtual bool CanGroupJoinBattlegroundQueue(Group const* group, Player* member, Battleground const* bgTemplate, uint32 MinPlayerCount, bool isRated, uint32 arenaSlot) { return true; }
+
+        virtual void OnCreate(Group* /*group*/, Player* /*leader*/) { }
 };
 
 // following hooks can be used anywhere and are not db bounded
@@ -1614,8 +1620,6 @@ class ScriptMgr
         void OnPlayerUpdateArea(Player* player, uint32 oldArea, uint32 newArea);
         bool OnBeforePlayerTeleport(Player* player, uint32 mapid, float x, float y, float z, float orientation, uint32 options, Unit *target);
         void OnPlayerUpdateFaction(Player* player);
-        void OnPlayerAddToBattleground(Player* player, Battleground* bg);
-        void OnPlayerRemoveFromBattleground(Player* player, Battleground* bg);
         void OnAchievementComplete(Player *player, AchievementEntry const* achievement);
         void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria);
         void OnAchievementSave(SQLTransaction& trans, Player* player, uint16 achiId, CompletedAchievementData achiData);
@@ -1689,6 +1693,8 @@ class ScriptMgr
         bool CanJoinLfg(Player* player, uint8 roles, lfg::LfgDungeonSet& dungeons, const std::string& comment);        
         bool CanEnterMap(Player* player, MapEntry const* entry, InstanceTemplate const* instance, MapDifficulty const* mapDiff, bool loginCheck);
         bool CanInitTrade(Player* player, Player* target);
+        void OnSetServerSideVisibility(Player* player, ServerSideVisibilityType& type, AccountTypes& sec);
+        void OnSetServerSideVisibilityDetect(Player* player, ServerSideVisibilityType& type, AccountTypes& sec);
 
     public: /* AccountScript */
 
@@ -1723,6 +1729,7 @@ class ScriptMgr
         void OnGroupChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
         void OnGroupDisband(Group* group);
         bool CanGroupJoinBattlegroundQueue(Group const* group, Player* member, Battleground const* bgTemplate, uint32 MinPlayerCount, bool isRated, uint32 arenaSlot);
+        void OnCreate(Group* group, Player* leader);
 
     public: /* GlobalScript */
 

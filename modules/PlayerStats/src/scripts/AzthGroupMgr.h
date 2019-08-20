@@ -3,7 +3,8 @@
 
 #include "Group.h"
 
-class AzthGroupMgr {
+class AzthGroupMgr
+{
 public:
     explicit AzthGroupMgr(Group* group);
     ~AzthGroupMgr();

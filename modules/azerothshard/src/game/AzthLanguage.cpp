@@ -16,7 +16,6 @@ AzthLangString::~AzthLangString()
 {
 }
 
-
 AzthLang::AzthLang()
 {
     strings = std::unordered_map<uint32, AzthLangString*>();

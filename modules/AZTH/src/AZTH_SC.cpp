@@ -864,6 +864,26 @@ public:
 
         return true;
     }
+
+    void OnSetServerSideVisibility(Player* player, ServerSideVisibilityType& type, AccountTypes& sec) override
+    {
+        if (!player || type != SERVERSIDE_VISIBILITY_GM || sec == SEC_PLAYER)
+            return;
+
+        //[AZTH] xeela
+        if (sec < SEC_ENTERTAINER)
+            sec = SEC_ENTERTAINER;
+    }
+
+    void OnSetServerSideVisibilityDetect(Player* player, ServerSideVisibilityType& type, AccountTypes& sec) override
+    {
+        if (!player || type != SERVERSIDE_VISIBILITY_GM || sec == SEC_PLAYER)
+            return;
+
+        //[AZTH] xeela
+        if (sec < SEC_ENTERTAINER)
+            sec = SEC_ENTERTAINER;
+    }
 };
 
 class Achievement_SC : public AchievementScript
@@ -1133,6 +1153,16 @@ public:
         if (!sAzthUtils->dimIntegrityCheck(unit, newPhaseMask))
             return false;
 
+        if (newPhaseMask != uint32(PHASEMASK_ANYWHERE))
+            return true;
+
+        auto player = unit->ToPlayer();
+        if (!player)
+            return false;
+
+        if (!player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER))
+            return false;
+
         return true;
     }
 
@@ -1177,6 +1207,22 @@ public:
             return false;
 
         return true;
+    }
+
+    void OnCreate(Group* group, Player* leader) override
+    {
+        if (!group || !leader)
+            return;
+
+        CharacterDatabase.PExecute("INSERT INTO azth_groups (guid, MaxLevelGroup) VALUES (%u, %u)", group->GetLowGUID(), leader->getLevel());
+    }
+
+    void OnDisband(Group* group) override
+    {
+        if (!group)
+            return;
+
+        CharacterDatabase.PExecute("DELETE FROM `azth_groups` WHERE `guid` = '%u'", group->GetLowGUID());
     }
 };
 
