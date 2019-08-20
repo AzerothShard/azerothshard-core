@@ -2579,6 +2579,7 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                 case 62344: // Fists of Stone
                 case 61819: // Manabonked! (item)
                 case 61834: // Manabonked! (minigob)
+                case 19451: // Enrage (Magmadar)
                     return true;
                 default:
                     break;

@@ -32,7 +32,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
         return;
     }
 
-    Player* player = ObjectAccessor::FindPlayer(guid);
+    Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(guid);
 
     data << uint8(0);                               // name known
     data << playerData->name;                       // played name

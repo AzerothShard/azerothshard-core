@@ -28,6 +28,7 @@ class AuraScript;
 class Battleground;
 class BattlegroundQueue;
 class BattlegroundMap;
+class BattlegroundQueue;
 class Channel;
 class ChatCommand;
 class Creature;
@@ -64,11 +65,11 @@ struct ConditionSourceInfo;
 struct Condition;
 struct ItemTemplate;
 struct OutdoorPvPData;
+struct GroupQueueInfo;
 
 enum ArenaTeamInfoType;
 
 #define VISIBLE_RANGE       166.0f                          //MAX visible range (size of grid)
-
 
 /*
     TODO: Add more script type classes.
@@ -857,6 +858,8 @@ class PlayerScript : public ScriptObject
         // The following methods are called when a player sends a chat message.
         virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/) { }
 
+        virtual void OnBeforeSendChatMessage(Player* /*player*/, uint32& /*type*/, uint32& /*lang*/, std::string& /*msg*/) { }
+
         virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Player* /*receiver*/) { }
 
         virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Group* /*group*/) { }
@@ -1601,6 +1604,7 @@ class ScriptMgr
         void OnPlayerDuelStart(Player* player1, Player* player2);
         void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg);
+        void OnBeforeSendChatMessage(Player* player, uint32& type, uint32& lang, std::string& msg);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild);
@@ -1794,7 +1798,7 @@ class ScriptMgr
         void OnBattlegroundRemovePlayerAtLeave(Battleground* bg, Player* player);
         void OnQueueUpdate(BattlegroundQueue* queue, BattlegroundBracketId bracket_id, uint8 actionMask, bool isRated, uint32 arenaRatedTeamId);
 
-    public: /* SpellSC */ 
+    public: /* SpellSC */
  
         void OnCalcMaxDuration(Aura const* aura, int32& maxDuration);
         bool CanModAuraEffectDamageDone(AuraEffect const* auraEff, Unit* target, AuraApplication const* aurApp, uint8 mode, bool apply);
