@@ -25,6 +25,7 @@
 #include "Battleground.h"
 #include "WorldSession.h"
 #include "PetitionMgr.h"
+#include "MapManager.h"
 
 // SC
 class Arena_SC : public ArenaScript
@@ -86,6 +87,57 @@ public:
 
         if (bg->GetStartDelayTime() > BG_START_DELAY_15S && (bg->GetPlayersCountByTeam(TEAM_ALLIANCE) + bg->GetPlayersCountByTeam(TEAM_HORDE)) == 2)
             bg->SetStartDelayTime(BG_START_DELAY_15S);
+    }
+
+    bool CanSendMessageArenaQueue(BattlegroundQueue* /*queue*/, GroupQueueInfo* ginfo, bool IsJoin) override
+    {
+        if (!ginfo->IsRated || !ginfo->ArenaType || ginfo->Players.empty())
+            return true;
+
+        if (!sArenaTeamMgr->GetArenaTeamById(ginfo->ArenaTeamId))
+            return false;
+
+        enum AZTHLanguage
+        {
+            LANG_AZTH_NO_INFO_ARENA_JOINED = 7000, //[AZTH]
+            LANG_AZTH_NO_INFO_ARENA_EXITED = 7001, //[AZTH]
+        };
+
+        if (IsJoin)
+        {
+            sWorld->SendWorldText(LANG_AZTH_NO_INFO_ARENA_JOINED, ginfo->ArenaType, ginfo->ArenaType); //[AZTH]
+            return false;
+        }
+        else
+        {
+            sWorld->SendWorldText(LANG_AZTH_NO_INFO_ARENA_EXITED, ginfo->ArenaType, ginfo->ArenaType);
+            return false;
+        }
+
+        return true;
+    }
+};
+
+class Command_SC : public CommandSC
+{
+public:
+    Command_SC() : CommandSC("Command_SC") { }
+
+    void OnHandleDevCommand(Player* player, std::string& argstr) override
+    {
+        if (!player)
+            return;
+
+        if (argstr == "on")
+        {
+            player->SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);
+            player->SetGameMaster(true);
+        }
+        else
+        {
+            player->SetPhaseMask(uint32(PHASEMASK_NORMAL), false);
+            player->SetGameMaster(false);
+        }        
     }
 };
 
@@ -1431,10 +1483,256 @@ public:
     }
 };
 
+class CommandAZTH_SC : public CommandScript
+{
+public:
+    CommandAZTH_SC() : CommandScript("CommandAZTH_SC") { }
+
+    std::vector<ChatCommand> GetCommands() const override
+    {
+        static std::vector<ChatCommand> AZTHGOCommandTable =
+        {
+            { "guildhouse",     SEC_GAMEMASTER,     false, &HandleGuildhouseCommand,            "" }
+        };
+
+        static std::vector<ChatCommand> AZTHGobjectCommandTable =
+        {
+            { "guildadd",       SEC_GAMEMASTER,		false, &HandleGameObjectAddGuildCommand,    "" }
+        };
+
+        static std::vector<ChatCommand> AZTHNpcCommandTable =
+        {
+            { "guildadd",       SEC_GAMEMASTER,		false, &HandleNpcAddGuildCommand,           "" }
+        };
+
+        static std::vector<ChatCommand> AZTHCommandTable =
+        {
+            { "go",             SEC_MODERATOR,      false,   nullptr,                           "",  AZTHGOCommandTable},
+            { "gobject",        SEC_MODERATOR,		false,   nullptr,                           "",  AZTHGobjectCommandTable},
+            { "npc",            SEC_MODERATOR,		false,   nullptr,                           "",  AZTHNpcCommandTable},
+        };
+
+        static std::vector<ChatCommand> commandTable =
+        {
+            { "azth",           SEC_PLAYER,         true,   nullptr,                            "",  AZTHCommandTable},
+        };
+
+        return commandTable;
+    }
+
+    // [AZTH] Guildhouse GO command
+    static bool HandleGuildhouseCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        Player* player = handler->GetSession()->GetPlayer();
+
+        char* goGH = strtok((char*)args, " ");
+
+        if (!goGH)
+            return false;
+
+        uint32 guildhouse = (uint32)atof(goGH);
+        if (!guildhouse > 0)
+            return false;
+
+        float x;
+        float y;
+        float z;
+        float o;
+        uint32 map;
+
+        // here i have to retrieve coordinates for the GH.
+        if (!GHobj.GetGuildHouseLocation(guildhouse, x, y, z, o, map))
+            return false;
+
+        // stop flight if need
+        if (player->IsInFlight())
+        {
+            player->GetMotionMaster()->MovementExpired();
+            player->CleanupAfterTaxiFlight();
+        }        
+        else // save only in non-flight case
+            player->SaveRecallPosition();
+
+        if (!MapManager::IsValidMapCoord(map, x, y, z))
+        {
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, x, y, map);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        // teleport player to the specified location
+        player->TeleportTo(map, x, y, z, o);
+        return true;
+    }
+
+    // [AZTH] Gobject guildhouse add
+    static bool HandleGameObjectAddGuildCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        // number or [name] Shift-click form |color|Hgameobject_entry:go_id|h[name]|h|r
+        char* cId = handler->extractKeyFromLink((char*)args, "Hgameobject_entry");
+        if (!cId)
+            return false;
+
+        char* c_guildhouse = strtok(NULL, " ");
+        if (!c_guildhouse)
+            return false;
+
+        char* c_guildhouseadd = strtok(NULL, " ");
+        if (!c_guildhouseadd)
+            return false;
+
+        uint32 id = atol(cId);
+        uint32 guildhouseid = atol(c_guildhouse);
+        uint32 guildhouseaddid = atol(c_guildhouseadd);
+
+        if (!id || !guildhouseid || !guildhouseaddid)
+            return false;
+
+        char* spawntimeSecs = strtok(NULL, " ");
+
+        const GameObjectTemplate* gInfo = sObjectMgr->GetGameObjectTemplate(id);
+
+        if (!gInfo)
+        {
+            handler->PSendSysMessage(LANG_GAMEOBJECT_NOT_EXIST, id);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+        {
+            // report to DB errors log as in loading case
+            //sLog->outErrorDb("Gameobject (Entry %u GoType: %u) have invalid displayId (%u), not spawned.", id, gInfo->type, gInfo->displayId);
+            handler->PSendSysMessage(LANG_GAMEOBJECT_HAVE_INVALID_DATA, id);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        Player* chr = handler->GetSession()->GetPlayer();
+        float x = float(chr->GetPositionX());
+        float y = float(chr->GetPositionY());
+        float z = float(chr->GetPositionZ());
+        float o = float(chr->GetOrientation());
+        Map* map = chr->GetMap();
+
+        GameObject* pGameObj = new GameObject;
+        uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+
+        if (!pGameObj->Create(db_lowGUID, gInfo->entry, map, chr->GetPhaseMaskForSpawn(), x, y, z, o, G3D::Quat(), 0, GO_STATE_READY))
+        {
+            delete pGameObj;
+            return false;
+        }
+
+        if (spawntimeSecs)
+        {
+            uint32 value = atoi((char*)spawntimeSecs);
+            pGameObj->SetRespawnTime(value);
+            //sLog->outDebug(LOG_FILTER_TSCR, "*** spawntimeSecs: %d", value);
+        }
+
+        // fill the gameobject data and save to the db
+        pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
+
+        // this will generate a new guid if the object is in an instance
+        if (!pGameObj->LoadFromDB(db_lowGUID, map))
+        {
+            delete pGameObj;
+            return false;
+        }
+
+        map->AddToMap(pGameObj);
+
+        std::string new_str(pGameObj->GetName());
+        WorldDatabase.EscapeString(new_str);
+
+        WorldDatabase.PQuery("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')",
+            pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, new_str.c_str());
+
+        // TODO: is it really necessary to add both the real and DB table guid here ?
+        sObjectMgr->AddGameobjectToGrid(db_lowGUID, sObjectMgr->GetGOData(db_lowGUID));
+
+        handler->PSendSysMessage(LANG_GAMEOBJECT_ADD, id, gInfo->name.c_str(), db_lowGUID, x, y, z);
+        return true;
+    }
+
+    // [AZTH] add spawn of creature for a GuildHouse
+    static bool HandleNpcAddGuildCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        char* charID = handler->extractKeyFromLink((char*)args, "Hcreature_entry");
+        if (!charID)
+            return false;
+
+        char* guildhouse = strtok(NULL, " ");
+        if (!guildhouse)
+            return false;
+
+        char* guildhouseadd = strtok(NULL, " ");
+        if (!guildhouseadd)
+            return false;
+
+        uint32 id = atoi(charID);
+        uint32 guildhouseid = atoi(guildhouse);
+        uint32 guildhouseaddid = atoi(guildhouseadd);
+
+        if (!id || !guildhouseid || !guildhouseaddid)
+            return false;
+
+        Player* chr = handler->GetSession()->GetPlayer();
+        float x = chr->GetPositionX();
+        float y = chr->GetPositionY();
+        float z = chr->GetPositionZ();
+        float o = chr->GetOrientation();
+        Map* map = chr->GetMap();
+
+        Creature* creature = new Creature();
+        if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, x, y, z, o))
+        {
+            delete creature;
+            return false;
+        }
+
+        creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
+
+        uint32 db_guid = creature->GetDBTableGUIDLow();
+
+        // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
+        creature->LoadFromDB(db_guid, map);
+
+        std::string new_str(creature->GetName());
+        WorldDatabase.EscapeString(new_str);
+
+        WorldDatabase.PQuery("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')",
+            creature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, new_str.c_str());
+
+        map->AddToMap(creature);
+        sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
+
+        if (guildhouseaddid == 2)
+        {
+            QueryResult guildResult = ExtraDatabase.PQuery("SELECT guildid FROM `guildhouses` WHERE id = %u", guildhouseid);
+            if (guildResult)
+                GHobj.UpdateGuardMap(creature->GetDBTableGUIDLow(), guildResult->Fetch()->GetInt32());
+        }
+
+        return true;
+    }
+};
+
 void AddSC_AZTH()
 {
     new Arena_SC();
     new Battleground_SC();
+    new Command_SC();
     new Player_SC();
     new Achievement_SC();
     new Misc_SC();
@@ -1444,4 +1742,5 @@ void AddSC_AZTH()
     new World_SC();
     new Pet_SC();
     new Spell_SC();
+    new CommandAZTH_SC();
 }

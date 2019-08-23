@@ -21,7 +21,6 @@ EndScriptData */
 #include "CreatureAI.h"
 #include "Player.h"
 #include "Pet.h"
-#include "GuildHouse.h" //[AZTH]
 
 struct NpcFlagText
 {
@@ -172,9 +171,7 @@ public:
             { "add",            SEC_GAMEMASTER,     false, nullptr,                            "", npcAddCommandTable },
             { "delete",         SEC_GAMEMASTER,     false, nullptr,                            "", npcDeleteCommandTable },
             { "follow",         SEC_GAMEMASTER,     false, nullptr,                            "", npcFollowCommandTable },
-            { "set",            SEC_ADMINISTRATOR,  false, nullptr,                            "", npcSetCommandTable },
-            //[AZTH]
-            { "guildadd",       SEC_GAMEMASTER,		false, &HandleNpcAddGuildCommand,          "" }        
+            { "set",            SEC_ADMINISTRATOR,  false, nullptr,                            "", npcSetCommandTable }      
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -1502,74 +1499,6 @@ public:
         handler->PSendSysMessage("LinkGUID '%u' added to creature with DBTableGUID: '%u'", linkguid, creature->GetDBTableGUIDLow());
         return true;
     }
-
-    // [AZTH] add spawn of creature for a GuildHouse
-    static bool HandleNpcAddGuildCommand(ChatHandler* handler, const char* args)
-    {
-        if (!*args)
-            return false;
-
-        char* charID = handler->extractKeyFromLink((char*)args, "Hcreature_entry");
-        if (!charID)
-            return false;
-
-        char* guildhouse = strtok(NULL, " ");
-        if (!guildhouse)
-            return false;
-
-        char* guildhouseadd = strtok(NULL, " ");
-        if (!guildhouseadd)
-            return false;
-
-
-        uint32 id = atoi(charID);
-        uint32 guildhouseid = atoi(guildhouse);
-        uint32 guildhouseaddid = atoi(guildhouseadd);
-
-        if (!id || !guildhouseid || !guildhouseaddid)
-            return false;
-
-        Player *chr = handler->GetSession()->GetPlayer();
-        float x = chr->GetPositionX();
-        float y = chr->GetPositionY();
-        float z = chr->GetPositionZ();
-        float o = chr->GetOrientation();
-        Map *map = chr->GetMap();
-
-        Creature* creature = new Creature();
-        if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, x, y, z, o))
-        {
-            delete creature;
-            return false;
-        }
-
-
-        creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
-
-        uint32 db_guid = creature->GetDBTableGUIDLow();
-
-        // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
-        creature->LoadFromDB(db_guid, map);
-
-        std::string new_str(creature->GetName());
-        WorldDatabase.EscapeString(new_str);
-
-        WorldDatabase.PQuery("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')",
-            creature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, new_str.c_str());
-
-        map->AddToMap(creature);
-        sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
-        if (guildhouseaddid == 2)
-        {
-            QueryResult guildResult = ExtraDatabase.PQuery("SELECT guildid FROM `guildhouses` WHERE id = %u", guildhouseid);
-            if (guildResult)
-            {
-                GHobj.UpdateGuardMap(creature->GetDBTableGUIDLow(), guildResult->Fetch()->GetInt32());
-            }
-        }
-        return true;
-    }
-    // [/AZTH]
 
     //TODO: NpcCommands that need to be fixed :
     static bool HandleNpcAddWeaponCommand(ChatHandler* /*handler*/, const char* /*args*/)

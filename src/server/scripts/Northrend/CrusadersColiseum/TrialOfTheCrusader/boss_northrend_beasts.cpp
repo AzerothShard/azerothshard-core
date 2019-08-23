@@ -1015,7 +1015,11 @@ public:
                 return;
 
             // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
-            std::vector<Player*> list = pInstance->instance->GetPlayerListExceptGMs();
+            std::vector<Player*> list;
+
+            for (auto const& itr : pInstance->instance->GetPlayers())
+                if (!itr.GetSource()->IsGameMaster())
+                    list.push_back(itr.GetSource());
             
             if (list.size() == 0)
                 return;

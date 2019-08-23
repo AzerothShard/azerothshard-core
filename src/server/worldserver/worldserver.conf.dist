@@ -2614,6 +2614,7 @@ Battleground.GiveXPForKills = 0
 
 Battleground.Random.ResetHour = 6
 
+#
 #    Battleground.StoreStatistics.Enable
 #        Description: Store Battleground scores in the database.
 #        Default:     0 - (Disabled)
@@ -2621,6 +2622,7 @@ Battleground.Random.ResetHour = 6
 
 Battleground.StoreStatistics.Enable = 1
 
+#
 #    Battleground.TrackDeserters.Enable
 #        Description: Track deserters of Battlegrounds.
 #        Default:     0 - (Disabled)
@@ -2636,8 +2638,27 @@ Battleground.TrackDeserters.Enable = 1
 #                     1 - (Experimental, Don't allow to invite much more players
 #                          of one faction)
 #                     2 - (Experimental, Try to have even teams)
+#
 
 Battleground.InvitationType = 0
+
+#
+#    Battleground.Random.Debug.Enable
+#        Description: Enable debug mode (1vs0) for random battleground
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+#
+
+Battleground.Random.Debug.Enable = 1
+
+#
+#    Battleground.Big.In.Random.System.Enable
+#        Description: Enable big bg (Av and IS) in random bg system
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+#
+
+Battleground.Big.In.Random.System.Enable = 1
 
 #
 ###################################################################################################

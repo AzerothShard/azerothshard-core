@@ -2445,8 +2445,11 @@ public:
             return false;
 
         // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
-        InstanceScript* pInstance = go->GetInstanceScript();
-        std::vector<Player*> list = pInstance->instance->GetPlayerListExceptGMs();
+        std::vector<Player*> list;
+
+        for (auto const& itr : go->GetInstanceScript()->instance->GetPlayers())
+            if (!itr.GetSource()->IsGameMaster())
+                list.push_back(itr.GetSource());
 
         if (list.size() == 0)
             return false;

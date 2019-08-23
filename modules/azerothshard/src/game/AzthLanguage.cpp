@@ -7,7 +7,8 @@
 
 class Player;
 
-AzthLangString::AzthLangString(std::string const def, std::string const it) {
+AzthLangString::AzthLangString(std::string const def, std::string const it)
+{
     this->def = def;
     this->it  = it;
 }

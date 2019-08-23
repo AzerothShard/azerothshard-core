@@ -45,13 +45,13 @@ public:
     uint32 mythicLevel = 0;
 };
 
-
-class TWVasScript: public VasModuleScript {
+class TWVasScript: public VasModuleScript
+{
 public:
-    TWVasScript(): VasModuleScript("TWVasScript") {
-    }
+    TWVasScript(): VasModuleScript("TWVasScript") { }
     
-    bool OnBeforeModifyAttributes(Creature* creature, uint32 & instancePlayerCount) override {
+    bool OnBeforeModifyAttributes(Creature* creature, uint32 & instancePlayerCount) override
+    {
         // it doesn't mean that we're allowing it when not in dungeon
         // but we're letting module to decide via its config.
         if (!creature->GetMap()->IsDungeon())
@@ -75,10 +75,13 @@ public:
                     
                     MapMythicInfo *myth=creature->GetMap()->CustomData.GetDefault<MapMythicInfo>("AZTH_Mythic_Info");
                     
-                    if (sAzthUtils->isMythicLevel(specialLevel)) {
+                    if (sAzthUtils->isMythicLevel(specialLevel))
+                    {
                         myth->mythicLevel = specialLevel;
                         return true;
-                    } else if (specialLevel == TIMEWALKING_SPECIAL_LVL_MIXED && myth->mythicLevel) {
+                    }
+                    else if (specialLevel == TIMEWALKING_SPECIAL_LVL_MIXED && myth->mythicLevel)
+                    {
                         instancePlayerCount = 100; // workaround to break "Flex modality" with mixed group
                         return true;
                     }
@@ -89,9 +92,9 @@ public:
         return false;
     }
     
-    bool OnBeforeUpdateStats(Creature* creature, uint32 &scaledHealth, uint32 &scaledMana, float &damageMultiplier, uint32 &newBaseArmor) override { 
-        MapMythicInfo *myth=creature->GetMap()->CustomData.GetDefault<MapMythicInfo>("AZTH_Mythic_Info");
-        
+    bool OnBeforeUpdateStats(Creature* creature, uint32 &scaledHealth, uint32 &scaledMana, float &damageMultiplier, uint32 &newBaseArmor) override
+    { 
+        MapMythicInfo* myth = creature->GetMap()->CustomData.GetDefault<MapMythicInfo>("AZTH_Mythic_Info");        
         
         if (myth->mythicLevel) 
         {
@@ -130,7 +133,6 @@ public:
             return;
         }
 
-
         do
         {
             Field* timeWalking_Field = timewalking_table->Fetch();
@@ -151,8 +153,6 @@ public:
             sLog->outString();
             return;
         }
-
-
 
         do
         {
@@ -395,16 +395,19 @@ class timeWalkingPlayer : public PlayerScript
 public:
     timeWalkingPlayer() : PlayerScript("timeWalkingPlayer") {}
     
-    bool _autoscaling(Player *player, uint32 newZone = 0, uint32 newArea = 0) {
-        sAZTH->GetAZTHPlayer(player)->autoScalingPending=(player->IsInCombat() || !player->IsAlive() || !player->IsInWorld()) ? time(NULL)+2 /*2 seconds after */: 0;
+    bool _autoscaling(Player *player, uint32 newZone = 0, uint32 newArea = 0)
+    {
+        sAZTH->GetAZTHPlayer(player)->autoScalingPending=(player->IsInCombat() || !player->IsAlive() || !player->IsInWorld()) ? time(NULL) + 2 /*2 seconds after */: 0;
         
         if (sAZTH->GetAZTHPlayer(player)->autoScalingPending > 0)
             return false;
 
         uint32 posLvl = 0;
-        if (newArea && newZone) {
+
+        if (newArea && newZone)
             posLvl = sAzthUtils->getPositionLevel(false, player->GetMap(), newZone, newArea);
-        } else {
+        else
+        {
             WorldLocation pos = WorldLocation(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()); 
             posLvl = sAzthUtils->getPositionLevel(false, player->GetMap(), pos); 
         }
@@ -420,11 +423,13 @@ public:
         return true;
     }
     
-    void OnUpdateArea(Player* player, uint32 oldArea, uint32 newArea) override {
+    void OnUpdateArea(Player* player, uint32 oldArea, uint32 newArea) override
+    {
         if (!player)
             return;
 
-        if (oldArea != newArea && sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel() == TIMEWALKING_LVL_AUTO) {
+        if (oldArea != newArea && sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel() == TIMEWALKING_LVL_AUTO)
+        {
             AreaTableEntry const* area = sAreaTableStore.LookupEntry(newArea);
             if (!area)
                 return;
@@ -435,7 +440,8 @@ public:
         sAzthUtils->updateTwLevel(player, player->GetGroup()); // needed for player stats
     }
     
-    void OnBeforeUpdate(Player *player, uint32 /*p_time*/) override {
+    void OnBeforeUpdate(Player *player, uint32 /*p_time*/) override
+    {
         if (!player)
             return;
         
@@ -462,32 +468,35 @@ public:
         uint32 reward = achi.GetReward();
         uint32 killCredit = achi.GetKillCredit();
         
-        if (reward == AZTH_MARK_OF_AZEROTH && player->inRandomLfgDungeon()) {
+        if (reward == AZTH_MARK_OF_AZEROTH && player->inRandomLfgDungeon())
+        {
             /* initialize random seed: */
             srand (time(NULL));
             /* generate secret number between 3 and 10: */
             uint8 moaBonus = 1 + rand() % static_cast<int>(2 - 1 + 1);
 
-            if (player->GetGroup()) {
+            if (player->GetGroup())
+            {
                 std::list<Group::MemberSlot> memberSlots = player->GetGroup()->GetMemberSlots();
-                for (std::list<Group::MemberSlot>::iterator membersIterator = memberSlots.begin(); membersIterator != memberSlots.end(); membersIterator++) {
-                    if ((*membersIterator).guid == player->GetGUID()) {
+                for (std::list<Group::MemberSlot>::iterator membersIterator = memberSlots.begin(); membersIterator != memberSlots.end(); membersIterator++)
+                {
+                    if ((*membersIterator).guid == player->GetGUID())
+                    {
                         uint8 role = (*membersIterator).roles;
 
-                        if (role & lfg::PLAYER_ROLE_TANK || role & lfg::PLAYER_ROLE_HEALER) {
+                        if (role & lfg::PLAYER_ROLE_TANK || role & lfg::PLAYER_ROLE_HEALER)
                             count += moaBonus;
-                        }
+
                         break;
                     }
                 }
             }
         }
         
-        if (!count && !killCredit) {
+        if (!count && !killCredit)
             return;
-        }
         
-        /**
+        /*
          *  CHECK REQUIREMENTS
          */
         if (achi.GetReqDimension() > 0 && achi.GetReqDimension() != sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByAura())
@@ -496,14 +505,12 @@ public:
         uint32 level = sAZTH->GetAZTHPlayer(player)->getPStatsLevel(false);
         
         // skip rewards if you don't have the required special level
-        if (achi.GetSpecialLevelReq() > 0 && !sAzthUtils->isMythicCompLvl(achi.GetSpecialLevelReq(), level) && level != achi.GetSpecialLevelReq()) {
-                return;
-        }
+        if (achi.GetSpecialLevelReq() > 0 && !sAzthUtils->isMythicCompLvl(achi.GetSpecialLevelReq(), level) && level != achi.GetSpecialLevelReq())
+            return;
 
         // if levelMin and Level max has been set, then the level must be in this range
-        if (achi.GetLevelMin() && achi.GetLevelMax() && (level < achi.GetLevelMin() || level  > achi.GetLevelMax())) {
+        if (achi.GetLevelMin() && achi.GetLevelMax() && (level < achi.GetLevelMin() || level  > achi.GetLevelMax()))
             return;
-        }
         /*
          *  END 
          */
@@ -514,15 +521,19 @@ public:
             if (!_proto)
                 return;
             
-            if (_proto->IsCurrencyToken()) {                
-                if (player->GetMap()->IsDungeon() || player->GetMap()->IsRaid()) {
+            if (_proto->IsCurrencyToken())
+            {                
+                if (player->GetMap()->IsDungeon() || player->GetMap()->IsRaid())
+                {
                     // bonus for who complete that achievement with a recommended level
                     if (level <= achi.GetLevel())
                         count *= 2;
                 }
 
                 player->AddItem(reward, count);
-            } else {
+            }
+            else
+            {
                 uint32 mailItems=0;
 
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -557,21 +568,19 @@ public:
                     }
                 }
 
-
                 ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_NEW_ITEM_OBTAINED, player, _proto->ItemId, _proto->Name1.c_str(), count));
-                if (mailItems > 0) {
+                if (mailItems > 0)
                     ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_BAG_FULL_SENT_TO_MAIL, player));
-                }
             }
         }
 
-        if (killCredit) {
-            sAZTH->GetAZTHPlayer(player)->ForceKilledMonsterCredit(killCredit, 0); // send credit 
-        }
+        if (killCredit)
+            sAZTH->GetAZTHPlayer(player)->ForceKilledMonsterCredit(killCredit, 0); // send credit
 
     }
     
-    bool OnBeforeQuestComplete(Player *player, uint32 quest_id) override {
+    bool OnBeforeQuestComplete(Player *player, uint32 quest_id) override
+    {
         QuestStatusMap::iterator qsitr = player->getQuestStatusMap().find(quest_id);
         if (qsitr == player->getQuestStatusMap().end()) // should always be true in this moment
             return true;
@@ -600,8 +609,7 @@ public:
         nLevel = sAZTH->GetAZTHPlayer(player)->getPStatsLevel(true);
         gSize = sAZTH->GetAZTHPlayer(player)->getGroupSize();
         
-        uint8 difficulty = map->GetDifficulty();
-        
+        uint8 difficulty = map->GetDifficulty();        
         uint32 dungeon = map->GetId();
 
         /*const Quest *questTmpl = sObjectMgr->GetQuestTemplate(quest_id);
@@ -637,8 +645,9 @@ public:
         return true;
     }
 
-    void OnLoadFromDB(Player *player) override {
-        QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery(("SELECT id,level FROM azth_timewalking_characters_active WHERE id = %d;"), player->GetGUID());
+    void OnLoadFromDB(Player *player) override
+    {
+        QueryResult timewalkingCharactersActive_table = CharacterDatabase.PQuery("SELECT id,level FROM azth_timewalking_characters_active WHERE id = %d", player->GetGUID());
         if (timewalkingCharactersActive_table) //if is in timewalking mode apply debuff
         {
             Field* timewalkingCharactersActive_field = timewalkingCharactersActive_table->Fetch();
@@ -647,14 +656,16 @@ public:
         }
     }
     
-    void OnLogin(Player *player) override {
+    void OnLogin(Player* player) override
+    {
         sAzthUtils->updateTwLevel(player, player->GetGroup()); // to fix level on instance that cannot be calculated OnLoadFromDB (too early)
         sAZTH->GetAZTHPlayer(player)->prepareTwSpells(player->getLevel());
         sAzthUtils->setTwDefense(player, sAZTH->GetAZTHPlayer(player)->isTimeWalking(true));
         
         int32 rep=player->GetReputationMgr().GetReputation(AZTH_AS_REP);
         // reduce only if positive reputation
-        if (rep > 0) {
+        if (rep > 0)
+        {
             QueryResult last_activity_rep = CharacterDatabase.PQuery("SELECT c.logout_time,MAX(questEndTime),MAX(instanceEndTime),MAX(instanceStartTime) FROM azth_quest_log AS q LEFT JOIN characters AS c ON q.guid=c.guid WHERE q.guid = %d;", player->GetGUID());
             if (last_activity_rep)
             {
@@ -685,7 +696,8 @@ public:
         }
     }
     
-    void OnLevelChanged(Player* player, uint8 /*oldlevel*/) override { 
+    void OnLevelChanged(Player* player, uint8 /*oldlevel*/) override
+    { 
         sAzthUtils->updateTwLevel(player, player->GetGroup());
     }
     
@@ -701,183 +713,199 @@ public:
 
 class achievement_timewalking_check : public AchievementCriteriaScript
 {
-    public:
-        achievement_timewalking_check(char const* name) : AchievementCriteriaScript(name) {}
+public:
+    achievement_timewalking_check(char const* name) : AchievementCriteriaScript(name) { }
 
-        //Should be deprecated since canCompleteCriteria used in official AchievementMgr.cpp check is enough
-        //however you can attach this script on achievement_criteria_data if needed
-        bool OnCheck(Player*  player, Unit* /*target*/, uint32 criteria_id) override
-        {
-            AchievementCriteriaEntry const* criteria = sAchievementCriteriaStore.LookupEntry(criteria_id);
-            return sAZTH->GetAZTHPlayer(player)->canCompleteCriteria(criteria);  
-        }
+    //Should be deprecated since canCompleteCriteria used in official AchievementMgr.cpp check is enough
+    //however you can attach this script on achievement_criteria_data if needed
+    bool OnCheck(Player*  player, Unit* /*target*/, uint32 criteria_id) override
+    {
+        AchievementCriteriaEntry const* criteria = sAchievementCriteriaStore.LookupEntry(criteria_id);
+        return sAZTH->GetAZTHPlayer(player)->canCompleteCriteria(criteria);  
+    }
 };
 
-class global_timewalking : public GlobalScript {
-    public:
-        global_timewalking() : GlobalScript("global_timewalking_script") { }
+class global_timewalking : public GlobalScript
+{
+public:
+    global_timewalking() : GlobalScript("global_timewalking_script") { }
 
-        void OnAfterUpdateEncounterState(Map* map, EncounterCreditType /*type*/,  uint32 /*creditEntry*/, Unit* /*source*/, Difficulty difficulty_fixed, DungeonEncounterList const* encounters, uint32 dungeonCompleted, bool updated) override {
-            if (!map->IsDungeon())
-                return;
+    void OnAfterUpdateEncounterState(Map* map, EncounterCreditType /*type*/,  uint32 /*creditEntry*/, Unit* /*source*/, Difficulty difficulty_fixed, DungeonEncounterList const* encounters, uint32 dungeonCompleted, bool updated) override
+    {
+        if (!map->IsDungeon())
+            return;
 
-            if (!encounters)
-                return;
+        if (!encounters)
+            return;
             
-            if (!updated)
-                return;
+        if (!updated)
+            return;
 
-            std::vector<Player*> list = map->GetPlayerListExceptGMs();
+        std::vector<Player*> list;
 
-            if (list.size() == 0)
-                return;
+        for (auto const& itr : map->GetPlayers())
+            if (!itr.GetSource()->IsGameMaster())
+                list.push_back(itr.GetSource());
 
-            uint32 guid,sLevel,nLevel, instanceStart=0, now, groupId;
-            uint8 gSize;
-            uint64 id=0;
-            uint8 difficulty = map->GetDifficulty();
-            uint32 dungeon = map->GetId();
+        if (list.size() == 0)
+            return;
 
-            for (std::size_t i = 0; i < list.size(); i++)
-            {
-                Player* player = list[i];
-                if (!player)
-                    return;
+        uint32 guid,sLevel,nLevel, instanceStart=0, now, groupId;
+        uint8 gSize;
+        uint64 id=0;
+        uint8 difficulty = map->GetDifficulty();
+        uint32 dungeon = map->GetId();
 
-                InstanceSave* is = sInstanceSaveMgr->PlayerGetInstanceSave(GUID_LOPART(player->GetGUID()), map->GetId(), player->GetDifficulty(map->IsRaid()));
-                if (!is)
-                    return;
-
-                if (sAZTH->GetAZTHInstanceSave(is)->startTime == 0)
-                    return;
-
-                uint8 count=0;
-                uint8 total=0;
-                for (DungeonEncounterList::const_iterator itr = encounters->begin(); itr != encounters->end(); ++itr)
-                {
-                    DungeonEncounter const* encounter = *itr;
-                    if (encounter->dbcEntry->mapId == dungeon && ((1 << encounter->dbcEntry->encounterIndex) & is->GetCompletedEncounterMask()) > 0)
-                        count++;
-                    total++;
-                }
-
-                if (!count)
-                    return;
-
-                guid = player->GetGUIDLow();
-                sLevel = sAZTH->GetAZTHPlayer(player)->getPStatsLevel(false);
-                nLevel = sAZTH->GetAZTHPlayer(player)->getPStatsLevel(true);
-                gSize = sAZTH->GetAZTHPlayer(player)->getGroupSize();
-
-                groupId = is->GetInstanceId();
-                instanceStart = sAZTH->GetAZTHInstanceSave(is)->startTime;
-                now = static_cast<uint32>(time(nullptr));
-
-                std::string lvlTxt = sAzthUtils->getLevelInfo(sLevel);
-
-                uint32 posLevel=sAzthUtils->getPositionLevel(true, map, player->GetZoneId(), player->GetAreaId());
-                if ((sAzthUtils->canMythicHere(player) && sAzthUtils->isMythicLevel(sLevel)) || // MYTHIC CASE
-                    (nLevel<=70 && sLevel == TIMEWALKING_LVL_AUTO && nLevel <= posLevel) || // TW Auto CASE
-                    (sLevel<=70 && sLevel <= posLevel) || // TIMEWALKING NORMAL LEVELS (AVOID ENDGAME CONTENTS)
-                    (sLevel > 80 && sLevel == posLevel)) // TIMEWALKING SPECIAL LEVELS
-                {
-                    uint32 moaBonus=1 + uint8(difficulty_fixed);
-                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_MOA_BONUS, player, lvlTxt.c_str(), moaBonus));
-                    player->AddItem(AZTH_MARK_OF_AZEROTH, moaBonus);
-
-                    float mythBonus = sAzthUtils->isMythicLevel(sLevel) ? std::pow(1.1, sLevel-TIMEWALKING_LVL_VAS_LVL1+1) : 1;
-                    // Dungeon Normal: 1 boss every 10 minutes (this value scales up with raid and difficulty)
-                    // if time is lower it will gain more points
-                    float timeBonus = count / (float(now-instanceStart)/60/10);
-                    uint32 repBonus = 3 * mythBonus * timeBonus * ((map->IsRaid() ? (difficulty+1) * 3 : difficulty+1));
-                    if (repBonus) {
-                        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_ASREP_BONUS, player, lvlTxt.c_str(), repBonus));
-                        player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), repBonus);
-                    }
-
-                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_BOSS_KILLED, player, count, total, uint32(round(float(now-instanceStart)/60))));
-                    
-                    if (count>=total) {
-                        player->GetSession()->SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));
-                        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));    
-                    }
-                    
-                    if (dungeonCompleted) {
-                        player->GetSession()->SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));
-                        ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));    
-                    }
-                    
-                } else if (posLevel <= 70 && nLevel > posLevel + 10) {
-                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_REP_REMOVED_KILL, player, nLevel-posLevel));
-                    player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), -(nLevel-posLevel));
-                }
-
-                if (count>=total) {
-                    id = MAKE_NEW_GUID(instanceStart, groupId, 0);
-
-                    CharacterDatabase.PExecute("INSERT INTO azth_quest_log (guid, groupId, quest, dungeon, difficulty, sLevel, nLevel, gSize, instanceStartTime, instanceEndTime) VALUES(%u,%u,%u,%u,%u,%u,%u,%u,%u,%u);", 
-                                               guid, id, 0, dungeon, difficulty, sLevel,nLevel,gSize,instanceStart,now);
-                }
-            }
-        }
-
-        void OnItemRoll(Player const* player, LootStoreItem const *item, float &chance, Loot &loot, LootStore const& store) override
+        for (size_t i = 0; i < list.size(); i++)
         {
-            // this check assume that sAzthUtils->isEligibleForBonusByArea(player) has been already checked
-            if (!sAZTH->GetAZTHLoot(&loot))
-               return;
+            Player* player = list[i];
+            if (!player)
+                return;
 
-            if ((loot.quest_items.size() + loot.items.size()) >= MAX_NR_LOOT_ITEMS)
+            InstanceSave* is = sInstanceSaveMgr->PlayerGetInstanceSave(GUID_LOPART(player->GetGUID()), map->GetId(), player->GetDifficulty(map->IsRaid()));
+            if (!is)
+                return;
+
+            if (sAZTH->GetAZTHInstanceSave(is)->startTime == 0)
+                return;
+
+            uint8 count = 0;
+            uint8 total = 0;
+
+            for (DungeonEncounterList::const_iterator itr = encounters->begin(); itr != encounters->end(); ++itr)
             {
-                chance = 0;
-                return;
+                DungeonEncounter const* encounter = *itr;
+
+                if (encounter->dbcEntry->mapId == dungeon && ((1 << encounter->dbcEntry->encounterIndex) & is->GetCompletedEncounterMask()) > 0)
+                    count++;
+
+                total++;
             }
-            
-            if (chance >= 100.0f || chance <= 0)
+
+            if (!count)
                 return;
 
-            if (!player->GetMap()->IsDungeon() && !player->GetMap()->IsRaid())
-                return;
+            guid = player->GetGUIDLow();
+            sLevel = sAZTH->GetAZTHPlayer(player)->getPStatsLevel(false);
+            nLevel = sAZTH->GetAZTHPlayer(player)->getPStatsLevel(true);
+            gSize = sAZTH->GetAZTHPlayer(player)->getGroupSize();
 
-            if (item->mincount >= 0)
+            groupId = is->GetInstanceId();
+            instanceStart = sAZTH->GetAZTHInstanceSave(is)->startTime;
+            now = static_cast<uint32>(time(nullptr));
+
+            std::string lvlTxt = sAzthUtils->getLevelInfo(sLevel);
+
+            uint32 posLevel=sAzthUtils->getPositionLevel(true, map, player->GetZoneId(), player->GetAreaId());
+            if ((sAzthUtils->canMythicHere(player) && sAzthUtils->isMythicLevel(sLevel)) || // MYTHIC CASE
+                (nLevel<=70 && sLevel == TIMEWALKING_LVL_AUTO && nLevel <= posLevel) || // TW Auto CASE
+                (sLevel<=70 && sLevel <= posLevel) || // TIMEWALKING NORMAL LEVELS (AVOID ENDGAME CONTENTS)
+                (sLevel > 80 && sLevel == posLevel)) // TIMEWALKING SPECIAL LEVELS
             {
-                ItemTemplate const* i = sObjectMgr->GetItemTemplate(item->itemid);
+                uint32 moaBonus=1 + uint8(difficulty_fixed);
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_MOA_BONUS, player, lvlTxt.c_str(), moaBonus));
+                player->AddItem(AZTH_MARK_OF_AZEROTH, moaBonus);
 
-                if (i && i->Quality < ITEM_QUALITY_RARE)
-                    return;
+                float mythBonus = sAzthUtils->isMythicLevel(sLevel) ? std::pow(1.1, sLevel-TIMEWALKING_LVL_VAS_LVL1+1) : 1;
+                // Dungeon Normal: 1 boss every 10 minutes (this value scales up with raid and difficulty)
+                // if time is lower it will gain more points
+                float timeBonus = count / (float(now-instanceStart)/60/10);
+                uint32 repBonus = 3 * mythBonus * timeBonus * ((map->IsRaid() ? (difficulty+1) * 3 : difficulty+1));
+
+                if (repBonus)
+                {
+                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_ASREP_BONUS, player, lvlTxt.c_str(), repBonus));
+                    player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), repBonus);
+                }
+
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_BOSS_KILLED, player, count, total, uint32(round(float(now-instanceStart)/60))));
+                    
+                if (count>=total)
+                {
+                    player->GetSession()->SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));
+                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));    
+                }
+                    
+                if (dungeonCompleted)
+                {
+                    player->GetSession()->SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));
+                    ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));    
+                }
+                    
             }
-            
-            if (&store != &LootTemplates_Gameobject && &store != &LootTemplates_Creature)
-                return;
+            else if (posLevel <= 70 && nLevel > posLevel + 10)
+            {
+                ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->getf(AZTH_LANG_TW_REP_REMOVED_KILL, player, nLevel-posLevel));
+                player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(AZTH_AS_REP), -(nLevel-posLevel));
+            }
 
-            if (chance < 20.f)
-                chance += 20.f;
+            if (count >= total)
+            {
+                id = MAKE_NEW_GUID(instanceStart, groupId, 0);
 
-            sAZTH->DeleteAZTHLoot(&loot);
+                CharacterDatabase.PExecute("INSERT INTO azth_quest_log (guid, groupId, quest, dungeon, difficulty, sLevel, nLevel, gSize, instanceStartTime, instanceEndTime)"
+                    "VALUES (%u,%u,%u,%u,%u,%u,%u,%u,%u,%u)", guid, id, 0, dungeon, difficulty, sLevel,nLevel,gSize,instanceStart,now);
+            }
         }
+    }
+
+    void OnItemRoll(Player const* player, LootStoreItem const *item, float &chance, Loot &loot, LootStore const& store) override
+    {
+        // this check assume that sAzthUtils->isEligibleForBonusByArea(player) has been already checked
+        if (!sAZTH->GetAZTHLoot(&loot))
+            return;
+
+        if ((loot.quest_items.size() + loot.items.size()) >= MAX_NR_LOOT_ITEMS)
+        {
+            chance = 0;
+            return;
+        }
+            
+        if (chance >= 100.0f || chance <= 0)
+            return;
+
+        if (!player->GetMap()->IsDungeon() && !player->GetMap()->IsRaid())
+            return;
+
+        if (item->mincount >= 0)
+        {
+            ItemTemplate const* i = sObjectMgr->GetItemTemplate(item->itemid);
+
+            if (i && i->Quality < ITEM_QUALITY_RARE)
+                return;
+        }
+            
+        if (&store != &LootTemplates_Gameobject && &store != &LootTemplates_Creature)
+            return;
+
+        if (chance < 20.f)
+            chance += 20.f;
+
+        sAZTH->DeleteAZTHLoot(&loot);
+    }
         
-        void OnInitializeLockedDungeons(Player* player, uint8& /*level*/, uint32& lockData, lfg::LFGDungeonData const* dungeon) override
+    void OnInitializeLockedDungeons(Player* player, uint8& /*level*/, uint32& lockData, lfg::LFGDungeonData const* dungeon) override
+    {
+        switch(lockData)
         {
-            switch(lockData)
-            {
-            case lfg::LFG_LOCKSTATUS_MISSING_ACHIEVEMENT:
-            case lfg::LFG_LOCKSTATUS_QUEST_NOT_COMPLETED:
-            case lfg::LFG_LOCKSTATUS_MISSING_ITEM:
-                Player* leader = nullptr;
+        case lfg::LFG_LOCKSTATUS_MISSING_ACHIEVEMENT:
+        case lfg::LFG_LOCKSTATUS_QUEST_NOT_COMPLETED:
+        case lfg::LFG_LOCKSTATUS_MISSING_ITEM:
+            Player* leader = nullptr;
 
-                uint64 leaderGuid = player->GetGroup() ? player->GetGroup()->GetLeaderGUID() : player->GetGUID();
+            uint64 leaderGuid = player->GetGroup() ? player->GetGroup()->GetLeaderGUID() : player->GetGUID();
 
-                if (leaderGuid != player->GetGUID())
-                    leader = HashMapHolder<Player>::Find(leaderGuid);
+            if (leaderGuid != player->GetGUID())
+                leader = HashMapHolder<Player>::Find(leaderGuid);
 
-                if (!leader || !leader->IsInWorld())
-                    leader = player;
+            if (!leader || !leader->IsInWorld())
+                leader = player;
 
-                if (sWorld && leader->IsInWorld() && sAZTH->GetAZTHPlayer(leader) && sAZTH->GetAZTHPlayer(leader)->isTimeWalking() && dungeon && dungeon->minlevel <= 70)
-                    lockData = 0;
-            break;
-            }
+            if (sWorld && leader->IsInWorld() && sAZTH->GetAZTHPlayer(leader) && sAZTH->GetAZTHPlayer(leader)->isTimeWalking() && dungeon && dungeon->minlevel <= 70)
+                lockData = 0;
+        break;
         }
+    }
 };
 
 void AddSC_TimeWalking()

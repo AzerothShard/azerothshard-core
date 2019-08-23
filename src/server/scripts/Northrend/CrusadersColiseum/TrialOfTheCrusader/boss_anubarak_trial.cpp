@@ -371,16 +371,19 @@ public:
             events.Reset();
             summons.DespawnAll();
             Talk(SAY_DEATH);
-            if( pInstance )
+            if(pInstance)
                 pInstance->SetData(TYPE_ANUBARAK, DONE);
 
-
-            Player* plr = NULL;
-            if( !pInstance->instance->GetPlayers().isEmpty() )
+            Player* plr = nullptr;
+            if(!pInstance->instance->GetPlayers().isEmpty())
                 plr = pInstance->instance->GetPlayers().begin()->GetSource();
 
             // before we remove faction items from the loot, check if there are players of the opposite facition (crossfaction)
-            std::vector<Player*> list = pInstance->instance->GetPlayerListExceptGMs();
+            std::vector<Player*> list;
+
+            for (auto const& itr : pInstance->instance->GetPlayers())
+                if (!itr.GetSource()->IsGameMaster())
+                    list.push_back(itr.GetSource());
 
             if (list.size() == 0)
                 return;
@@ -395,13 +398,12 @@ public:
                     return;
             }
 
-
-            if( !plr )
+            if(!plr)
                 return;
 
             // remove loot for the other faction (items are invisible for players, done in conditions), so corpse can be skinned
-            for( std::vector<LootItem>::iterator itr = me->loot.items.begin(); itr != me->loot.items.end(); ++itr )
-                if( ItemTemplate const *iProto = sObjectMgr->GetItemTemplate((*itr).itemid) )
+            for(std::vector<LootItem>::iterator itr = me->loot.items.begin(); itr != me->loot.items.end(); ++itr)
+                if(ItemTemplate const* iProto = sObjectMgr->GetItemTemplate((*itr).itemid))
                     if( ((iProto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY) && plr->GetTeamId() != TEAM_HORDE) || ((iProto->Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY) && plr->GetTeamId() != TEAM_ALLIANCE) )
                     {
                         (*itr).count = 0;
@@ -412,7 +414,7 @@ public:
         
         void KilledUnit(Unit* who)
         {
-            if( who->GetTypeId() == TYPEID_PLAYER )
+            if (who->GetTypeId() == TYPEID_PLAYER)
                 Talk(SAY_KILL_PLAYER);
         }
 

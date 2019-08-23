@@ -1254,6 +1254,19 @@ public:
     virtual void OnBattlegroundRemovePlayerAtLeave(Battleground* /*bg*/, Player* /*player*/) { }
 
     virtual void OnQueueUpdate(BattlegroundQueue* /*queue*/, BattlegroundBracketId /*bracket_id*/, uint8 /*actionMask*/, bool /*isRated*/, uint32 /*arenaRatedTeamId*/) { }
+
+    virtual void OnAddGroup(BattlegroundQueue* /*queue*/, GroupQueueInfo* /*ginfo*/, uint32& /*index*/, Player* /*leader*/, Group* /*grp*/, PvPDifficultyEntry const* /*bracketEntry*/, bool /*isPremade*/) { }
+
+    virtual bool CanFillPlayersToBG(BattlegroundQueue* /*queue*/, Battleground* /*bg*/, const int32 /*aliFree*/, const int32 /*hordeFree*/, BattlegroundBracketId /*bracket_id*/) { return true; }
+
+    virtual bool CanFillPlayersToBGWithSpecific(BattlegroundQueue* /*queue*/, Battleground* /*bg*/, const int32 /*aliFree*/, const int32 /*hordeFree*/,
+        BattlegroundBracketId /*thisBracketId*/, BattlegroundQueue* /*specificQueue*/, BattlegroundBracketId /*specificBracketId*/) { return true; }
+
+    virtual void OnCheckNormalMatch(BattlegroundQueue* /*queue*/, uint32& /*Coef*/, Battleground* /*bgTemplate*/, BattlegroundBracketId /*bracket_id*/, uint32& /*minPlayers*/, uint32& /*maxPlayers*/) { }
+
+    virtual bool CanSendMessageQueue(BattlegroundQueue* /*queue*/, Player* /*leader*/, Battleground* /*bg*/, PvPDifficultyEntry const* /*bracketEntry*/) { return true; }
+
+    virtual bool CanSendMessageArenaQueue(BattlegroundQueue* /*queue*/, GroupQueueInfo* /*ginfo*/, bool /*IsJoin*/) { return true; }
 };
 
 class SpellSC : public ScriptObject
@@ -1404,6 +1417,20 @@ public:
 
     virtual void OnInstanceSave(InstanceSave* /*instanceSave*/) { }
 };
+
+class CommandSC : public ScriptObject
+{
+protected:
+
+    CommandSC(const char* name);
+
+public:
+
+    bool IsDatabaseBound() const { return false; }
+
+    virtual void OnHandleDevCommand(Player* /*player*/, std::string& /*argstr*/) { }
+};
+
 
 // Placed here due to ScriptRegistry::AddScript dependency.
 #define sScriptMgr ACE_Singleton<ScriptMgr, ACE_Null_Mutex>::instance()
@@ -1797,6 +1824,13 @@ class ScriptMgr
         void OnBattlegroundBeforeAddPlayer(Battleground* bg, Player* player);
         void OnBattlegroundRemovePlayerAtLeave(Battleground* bg, Player* player);
         void OnQueueUpdate(BattlegroundQueue* queue, BattlegroundBracketId bracket_id, uint8 actionMask, bool isRated, uint32 arenaRatedTeamId);
+        void OnAddGroup(BattlegroundQueue* queue, GroupQueueInfo* ginfo, uint32& index, Player* leader, Group* grp, PvPDifficultyEntry const* bracketEntry, bool isPremade);
+        bool CanFillPlayersToBG(BattlegroundQueue* queue, Battleground* bg, const int32 aliFree, const int32 hordeFree, BattlegroundBracketId bracket_id);
+        bool CanFillPlayersToBGWithSpecific(BattlegroundQueue* queue, Battleground* bg, const int32 aliFree, const int32 hordeFree,
+            BattlegroundBracketId thisBracketId, BattlegroundQueue* specificQueue, BattlegroundBracketId specificBracketId);
+        void OnCheckNormalMatch(BattlegroundQueue* queue, uint32& Coef, Battleground* bgTemplate, BattlegroundBracketId bracket_id, uint32& minPlayers, uint32& maxPlayers);
+        bool CanSendMessageQueue(BattlegroundQueue* queue, Player* leader, Battleground* bg, PvPDifficultyEntry const* bracketEntry);
+        bool CanSendMessageArenaQueue(BattlegroundQueue* queue, GroupQueueInfo* ginfo, bool IsJoin);
 
     public: /* SpellSC */
  
@@ -1852,6 +1886,10 @@ class ScriptMgr
         void ValidateSpellAtCastSpellResult(Player* player, Unit* mover, Spell* spell, uint32 oldSpellId, uint32 spellId);
         void OnAfterLootTemplateProcess(Loot* loot, LootTemplate const* tab, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode);
         void OnInstanceSave(InstanceSave* instanceSave);
+
+    public: /* CommandSC */
+
+        void OnHandleDevCommand(Player* player, std::string& argstr);
 
     private:
 

@@ -1167,9 +1167,6 @@ enum TrinityStrings
 
     LANG_GM_SILENCE                      = 6616,              // "Silence is ON for %s" - Spell 1852
 
-	LANG_AZTH_NO_INFO_ARENA_JOINED			= 7000, //[AZTH]
-	LANG_AZTH_NO_INFO_ARENA_EXITED			= 7001, //[AZTH]
-
     LANG_WORLD_CLOSED                    = 7523,
     LANG_WORLD_OPENED                    = 7524,
 

@@ -39,10 +39,10 @@
         if (player->InBattleground())
             return false;
          
-    //[AZTH]
-    if (!sAZTH->GetAZTHPlayer(player)->canJoinQueue(AZTH_QUEUE_ARENA))
-        return false;
-    //[/AZTH]
+        //[AZTH]
+        if (!sAZTH->GetAZTHPlayer(player)->canJoinQueue(AZTH_QUEUE_ARENA))
+            return false;
+        //[/AZTH]
 
         //check existance
         Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA);
@@ -52,7 +52,8 @@
             return false;
         }
 
-        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, BATTLEGROUND_AA, NULL)) {
+        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, BATTLEGROUND_AA, NULL)) 
+        {
             ChatHandler(player->GetSession()).PSendSysMessage(LANG_ARENA_DISABLED);
             return false;
         }

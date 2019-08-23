@@ -160,12 +160,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player * leader, Group * grp, PvPDif
     ginfo->_groupType = index;
 
     // announce world (this doesn't need mutex)
-    if (isRated && sWorld->getBoolConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE))
-    {
-        ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(arenateamid);
-		if (team)
-			sWorld->SendWorldText(LANG_AZTH_NO_INFO_ARENA_JOINED, ginfo->ArenaType, ginfo->ArenaType); //[AZTH]
-    }
+    SendMessageArenaQueue(ginfo, true);
 
     //add players from group to ginfo
     if (grp)
@@ -196,7 +191,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player * leader, Group * grp, PvPDif
         return ginfo;
 
     if (!isRated && !isPremade && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
-        SendMessageQueue(leader, bg, bracketEntry);
+        SendMessageBGQueue(leader, bg, bracketEntry);
 
     return ginfo;
 }
@@ -310,11 +305,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool sentToBg, uint32 playerQu
     m_QueuedPlayers.erase(itr);
 
     // announce to world if arena team left queue for rated match, show only once
-    if (groupInfo->ArenaType && groupInfo->IsRated && groupInfo->Players.empty() && sWorld->getBoolConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE))
-        //[AZTH] removed team name and changed string id
-        if (/*ArenaTeam* team = */sArenaTeamMgr->GetArenaTeamById(groupInfo->ArenaTeamId))
-            sWorld->SendWorldText(LANG_AZTH_NO_INFO_ARENA_EXITED, groupInfo->ArenaType, groupInfo->ArenaType);
-        //[/AZTH]
+    SendMessageArenaQueue(groupInfo, false);
 
     // if player leaves queue and he is invited to a rated arena match, then count it as he lost
     if (groupInfo->IsInvitedToBGInstanceGUID && groupInfo->IsRated && !sentToBg)
@@ -392,12 +383,9 @@ void BattlegroundQueue::FillPlayersToBG(Battleground* bg, const int32 aliFree, c
 
     // quick check if nothing we can do:
     if (!sBattlegroundMgr->isTesting())
-        if(m_bgTypeId != BATTLEGROUND_RB) //[AZTH]
-        {
-            if ((aliFree > hordeFree && m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE].empty()) ||
-                (hordeFree > aliFree && m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].empty()))
-                return;
-        }
+        if ((aliFree > hordeFree && m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE].empty()) ||
+            (hordeFree > aliFree && m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].empty()))
+            return;
 
     // ally: at first fill as much as possible
     GroupsQueueType::const_iterator Ali_itr = m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE].begin();
@@ -479,14 +467,11 @@ void BattlegroundQueue::FillPlayersToBGWithSpecific(Battleground* bg, const int3
     m_SelectionPools[TEAM_ALLIANCE].Init();
     m_SelectionPools[TEAM_HORDE].Init();
 
-    // [AZTH] quick check if nothing we can do:
+    // quick check if nothing we can do:
     if (!sBattlegroundMgr->isTesting())
-        if (m_bgTypeId != BATTLEGROUND_RB)
-        {
-            if ((m_QueuedGroups[thisBracketId][BG_QUEUE_NORMAL_ALLIANCE].empty() && specificQueue->m_QueuedGroups[specificBracketId][BG_QUEUE_NORMAL_ALLIANCE].empty()) ||
-                (m_QueuedGroups[thisBracketId][BG_QUEUE_NORMAL_HORDE].empty() && specificQueue->m_QueuedGroups[specificBracketId][BG_QUEUE_NORMAL_HORDE].empty()))
-                return;
-        }
+        if ((m_QueuedGroups[thisBracketId][BG_QUEUE_NORMAL_ALLIANCE].empty() && specificQueue->m_QueuedGroups[specificBracketId][BG_QUEUE_NORMAL_ALLIANCE].empty()) ||
+            (m_QueuedGroups[thisBracketId][BG_QUEUE_NORMAL_HORDE].empty() && specificQueue->m_QueuedGroups[specificBracketId][BG_QUEUE_NORMAL_HORDE].empty()))
+            return;
 
     // copy groups from both queues to new joined container
     GroupsQueueType m_QueuedBoth[BG_TEAMS_COUNT];
@@ -648,7 +633,7 @@ bool BattlegroundQueue::CheckNormalMatch(Battleground * bgTemplate, Battleground
         FillPlayersToBGWithSpecific(specificTemplate, specificTemplate->GetMaxPlayersPerTeam(), specificTemplate->GetMaxPlayersPerTeam(), bracket_id, &specificQueue, BattlegroundBracketId(specificBracket->bracketId));
 
         //allow 1v0 if debug bg
-        if (sBattlegroundMgr->isTesting() && bgTemplate->isBattleground() && (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() || m_SelectionPools[TEAM_HORDE].GetPlayerCount()))
+        if (sBattlegroundMgr->isTesting() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_RANDOM_DEBUG_ENABLE) && bgTemplate->isBattleground() && (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() || m_SelectionPools[TEAM_HORDE].GetPlayerCount()))
             return true;
 
         return m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= std::min<uint32>(specificTemplate->GetMinPlayersPerTeam() * Coef, 15) && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= std::min<uint32>(specificTemplate->GetMinPlayersPerTeam() * Coef, 15);
@@ -1047,7 +1032,7 @@ bool BattlegroundQueue::IsAllQueuesEmpty(BattlegroundBracketId bracket_id)
     return false;
 }
 
-void BattlegroundQueue::SendMessageQueue(Player* leader, Battleground* bg, PvPDifficultyEntry const* bracketEntry)
+void BattlegroundQueue::SendMessageBGQueue(Player* leader, Battleground* bg, PvPDifficultyEntry const* bracketEntry)
 {
     if (!sScriptMgr->CanSendMessageQueue(this, leader, bg, bracketEntry))
         return;
@@ -1082,6 +1067,32 @@ void BattlegroundQueue::SendMessageQueue(Player* leader, Battleground* bg, PvPDi
                 qAlliance + qHorde, MaxPlayers);
         }
     }
+}
+
+void BattlegroundQueue::SendMessageArenaQueue(GroupQueueInfo* ginfo, bool IsJoin)
+{
+    if (!sWorld->getBoolConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE))
+        return;
+
+    if (!sScriptMgr->CanSendMessageArenaQueue(this, ginfo, IsJoin))
+        return;
+
+    ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(ginfo->ArenaTeamId);
+    if (!team)
+        return;
+
+    if (!ginfo->IsRated)
+        return;
+
+    uint8 ArenaType = ginfo->ArenaType;
+    uint32 ArenaTeamRating = ginfo->ArenaTeamRating;
+    std::string TeamName = team->GetName();
+
+    if (IsJoin)
+        sWorld->SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_JOIN, TeamName.c_str(), ArenaType, ArenaType, ArenaTeamRating);
+
+    if (!IsJoin && ArenaType && ginfo->Players.empty())
+        sWorld->SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_EXIT, TeamName.c_str(), ArenaType, ArenaType, ArenaTeamRating);
 }
 
 /*********************************************************/
