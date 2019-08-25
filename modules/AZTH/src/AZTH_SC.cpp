@@ -82,7 +82,7 @@ public:
         if (bg->GetStatus() != STATUS_WAIT_JOIN)
             return;
 
-        if (!bg->GetArenaType() != ARENA_TEAM_1v1)
+        if (bg->GetArenaType() != ARENA_TEAM_1v1)
             return;
 
         if (bg->GetStartDelayTime() > BG_START_DELAY_15S && (bg->GetPlayersCountByTeam(TEAM_ALLIANCE) + bg->GetPlayersCountByTeam(TEAM_HORDE)) == 2)
@@ -254,7 +254,7 @@ public:
                     victim_title = i;
     }
 
-    void OnVictimRewardAfter(Player* player, Player* /*victim*/, uint32& killer_title, uint32& victim_rank, float& honor_f)
+    void OnVictimRewardAfter(Player* player, Player* /*victim*/, uint32& killer_title, uint32& victim_rank, float& honor_f) override
     {
         if (!player)
             return;
@@ -772,12 +772,16 @@ public:
         return true;
     }
 
-    bool CanBattleFieldPort(Player* player, uint8 /*arenaType*/, BattlegroundTypeId BGTypeID, uint8 action) override
+    bool CanBattleFieldPort(Player* player, uint8 arenaType, BattlegroundTypeId BGTypeID, uint8 action) override
     {
         if (!player)
             return false;
 
-        if ((BGTypeID == BATTLEGROUND_QUEUE_1v1 || BGTypeID == BATTLEGROUND_QUEUE_3v3_SOLO) && (action == 1 /*accept join*/ && !sSolo->Arena1v1CheckTalents(player)))
+        BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(BGTypeID, arenaType);
+        if (bgQueueTypeId == BATTLEGROUND_QUEUE_NONE)
+            return false;
+
+        if ((bgQueueTypeId == (BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_1v1 || bgQueueTypeId == (BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_3v3_SOLO) && (action == 1 /*accept join*/ && !sSolo->Arena1v1CheckTalents(player)))
             return false;
 
         return true;
@@ -1218,7 +1222,7 @@ public:
         return true;
     }
 
-    bool IsCustomBuildValuesUpdate(Unit const* unit, uint8 /*updateType*/, ByteBuffer& fieldBuffer, Player const* target, uint16 index)
+    bool IsCustomBuildValuesUpdate(Unit const* unit, uint8 /*updateType*/, ByteBuffer& fieldBuffer, Player const* target, uint16 index) override
     {
         int repRank = sAzthUtils->getReaction(unit, target);
 
@@ -1534,7 +1538,7 @@ public:
             return false;
 
         uint32 guildhouse = (uint32)atof(goGH);
-        if (!guildhouse > 0)
+        if (!guildhouse)
             return false;
 
         float x;

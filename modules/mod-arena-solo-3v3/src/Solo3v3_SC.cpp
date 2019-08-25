@@ -410,7 +410,7 @@ public:
 
     void OnQueueUpdate(BattlegroundQueue* queue, BattlegroundBracketId bracket_id, uint8 actionMask, bool isRated, uint32 arenaRatedTeamId) override
     {
-        if (queue->GetArenaType() != ARENA_TYPE_3v3_SOLO)
+        if (queue->GetArenaType() != (ArenaType)ARENA_TYPE_3v3_SOLO)
             return;
 
         Battleground* bg_template = sBattlegroundMgr->GetBattlegroundTemplate(queue->GetBGTypeID());

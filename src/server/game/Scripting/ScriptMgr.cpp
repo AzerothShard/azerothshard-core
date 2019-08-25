@@ -2618,6 +2618,11 @@ void ScriptMgr::OnBattlegroundRemovePlayerAtLeave(Battleground* bg, Player* play
     FOREACH_SCRIPT(BGScript)->OnBattlegroundRemovePlayerAtLeave(bg, player);
 }
 
+void ScriptMgr::OnQueueUpdate(BattlegroundQueue* queue, BattlegroundBracketId bracket_id, uint8 actionMask, bool isRated, uint32 arenaRatedTeamId)
+{
+    FOREACH_SCRIPT(BGScript)->OnQueueUpdate(queue, bracket_id, actionMask, isRated, arenaRatedTeamId);
+}
+
 void ScriptMgr::OnAddGroup(BattlegroundQueue* queue, GroupQueueInfo* ginfo, uint32& index, Player* leader, Group* grp, PvPDifficultyEntry const* bracketEntry, bool isPremade)
 {
     FOREACH_SCRIPT(BGScript)->OnAddGroup(queue, ginfo, index, leader, grp, bracketEntry, isPremade);
@@ -2668,55 +2673,6 @@ bool ScriptMgr::CanSendMessageArenaQueue(BattlegroundQueue* queue, GroupQueueInf
 
     FOR_SCRIPTS_RET(BGScript, itr, end, ret) // return true by default if not scripts
         if (!itr->second->CanSendMessageArenaQueue(queue, ginfo, IsJoin))
-            ret = false; // we change ret value only when scripts return false
-
-    return ret;
-}
-
-void ScriptMgr::OnQueueUpdate(BattlegroundQueue* queue, BattlegroundBracketId bracket_id, uint8 actionMask, bool isRated, uint32 arenaRatedTeamId)
-{
-    FOREACH_SCRIPT(BGScript)->OnQueueUpdate(queue, bracket_id, actionMask, isRated, arenaRatedTeamId);
-}
-
-void ScriptMgr::OnAddGroup(BattlegroundQueue* queue, GroupQueueInfo* ginfo, uint32& index, Player* leader, Group* grp, PvPDifficultyEntry const* bracketEntry, bool isPremade)
-{
-    FOREACH_SCRIPT(BGScript)->OnAddGroup(queue, ginfo, index, leader, grp, bracketEntry, isPremade);
-}
-
-bool ScriptMgr::CanFillPlayersToBG(BattlegroundQueue* queue, Battleground* bg, const int32 aliFree, const int32 hordeFree, BattlegroundBracketId bracket_id)
-{
-    bool ret = true;
-
-    FOR_SCRIPTS_RET(BGScript, itr, end, ret) // return true by default if not scripts
-        if (!itr->second->CanFillPlayersToBG(queue, bg, aliFree, hordeFree, bracket_id))
-            ret = false; // we change ret value only when scripts return false
-
-    return ret;
-}
-
-bool ScriptMgr::CanFillPlayersToBGWithSpecific(BattlegroundQueue* queue, Battleground* bg, const int32 aliFree, const int32 hordeFree,
-    BattlegroundBracketId thisBracketId, BattlegroundQueue* specificQueue, BattlegroundBracketId specificBracketId)
-{
-    bool ret = true;
-
-    FOR_SCRIPTS_RET(BGScript, itr, end, ret) // return true by default if not scripts
-        if (!itr->second->CanFillPlayersToBGWithSpecific(queue, bg, aliFree, hordeFree, thisBracketId, specificQueue, specificBracketId))
-            ret = false; // we change ret value only when scripts return false
-
-    return ret;
-}
-
-void ScriptMgr::OnCheckNormalMatch(BattlegroundQueue* queue, uint32& Coef, Battleground* bgTemplate, BattlegroundBracketId bracket_id, uint32& minPlayers, uint32& maxPlayers)
-{
-    FOREACH_SCRIPT(BGScript)->OnCheckNormalMatch(queue, Coef, bgTemplate, bracket_id, minPlayers, maxPlayers);
-}
-
-bool ScriptMgr::CanSendMessageQueue(BattlegroundQueue* queue, Player* leader, Battleground* bg, PvPDifficultyEntry const* bracketEntry)
-{
-    bool ret = true;
-
-    FOR_SCRIPTS_RET(BGScript, itr, end, ret) // return true by default if not scripts
-        if (!itr->second->CanSendMessageQueue(queue, leader, bg, bracketEntry))
             ret = false; // we change ret value only when scripts return false
 
     return ret;
