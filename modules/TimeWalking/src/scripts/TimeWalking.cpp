@@ -855,9 +855,6 @@ public:
         if (!sAZTH->GetAZTHLoot(&loot))
             return;
 
-        if (!sConfigMgr->GetBoolDefault("Azth.Multiplies.Drop.Enable", false))
-            return;
-
         if ((loot.quest_items.size() + loot.items.size()) >= MAX_NR_LOOT_ITEMS)
         {
             chance = 0;
