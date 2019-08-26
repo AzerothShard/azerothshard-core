@@ -276,3 +276,11 @@ Azth.LevelBonus.10.Enable = 1
 #
 
 Azth.Smartstone.Teleport.Enable = 1
+
+#
+#	Azth.Multiplies.Drop.Enable
+#		Description: Enable/disable multiplies drop
+#		Default: 1
+#
+
+Azth.Multiplies.Drop.Enable = 1
