@@ -428,7 +428,7 @@ public:
             return false;
 
         // [AZTH] Timewalking
-        if (!sAZTH->GetAZTHPlayer((Player*)this)->itemCheckReqLevel(proto))
+        if (!sAZTH->GetAZTHPlayer(player)->itemCheckReqLevel(proto))
             return false;
 
         return true;
@@ -452,7 +452,7 @@ public:
             return;
 
         //[AZTH] Timewalking
-        if (!sAZTH->GetAZTHPlayer((Player*)this)->itemCheckReqLevel(proto))
+        if (!sAZTH->GetAZTHPlayer(player)->itemCheckReqLevel(proto))
         {
             uint32 reqLevel = sAzthUtils->getCalcReqLevel(proto);
 
