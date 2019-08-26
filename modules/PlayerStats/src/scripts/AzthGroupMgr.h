@@ -6,7 +6,7 @@
 class AzthGroupMgr
 {
 public:
-    explicit AzthGroupMgr(Group* group);
+    explicit AzthGroupMgr(Group* original);
     ~AzthGroupMgr();
 
     void saveToDb();

@@ -1,9 +1,9 @@
 #include "AzthGroupMgr.h"
 #include "DatabaseEnv.h"
 
-AzthGroupMgr::AzthGroupMgr(Group* group)
+AzthGroupMgr::AzthGroupMgr(Group* original)
 {
-    group = group;
+    group = original;
 
     QueryResult result = CharacterDatabase.PQuery("SELECT `MaxlevelGroup`, `MaxGroupSize` FROM `azth_groups` WHERE `guid` = '%u'", group->GetLowGUID());
     if (!result)
@@ -26,7 +26,9 @@ AzthGroupMgr::~AzthGroupMgr()
 
 void AzthGroupMgr::saveToDb()
 {
-    CharacterDatabase.PExecute("UPDATE azth_groups SET MaxLevelGroup = %u, MaxGroupSize = %u WHERE leaderGuid = %u", this->levelMaxGroup, this->groupSize, this->group->GetLeaderGUID());
+    ASSERT(group);
+
+    CharacterDatabase.PExecute("UPDATE azth_groups SET MaxLevelGroup = %u, MaxGroupSize = %u WHERE leaderGuid = %u", levelMaxGroup, groupSize, this->group->GetLeaderGUID());
 }
 
 
