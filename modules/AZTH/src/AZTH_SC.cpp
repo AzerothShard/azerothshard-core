@@ -1094,6 +1094,9 @@ public:
 
     void OnAfterLootTemplateProcess(Loot* loot, LootTemplate const* tab, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode) override
     {
+        if (!sConfigMgr->GetBoolDefault("Azth.Multiplies.Drop.Enable", false))
+            return;
+
         //Dangerous since it can drops multiple quest items
         //[AZTH] give another loot process if done with correct level
         if (sAzthUtils->isEligibleForBonusByArea(lootOwner) && (&store == &LootTemplates_Gameobject || &store == &LootTemplates_Creature))
