@@ -258,4 +258,13 @@ Player.customXP.showOnLogin = 1
 
 ###################################################################################################
 
+###################################################################################################
+#	
+#	AZTH - MS
+#
+#	Azth.LevelBonus.10.Enable
+#		Description: Enable/disable gift for level 10
+#		Default: 1
+#
 
+Azth.LevelBonus.10.Enable = 1

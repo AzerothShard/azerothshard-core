@@ -14,12 +14,13 @@
 #include "azth_custom_hearthstone_mode.h"
 #include "AZTH.h"
 
-class AzthPlayerPlg : public PlayerScript{
+class AzthPlayerPlg : public PlayerScript
+{
 public:
-
     AzthPlayerPlg() : PlayerScript("AzthPlayerPlg") { }
     
-    void OnLogin(Player *pl) override {
+    void OnLogin(Player* player) override
+    {
         uint32 accId = pl->GetSession()->GetAccountId();
         //                                                    0
         QueryResult res = LoginDatabase.PQuery("SELECT custom_lang FROM azth_account_info WHERE id = '%d';", accId);
@@ -28,17 +29,16 @@ public:
         {
             Field* info = res->Fetch();
             sAZTH->GetAZTHPlayer(pl)->setCustLang(AzthCustomLangs(info[0].GetUInt8()));
-        }
-        
+        }        
         
         //------------------------------AZTH BANK ITEMS----------------------------------------------
-
 
         QueryResult itemInBankQuery = CharacterDatabase.PQuery("SELECT item,itemEntry FROM azth_items_bank where guid = %u", pl->GetGUIDLow()); //retrieve all items from db
 
         if (itemInBankQuery)
         {
-            do {
+            do
+            {
                 Field* itemInBankField = itemInBankQuery->Fetch();
                 
                 if (!itemInBankField)
@@ -52,11 +52,11 @@ public:
                 sAZTH->GetAZTHPlayer(pl)->AddBankItem(itemEntry, itemGUID);
 
             } while (itemInBankQuery->NextRow());
-
         }
         
         // GM mods, see anything
-        if (pl->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER) /*[/AZTH]*/) {
+        if (pl->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER) /*[/AZTH]*/)
+        {
             pl->SetPhaseMask(PHASEMASK_ANYWHERE, false);
             pl->GetSession()->SendSetPhaseShift(PHASEMASK_ANYWHERE);
         }
@@ -65,6 +65,9 @@ public:
     void OnLevelChanged(Player* player, uint8 oldLevel) override
     {
         if (!player || oldLevel != 9)
+            return;
+
+        if (!sConfigMgr->GetBoolDefault("Azth.LevelBonus.10.Enable", false))
             return;
 
         if (sAZTH->GetAZTHPlayer(player)->isTimeWalking())
