@@ -19,7 +19,7 @@ class AzthPlayerPlg : public PlayerScript
 public:
     AzthPlayerPlg() : PlayerScript("AzthPlayerPlg") { }
     
-    void OnLogin(Player* player) override
+    void OnLogin(Player* pl) override
     {
         uint32 accId = pl->GetSession()->GetAccountId();
         //                                                    0
@@ -64,10 +64,10 @@ public:
     
     void OnLevelChanged(Player* player, uint8 oldLevel) override
     {
-        if (!player || )
+        if (!player)
             return;
 
-        if (oldLevel == 9 !sAZTH->GetAZTHPlayer(player)->isTimeWalking() && sConfigMgr->GetBoolDefault("Azth.LevelBonus.10.Enable", false))
+        if (oldLevel == 9 && !sAZTH->GetAZTHPlayer(player)->isTimeWalking() && sConfigMgr->GetBoolDefault("Azth.LevelBonus.10.Enable", false))
             sAZTH->SendGameMail(player, "Well done!", "You reached level 10, a small present for you by AzerothShard!", 10 * GOLD);
     }
 
