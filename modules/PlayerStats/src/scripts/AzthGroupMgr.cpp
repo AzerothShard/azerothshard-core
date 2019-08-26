@@ -5,7 +5,7 @@ AzthGroupMgr::AzthGroupMgr(Group* group)
 {
     group = group;
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT `MaxlevelGroup`, `MaxGroupSize `FROM `azth_groups` WHERE `guid` = '%u'", group->GetLowGUID());
+    QueryResult result = CharacterDatabase.PQuery("SELECT `MaxlevelGroup`, `MaxGroupSize` FROM `azth_groups` WHERE `guid` = '%u'", group->GetLowGUID());
     if (!result)
     {
         levelMaxGroup = 0;
