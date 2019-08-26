@@ -268,3 +268,11 @@ Player.customXP.showOnLogin = 1
 #
 
 Azth.LevelBonus.10.Enable = 1
+
+#
+#	Azth.Smartstone.Teleport.Enable
+#		Description: Enable/disable teleport Smartstone
+#		Default: 1
+#
+
+Azth.Smartstone.Teleport.Enable = 1

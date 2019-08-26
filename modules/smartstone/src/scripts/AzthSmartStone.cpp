@@ -232,36 +232,38 @@ public:
         }
     }
 
-    bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override {
+    bool OnUse(Player *player, Item *item, SpellCastTargets const & /*targets*/) override
+    {
         player->PlayerTalkClass->ClearMenus();
         
         if (parent == 1) // not-to-buy commands for the main menu
         {
             // black market teleport id 1
             SmartStoneCommand teleport = sSmartStone->getCommandById(SMRTST_BLACK_MARKET);
-            if (!sAZTH->GetAZTHPlayer(player)->isInBlackMarket()) {
-                /*if (sAZTH->GetAZTHPlayer(player)->isPvP()) {
-                    player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
-                }*/
 
-                player->ADD_GOSSIP_ITEM(teleport.icon, teleport.getText(player), GOSSIP_SENDER_MAIN, teleport.id);
-            } else {
-                player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
+            if (sConfigMgr->GetBoolDefault("Azth.Smartstone.Teleport.Enable", false))
+            {
+                if (!sAZTH->GetAZTHPlayer(player)->isInBlackMarket())
+                {
+                    /*if (sAZTH->GetAZTHPlayer(player)->isPvP())
+                        player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);*/
+
+                    player->ADD_GOSSIP_ITEM(teleport.icon, teleport.getText(player), GOSSIP_SENDER_MAIN, teleport.id);
+                }
+                else
+                    player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
             }
-            
-            if (!sAZTH->GetAZTHPlayer(player)->isPvP()) {
+
+            if (!sAZTH->GetAZTHPlayer(player)->isPvP())
                 player->PlayerTalkClass->GetGossipMenu().AddMenuItem(SMRTST_README, 0, GOSSIP_SENDER_MAIN, SMRTST_README_CHILD);
-            }
 
             // menu character (rename, change faction, etc) id 4
             SmartStoneCommand characterMenu = sSmartStone->getCommandById(SMRTST_CHAR_MENU);
-            player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.getText(player),
-                    GOSSIP_SENDER_MAIN, characterMenu.id);
+            player->ADD_GOSSIP_ITEM(characterMenu.icon, characterMenu.getText(player), GOSSIP_SENDER_MAIN, characterMenu.id);
 
             // menu passive bonus id 9
             SmartStoneCommand passiveMenu = sSmartStone->getCommandById(SMRTST_BONUS_MENU);
-            player->ADD_GOSSIP_ITEM(passiveMenu.icon, passiveMenu.getText(player),
-                    GOSSIP_SENDER_MAIN, passiveMenu.id);
+            player->ADD_GOSSIP_ITEM(passiveMenu.icon, passiveMenu.getText(player), GOSSIP_SENDER_MAIN, passiveMenu.id);
         }
 
         if (parent == 2) // not-to-buy commands for the characters menu
