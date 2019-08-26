@@ -64,16 +64,11 @@ public:
     
     void OnLevelChanged(Player* player, uint8 oldLevel) override
     {
-        if (!player || oldLevel != 9)
+        if (!player || )
             return;
 
-        if (!sConfigMgr->GetBoolDefault("Azth.LevelBonus.10.Enable", false))
-            return;
-
-        if (sAZTH->GetAZTHPlayer(player)->isTimeWalking())
-            return;
-        
-        sAZTH->SendGameMail(player, "Well done!", "You reached level 10, a small present for you by AzerothShard!", 10 * GOLD);
+        if (oldLevel == 9 !sAZTH->GetAZTHPlayer(player)->isTimeWalking() && sConfigMgr->GetBoolDefault("Azth.LevelBonus.10.Enable", false))
+            sAZTH->SendGameMail(player, "Well done!", "You reached level 10, a small present for you by AzerothShard!", 10 * GOLD);
     }
 
     // logger for custom extended costs
