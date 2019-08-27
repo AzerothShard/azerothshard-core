@@ -12,6 +12,6 @@
  {
      ASSERT(instanceSave);
 
-     CharacterDatabase.PExecute("UPDATE instance SET levelPg = %u, groupSize = %u, startTime = %u WHERE id = %u", levelMax, groupSize, is->GetInstanceId(), startTime);
+     CharacterDatabase.PExecute("UPDATE instance SET levelPg = %u, groupSize = %u, startTime = %u WHERE id = %u", levelMax, groupSize, instanceSave->GetInstanceId(), startTime);
  }
 
