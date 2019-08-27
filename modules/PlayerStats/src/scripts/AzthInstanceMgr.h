@@ -5,16 +5,17 @@
 
 class InstanceSave;
 
-class AzthInstanceMgr {
-    public:
-        explicit AzthInstanceMgr(InstanceSave* is);
-        ~AzthInstanceMgr();
+class AzthInstanceMgr
+{
+public:
+    explicit AzthInstanceMgr(InstanceSave* is);
+    ~AzthInstanceMgr();
 
-        void saveToDb();
+    void saveToDb();
 
-        InstanceSave* is;
-        uint32 levelMax;
-        uint32 groupSize;
-        uint32 startTime;
+    InstanceSave* instanceSave;
+    uint32 levelMax;
+    uint32 groupSize;
+    uint32 startTime;
 };
 #endif
