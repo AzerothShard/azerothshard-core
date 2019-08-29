@@ -25,12 +25,15 @@
 #include "Implementation/LoginDatabase.h"
 #include "Implementation/CharacterDatabase.h"
 #include "Implementation/WorldDatabase.h"
-#include "Implementation/ExtraDatabase.h" //[AZTH]
 
 extern WorldDatabaseWorkerPool WorldDatabase;
 extern CharacterDatabaseWorkerPool CharacterDatabase;
 extern LoginDatabaseWorkerPool LoginDatabase;
-extern ExtraDatabaseWorkerPool ExtraDatabase; //[AZTH]
+
+//[AZTH]
+#include "Implementation/ExtraDatabase.h" 
+extern ExtraDatabaseWorkerPool ExtraDatabase;
+//[/AZTH]
 
 #endif
 
