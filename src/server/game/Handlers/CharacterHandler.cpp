@@ -891,18 +891,6 @@ void WorldSession::HandlePlayerLoginFromDB(LoginQueryHolder* holder)
         return;
     }
 
-    /* currently we cannot use it because of safety checks on changefaction
-     * that require to login to fix them 
-     * [AZTH] hack for instant80 ( we're forcing all change faction and race )
-    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_CHANGE_FACTION) || pCurrChar->HasAtLoginFlag(AT_LOGIN_CHANGE_RACE))
-    {
-        // following instruction allow core to destroy the Player instance
-        LogoutRequest(0);
-        KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
-        return;
-    }
-    // [/AZTH] */
-
     pCurrChar->GetMotionMaster()->Initialize();
     pCurrChar->SendDungeonDifficulty(false);
 
