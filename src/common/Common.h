@@ -154,6 +154,7 @@ enum AccountTypes
     SEC_MODERATOR      = 1,
     SEC_T1_SUPPORTER   = 1, // [AZTH]
     SEC_GAMEMASTER     = 1,
+    // [AZTH] GAMEMASTER are not considered level 2, we've custom roles for it
     SEC_ENTERTAINER    = 2, // [AZTH]
     SEC_STORY_TELLER   = 2, // [AZTH]
     SEC_T2_PROTECTOR   = 3, // [AZTH]
