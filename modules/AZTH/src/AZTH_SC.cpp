@@ -1133,7 +1133,7 @@ public:
         return true;        
     }
 
-    void OnPlayerSetPhase(AuraEffect* auraEff, AuraApplication const* aurApp, uint8 /*mode*/, bool /*apply*/, uint32& newPhase) override
+    void OnPlayerSetPhase(const AuraEffect* auraEff, AuraApplication const* aurApp, uint8 /*mode*/, bool /*apply*/, uint32& newPhase) override
     {
         if (!auraEff)
             return;
