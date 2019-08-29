@@ -2811,6 +2811,17 @@ void ScriptMgr::OnItemCreate(Item* item, ItemTemplate const* itemProto, Player c
     FOREACH_SCRIPT(MiscScript)->OnItemCreate(item, itemProto, owner);
 }
 
+bool ScriptMgr::CanApplySoulboundFlag(Item* item, ItemTemplate const* proto)
+{
+    bool ret = true;
+
+    FOR_SCRIPTS_RET(MiscScript, itr, end, ret) // return true by default if not scripts
+        if (!itr->second->CanApplySoulboundFlag(item, proto))
+            ret = false; // we change ret value only when scripts return false
+
+    return ret;
+}
+
 void ScriptMgr::OnConstructObject(Object* origin)
 {
     FOREACH_SCRIPT(MiscScript)->OnConstructObject(origin);

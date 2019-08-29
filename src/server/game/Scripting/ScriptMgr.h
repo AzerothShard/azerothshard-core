@@ -1403,6 +1403,8 @@ public:
     
     virtual void OnItemCreate(Item* /*item*/, ItemTemplate const* /*itemProto*/, Player const* /*owner*/) { }
 
+    virtual bool CanApplySoulboundFlag(Item* /*item*/, ItemTemplate const* /*proto*/) { return true; }
+
     virtual bool CanItemApplyEquipSpell(Player* /*player*/, Item* /*item*/) { return true; }    
 
     virtual bool CanSendAuctionHello(WorldSession const* /*session*/, uint64 /*guid*/, Creature* /*creature*/) { return true; }
@@ -1878,6 +1880,7 @@ class ScriptMgr
         void OnConstructInstanceSave(InstanceSave* origin);
         void OnDestructInstanceSave(InstanceSave* origin);
         void OnItemCreate(Item* item, ItemTemplate const* itemProto, Player const* owner);
+        bool CanApplySoulboundFlag(Item* item, ItemTemplate const* proto);
         bool CanItemApplyEquipSpell(Player* player, Item* item);
         bool CanSendAuctionHello(WorldSession const* session, uint64 guid, Creature* creature);
         void ValidateSpellAtCastSpell(Player* player, uint32& oldSpellId, uint32& spellId, uint8& castCount, uint8& castFlags);
