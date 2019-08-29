@@ -1120,6 +1120,18 @@ public:
     {
         sAZTH->GetAZTHInstanceSave(instanceSave)->saveToDb();
     }
+
+    bool CanApplySoulboundFlag(Item* item, ItemTemplate const* /*proto*/) override
+    {
+        if (!item)
+            return false;
+
+        // [AZTH] force soulbound using an unknown flag as workaround
+        if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1))
+            return false;
+
+        return true;        
+    }
 };
 
 class Unit_SC : public UnitScript
