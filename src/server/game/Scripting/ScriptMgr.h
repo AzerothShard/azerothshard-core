@@ -66,6 +66,7 @@ struct Condition;
 struct ItemTemplate;
 struct OutdoorPvPData;
 struct GroupQueueInfo;
+struct TargetInfo;
 
 #define VISIBLE_RANGE       166.0f                          //MAX visible range (size of grid)
 
@@ -1291,6 +1292,10 @@ public:
     virtual bool CanScalingEverything(Spell* /*spell*/) { return false; }
 
     virtual bool CanSelectSpecTalent(Spell* /*spell*/) { return true; }
+
+    virtual void OnScaleAuraUnitAdd(Spell* /*spell*/, Unit* /*target*/, uint32 /*effectMask*/, bool /*checkIfValid*/, bool /*implicit*/, uint8 /*auraScaleMask*/, TargetInfo& /*targetInfo*/) { }
+
+    virtual void OnRemoveAuraScaleTargets(Spell* /*spell*/, TargetInfo& /*targetInfo*/, uint8 /*auraScaleMask*/, bool& /*needErase*/) { }
 };
 
 // this class can be used to be extended by Modules
@@ -1843,6 +1848,8 @@ class ScriptMgr
         bool CanPrepare(Spell* spell, SpellCastTargets const* targets, AuraEffect const* triggeredByAura);
         bool CanScalingEverything(Spell* spell);
         bool CanSelectSpecTalent(Spell* spell);
+        void OnScaleAuraUnitAdd(Spell* spell, Unit* target, uint32 effectMask, bool checkIfValid, bool implicit, uint8 auraScaleMask, TargetInfo& targetInfo);
+        void OnRemoveAuraScaleTargets(Spell* spell, TargetInfo& targetInfo, uint8 auraScaleMask, bool& needErase);
 
     public: /* GameEventScript */
 

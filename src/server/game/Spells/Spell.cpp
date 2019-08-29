@@ -842,20 +842,25 @@ void Spell::SelectSpellTargets()
         else if (m_auraScaleMask)
         {
             bool checkLvl = !m_UniqueTargetInfo.empty();
-            for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end();)
+            
+            for (std::list<TargetInfo>::iterator itr = m_UniqueTargetInfo.begin(); itr != m_UniqueTargetInfo.end(); ++itr)
             {
                 // remove targets which did not pass min level check
-                if (m_auraScaleMask && ihit->effectMask == m_auraScaleMask)
+                if (m_auraScaleMask && itr->effectMask == m_auraScaleMask)
                 {
+                    bool needErase = false;
+                    
                     // Do not check for selfcast
-                    if (!ihit->scaleAura /*[AZTH] && ihit->targetGUID != m_caster->GetGUID()*/  /*[AZTH]*/ && !sAzthUtils->isSpecialSpellForTw(m_spellInfo) /*[/AZTH]*/)
-                    {
-                         m_UniqueTargetInfo.erase(ihit++);
-                         continue;
+                    if (!itr->scaleAura && itr->targetGUID != m_caster->GetGUID())
+                        needErase = true;
+
+                    sScriptMgr->OnRemoveAuraScaleTargets(this, *itr, m_auraScaleMask, needErase);
+
+                    if (needErase)
+                        m_UniqueTargetInfo.erase(itr);
                     }
                 }
-                ++ihit;
-            }
+
             if (checkLvl && m_UniqueTargetInfo.empty())
             {
                 SendCastResult(SPELL_FAILED_LOWLEVEL);
@@ -2351,18 +2356,21 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     uint64 targetGUID = target->GetGUID();
 
     // Lookup target in already in list
-    for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+    for (auto itr : m_UniqueTargetInfo)
     {
-        if (targetGUID == ihit->targetGUID)             // Found in list
+        if (targetGUID == itr.targetGUID)             // Found in list
         {
-            ihit->effectMask |= effectMask;             // Immune effects removed from mask
-            ihit->scaleAura = false;
-            if (m_auraScaleMask && ihit->effectMask == m_auraScaleMask /*[AZTH] && m_caster != target*/)
+            itr.effectMask |= effectMask;             // Immune effects removed from mask
+            itr.scaleAura = false;
+            if (m_auraScaleMask && itr.effectMask == m_auraScaleMask && m_caster != target)
             {
                 SpellInfo const* auraSpell = m_spellInfo->GetFirstRankSpell();
                 if (uint32(target->getLevel() + 10) >= auraSpell->SpellLevel)
-                    ihit->scaleAura = true;
+                    itr.scaleAura = true;
             }
+
+            sScriptMgr->OnScaleAuraUnitAdd(this, target, effectMask, checkIfValid, implicit, m_auraScaleMask, itr);
+
             return;
         }
     }
@@ -2379,12 +2387,14 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     targetInfo.crit       = false;
     targetInfo.scaleAura  = false;
 
-    if (m_auraScaleMask && targetInfo.effectMask == m_auraScaleMask /*[AZTH] && m_caster != target*/)
+    if (m_auraScaleMask && targetInfo.effectMask == m_auraScaleMask)
     {
         SpellInfo const* auraSpell = m_spellInfo->GetFirstRankSpell();
         if (uint32(target->getLevel() + 10) >= auraSpell->SpellLevel)
             targetInfo.scaleAura = true;
     }
+
+    sScriptMgr->OnScaleAuraUnitAdd(this, target, effectMask, checkIfValid, implicit, m_auraScaleMask, targetInfo);
 
     // Calculate hit result
     if (m_originalCaster)

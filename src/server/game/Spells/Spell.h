@@ -91,6 +91,21 @@ struct SpellDestination
     Position _transportOffset;
 };
 
+// Targets store structures and data
+struct TargetInfo
+{
+    uint64 targetGUID;
+    uint64 timeDelay;
+    SpellMissInfo missCondition:8;
+    SpellMissInfo reflectResult:8;
+    uint8  effectMask:8;
+    bool   processed:1;
+    bool   alive:1;
+    bool   crit:1;
+    bool   scaleAura:1;
+    int32  damage;
+};
+
 class SpellCastTargets
 {
     public:
@@ -519,21 +534,7 @@ class Spell
 
         // xinef: moved to public
         void LoadScripts();
-
-        // Targets store structures and data
-        struct TargetInfo
-        {
-            uint64 targetGUID;
-            uint64 timeDelay;
-            SpellMissInfo missCondition:8;
-            SpellMissInfo reflectResult:8;
-            uint8  effectMask:8;
-            bool   processed:1;
-            bool   alive:1;
-            bool   crit:1;
-            bool   scaleAura:1;
-            int32  damage;
-        };
+        
         std::list<TargetInfo>* GetUniqueTargetInfo() { return &m_UniqueTargetInfo; }
     protected:
         bool HasGlobalCooldown() const;
