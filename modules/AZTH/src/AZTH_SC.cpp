@@ -1525,6 +1525,29 @@ public:
 
         return true;
     }
+
+    void OnScaleAuraUnitAdd(Spell* spell, Unit* target, uint32 /*effectMask*/, bool /*checkIfValid*/, bool /*implicit*/, uint8 auraScaleMask, TargetInfo& targetInfo) override
+    {
+        if (!spell || !target)
+            return;
+        
+        if (!targetInfo.scaleAura && auraScaleMask && targetInfo.effectMask == auraScaleMask)
+        {
+            SpellInfo const* auraSpell = spell->GetSpellInfo()->GetFirstRankSpell();
+            if (uint32(target->getLevel() + 10) >= auraSpell->SpellLevel)
+                targetInfo.scaleAura = true;
+        }
+    }
+
+    void OnRemoveAuraScaleTargets(Spell* spell, TargetInfo& targetInfo, uint8 auraScaleMask, bool& needErase) override
+    {
+        if (!spell)
+            return;
+
+        // TW: Do not check for selfcast
+        if (needErase && !targetInfo.scaleAura && sAzthUtils->isSpecialSpellForTw(spell->m_spellInfo))
+            needErase = false;
+    }
 };
 
 class CommandAZTH_SC : public CommandScript

@@ -53,10 +53,6 @@
 #include "ElunaUtility.h"
 #endif
 
-//[AZTH]
-#include "AzthUtils.h"
-#include "AZTH.h"
-
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
 SpellDestination::SpellDestination()
@@ -841,7 +837,7 @@ void Spell::SelectSpellTargets()
         }
         else if (m_auraScaleMask)
         {
-            bool checkLvl = !m_UniqueTargetInfo.empty();
+            bool checkLvl = !m_UniqueTargetInfo.empty();            
             
             for (std::list<TargetInfo>::iterator itr = m_UniqueTargetInfo.begin(); itr != m_UniqueTargetInfo.end(); ++itr)
             {
@@ -858,8 +854,8 @@ void Spell::SelectSpellTargets()
 
                     if (needErase)
                         m_UniqueTargetInfo.erase(itr);
-                    }
                 }
+            }
 
             if (checkLvl && m_UniqueTargetInfo.empty())
             {
