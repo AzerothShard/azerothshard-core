@@ -1027,6 +1027,16 @@ public:
         sAZTH->DeleteAZTHGroup(origin);
     }
 
+    void OnConstructInstanceSave(InstanceSave* origin) override
+    {
+        sAZTH->AddAZTHInstanceSave(origin);
+    }
+
+    void OnDestructInstanceSave(InstanceSave* origin) override
+    {
+        sAZTH->DeleteAZTHInstanceSave(origin);
+    }
+
     // For WoW Armory
     void OnItemCreate(Item* item, ItemTemplate const* itemProto, Player const* owner) override
     {
