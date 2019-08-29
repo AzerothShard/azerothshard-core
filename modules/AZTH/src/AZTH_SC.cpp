@@ -1132,6 +1132,21 @@ public:
 
         return true;        
     }
+
+    void OnPlayerSetPhase(AuraEffect* auraEff, AuraApplication const* aurApp, uint8 /*mode*/, bool /*apply*/, uint32& newPhase) override
+    {
+        if (!auraEff)
+            return;
+
+        Player* player = aurApp->GetTarget()->ToPlayer();
+        if (!player)
+            return;
+
+        uint32 auraPhase = aurApp->GetTarget()->GetPhaseByAuras();
+
+        if (newPhase == PHASEMASK_ANYWHERE && !player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER))
+            newPhase = newPhase == PHASEMASK_NORMAL ? PHASEMASK_NORMAL : auraPhase;
+    }
 };
 
 class Unit_SC : public UnitScript
