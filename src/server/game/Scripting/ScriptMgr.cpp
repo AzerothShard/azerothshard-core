@@ -2904,6 +2904,11 @@ void ScriptMgr::OnInstanceSave(InstanceSave* instanceSave)
     FOREACH_SCRIPT(MiscScript)->OnInstanceSave(instanceSave);
 }
 
+void ScriptMgr::OnPlayerSetPhase(AuraEffect* auraEff, AuraApplication const* aurApp, uint8 mode, bool apply, uint32& newPhase)
+{
+    FOREACH_SCRIPT(MiscScript)->OnPlayerSetPhase(auraEff, aurApp, mode, apply, newPhase);
+}
+
 // PetScript
 void ScriptMgr::OnInitStatsForLevel(Guardian* guardian, uint8 petlevel)
 {

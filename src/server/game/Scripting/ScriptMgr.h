@@ -1415,6 +1415,8 @@ public:
 
     virtual void OnAfterLootTemplateProcess(Loot* /*loot*/, LootTemplate const* /*tab*/, LootStore const& /*store*/, Player* /*lootOwner*/, bool /*personal*/, bool /*noEmptyError*/, uint16 /*lootMode*/) { }
 
+    virtual void OnPlayerSetPhase(AuraEffect* /*auraEff*/, AuraApplication const* /*aurApp*/, uint8 /*mode*/, bool /*apply*/, uint32& /*newPhase*/) { }
+
     virtual void OnInstanceSave(InstanceSave* /*instanceSave*/) { }
 };
 
@@ -1884,6 +1886,7 @@ class ScriptMgr
         bool CanItemApplyEquipSpell(Player* player, Item* item);
         bool CanSendAuctionHello(WorldSession const* session, uint64 guid, Creature* creature);
         void ValidateSpellAtCastSpell(Player* player, uint32& oldSpellId, uint32& spellId, uint8& castCount, uint8& castFlags);
+        void OnPlayerSetPhase(AuraEffect* auraEff, AuraApplication const* aurApp, uint8 mode, bool apply, uint32& newPhase);nt32& oldSpellId, uint32& spellId, uint8& castCount, uint8& castFlags);
         void ValidateSpellAtCastSpellResult(Player* player, Unit* mover, Spell* spell, uint32 oldSpellId, uint32 spellId);
         void OnAfterLootTemplateProcess(Loot* loot, LootTemplate const* tab, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode);
         void OnInstanceSave(InstanceSave* instanceSave);

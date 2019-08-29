@@ -1723,8 +1723,10 @@ void AuraEffect::HandlePhase(AuraApplication const* aurApp, uint8 mode, bool app
             newPhase = PHASEMASK_NORMAL;
 
         // do not change phase to GM with all phases enabled
-        if (/*player->IsGameMaster() [AZTH] &&*/ player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER) /*[/AZTH]*/)
+        if (player->IsGameMaster())
             newPhase = PHASEMASK_ANYWHERE;
+
+        sScriptMgr->OnPlayerSetPhase(this, aurApp, mode, apply, newPhase);      
 
         player->SetPhaseMask(newPhase, false);
         player->GetSession()->SendSetPhaseShift(newPhase);
