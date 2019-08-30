@@ -1551,16 +1551,16 @@ public:
 
     void OnBeforeAuraRankForLevel(SpellInfo const* spellInfo, SpellInfo const* nextSpellInfo, uint8 level) override
     {
-        SpellInfo const* latestSpellInfo = nextSpellInfo; // we can use after
+        SpellInfo const* latestSpellInfo = spellInfo; // we can use after
         for (SpellInfo const* latestSpellInfo = spellInfo; latestSpellInfo != nullptr; latestSpellInfo = latestSpellInfo->GetPrevRankSpell())
         {
             // Timewalking
-            if (!nextSpellInfo->SpellLevel && uint32(level) >= nextSpellInfo->BaseLevel)
+            if (!latestSpellInfo->SpellLevel && uint32(level) >= latestSpellInfo->BaseLevel)
             {
                 nextSpellInfo = latestSpellInfo;
                 return;
             }
-            else if (uint32(level) >= nextSpellInfo->SpellLevel) 
+            else if (uint32(level) >= latestSpellInfo->SpellLevel) 
             { 
                 // if found appropriate level
                 nextSpellInfo = latestSpellInfo;
