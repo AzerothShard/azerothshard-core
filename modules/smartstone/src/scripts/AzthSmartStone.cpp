@@ -252,6 +252,8 @@ public:
                 }
                 else
                     player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_BACK, player), GOSSIP_SENDER_MAIN, teleport.id);
+            } else {
+                player->ADD_GOSSIP_ITEM(teleport.icon, sAzthLang->get(AZTH_LANG_SS_TELEPORT_DISABLED, player), GOSSIP_SENDER_MAIN, 0);
             }
 
             if (!sAZTH->GetAZTHPlayer(player)->isPvP())

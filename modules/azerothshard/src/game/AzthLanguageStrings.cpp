@@ -91,6 +91,7 @@ void AzthLang::loadStrings() {
     //ss
     this->add(AZTH_LANG_SS_README, "THINGS TO KNOW!", "COSE DA SAPERE!");
     this->add(AZTH_LANG_SS_TELEPORT_BACK, "Teleport me back", "Riportami indietro");
+    this->add(AZTH_LANG_SS_TELEPORT_DISABLED, "Teleport has been currently disabled", "Il teleport è attualmente disabilitato");
     this->add(AZTH_LANG_SS_BACK, "Back", "Indietro");
     this->add(AZTH_LANG_SS_VALUE, "Insert a value" , "Inserisci un valore");
     this->add(AZTH_LANG_SS_POSSES_CHECK, "|CFF7BBEF7[SmartStone]|r: You already have a smartstone!", "|CFF7BBEF7[SmartStone]|r: Hai già una smartstone!");
