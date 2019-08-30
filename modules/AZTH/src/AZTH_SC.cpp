@@ -1548,6 +1548,34 @@ public:
         if (needErase && !targetInfo.scaleAura && sAzthUtils->isSpecialSpellForTw(spell->m_spellInfo))
             needErase = false;
     }
+
+    void OnBeforeAuraRankForLevel(SpellInfo const* spellInfo, SpellInfo const* nextSpellInfo, uint8 level) override
+    {
+        SpellInfo const* latestSpellInfo = nextSpellInfo; // we can use after
+        for (SpellInfo const* latestSpellInfo = spellInfo; latestSpellInfo != nullptr; latestSpellInfo = latestSpellInfo->GetPrevRankSpell())
+        {
+            // Timewalking
+            if (!nextSpellInfo->SpellLevel && uint32(level) >= nextSpellInfo->BaseLevel)
+            {
+                nextSpellInfo = latestSpellInfo;
+                return;
+            }
+            else if (uint32(level) >= nextSpellInfo->SpellLevel) 
+            { 
+                // if found appropriate level
+                nextSpellInfo = latestSpellInfo;
+                return;
+            }
+        }
+        
+        // if any low level found, we could pass the first
+        // one that is in a 10 level higher range as official code did
+        if (uint32(level + 10) >= latestSpellInfo->SpellLevel) 
+        {
+            nextSpellInfo = latestSpellInfo;
+            return;
+        }
+    }
 };
 
 class CommandAZTH_SC : public CommandScript
