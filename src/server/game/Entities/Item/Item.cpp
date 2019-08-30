@@ -415,6 +415,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
 
     uint32 duration = fields[3].GetUInt32();
     SetUInt32Value(ITEM_FIELD_DURATION, duration);
+
     // update duration if need, and remove if not need
     if ((proto->Duration == 0) != (duration == 0))
     {
@@ -428,8 +429,9 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
             SetSpellCharges(i, atoi(tokens[i]));
 
     SetUInt32Value(ITEM_FIELD_FLAGS, fields[5].GetUInt32());
+
     // Remove bind flag for items vs NO_BIND set
-    if (IsSoulBound() && proto->Bonding == NO_BIND /*[AZTH] force soulbound using an unknown flag as workaround */ && !HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1) /*[/AZTH]*/)
+    if (IsSoulBound() && proto->Bonding == NO_BIND && sScriptMgr->CanApplySoulboundFlag(this, proto))
     {
         ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, false);
         need_save = true;

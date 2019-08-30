@@ -14,6 +14,7 @@
 #include "Player.h"
 #include "Battleground.h"
 #include "Chat.h"
+#include "ScriptMgr.h"
 
 uint32 GetTargetFlagMask(SpellTargetObjectTypes objType)
 {
@@ -2478,27 +2479,21 @@ SpellInfo const* SpellInfo::GetAuraRankForLevel(uint8 level) const
     if (!needRankSelection)
         return this;
 
-    SpellInfo const* latestSpellInfo; //[AZTH] we can use after
-    for (SpellInfo const* nextSpellInfo = this; nextSpellInfo != NULL; nextSpellInfo = nextSpellInfo->GetPrevRankSpell())
-    {
-        // [AZTH] timewalking
-        if (nextSpellInfo->SpellLevel == 0)
-            if (uint32(level) >= nextSpellInfo->BaseLevel)
-                return nextSpellInfo;
-        else if (uint32(level /*[AZTH]+ 10*/) >= nextSpellInfo->SpellLevel) // if found appropriate level
-            return nextSpellInfo;
+    SpellInfo const* nextSpellInfo = nullptr;
 
-        latestSpellInfo = nextSpellInfo;
-        // one rank less then
+    sScriptMgr->OnBeforeAuraRankForLevel(this, nextSpellInfo, level);
+    
+    if (nextSpellInfo != nullptr)
+        return nextSpellInfo;
+
+    for (nextSpellInfo = this; nextSpellInfo != nullptr; nextSpellInfo = nextSpellInfo->GetPrevRankSpell())
+    {
+        // if found appropriate level
+        if (uint32(level + 10) >= nextSpellInfo->SpellLevel)
+            return nextSpellInfo; // one rank less then
     }
     
-    //[AZTH] if any low level found, we could pass the first
-    // one that is in a 10 level higher range as official code did
-    if (uint32(level + 10) >= latestSpellInfo->SpellLevel)
-        return latestSpellInfo;
-
-    // not found
-    return NULL;
+    return nullptr; // not found
 }
 
 bool SpellInfo::IsRankOf(SpellInfo const* spellInfo) const

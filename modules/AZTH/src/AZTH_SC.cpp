@@ -1120,6 +1120,33 @@ public:
     {
         sAZTH->GetAZTHInstanceSave(instanceSave)->saveToDb();
     }
+
+    bool CanApplySoulboundFlag(Item* item, ItemTemplate const* /*proto*/) override
+    {
+        if (!item)
+            return false;
+
+        // [AZTH] force soulbound using an unknown flag as workaround
+        if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1))
+            return false;
+
+        return true;        
+    }
+
+    void OnPlayerSetPhase(const AuraEffect* auraEff, AuraApplication const* aurApp, uint8 /*mode*/, bool /*apply*/, uint32& newPhase) override
+    {
+        if (!auraEff)
+            return;
+
+        Player* player = aurApp->GetTarget()->ToPlayer();
+        if (!player)
+            return;
+
+        uint32 auraPhase = aurApp->GetTarget()->GetPhaseByAuras();
+
+        if (newPhase == PHASEMASK_ANYWHERE && !player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER))
+            newPhase = newPhase == PHASEMASK_NORMAL ? PHASEMASK_NORMAL : auraPhase;
+    }
 };
 
 class Unit_SC : public UnitScript
@@ -1497,6 +1524,57 @@ public:
         }
 
         return true;
+    }
+
+    void OnScaleAuraUnitAdd(Spell* spell, Unit* target, uint32 /*effectMask*/, bool /*checkIfValid*/, bool /*implicit*/, uint8 auraScaleMask, TargetInfo& targetInfo) override
+    {
+        if (!spell || !target)
+            return;
+        
+        if (!targetInfo.scaleAura && auraScaleMask && targetInfo.effectMask == auraScaleMask)
+        {
+            SpellInfo const* auraSpell = spell->GetSpellInfo()->GetFirstRankSpell();
+            if (uint32(target->getLevel() + 10) >= auraSpell->SpellLevel)
+                targetInfo.scaleAura = true;
+        }
+    }
+
+    void OnRemoveAuraScaleTargets(Spell* spell, TargetInfo& targetInfo, uint8 auraScaleMask, bool& needErase) override
+    {
+        if (!spell)
+            return;
+
+        // TW: Do not check for selfcast
+        if (needErase && !targetInfo.scaleAura && sAzthUtils->isSpecialSpellForTw(spell->m_spellInfo))
+            needErase = false;
+    }
+
+    void OnBeforeAuraRankForLevel(SpellInfo const* spellInfo, SpellInfo const* nextSpellInfo, uint8 level) override
+    {
+        SpellInfo const* latestSpellInfo = nextSpellInfo; // we can use after
+        for (SpellInfo const* latestSpellInfo = spellInfo; latestSpellInfo != nullptr; latestSpellInfo = latestSpellInfo->GetPrevRankSpell())
+        {
+            // Timewalking
+            if (!nextSpellInfo->SpellLevel && uint32(level) >= nextSpellInfo->BaseLevel)
+            {
+                nextSpellInfo = latestSpellInfo;
+                return;
+            }
+            else if (uint32(level) >= nextSpellInfo->SpellLevel) 
+            { 
+                // if found appropriate level
+                nextSpellInfo = latestSpellInfo;
+                return;
+            }
+        }
+        
+        // if any low level found, we could pass the first
+        // one that is in a 10 level higher range as official code did
+        if (uint32(level + 10) >= latestSpellInfo->SpellLevel) 
+        {
+            nextSpellInfo = latestSpellInfo;
+            return;
+        }
     }
 };
 

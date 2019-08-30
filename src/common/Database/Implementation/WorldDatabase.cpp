@@ -82,6 +82,7 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_UPD_GAMEOBJECT_ZONE_AREA_DATA, "UPDATE gameobject SET zoneId = ?, areaId = ? WHERE guid = ?", CONNECTION_ASYNC);
     // 0: uint8
     PrepareStatement(WORLD_SEL_REQ_XP, "SELECT Experience FROM player_xp_for_level WHERE Level = ?", CONNECTION_SYNCH);
+
     // [AZTH]
     PrepareStatement(WORLD_SEL_QUESTCOMPLETER, "SELECT bugged FROM quest_bugged WHERE ID = ?", CONNECTION_SYNCH);
     // [/AZTH]

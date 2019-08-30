@@ -66,6 +66,7 @@ struct Condition;
 struct ItemTemplate;
 struct OutdoorPvPData;
 struct GroupQueueInfo;
+struct TargetInfo;
 
 #define VISIBLE_RANGE       166.0f                          //MAX visible range (size of grid)
 
@@ -1291,6 +1292,12 @@ public:
     virtual bool CanScalingEverything(Spell* /*spell*/) { return false; }
 
     virtual bool CanSelectSpecTalent(Spell* /*spell*/) { return true; }
+
+    virtual void OnScaleAuraUnitAdd(Spell* /*spell*/, Unit* /*target*/, uint32 /*effectMask*/, bool /*checkIfValid*/, bool /*implicit*/, uint8 /*auraScaleMask*/, TargetInfo& /*targetInfo*/) { }
+
+    virtual void OnRemoveAuraScaleTargets(Spell* /*spell*/, TargetInfo& /*targetInfo*/, uint8 /*auraScaleMask*/, bool& /*needErase*/) { }
+
+    virtual void OnBeforeAuraRankForLevel(SpellInfo const* /*spellInfo*/, SpellInfo const* /*latestSpellInfo*/, uint8 /*level*/) { }
 };
 
 // this class can be used to be extended by Modules
@@ -1403,6 +1410,8 @@ public:
     
     virtual void OnItemCreate(Item* /*item*/, ItemTemplate const* /*itemProto*/, Player const* /*owner*/) { }
 
+    virtual bool CanApplySoulboundFlag(Item* /*item*/, ItemTemplate const* /*proto*/) { return true; }
+
     virtual bool CanItemApplyEquipSpell(Player* /*player*/, Item* /*item*/) { return true; }    
 
     virtual bool CanSendAuctionHello(WorldSession const* /*session*/, uint64 /*guid*/, Creature* /*creature*/) { return true; }
@@ -1412,6 +1421,8 @@ public:
     virtual void ValidateSpellAtCastSpellResult(Player* /*player*/, Unit* /*mover*/, Spell* /*spell*/, uint32 /*oldSpellId*/, uint32 /*spellId*/) { }
 
     virtual void OnAfterLootTemplateProcess(Loot* /*loot*/, LootTemplate const* /*tab*/, LootStore const& /*store*/, Player* /*lootOwner*/, bool /*personal*/, bool /*noEmptyError*/, uint16 /*lootMode*/) { }
+
+    virtual void OnPlayerSetPhase(const AuraEffect* /*auraEff*/, AuraApplication const* /*aurApp*/, uint8 /*mode*/, bool /*apply*/, uint32& /*newPhase*/) { }
 
     virtual void OnInstanceSave(InstanceSave* /*instanceSave*/) { }
 };
@@ -1839,6 +1850,9 @@ class ScriptMgr
         bool CanPrepare(Spell* spell, SpellCastTargets const* targets, AuraEffect const* triggeredByAura);
         bool CanScalingEverything(Spell* spell);
         bool CanSelectSpecTalent(Spell* spell);
+        void OnScaleAuraUnitAdd(Spell* spell, Unit* target, uint32 effectMask, bool checkIfValid, bool implicit, uint8 auraScaleMask, TargetInfo& targetInfo);
+        void OnRemoveAuraScaleTargets(Spell* spell, TargetInfo& targetInfo, uint8 auraScaleMask, bool& needErase);
+        void OnBeforeAuraRankForLevel(SpellInfo const* spellInfo, SpellInfo const* latestSpellInfo, uint8 level);
 
     public: /* GameEventScript */
 
@@ -1878,9 +1892,11 @@ class ScriptMgr
         void OnConstructInstanceSave(InstanceSave* origin);
         void OnDestructInstanceSave(InstanceSave* origin);
         void OnItemCreate(Item* item, ItemTemplate const* itemProto, Player const* owner);
+        bool CanApplySoulboundFlag(Item* item, ItemTemplate const* proto);
         bool CanItemApplyEquipSpell(Player* player, Item* item);
         bool CanSendAuctionHello(WorldSession const* session, uint64 guid, Creature* creature);
         void ValidateSpellAtCastSpell(Player* player, uint32& oldSpellId, uint32& spellId, uint8& castCount, uint8& castFlags);
+        void OnPlayerSetPhase(const AuraEffect* auraEff, AuraApplication const* aurApp, uint8 mode, bool apply, uint32& newPhase);
         void ValidateSpellAtCastSpellResult(Player* player, Unit* mover, Spell* spell, uint32 oldSpellId, uint32 spellId);
         void OnAfterLootTemplateProcess(Loot* loot, LootTemplate const* tab, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode);
         void OnInstanceSave(InstanceSave* instanceSave);

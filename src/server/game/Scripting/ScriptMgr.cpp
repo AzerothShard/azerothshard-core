@@ -2744,6 +2744,21 @@ bool ScriptMgr::CanSelectSpecTalent(Spell* spell)
     return ret;
 }
 
+void ScriptMgr::OnScaleAuraUnitAdd(Spell* spell, Unit* target, uint32 effectMask, bool checkIfValid, bool implicit, uint8 auraScaleMask, TargetInfo& targetInfo)
+{
+    FOREACH_SCRIPT(SpellSC)->OnScaleAuraUnitAdd(spell, target, effectMask, checkIfValid, implicit, auraScaleMask, targetInfo);
+}
+
+void ScriptMgr::OnRemoveAuraScaleTargets(Spell* spell, TargetInfo& targetInfo, uint8 auraScaleMask, bool& needErase)
+{
+    FOREACH_SCRIPT(SpellSC)->OnRemoveAuraScaleTargets(spell, targetInfo, auraScaleMask, needErase);
+}
+
+void ScriptMgr::OnBeforeAuraRankForLevel(SpellInfo const* spellInfo, SpellInfo const* latestSpellInfo, uint8 level)
+{
+    FOREACH_SCRIPT(SpellSC)->OnBeforeAuraRankForLevel(spellInfo, latestSpellInfo, level);
+}
+
 // GameEventScript
 void ScriptMgr::OnGameEventStart(uint16 EventID)
 {
@@ -2809,6 +2824,17 @@ bool ScriptMgr::CanCheckCriteria(AchievementMgr* mgr, AchievementCriteriaEntry c
 void ScriptMgr::OnItemCreate(Item* item, ItemTemplate const* itemProto, Player const* owner)
 {
     FOREACH_SCRIPT(MiscScript)->OnItemCreate(item, itemProto, owner);
+}
+
+bool ScriptMgr::CanApplySoulboundFlag(Item* item, ItemTemplate const* proto)
+{
+    bool ret = true;
+
+    FOR_SCRIPTS_RET(MiscScript, itr, end, ret) // return true by default if not scripts
+        if (!itr->second->CanApplySoulboundFlag(item, proto))
+            ret = false; // we change ret value only when scripts return false
+
+    return ret;
 }
 
 void ScriptMgr::OnConstructObject(Object* origin)
@@ -2891,6 +2917,11 @@ void ScriptMgr::OnAfterLootTemplateProcess(Loot* loot, LootTemplate const* tab, 
 void ScriptMgr::OnInstanceSave(InstanceSave* instanceSave)
 {
     FOREACH_SCRIPT(MiscScript)->OnInstanceSave(instanceSave);
+}
+
+void ScriptMgr::OnPlayerSetPhase(const AuraEffect* auraEff, AuraApplication const* aurApp, uint8 mode, bool apply, uint32& newPhase)
+{
+    FOREACH_SCRIPT(MiscScript)->OnPlayerSetPhase(auraEff, aurApp, mode, apply, newPhase);
 }
 
 // PetScript
