@@ -1,4 +1,3 @@
-
 /*
  *  Copyright (С) since 2019 Andrei Guluaev (Winfidonarleyan/Kargatum) https://github.com/Winfidonarleyan
  */
@@ -1144,8 +1143,8 @@ public:
 
         uint32 auraPhase = aurApp->GetTarget()->GetPhaseByAuras();
 
-        if (newPhase == PHASEMASK_ANYWHERE && !player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER))
-            newPhase = newPhase == PHASEMASK_NORMAL ? PHASEMASK_NORMAL : auraPhase;
+        if (player->IsGameMaster() && newPhase == PHASEMASK_ANYWHERE && !player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER))
+            newPhase = !auraPhase ? PHASEMASK_NORMAL : auraPhase;
     }
 };
 
