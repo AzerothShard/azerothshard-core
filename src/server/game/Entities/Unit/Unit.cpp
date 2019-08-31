@@ -19492,9 +19492,8 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                     else
                         fieldBuffer << (uint32)target->getFaction();
                 }
-                else
-                    if (!sScriptMgr->IsCustomBuildValuesUpdate(this, updateType, fieldBuffer, target, index))
-                        fieldBuffer << m_uint32Values[index];
+                else if (sScriptMgr->CanCustomBuildValuesUpdate(this, updateType, fieldBuffer, target, index))
+                    fieldBuffer << m_uint32Values[index];
             }
             else
                 // send in current format (float as float, uint32 as uint32)
