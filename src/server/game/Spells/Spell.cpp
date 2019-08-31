@@ -2352,20 +2352,20 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     uint64 targetGUID = target->GetGUID();
 
     // Lookup target in already in list
-    for (auto itr : m_UniqueTargetInfo)
+    for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
     {
-        if (targetGUID == itr.targetGUID)             // Found in list
+        if (targetGUID == ihit->targetGUID)             // Found in list
         {
-            itr.effectMask |= effectMask;             // Immune effects removed from mask
-            itr.scaleAura = false;
-            if (m_auraScaleMask && itr.effectMask == m_auraScaleMask && m_caster != target)
+            ihit->effectMask |= effectMask;             // Immune effects removed from mask
+            ihit->scaleAura = false;
+            if (m_auraScaleMask && ihit->effectMask == m_auraScaleMask && m_caster != target)
             {
                 SpellInfo const* auraSpell = m_spellInfo->GetFirstRankSpell();
                 if (uint32(target->getLevel() + 10) >= auraSpell->SpellLevel)
-                    itr.scaleAura = true;
+                    ihit->scaleAura = true;
             }
 
-            sScriptMgr->OnScaleAuraUnitAdd(this, target, effectMask, checkIfValid, implicit, m_auraScaleMask, itr);
+            sScriptMgr->OnScaleAuraUnitAdd(this, target, effectMask, checkIfValid, implicit, m_auraScaleMask, *ihit);
 
             return;
         }
