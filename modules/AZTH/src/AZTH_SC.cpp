@@ -1277,11 +1277,14 @@ public:
                     fieldBuffer << (unit->GetUInt32Value(UNIT_FIELD_BYTES_2) & ((UNIT_BYTE2_FLAG_SANCTUARY) << 8)); // this flag is at uint8 offset 1 !!
                 else // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
                     fieldBuffer << uint32(target->getFaction());
+
+                return true;
             }
-            else if (repRank <= REP_HOSTILE && ft1 && ft2 && ft1->IsFriendlyTo(*ft2))
+            else if (repRank <= REP_HOSTILE && ft1 && ft2 && ft1->IsFriendlyTo(*ft2)) {
                 fieldBuffer << (unit->GetUInt32Value(UNIT_FIELD_BYTES_2) | unit->GetUInt32Value(UNIT_BYTE2_FLAG_FFA_PVP << 8));
-                
-            return true;
+
+                return true;
+            }
         }
 
         return false;
