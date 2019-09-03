@@ -2570,13 +2570,13 @@ bool ScriptMgr::CanSetPhaseMask(Unit const* unit, uint32 newPhaseMask, bool upda
     return ret;
 }
 
-bool ScriptMgr::CanCustomBuildValuesUpdate(Unit const* unit, uint8 updateType, ByteBuffer& fieldBuffer, Player const* target, uint16 index)
+bool ScriptMgr::IsCustomBuildValuesUpdate(Unit const* unit, uint8 updateType, ByteBuffer& fieldBuffer, Player const* target, uint16 index)
 {
-    bool ret = true;
+    bool ret = false;
 
     FOR_SCRIPTS_RET(UnitScript, itr, end, ret) // return true by default if not scripts
-        if (!itr->second->CanCustomBuildValuesUpdate(unit, updateType, fieldBuffer, target, index))
-            ret = false; // we change ret value only when scripts return true
+        if (itr->second->IsCustomBuildValuesUpdate(unit, updateType, fieldBuffer, target, index))
+            ret = true; // we change ret value only when scripts return true
 
     return ret;
 }
