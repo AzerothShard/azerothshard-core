@@ -1261,7 +1261,7 @@ public:
         return true;
     }
 
-    bool CanCustomBuildValuesUpdate(Unit const* unit, uint8 /*updateType*/, ByteBuffer& fieldBuffer, Player const* target, uint16 index) override
+    bool IsCustomBuildValuesUpdate(Unit const* unit, uint8 /*updateType*/, ByteBuffer& fieldBuffer, Player const* target, uint16 index) override
     {
         int repRank = sAzthUtils->getReaction(unit, target);
 
@@ -1280,13 +1280,11 @@ public:
             }
             else if (repRank <= REP_HOSTILE && ft1 && ft2 && ft1->IsFriendlyTo(*ft2))
                 fieldBuffer << (unit->GetUInt32Value(UNIT_FIELD_BYTES_2) | unit->GetUInt32Value(UNIT_BYTE2_FLAG_FFA_PVP << 8));
-            else
-                fieldBuffer << unit->GetUInt32Value(index);
                 
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 };
 
