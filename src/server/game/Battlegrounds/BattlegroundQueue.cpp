@@ -616,9 +616,10 @@ bool BattlegroundQueue::CheckNormalMatch(Battleground * bgTemplate, Battleground
         if (sBattlegroundMgr->isTesting() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_RANDOM_DEBUG_ENABLE) && bgTemplate->isBattleground() && (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() || m_SelectionPools[TEAM_HORDE].GetPlayerCount()))
             return true;
 
-        return m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= std::min<uint32>(specificTemplate->GetMinPlayersPerTeam() * Coef, 15) && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= std::min<uint32>(specificTemplate->GetMinPlayersPerTeam() * Coef, 15);
-    }    
-    else // if this is not random bg queue - use players only from this queue
+        return (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() + m_SelectionPools[TEAM_HORDE].GetPlayerCount()) >= 2 * (std::min<uint32>(specificTemplate->GetMinPlayersPerTeam(), 15));
+    }
+    // if this is not random bg queue - use players only from this queue
+    else
     {
         FillPlayersToBG(bgTemplate, maxPlayers, maxPlayers, bracket_id);
 
@@ -626,20 +627,19 @@ bool BattlegroundQueue::CheckNormalMatch(Battleground * bgTemplate, Battleground
         if (sBattlegroundMgr->isTesting() && bgTemplate->isBattleground() && (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() || m_SelectionPools[TEAM_HORDE].GetPlayerCount()))
             return true;
 
-        // Mik1893: Battleground Balance System 2.0
         switch (sWorld->getIntConfig(CONFIG_BATTLEGROUND_INVITATION_TYPE))
         {
-            case BG_QUEUE_INVITATION_TYPE_NO_BALANCE: // in this case, as soon as both teams have > mincount, start
-                return m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
-            
-            case BG_QUEUE_INVITATION_TYPE_BALANCED: // check difference between selection pools - if = 1 or less start.
-                return abs( int(m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount()) - int(m_SelectionPools[TEAM_HORDE].GetPlayerCount())) <= 1 && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
-            
-            case BG_QUEUE_INVITATION_TYPE_EVEN: // if both counts are same then it's an even match
-                return (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() == m_SelectionPools[TEAM_HORDE].GetPlayerCount()) && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
-            
-            default: // same as unbalanced (in case wrong setting is entered...)
-                return m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
+        case BG_QUEUE_INVITATION_TYPE_NO_BALANCE: // in this case, as soon as both teams have > mincount, start
+            return m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
+
+        case BG_QUEUE_INVITATION_TYPE_BALANCED: // check difference between selection pools - if = 1 or less start.
+            return abs(static_cast<int32>(m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount()) - static_cast<int32>(m_SelectionPools[TEAM_HORDE].GetPlayerCount())) <= 1 && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
+
+        case BG_QUEUE_INVITATION_TYPE_EVEN: // if both counts are same then it's an even match
+            return (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() == m_SelectionPools[TEAM_HORDE].GetPlayerCount()) && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
+
+        default: // same as unbalanced (in case wrong setting is entered...)
+            return m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
         }
     }
 }
