@@ -1280,10 +1280,10 @@ public:
 
                 return true;
             }
-            else if (repRank <= REP_HOSTILE && ft1 && ft2 && ft1->IsFriendlyTo(*ft2)) {
+            else if (repRank <= REP_HOSTILE && ft1 && ft2 && ft1->IsFriendlyTo(*ft2))
+            {
                 // this needs that the realm has the PvP switch (rp pvp realm type for example) to work
                 fieldBuffer << (unit->GetUInt32Value(UNIT_FIELD_BYTES_2) | (UNIT_BYTE2_FLAG_FFA_PVP << 8));
-
                 return true;
             }
         }
