@@ -824,7 +824,7 @@ public:
 
     bool CanSellItem(Player* player, Item* item, Creature* creature) override
     {
-        if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1))
+        if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_UNK1))
         {
             player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, item->GetGUID(), 0);
             return false;
@@ -1126,7 +1126,7 @@ public:
             return false;
 
         // [AZTH] force soulbound using an unknown flag as workaround
-        if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1))
+        if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_UNK1))
             return false;
 
         return true;        

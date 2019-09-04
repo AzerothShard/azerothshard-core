@@ -5,7 +5,7 @@
 #include "Define.h"
 #include "Config.h"
 #include "Item.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "Group.h"

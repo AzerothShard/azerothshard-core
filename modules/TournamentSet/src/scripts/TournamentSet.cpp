@@ -247,7 +247,7 @@ public:
 
         //soulbound with our special flag
         item->SetBinding(true);
-        item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1, true);
+        item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_UNK1, true);
 
         setEnchantAndSocket(player, item, originalEntry, spec);
     }

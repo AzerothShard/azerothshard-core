@@ -1,7 +1,7 @@
 #include "Common.h"
 #include "Define.h"
 #include "Config.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "Player.h"
 
 class Season

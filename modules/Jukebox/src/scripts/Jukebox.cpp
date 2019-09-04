@@ -1,7 +1,7 @@
 #include "ScriptMgr.h"
 #include "Player.h"
 #include "Item.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "Common.h"
 #include "music.h"
 #include "ScriptedCreature.h"

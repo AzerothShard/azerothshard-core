@@ -498,10 +498,6 @@ void Vehicle::RelocatePassengers()
 {
     ASSERT(_me->GetMap());
     
-    // [AZTH]
-    std::vector<std::pair<Unit*, Position>> seatRelocation;
-    seatRelocation.reserve(Seats.size());
-
     std::vector<std::pair<Unit*, Position>> seatRelocation;
     seatRelocation.reserve(Seats.size());
 

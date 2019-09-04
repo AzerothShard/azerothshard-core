@@ -205,7 +205,7 @@ public:
          */
                 // all items stored in pvp account should be soulbound
                 item->SetBinding(true);
-                item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNK1, true);
+                item->ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_UNK1, true);
                 /* try to avoid for performances
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 item->SaveToDB(trans);

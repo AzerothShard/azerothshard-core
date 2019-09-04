@@ -10,7 +10,7 @@
 #include "GossipDef.h"
 #include "Item.h"
 #include "Group.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "Log.h"
 #include "ObjectMgr.h"
 #include "Opcodes.h"

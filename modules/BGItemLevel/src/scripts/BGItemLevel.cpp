@@ -1,7 +1,7 @@
 #include "ScriptMgr.h"
 #include "Player.h"
 #include "Item.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
 #include "QueryResult.h"
