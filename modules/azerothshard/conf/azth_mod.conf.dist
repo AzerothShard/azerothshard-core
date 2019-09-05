@@ -284,3 +284,51 @@ Azth.Smartstone.Teleport.Enable = 1
 #
 
 Azth.Multiplies.Drop.Enable = 1
+
+#
+#	Azth.NPC.Dimension.AccountSec.Min.Normal
+#		Description: Min account level for show gossip DIMENSION_NORMAL
+#		Default: 3
+#
+#	Azth.NPC.Dimension.AccountSec.Min.Guild
+#		Description: Min account level for show gossip DIMENSION_GUILD
+#		Default: 3
+#
+#	Azth.NPC.Dimension.AccountSec.Min.PvP
+#		Description: Min account level for show gossip DIMENSION_PVP
+#		Default: 3
+#
+#	Azth.NPC.Dimension.AccountSec.Min.Entertainment
+#		Description: Min account level for show gossip DIMENSION_ENTERTAINMENT
+#		Default: 3
+#
+#	Azth.NPC.Dimension.AccountSec.Min.RPG
+#		Description: Min account level for show gossip DIMENSION_RPG
+#		Default: 3
+#
+#	Azth.NPC.Dimension.AccountSec.Min.60
+#		Description: Min account level for show gossip DIMENSION_60
+#		Default: 3
+#
+#	Azth.NPC.Dimension.AccountSec.Min.70
+#		Description: Min account level for show gossip DIMENSION_70
+#		Default: 3
+#
+#	Azth.NPC.Dimension.AccountSec.Min.Test
+#		Description: Min account level for show gossip DIMENSION_TEST
+#		Default: 3
+#
+#	Azth.NPC.Dimension.AccountSec.Min.GM
+#		Description: Min account level for show gossip DIMENSION_GM
+#		Default: 3
+#
+
+Azth.NPC.Dimension.AccountSec.Min.Normal        = 3
+Azth.NPC.Dimension.AccountSec.Min.Guild         = 3
+Azth.NPC.Dimension.AccountSec.Min.PvP           = 3
+Azth.NPC.Dimension.AccountSec.Min.Entertainment = 3
+Azth.NPC.Dimension.AccountSec.Min.RPG           = 3
+Azth.NPC.Dimension.AccountSec.Min.60            = 3
+Azth.NPC.Dimension.AccountSec.Min.70            = 3
+Azth.NPC.Dimension.AccountSec.Min.Test          = 3
+Azth.NPC.Dimension.AccountSec.Min.GM            = 3

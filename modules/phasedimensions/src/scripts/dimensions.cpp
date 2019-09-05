@@ -9,50 +9,46 @@
 #include "AzthSharedDefines.h"
 #include "AZTH.h"
 #include "StringFormat.h"
+#include "AccountMgr.h"
 
 class PhaseDimensionsNPC : public CreatureScript
 {
 public:
     PhaseDimensionsNPC() : CreatureScript("PhaseDimensionsNPC") {}
 
+
     bool OnGossipHello(Player* player, Creature* creature) override
     {
-        if (!CanOpenGossip(player))
-        {
-            ChatHandler(player->GetSession()).SendSysMessage("You're not allowed");
-            return true;
-        }
-
         uint32 currDimension = sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByMark();
         std::string dimensionCurrent = ACORE::StringFormat("%s%s", sAzthLang->get(AZTH_LANG_DIMENSION_CURRENT, player), sAzthUtils->getDimensionName(currDimension).c_str());
 
         AddGossipItemFor(player, GOSSIP_ICON_CHAT, dimensionCurrent, GOSSIP_SENDER_MAIN, 0);
 
-        if (!sAZTH->GetAZTHPlayer(player)->isPvP() && currDimension != uint32(DIMENSION_NORMAL))
+        if (CanShowDimension(player, DIMENSION_NORMAL))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_ILLUSORY, player), GOSSIP_SENDER_MAIN, DIMENSION_NORMAL);
 
-        if (currDimension != uint32(DIMENSION_GUILD))
+        if (CanShowDimension(player, DIMENSION_GUILD))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_GUILD, player), GOSSIP_SENDER_MAIN, DIMENSION_GUILD);
 
-        if (currDimension != uint32(DIMENSION_PVP))
+        if (CanShowDimension(player, DIMENSION_PVP))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_PVP, player), GOSSIP_SENDER_MAIN, DIMENSION_PVP);
 
-        if (currDimension != uint32(DIMENSION_ENTERTAINMENT))
+        if (CanShowDimension(player, DIMENSION_ENTERTAINMENT))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_ENTERTAIN, player), GOSSIP_SENDER_MAIN, DIMENSION_ENTERTAINMENT);
 
-        if (currDimension != uint32(DIMENSION_RPG))
+        if (CanShowDimension(player, DIMENSION_RPG))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_GDR, player), GOSSIP_SENDER_MAIN, DIMENSION_RPG);
 
-        if (currDimension != uint32(DIMENSION_60))
+        if (CanShowDimension(player, DIMENSION_60))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_LVL60, player), GOSSIP_SENDER_MAIN, DIMENSION_60);
 
-        if (currDimension != uint32(DIMENSION_70))
+        if (CanShowDimension(player, DIMENSION_70))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_LVL70, player), GOSSIP_SENDER_MAIN, DIMENSION_70);
         
-        if (currDimension != uint32(DIMENSION_TEST))
+        if (CanShowDimension(player, DIMENSION_TEST))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_TEST, player), GOSSIP_SENDER_MAIN, DIMENSION_TEST);
         
-        if (currDimension != uint32(DIMENSION_GM) && player->GetSession()->GetSecurity() > SEC_PLAYER)
+        if (CanShowDimension(player, DIMENSION_GM))
             AddGossipItemFor(player, GOSSIP_ICON_TAXI, sAzthLang->get(AZTH_LANG_DIMENSION_GM, player), GOSSIP_SENDER_MAIN, DIMENSION_GM);
 
         SendGossipMenuFor(player, 1, creature);
@@ -73,12 +69,63 @@ public:
     }
 
 private:
-    bool CanOpenGossip(Player* player)
+    bool CanShowDimension(Player* player, PhaseDimensionsEnum dim)
     {
         uint32 accountLevel = player->GetSession()->GetSecurity();
-        uint32 minLevel = sConfigMgr->GetIntDefault("Azth.Dimension.NPC.AccountSec.Min", 4);
+        uint32 currDimension = sAZTH->GetAZTHPlayer(player)->getCurrentDimensionByMark();
+        bool sameDim = false;
+        bool accesLevel = false;
+        uint32 minLevel;
+
+        switch (dim)
+        {
+        case DIMENSION_NORMAL:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.Normal", 4);
+            break;
+        case DIMENSION_GUILD:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.Guild", 4);
+            break;
+        case DIMENSION_PVP:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.PvP", 4);
+            break;
+        case DIMENSION_ENTERTAINMENT:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.Entertainment", 4);
+            break;
+        case DIMENSION_RPG:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.RPG", 4);
+            break;
+        case DIMENSION_60:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.60", 4);
+            break;
+        case DIMENSION_70:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.70", 4);
+            break;
+        case DIMENSION_TEST:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.Test", 4);
+            break;
+        case DIMENSION_GM:
+            minLevel = sConfigMgr->GetIntDefault("Azth.NPC.Dimension.AccountSec.Min.GM", 4);
+            break;
+        default:
+            ASSERT(false);
+            break;
+        }
+
+        if (currDimension == (uint32)dim)
+            sameDim = true;
 
         if (accountLevel >= minLevel)
+            accesLevel = true;
+
+        // For DIMENSION_NORMAL need non PvP account
+        if (dim == DIMENSION_NORMAL && (sAZTH->GetAZTHPlayer(player)->isPvP() || sameDim || !accesLevel))
+            return false;
+
+        // For DIMENSION_GM need min level account (force) 1 (non player)
+        if (dim == DIMENSION_GM && AccountMgr::IsPlayerAccount((uint32)player->GetSession()->GetSecurity()))
+            return false;
+
+        if (!sameDim && accesLevel)
             return true;
 
         return false;
